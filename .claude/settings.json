@@ -11,6 +11,10 @@
         "figma": {
             "command": "npx",
             "args": ["-y", "@modelcontextprotocol/server-figma"]
+        },
+        "storybook": {
+            "command": "npx",
+            "args": ["-y", "@modelcontextprotocol/server-storybook"]
         }
     },
     "permissions": {
