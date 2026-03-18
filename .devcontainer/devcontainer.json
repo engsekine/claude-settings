@@ -1,0 +1,79 @@
+{
+    "name": "Claude Code Sandbox",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "args": {
+            "TZ": "${localEnv:TZ:America/Los_Angeles}",
+            "CLAUDE_CODE_VERSION": "latest",
+            "GIT_DELTA_VERSION": "0.18.2",
+            "ZSH_IN_DOCKER_VERSION": "1.2.0"
+        }
+    },
+    "runArgs": ["--cap-add=NET_ADMIN", "--cap-add=NET_RAW"],
+    "customizations": {
+        "vscode": {
+            "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode", "eamodio.gitlens"],
+            "settings": {
+                "editor.formatOnSave": true,
+                "editor.defaultFormatter": "esbenp.prettier-vscode",
+                "editor.codeActionsOnSave": {
+                    "source.fixAll.eslint": "explicit"
+                },
+                "terminal.integrated.defaultProfile.linux": "zsh",
+                "terminal.integrated.profiles.linux": {
+                    "bash": {
+                        "path": "bash",
+                        "icon": "terminal-bash"
+                    },
+                    "zsh": {
+                        "path": "zsh"
+                    }
+                }
+            },
+            "vscode": {
+                "extensions": [
+                    // ── フロントエンド用 ──────────────────────────────
+                    "dbaeumer.vscode-eslint", // ESLint
+                    "esbenp.prettier-vscode", // Prettier
+                    "usernamehw.errorlens", // インラインエラー表示
+                    "formulahendry.auto-rename-tag", // タグリネーム
+                    "vincaslt.highlight-matching-tag", // 対応タグハイライト
+                    "mosapride.zenkaku", // 全角文字ハイライト
+                    "redhat.vscode-yaml", // YAML サポート
+                    "naumovs.color-highlight", // カラーコードのプレビュー
+                    "oderwat.indent-rainbow", // インデントの色分け
+                    "shardulm94.trailing-spaces", // 末尾スペースのハイライト
+                    "leizongmin.node-module-intellisense", // node_modules の補完
+                    "mrmlnc.vscode-scss", // SCSS サポート（SCSS使用時）
+                    "mrmlnc.vscode-autoprefixer", // Autoprefixer（素のCSS使用時）
+                    "redhat.vscode-xml", // XML サポート（XML使用時）
+                    "hediet.vscode-drawio" // Draw.io（設計ドキュメント用）
+
+                    // ── Goを使うとき ──────────────────────────
+                    // "golang.go",
+                    // "littlefoxteam.vscode-go-test-explorer",
+                    // "at-ishikawa.go-autotest",
+                    // "runner22.go-test-outline"
+                ]
+            }
+        }
+    },
+    "remoteUser": "node",
+    "mounts": [
+        "source=claude-code-bashhistory-${devcontainerId},target=/commandhistory,type=volume",
+        "source=claude-code-config-${devcontainerId},target=/home/node/.claude,type=volume",
+        "source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,type=bind,readonly",
+        "source=${localEnv:HOME}/Documents/github/claude-settings/.claude/commands,target=/home/node/.claude/commands,type=bind,consistency=cached",
+        "source=${localEnv:HOME}/Documents/github/claude-settings/.claude/skills,target=/home/node/.claude/skills,type=bind,consistency=cached",
+        "source=${localEnv:HOME}/Documents/github/claude-settings/.claude/agents,target=/home/node/.claude/agents,type=bind,consistency=cached",
+        "source=${localEnv:HOME}/Documents/github/claude-settings/.claude/rules,target=/home/node/.claude/rules,type=bind,consistency=cached"
+    ],
+    "containerEnv": {
+        "NODE_OPTIONS": "--max-old-space-size=4096",
+        "CLAUDE_CONFIG_DIR": "/home/node/.claude",
+        "POWERLEVEL9K_DISABLE_GITSTATUS": "true"
+    },
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
+    "workspaceFolder": "/workspace",
+    "postCreateCommand": "sudo /usr/local/bin/init-firewall.sh && bash /workspace/.devcontainer/setup-mcp.sh"
+}

@@ -1,8 +1,21 @@
 {
-  "mcpServers": {
-    "playwright": {
-      "command": "npx",
-      "args": ["-y", "@playwright/mcp@latest", "--output-dir", "./screenshots"]
+    "mcpServers": {
+        "context7": {
+            "command": "npx",
+            "args": ["-y", "@context7/mcp-server"]
+        },
+        "next-devtools": {
+            "command": "npx",
+            "args": ["-y", "next-devtools-mcp"]
+        },
+        "figma": {
+            "command": "npx",
+            "args": ["-y", "@modelcontextprotocol/server-figma"]
+        }
+    },
+    "permissions": {
+        "allow": [],
+        "deny": ["git commit", "Bash(curl:*)", "Read(./.env)", "Read(./.env.*)", "Read(./secrets/**)"],
+        "ask": []
     }
-  }
 }

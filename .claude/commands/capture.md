@@ -13,7 +13,7 @@
    NEXT=$((${NEXT:-0} + 1))
    mkdir -p screenshots/$DATE/$NEXT
    ```
-2. 以下の順で `browser_resize` → `browser_navigate`（同じURL）→ `browser_take_screenshot` を繰り返す
+2. Playwright を使用して以下の3幅でスクリーンショットを撮影する
    - 1920px × 900px → `screenshots/YYYYMMDD/N/<ドメイン名>-1920.png`
    - 1100px × 900px → `screenshots/YYYYMMDD/N/<ドメイン名>-1100.png`
    - 375px  × 900px → `screenshots/YYYYMMDD/N/<ドメイン名>-375.png`
