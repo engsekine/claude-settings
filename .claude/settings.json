@@ -23,6 +23,13 @@
         "ask": []
     },
     "hooks": {
-        "post-commit": "/diff-impact"
+        "PostToolUse": [
+            {
+                "matcher": "Bash",
+                "condition": "echo \"$TOOL_INPUT_COMMAND\" | grep -q '^git commit'",
+                "command": "/diff-impact",
+                "description": "コミット後に影響範囲を確認"
+            }
+        ]
     }
 }
