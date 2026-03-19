@@ -4,37 +4,64 @@
 
 ```
 /diff-impact [ベースブランチ]
-/diff-impact --staged    # ステージング済みの変更のみ
-/diff-impact --unstaged  # 未ステージの変更のみ
-/diff-impact --working   # コミット前の全変更（ステージング+未ステージ）
 ```
 
-- ベースブランチ省略時は `main` との差分
-- `--staged`: ステージング済みの変更のみをチェック
-- `--unstaged`: 未ステージの変更のみをチェック
-- `--working`: コミット前の全変更をチェック（ステージング済み + 未ステージ）
+- ベースブランチ省略時は、以下の順で自動検出:
+  1. 現在のブランチの上流ブランチ（`git rev-parse --abbrev-ref @{u}`）
+  2. 上流が無ければ、ブランチの派生元（`git merge-base --fork-point main HEAD` または `develop`）
+  3. それも無ければ `main` ブランチとの差分
+- 常に以下の3つの状態を全てチェックします:
+  1. ステージング済みの変更（`--cached`）
+  2. 未ステージの変更（working directory）
+  3. コミット前の全変更（`HEAD` との差分）
 
 ## 手順
 
-### 1. 変更ファイルの取得
+### 0. ベースブランチの自動検出
 
-引数に応じて使用するコマンドを切り替え:
+ベースブランチが指定されていない場合、以下の順で検出を試みる:
 
 ```bash
-# ブランチ間の差分
-git diff --name-only [ベースブランチ]...HEAD
+# 1. 上流ブランチを取得
+UPSTREAM=$(git rev-parse --abbrev-ref @{u} 2>/dev/null)
+if [ -n "$UPSTREAM" ]; then
+  BASE_BRANCH="$UPSTREAM"
+else
+  # 2. main ブランチからの派生点を検出
+  FORK_POINT=$(git merge-base --fork-point main HEAD 2>/dev/null)
+  if [ -n "$FORK_POINT" ]; then
+    BASE_BRANCH="$FORK_POINT"
+  else
+    # 3. develop ブランチからの派生点を検出
+    FORK_POINT=$(git merge-base --fork-point develop HEAD 2>/dev/null)
+    if [ -n "$FORK_POINT" ]; then
+      BASE_BRANCH="$FORK_POINT"
+    else
+      # 4. デフォルトで main ブランチ
+      BASE_BRANCH="main"
+    fi
+  fi
+fi
+```
 
-# ステージング済みの変更のみ
+検出されたベースブランチは出力に表示する。
+
+### 1. 変更ファイルの取得
+
+以下の3つのコマンドを全て実行し、それぞれの結果を取得:
+
+```bash
+# 1. ステージング済みの変更
 git diff --name-only --cached
 
-# 未ステージの変更のみ
+# 2. 未ステージの変更
 git diff --name-only
 
-# コミット前の全変更
+# 3. コミット前の全変更（HEAD との差分）
 git diff --name-only HEAD
 ```
 
-変更ファイルが存在しない場合は「変更差分がありません」と出力して終了。
+全ての状態で変更ファイルが存在しない場合のみ「変更差分がありません」と出力して終了。
 
 ### 2. タイポ・不要な文字変更チェック
 
@@ -68,19 +95,16 @@ git diff --name-only HEAD
 
 #### 不要な変更の検出
 
-引数に応じてコマンドを切り替え:
+以下の3つのコマンドを全て実行:
 
 ```bash
-# ブランチ間の差分
-git diff -w [ベースブランチ]...HEAD
-
-# ステージング済み
+# 1. ステージング済み
 git diff -w --cached
 
-# 未ステージ
+# 2. 未ステージ
 git diff -w
 
-# コミット前の全変更
+# 3. コミット前の全変更
 git diff -w HEAD
 ```
 
@@ -128,8 +152,20 @@ git diff -w HEAD
 🔍 変更差分の影響分析
 ═══════════════════════════════
 
-対象: main との差分 (または --staged / --unstaged / --working)
+## 📋 ステージング済みの変更
+変更ファイル数: 3
+
+[ここに staged の分析結果]
+
+## 📝 未ステージの変更
+変更ファイル数: 5
+
+[ここに unstaged の分析結果]
+
+## 📦 コミット前の全変更（HEAD との差分）
 変更ファイル数: 8
+
+[ここに working (HEAD) の分析結果]
 
 ## タイポの可能性
 

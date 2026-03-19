@@ -18,18 +18,34 @@
         }
     },
     "permissions": {
-        "allow": [],
-        "deny": ["git commit", "Bash(curl:*)", "Read(./.env)", "Read(./.env.*)", "Read(./secrets/**)"],
+        "allow": ["Bash(*)", "Edit(*)", "Write(*)", "Read(*)", "WebFetch(*)"],
+        "deny": [
+            "git commit",
+            "Bash(rm -rf /*)",
+            "Bash(rm -rf ~)",
+            "Bash(rm -rf .)",
+            "Bash(curl * | bash)",
+            "Bash(wget * | bash)",
+            "Bash(curl * | sh)",
+            "Bash(wget * | sh)",
+            "Bash(sudo rm *)",
+            "Bash(> /etc/passwd)",
+            "Bash(> /etc/hosts)",
+            "Bash(git push --force)",
+            "Bash(git push -f)",
+            "Bash(git reset --hard HEAD~*)",
+            "Bash(npx * --registry *)",
+            "Bash(npm * --registry *)",
+            "Read(.env)",
+            "Read(.env.*)",
+            "Read(secrets/**)",
+            "Read(**/*.pem)",
+            "Read(**/*.key)",
+            "Write(.env)",
+            "Write(.env.*)",
+            "Write(/etc/*)",
+            "Write(~/.ssh/*)"
+        ],
         "ask": []
-    },
-    "hooks": {
-        "PostToolUse": [
-            {
-                "matcher": "Bash",
-                "condition": "echo \"$TOOL_INPUT_COMMAND\" | grep -q '^git commit'",
-                "command": "/diff-impact",
-                "description": "コミット後に影響範囲を確認"
-            }
-        ]
     }
 }
