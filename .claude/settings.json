@@ -44,7 +44,6 @@
             "Write(.env.*)",
             "Write(/etc/*)",
             "Write(~/.ssh/*)"
-        ],
-        "ask": ["git commit"]
+        ]
     }
 }
