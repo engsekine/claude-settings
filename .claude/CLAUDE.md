@@ -36,7 +36,30 @@
 | `rules/coding/html.md` | HTML コーディング規約 |
 | `rules/coding/css.md` | CSS コーディング規約 |
 | `rules/coding/php.md` | PHP コーディング規約 |
+| `rules/coding/accessibility.md` | アクセシビリティ コーディング規約（WCAG 2.1 AA準拠） |
+| `rules/coding/naming.md` | リーダブルコード - 命名規則と要点整理 |
 | `rules/coding/skills.md` | 修正履歴から学んだスキル集 |
+
+## アーキテクチャガイドライン（明示的に指定した場合のみ参照）
+
+アーキテクチャドキュメントは `arch/` に配置されていますが、**デフォルトでは参照しません**。
+必要な場合は、プロジェクトの `.claude/CLAUDE.md` で以下のように明示的に指定してください。
+
+利用可能なアーキテクチャ:
+
+| ファイル | 内容 | 適用方法 |
+|---------|------|---------|
+| `arch/feature.md` | Feature-based + shared/ アーキテクチャ | プロジェクトのCLAUDE.mdに「`arch/feature.md` に従う」と記載 |
+
+### 適用例
+
+プロジェクトで Feature-based アーキテクチャを使う場合、プロジェクトの `.claude/CLAUDE.md` に以下を追加:
+
+```markdown
+## プロジェクト固有の設定
+
+- このプロジェクトは `~/.claude/arch/feature.md` に記載された Feature-based アーキテクチャに従う
+```
 
 ## 利用可能なコマンド
 
