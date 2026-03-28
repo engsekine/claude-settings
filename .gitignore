@@ -45,9 +45,6 @@ coverage/
 
 .claude/settings.local.json
 
-# Architecture docs (opt-in per project)
-.claude/arch/
-
 # Playwright
 screenshots/*
 !screenshots/.gitkeep
