@@ -54,19 +54,55 @@
 
 ### 利用可能なアーキテクチャ
 
-| ファイル | 内容 | 適用方法 |
+#### フロントエンド
+
+| ファイル | 内容 | 適用対象 |
 |---------|------|---------|
-| `arch/feature.md` | Feature-based + shared/ アーキテクチャ | プロジェクトのCLAUDE.mdに「`arch/feature.md` に従う」と記載 |
+| `arch/frontend/feature-based.md` | Feature-based + shared/ アーキテクチャ | React/Next.js プロジェクト |
+| `arch/frontend/atomic-design.md` | Atomic Design パターン | コンポーネント設計重視のプロジェクト |
+| `arch/frontend/bulletproof-react.md` | Bulletproof React パターン | 大規模Reactアプリ |
+
+#### バックエンド
+
+| ファイル | 内容 | 適用対象 |
+|---------|------|---------|
+| `arch/backend/clean-architecture.md` | Clean Architecture | ドメイン駆動設計のプロジェクト |
+| `arch/backend/ddd.md` | Domain-Driven Design | 複雑なビジネスロジック |
+| `arch/backend/layered.md` | レイヤードアーキテクチャ | MVC/Controller-Service-Repository |
+
+#### フルスタック
+
+| ファイル | 内容 | 適用対象 |
+|---------|------|---------|
+| `arch/fullstack/monorepo.md` | Monorepo構成(Turborepo/nx) | FE/BE統合プロジェクト |
+| `arch/fullstack/micro-frontend.md` | Micro Frontend | 大規模分散フロントエンド |
 
 ### 適用例
 
-プロジェクトで Feature-based アーキテクチャを使う場合、プロジェクトの `.claude/CLAUDE.md` に以下を追加:
+#### フロントエンドプロジェクト
 
 ```markdown
 ## プロジェクト固有の設定
 
-- このプロジェクトは `arch/feature.md` に記載された Feature-based アーキテクチャに従う
-  (`.claude/arch/feature.md` が存在すればそちらを、なければ `~/.claude/arch/feature.md` を参照)
+- このプロジェクトは `arch/frontend/feature-based.md` に記載された Feature-based アーキテクチャに従う
+```
+
+#### バックエンドプロジェクト
+
+```markdown
+## プロジェクト固有の設定
+
+- このプロジェクトは `arch/backend/clean-architecture.md` に記載された Clean Architecture に従う
+```
+
+#### フルスタックプロジェクト
+
+```markdown
+## プロジェクト固有の設定
+
+- フロントエンド: `arch/frontend/feature-based.md`
+- バックエンド: `arch/backend/layered.md`
+- Monorepo構成: `arch/fullstack/monorepo.md`
 ```
 
 ### プロジェクト側での設定
