@@ -1,0 +1,3 @@
+services:
+    front:
+        command: sh -c "npm run build && npm start"

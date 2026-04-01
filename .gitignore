@@ -11,6 +11,8 @@ yarn-error.log*
 dist/
 build/
 *.tsbuildinfo
+.next/
+out/
 
 # Environment variables
 .env
@@ -52,3 +54,13 @@ screenshots/*
 # MarkUp
 design/*
 !design/.gitkeep
+
+# Examples (検証用プロジェクト)
+examples/*/node_modules/
+examples/*/.next/
+examples/*/dist/
+examples/*/out/
+examples/*/.turbo/
+examples/*/package-lock.json
+examples/*/yarn.lock
+examples/*/pnpm-lock.yaml

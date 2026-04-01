@@ -1,0 +1,49 @@
+services:
+    app:
+        container_name: service-front
+
+        build:
+            context: .
+            dockerfile: docker/node/Dockerfile
+            args:
+                # 公開情報のみビルド時に渡す（NEXT_PUBLIC_*）
+                NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+
+        ports:
+            - "3000:3000"
+
+        volumes:
+            # ソースコードをマウント
+            - ./:/app
+            # node_modulesをホストから分離（パフォーマンス向上）
+            - /app/node_modules
+            # Next.jsビルドキャッシュを保護
+            - /app/.next
+
+        environment:
+            # 開発モード
+            - NODE_ENV=development
+
+            # 公開情報
+            - NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
+
+            # SSL証明書検証（自己署名証明書を使う場合のみ有効化）
+            # - NODE_EXTRA_CA_CERTS=/app/certs/ca-cert.pem
+
+        command: sh -c "npm run dev:https"
+
+        # 開発環境設定
+        restart: "no" # エラー時に自動再起動しない
+        tty: true # docker exec -it でシェル使用可能
+        stdin_open: true # 対話モード有効
+
+        # セキュリティ
+        user: "node" # 非rootユーザーで実行
+
+        # ヘルスチェック（オプション）
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:3000"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 40s
