@@ -1,0 +1,27 @@
+# 依存関係
+node_modules
+package-lock.json
+
+# ビルド成果物
+.next
+out
+dist
+build
+
+# カバレッジ
+coverage
+
+# Storybook
+storybook-static
+
+# 環境変数
+.env*.local
+
+# SSL証明書
+*.pem
+*.key
+*.crt
+
+# その他
+.DS_Store
+*.log

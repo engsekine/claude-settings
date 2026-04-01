@@ -1,12 +1,13 @@
 import type { Config } from 'jest';
 import nextJest from 'next/jest';
+import '@testing-library/jest-dom';
 
 const createJestConfig = nextJest({
     dir: './',
 });
 
 const customJestConfig: Config = {
-    setupFilesAfterEnv: ['@testing-library/jest-dom', '<rootDir>/jest.setup.ts'],
+    setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
     testEnvironment: 'jest-fixed-jsdom',
     coverageProvider: 'v8',
     moduleNameMapper: {
@@ -16,7 +17,6 @@ const customJestConfig: Config = {
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
         '\\.(jpg|jpeg|png|gif|svg|webp|avif)$': '<rootDir>/__mocks__/fileMock.ts',
     },
-    resolver: undefined,
     testPathIgnorePatterns: ['/node_modules/', '/.next/', '/playwright/'],
     moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
     testMatch: ['**/__tests__/**/*.(spec|test).[jt]s?(x)'],
@@ -36,7 +36,7 @@ const customJestConfig: Config = {
         '!src/app/**/error.tsx',
         '!src/app/**/not-found.tsx',
     ],
-    coverageThresholds: {
+    coverageThreshold: {
         global: {
             branches: 70,
             functions: 70,

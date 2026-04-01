@@ -1,7 +1,17 @@
 {
     "extends": "./tsconfig.json",
     "compilerOptions": {
-        "types": ["jest", "@testing-library/jest-dom", "node"]
+        "types": ["jest", "@testing-library/jest-dom", "node"],
+        "module": "commonjs"
     },
-    "include": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx", "jest.setup.ts", "jest.config.ts"]
+    "include": [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+        "jest.setup.ts",
+        "jest.config.ts",
+        "__tests__/**/*",
+        "__mocks__/**/*"
+    ]
 }

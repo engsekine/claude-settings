@@ -21,19 +21,3 @@ Object.defineProperty(global, "TransformStream", {
     configurable: true,
     value: NodeTransformStream
 });
-
-// Mock until-async to avoid ESM issues
-jest.mock("until-async", () => ({
-    until: jest.fn((fn) => fn())
-}));
-
-global.fetch = jest.fn().mockResolvedValue({
-    json: jest.fn().mockResolvedValue({}),
-    ok: true,
-    status: 200,
-    statusText: "OK",
-    headers: new Headers(),
-    redirected: false,
-    type: "basic",
-    url: ""
-});

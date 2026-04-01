@@ -1,41 +1,58 @@
 # Base image (using Node.js and Alpine Linux)
 FROM node:22-alpine AS base
 
+# Install curl for healthcheck
+RUN apk add --no-cache curl
+
 # Dependency installation
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
 
-USER node
 WORKDIR /app
-COPY --chown=node:node ./package.json ./
-COPY --chown=node:node ./package-lock.json ./
 
-RUN npm install --frozen-lockfile
+# Copy package files
+COPY package.json package-lock.json ./
+
+# Install dependencies (use ci for production)
+RUN npm ci
 
 # Build stage
 FROM base AS build
 
 WORKDIR /app
 
-COPY --chown=node:node . ./
-
-# Copy only dependencies to maximize cache usage
+# Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 
+# Copy source code
+COPY . ./
+
+# Build Next.js app
 RUN npm run build
 
-# Runtime environment
-FROM node:22-alpine AS release
+# Runtime environment (production)
+FROM base AS release
 
-# Copy only the necessary dependencies
+ENV NODE_ENV=production
+
 WORKDIR /app
-COPY --from=build /app/.next ./.next
-COPY --from=build /app/package.json ./package.json
-COPY --from=build /app/node_modules ./node_modules
 
+# Copy only production dependencies
+COPY --from=deps /app/package.json ./
+COPY --from=deps /app/package-lock.json ./
+RUN npm ci --omit=dev
+
+# Copy built app
+COPY --from=build /app/.next ./.next
+COPY --from=build /app/public ./public
+
+# Switch to non-root user
 USER node
 
-HEALTHCHECK --interval=30s --timeout=10s \
-  CMD curl -f ${HEALTHCHECK_URL} || exit 1
+# Expose port
+EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:3000/api/health || exit 1
 
 CMD ["npm", "start"]
