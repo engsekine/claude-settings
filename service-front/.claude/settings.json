@@ -45,5 +45,18 @@
       "Write(/etc/*)",
       "Write(~/.ssh/*)"
     ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/lint-check.sh"
+          }
+        ]
+      }
+    ]
   }
 }
