@@ -43,6 +43,44 @@ export const UserProfile = ({ userId, name, avatarUrl }: UserProfileProps) => {
 - 重い処理は `useMemo` / `useCallback` でメモ化する
 - 不要な再レンダリングを避けるため、`React.memo` の使用を検討する
 
+## React Hook Form
+
+- `register`、`control`、`formState` などの react-hook-form オブジェクトをそのまま Props として子コンポーネントに渡さない
+- 必要な値・関数のみを明示的に Props として渡す
+
+```tsx
+// Bad
+interface InputProps {
+  register: UseFormRegister<FormValues>;
+  control: Control<FormValues>;
+}
+
+// Good
+interface InputProps {
+  value: string;
+  onChange: (value: string) => void;
+  error?: string;
+}
+```
+
+- フォームロジックは親コンポーネントまたはカスタムフックに閉じ込め、UIコンポーネントは react-hook-form に依存させない
+- 再利用可能な入力コンポーネントには `Controller` で包んで渡す
+
+```tsx
+// Good: Controller で包んで渡す
+<Controller
+  name="email"
+  control={control}
+  render={({ field, fieldState }) => (
+    <TextInput
+      value={field.value}
+      onChange={field.onChange}
+      error={fieldState.error?.message}
+    />
+  )}
+/>
+```
+
 ## その他
 
 - `useEffect` の依存配列を正確に記載する（eslint-plugin-react-hooks に従う）
