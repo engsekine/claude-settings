@@ -1,14 +1,14 @@
-指定ブランチのパッケージバージョンをアップデートします。
+指定ブランチの package.json パッケージバージョンをアップデートします。
 
 ## 使い方
 
 ```
-/update $ARGUMENTS
+/pkg-update $ARGUMENTS
 ```
 
 例:
-- `/update feature/my-feature` — 指定ブランチに切り替えてアップデート
-- `/update` — 現在のブランチでアップデート
+- `/pkg-update feature/my-feature` — 指定ブランチに切り替えてアップデート
+- `/pkg-update` — 現在のブランチでアップデート
 
 ## $ARGUMENTS
 
@@ -40,39 +40,26 @@ git pull origin $(git branch --show-current)
 | `package.json` + `pnpm-lock.yaml` | `pnpm` |
 | `package.json` + `yarn.lock` | `yarn` |
 | `package.json` | `npm` |
-| `composer.json` | `composer` |
-| `go.mod` | `go` |
-| `Cargo.toml` | `cargo` |
-| `requirements.txt` / `pyproject.toml` | `pip` / `uv` |
+
+`package.json` が存在しない場合は「package.json が見つかりません」と出力して終了。
 
 ### 4. アップデート実行
 
-**Node.js (npm)**:
+**npm**:
 ```bash
 npm update
 npm audit fix
 ```
 
-**Node.js (pnpm)**:
+**pnpm**:
 ```bash
 pnpm update
 pnpm audit --fix
 ```
 
-**Node.js (yarn)**:
+**yarn**:
 ```bash
 yarn upgrade
-```
-
-**PHP (composer)**:
-```bash
-composer update
-```
-
-**Go**:
-```bash
-go get -u ./...
-go mod tidy
 ```
 
 ### 5. 変更確認
@@ -89,7 +76,7 @@ git diff --stat
 ⬆️ アップデート完了
 ═══════════════════════════
 ブランチ: <ブランチ名>
-パッケージマネージャー: <npm/pnpm/yarn/...>
+パッケージマネージャー: <npm/pnpm/yarn>
 
 更新されたパッケージ:
 - <パッケージ名>: <旧バージョン> → <新バージョン>
