@@ -72,6 +72,58 @@ import { UserService } from '@/services/user';
 import { formatDate } from './utils';
 ```
 
+## 宣言的なコードスタイル
+
+- 手続き的なループより配列メソッド（`map` / `filter` / `reduce` / `find`）を優先する
+- 条件分岐は早期リターンで深いネストを避ける
+- 状態の変更より新しい値の生成を優先する（イミュータブル操作）
+
+```typescript
+// Bad: 手続き的
+const result: string[] = [];
+for (let i = 0; i < items.length; i++) {
+  if (items[i].active) {
+    result.push(items[i].name);
+  }
+}
+
+// Good: 宣言的
+const result = items.filter((item) => item.active).map((item) => item.name);
+```
+
+```typescript
+// Bad: 深いネスト
+const getLabel = (user: User) => {
+  if (user) {
+    if (user.role === 'admin') {
+      return 'Admin';
+    } else {
+      return 'User';
+    }
+  } else {
+    return 'Guest';
+  }
+};
+
+// Good: 早期リターン
+const getLabel = (user: User | null): string => {
+  if (!user) return 'Guest';
+  if (user.role === 'admin') return 'Admin';
+  return 'User';
+};
+```
+
+```typescript
+// Bad: 直接変更
+const addItem = (items: Item[], newItem: Item) => {
+  items.push(newItem);
+  return items;
+};
+
+// Good: 新しい配列を生成
+const addItem = (items: Item[], newItem: Item): Item[] => [...items, newItem];
+```
+
 ## その他
 
 - `console.log` は本番コードに残さない（`console.error` / `console.warn` は許可）
