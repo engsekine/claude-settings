@@ -1,4 +1,5 @@
 {
+  "effortLevel": "high",
   "mcpServers": {
     "context7": {
       "command": "npx",
@@ -47,6 +48,17 @@
     ]
   },
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ../.claude/hooks/prompt-log.sh"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
@@ -54,6 +66,15 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/lint-check.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ../.claude/hooks/activity-log.sh"
           }
         ]
       }
