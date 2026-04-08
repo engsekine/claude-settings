@@ -30,6 +30,27 @@ COPY . ./
 # Build Next.js app
 RUN npm run build
 
+# Development environment
+FROM base AS development
+
+ENV NODE_ENV=development
+
+WORKDIR /app
+
+# Copy dependencies
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json package-lock.json ./
+
+# Create .next directory with correct permissions
+RUN mkdir -p .next && chown -R node:node /app
+
+# Switch to non-root user
+USER node
+
+EXPOSE 3000
+
+CMD ["npm", "run", "dev"]
+
 # Runtime environment (production)
 FROM base AS release
 

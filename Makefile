@@ -76,9 +76,50 @@ devcontainer:
 	printf '  ]\n'; \
 	printf '}\n'
 
+## service-front
+front-setup:
+	$(MAKE) -C service-front setup
+
+front-dev:
+	$(MAKE) -C service-front dev
+
+front-dev-https:
+	$(MAKE) -C service-front dev-https
+
+front-build:
+	$(MAKE) -C service-front build
+
+front-test:
+	$(MAKE) -C service-front test
+
+front-lint:
+	$(MAKE) -C service-front lint
+
+front-format:
+	$(MAKE) -C service-front format
+
+front-validate:
+	$(MAKE) -C service-front validate
+
+front-clean:
+	$(MAKE) -C service-front clean
+
 help:
 	@echo "Usage:"
-	@echo "  make link    グローバル ~/.claude へシンボリックリンクを作成"
-	@echo "  make unlink  シンボリックリンクを削除"
-	@echo "  make re      リンクし直す (unlink + link)"
-	@echo "  make status  リンク状態を確認"
+	@echo ""
+	@echo "  [symlink]"
+	@echo "  make link             グローバル ~/.claude へシンボリックリンクを作成"
+	@echo "  make unlink           シンボリックリンクを削除"
+	@echo "  make re               リンクし直す (unlink + link)"
+	@echo "  make status           リンク状態を確認"
+	@echo ""
+	@echo "  [service-front]"
+	@echo "  make front-setup      初回セットアップ"
+	@echo "  make front-dev        開発サーバー起動（HTTP）"
+	@echo "  make front-dev-https  開発サーバー起動（HTTPS）"
+	@echo "  make front-build      プロダクションビルド"
+	@echo "  make front-test       テスト実行"
+	@echo "  make front-lint       Lint実行"
+	@echo "  make front-format     フォーマット実行"
+	@echo "  make front-validate   すべてのチェックを実行"
+	@echo "  make front-clean      クリーンアップ"

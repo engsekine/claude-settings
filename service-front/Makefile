@@ -1,22 +1,50 @@
-.PHONY: help setup cert clean dev dev-https build test lint format
+.PHONY: help setup cert clean clean-cert dev dev-https build test lint format type-check validate up down logs
+
+COMPOSE := docker compose -f docker-compose.dev.yml
+SERVICE := app
 
 ## ヘルプ表示
 help:
 	@echo "Usage:"
-	@echo "  make setup       初回セットアップ（npm install + SSL証明書生成）"
-	@echo "  make cert        SSL証明書を生成"
-	@echo "  make clean       node_modules と証明書を削除"
+	@echo ""
+	@echo "  [Docker]"
+	@echo "  make up          コンテナ起動（バックグラウンド）"
+	@echo "  make down        コンテナ停止・削除"
+	@echo "  make logs        コンテナログ表示"
+	@echo ""
+	@echo "  [開発]"
 	@echo "  make dev         開発サーバー起動（HTTP）"
 	@echo "  make dev-https   開発サーバー起動（HTTPS）"
+	@echo ""
+	@echo "  [ビルド・テスト]"
 	@echo "  make build       プロダクションビルド"
 	@echo "  make test        テスト実行"
 	@echo "  make lint        Lint実行"
 	@echo "  make format      フォーマット実行"
+	@echo "  make type-check  型チェック"
+	@echo "  make validate    すべてのチェックを実行"
+	@echo ""
+	@echo "  [セットアップ]"
+	@echo "  make setup       初回セットアップ（npm install + SSL証明書生成）"
+	@echo "  make cert        SSL証明書を生成"
+	@echo "  make clean       node_modules と証明書を削除"
+
+## コンテナ起動（バックグラウンド）
+up:
+	$(COMPOSE) up -d --build
+
+## コンテナ停止・削除
+down:
+	$(COMPOSE) down
+
+## コンテナログ表示
+logs:
+	$(COMPOSE) logs -f $(SERVICE)
 
 ## 初回セットアップ
 setup: cert
 	@echo "📦 Installing dependencies..."
-	npm install
+	$(COMPOSE) run --rm $(SERVICE) npm install
 	@echo "✅ Setup complete!"
 	@echo ""
 	@echo "次のステップ:"
@@ -57,14 +85,14 @@ clean-cert:
 	@echo "✅ Certificates removed."
 
 ## すべてクリーンアップ
-clean: clean-cert
-	@echo "🗑️  Removing node_modules and build artifacts..."
-	rm -rf node_modules package-lock.json .next
+clean: clean-cert down
+	@echo "🗑️  Removing build artifacts..."
+	$(COMPOSE) down --volumes --rmi local
 	@echo "✅ Clean complete."
 
 ## 開発サーバー起動（HTTP）
 dev:
-	npm run dev
+	$(COMPOSE) run --rm --service-ports $(SERVICE) npm run dev
 
 ## 開発サーバー起動（HTTPS）
 dev-https:
@@ -72,28 +100,28 @@ dev-https:
 		echo "❌ SSL certificate not found. Running 'make cert'..."; \
 		$(MAKE) cert; \
 	fi
-	npm run dev:https
+	$(COMPOSE) up --build
 
 ## プロダクションビルド
 build:
-	npm run build
+	$(COMPOSE) exec $(SERVICE) npm run build
 
 ## テスト実行
 test:
-	npm run test
+	$(COMPOSE) exec $(SERVICE) npm run test
 
 ## Lint実行
 lint:
-	npm run lint
+	$(COMPOSE) exec $(SERVICE) npm run lint
 
 ## フォーマット実行
 format:
-	npm run format
+	$(COMPOSE) exec $(SERVICE) npm run format
 
 ## 型チェック
 type-check:
-	npm run type-check
+	$(COMPOSE) exec $(SERVICE) npm run type-check
 
 ## すべてのチェックを実行
 validate:
-	npm run validate
+	$(COMPOSE) exec $(SERVICE) npm run validate
