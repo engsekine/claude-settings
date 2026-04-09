@@ -3,7 +3,7 @@ CLAUDE_DIR := $(HOME)/.claude
 
 CLAUDE_TARGETS := commands skills agents rules
 
-.PHONY: link unlink re status help
+.PHONY: link unlink re status help front-setup front-dev front-dev-https front-build front-test front-lint front-format front-validate front-clean front-up front-down front-logs
 
 ## グローバルの ~/.claude に対してシンボリックリンクを作成する
 link:
@@ -80,6 +80,15 @@ devcontainer:
 front-setup:
 	$(MAKE) -C service-front setup
 
+front-up:
+	$(MAKE) -C service-front up
+
+front-down:
+	$(MAKE) -C service-front down
+
+front-logs:
+	$(MAKE) -C service-front logs
+
 front-dev:
 	$(MAKE) -C service-front dev
 
@@ -115,6 +124,9 @@ help:
 	@echo ""
 	@echo "  [service-front]"
 	@echo "  make front-setup      初回セットアップ"
+	@echo "  make front-up         コンテナ起動（バックグラウンド）"
+	@echo "  make front-down       コンテナ停止・削除（volume含む）"
+	@echo "  make front-logs       コンテナログ表示"
 	@echo "  make front-dev        開発サーバー起動（HTTP）"
 	@echo "  make front-dev-https  開発サーバー起動（HTTPS）"
 	@echo "  make front-build      プロダクションビルド"

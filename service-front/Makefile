@@ -33,9 +33,9 @@ help:
 up:
 	$(COMPOSE) up -d --build
 
-## コンテナ停止・削除
+## コンテナ停止・削除（anonymous volume も削除）
 down:
-	$(COMPOSE) down
+	$(COMPOSE) down -v
 
 ## コンテナログ表示
 logs:
@@ -100,7 +100,7 @@ dev-https:
 		echo "❌ SSL certificate not found. Running 'make cert'..."; \
 		$(MAKE) cert; \
 	fi
-	$(COMPOSE) up --build
+	$(COMPOSE) up --build -d
 
 ## プロダクションビルド
 build:
