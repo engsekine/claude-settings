@@ -1,3 +1,9 @@
+---
+name: pkg-update
+description: 指定ブランチの package.json パッケージバージョンをアップデートします。
+user-invocable: true
+---
+
 指定ブランチの package.json パッケージバージョンをアップデートします。
 
 ## 使い方
@@ -73,7 +79,7 @@ git diff --stat
 ### 6. 完了報告
 
 ```
-⬆️ アップデート完了
+アップデート完了
 ═══════════════════════════
 ブランチ: <ブランチ名>
 パッケージマネージャー: <npm/pnpm/yarn>

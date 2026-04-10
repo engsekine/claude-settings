@@ -38,18 +38,17 @@
 
 ## コード規約
 
-プロジェクトのコーディング規約は `rules/coding/` を参照してください。
+プロジェクトのコーディング規約は `rules/` を参照してください。
 
 | ファイル | 内容 |
 |---------|------|
-| `rules/coding/react.md` | React コーディング規約 |
-| `rules/coding/typescript.md` | TypeScript コーディング規約 |
-| `rules/coding/html.md` | HTML コーディング規約 |
-| `rules/coding/css.md` | CSS コーディング規約 |
-| `rules/coding/php.md` | PHP コーディング規約 |
-| `rules/coding/accessibility.md` | アクセシビリティ コーディング規約（WCAG 2.1 AA準拠） |
-| `rules/coding/naming.md` | リーダブルコード - 命名規則と要点整理 |
-| `rules/coding/skills.md` | 修正履歴から学んだスキル集 |
+| `rules/react.md` | React コーディング規約 |
+| `rules/typescript.md` | TypeScript コーディング規約 |
+| `rules/html.md` | HTML コーディング規約 |
+| `rules/css.md` | CSS コーディング規約 |
+| `rules/php.md` | PHP コーディング規約 |
+| `rules/accessibility.md` | アクセシビリティ コーディング規約（WCAG 2.1 AA準拠） |
+| `rules/readable-code.md` | リーダブルコード - 命名規則と要点整理 |
 
 
 ## 利用可能なスキル

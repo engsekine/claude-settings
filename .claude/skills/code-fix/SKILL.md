@@ -31,15 +31,14 @@ git diff --name-only HEAD
 
 | ファイル | 内容 |
 |---------|------|
-| `rules/coding/react.md` | React コーディング規約 |
-| `rules/coding/typescript.md` | TypeScript コーディング規約 |
-| `rules/coding/html.md` | HTML コーディング規約 |
-| `rules/coding/css.md` | CSS コーディング規約 |
-| `rules/coding/php.md` | PHP コーディング規約 |
-| `rules/coding/skills.md` | コーディングスキル集 |
+| `rules/react.md` | React コーディング規約 |
+| `rules/typescript.md` | TypeScript コーディング規約 |
+| `rules/html.md` | HTML コーディング規約 |
+| `rules/css.md` | CSS コーディング規約 |
+| `rules/php.md` | PHP コーディング規約 |
 | `.claude/CLAUDE.md` | プロジェクト共通規約 |
 
-規約ファイルが一つも存在しない場合は「コード規約ファイルが見つかりません。`rules/coding/` に規約を追加してください」と出力して終了。
+規約ファイルが一つも存在しない場合は「コード規約ファイルが見つかりません。`rules/` に規約を追加してください」と出力して終了。
 
 ### 3. レビュー結果の参照
 
@@ -69,14 +68,6 @@ git diff --name-only HEAD
 修正完了 / 手動確認が必要な箇所: <件数>
 ```
 
-### 6. 修正内容をルールとして保存
-
-修正した内容のうち、繰り返し発生しやすいパターンは `rules/coding/skills.md` に追記する。
-
-```bash
-# rules/coding/ ディレクトリがなければ作成
-mkdir -p rules/coding
-```
 
 ## $ARGUMENTS
 

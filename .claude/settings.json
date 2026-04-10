@@ -58,7 +58,7 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "bash .claude/hooks/prompt-log.sh"
+                        "command": "bash .claude/hooks/log.sh"
                     }
                 ]
             }
@@ -69,7 +69,7 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "bash .claude/hooks/activity-log.sh"
+                        "command": "bash .claude/hooks/log.sh"
                     }
                 ]
             }
