@@ -56,7 +56,7 @@ grep -r "関数名\|クラス名" --include="*.ts" --include="*.tsx"
 git diff --name-only
 
 # 各変更ファイルについて影響URLを確認
-/diff-impact
+/check:diff-impact
 ```
 
 **チェック項目:**

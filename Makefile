@@ -1,7 +1,7 @@
 REPO_DIR := $(shell pwd)
 CLAUDE_DIR := $(HOME)/.claude
 
-CLAUDE_TARGETS := commands skills agents rules
+CLAUDE_TARGETS := skills agents rules
 
 .PHONY: link unlink re status help front-setup front-dev front-dev-https front-build front-test front-lint front-format front-validate front-clean front-up front-down front-logs
 

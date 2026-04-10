@@ -1,3 +1,9 @@
+---
+name: "check:diff-impact"
+description: 現在のブランチの変更差分を分析し、影響を受けるURLを特定します。
+user-invocable: true
+---
+
 現在のブランチの変更差分を分析し、影響を受けるURLを特定します。
 
 ## 使い方
@@ -104,39 +110,39 @@ git diff --name-only HEAD
 ### 4. 出力フォーマット
 
 ```
-🔍 変更差分の影響分析
+変更差分の影響分析
 ═══════════════════════════════
 ベースブランチ: origin/main
 
-## 📋 ステージング済みの変更
+## ステージング済みの変更
 変更ファイル数: 3
 
-## 📝 未ステージの変更
+## 未ステージの変更
 変更ファイル数: 5
 
-## 📦 コミット前の全変更（HEAD との差分）
+## コミット前の全変更（HEAD との差分）
 変更ファイル数: 8
 
 ## 影響を受けるURL
 
-• / (全ページ)
-• /about
-• /blog/*
-• /api/users
+- / (全ページ)
+- /about
+- /blog/*
+- /api/users
 
 ### 変更されたファイル
 
-• app/layout.tsx (グローバル)
-• app/about/page.tsx → /about
-• app/blog/[slug]/page.tsx → /blog/*
-• app/api/users/route.ts → /api/users
-• src/components/Header.tsx (全ページで使用)
+- app/layout.tsx (グローバル)
+- app/about/page.tsx → /about
+- app/blog/[slug]/page.tsx → /blog/*
+- app/api/users/route.ts → /api/users
+- src/components/Header.tsx (全ページで使用)
 
 ## 影響範囲サマリー
 
-📍 影響URL: 4件
-📄 変更ファイル: 8件
-⚠️  グローバル影響: あり
+影響URL: 4件
+変更ファイル: 8件
+グローバル影響: あり
 ```
 
 ### 5. 追加情報
@@ -146,10 +152,10 @@ git diff --name-only HEAD
 ```
 ## 確認用URL (localhost:3000)
 
-• http://localhost:3000/
-• http://localhost:3000/about
-• http://localhost:3000/blog/example
-• http://localhost:3000/api/users
+- http://localhost:3000/
+- http://localhost:3000/about
+- http://localhost:3000/blog/example
+- http://localhost:3000/api/users
 ```
 
 ## 除外設定

@@ -8,7 +8,7 @@
 make link
 ```
 
-`~/.claude/commands`, `~/.claude/skills`, `~/.claude/agents` がこのリポジトリの `.claude/` 配下にリンクされます。
+`~/.claude/skills`, `~/.claude/agents`, `~/.claude/rules` がこのリポジトリの `.claude/` 配下にリンクされます。
 
 ### その他の make コマンド
 
@@ -30,7 +30,7 @@ make devcontainer
 出力された JSON を `.devcontainer/devcontainer.json` の `mounts` に追加してください。
 
 > コンテナのユーザーが `root` 以外（例: `vscode`, `node`）の場合は `target` のパスを変更してください。
-> 例: `target=/home/vscode/.claude/commands,...`
+> 例: `target=/home/vscode/.claude/skills,...`
 
 #### `devcontainer.json` の変更をgitに追わせない
 
