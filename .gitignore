@@ -23,6 +23,10 @@ out/
 logs/
 *.log
 
+# summary logs
+summary/
+*.log
+
 # OS files
 .DS_Store
 Thumbs.db

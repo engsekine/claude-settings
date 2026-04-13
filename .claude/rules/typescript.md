@@ -76,6 +76,7 @@ import { formatDate } from './utils';
 
 - 手続き的なループより配列メソッド（`map` / `filter` / `reduce` / `find`）を優先する
 - 条件分岐は早期リターンで深いネストを避ける
+- ガード節（早期リターン）は1行形式で書く。ただし条件の中に複数処理がある場合はブロック形式にする
 - 状態の変更より新しい値の生成を優先する（イミュータブル操作）
 
 ```typescript
@@ -105,7 +106,7 @@ const getLabel = (user: User) => {
   }
 };
 
-// Good: 早期リターン
+// Good: 早期リターン（ガード節は1行形式）
 const getLabel = (user: User | null): string => {
   if (!user) return 'Guest';
   if (user.role === 'admin') return 'Admin';
