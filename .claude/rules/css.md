@@ -1,11 +1,17 @@
 # CSS コーディング規約
 
+## 基本方針
+
+- スタイリングは全て Tailwind CSS で行う
+- カスタム CSS ファイルの作成や `style` 属性の使用は原則禁止
+- globals.css には Tailwind のインポートとカスタムプロパティ(CSS 変数)のみ記述する
+
 ## 命名規則
 
 ### クラス名
 
-- BEM（Block\_\_Element--Modifier）または Tailwind CSS を使用する
-- プロジェクトで統一する（混在禁止）
+- Tailwind CSS の utility-first で記述する
+- BEM やカスタムクラス名は使用しない
 - キャメルケースは使用しない
 
 ```css
