@@ -69,7 +69,18 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "bash .claude/hooks/log.sh"
+                        "command": "bash .claude/hooks/post-tool-use.sh"
+                    }
+                ]
+            }
+        ],
+        "Stop": [
+            {
+                "matcher": "",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "bash .claude/hooks/stop.sh"
                     }
                 ]
             }

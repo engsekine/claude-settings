@@ -1,5 +1,5 @@
 ---
-name: "check:diff-impact"
+name: check-diff-impact
 description: 現在のブランチの変更差分を分析し、影響を受けるURLを特定します。
 user-invocable: true
 ---

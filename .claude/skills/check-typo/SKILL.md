@@ -1,5 +1,5 @@
 ---
-name: "check:typo"
+name: check-typo
 description: 変更差分に含まれるタイポ・不要な文字変更をチェックします。
 user-invocable: true
 ---

@@ -3,13 +3,13 @@
 import { ArrowUp, Square } from 'lucide-react';
 import { useCallback, useRef, useState, type KeyboardEvent } from 'react';
 
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { Button } from '@/shared/components/ui/button';
+import { cn } from '@/shared/lib/utils';
 
 import type { StreamingStatus } from '../../types';
 
 interface ChatInputProps {
-  onSend: (message: string) => void;
+  onSend: (message: string) => void | Promise<void>;
   onStop: () => void;
   streamingStatus: StreamingStatus;
 }
@@ -21,9 +21,9 @@ export const ChatInput = ({ onSend, onStop, streamingStatus }: ChatInputProps) =
   const isStreaming = streamingStatus === 'streaming';
   const canSend = value.trim().length > 0 && !isStreaming;
 
-  const handleSend = useCallback(() => {
+  const handleSend = useCallback(async () => {
     if (!canSend) return;
-    onSend(value);
+    await onSend(value);
     setValue('');
 
     /** テキストエリアの高さをリセット */
@@ -36,7 +36,7 @@ export const ChatInput = ({ onSend, onStop, streamingStatus }: ChatInputProps) =
     /** Enter で送信、Shift+Enter で改行 */
     if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
-      handleSend();
+      void handleSend();
     }
   };
 

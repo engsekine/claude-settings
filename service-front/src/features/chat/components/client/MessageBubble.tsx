@@ -3,7 +3,7 @@
 import { Bot, User } from 'lucide-react';
 import { memo } from 'react';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/lib/utils';
 
 import type { Message } from '../../types';
 import { MarkdownRenderer } from './MarkdownRenderer';

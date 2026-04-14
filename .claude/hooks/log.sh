@@ -1,6 +1,6 @@
 #!/bin/bash
 # Claude Code のイベントを統合ログに記録する
-# 対応イベント: UserPromptSubmit, PostToolUse
+# 対応イベント: UserPromptSubmit, PostToolUse, Stop
 
 INPUT=$(cat)
 LOG_DIR=".claude/logs"
@@ -11,6 +11,7 @@ TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
 # イベントの種類を判定
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty' 2>/dev/null)
 PROMPT=$(echo "$INPUT" | jq -r '.prompt // empty' 2>/dev/null)
+STOP_REASON=$(echo "$INPUT" | jq -r '.stop_reason // empty' 2>/dev/null)
 
 if [ -n "$TOOL_NAME" ]; then
   # PostToolUse イベント
@@ -34,5 +35,16 @@ elif [ -n "$PROMPT" ]; then
   if echo "$PROMPT" | grep -q '^/'; then
     SKILL_NAME=$(echo "$PROMPT" | awk '{print $1}')
     echo "[$TIMESTAMP] $SKILL_NAME" >> "$LOG_DIR/skill.log"
+  fi
+
+elif [ -n "$STOP_REASON" ]; then
+  # Stop イベント: Claude の応答を記録
+  RESPONSE=$(echo "$INPUT" | jq -r '.response // empty' 2>/dev/null)
+  if [ -n "$RESPONSE" ]; then
+    {
+      echo "=== [$TIMESTAMP] stop_reason=$STOP_REASON ==="
+      echo "$RESPONSE"
+      echo ""
+    } >> "$LOG_DIR/response.log"
   fi
 fi
