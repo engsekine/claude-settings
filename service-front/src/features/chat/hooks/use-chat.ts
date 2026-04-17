@@ -18,16 +18,14 @@ const generateTitle = (content: string): string => {
 };
 
 export const useChat = () => {
-  const {
-    conversations,
-    activeConversationId,
-    streamingStatus,
-    createConversation,
-    addMessage,
-    appendToLastMessage,
-    setStreamingStatus,
-    updateConversationTitle,
-  } = useChatStore();
+  const conversations = useChatStore((s) => s.conversations);
+  const activeConversationId = useChatStore((s) => s.activeConversationId);
+  const streamingStatus = useChatStore((s) => s.streamingStatus);
+  const createConversation = useChatStore((s) => s.createConversation);
+  const addMessage = useChatStore((s) => s.addMessage);
+  const appendToLastMessage = useChatStore((s) => s.appendToLastMessage);
+  const setStreamingStatus = useChatStore((s) => s.setStreamingStatus);
+  const updateConversationTitle = useChatStore((s) => s.updateConversationTitle);
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -77,13 +75,26 @@ export const useChat = () => {
         .messages.filter((m) => m.content !== '')
         .map(({ role, content }) => ({ role, content }));
 
+      /** AbortController を生成してストリーミングに渡す */
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
+
       try {
-        for await (const chunk of streamChatResponse(apiMessages)) {
+        for await (const chunk of streamChatResponse(apiMessages, {
+          signal: abortController.signal,
+        })) {
           appendToLastMessage(conversationId, chunk);
         }
         setStreamingStatus('idle');
-      } catch {
-        setStreamingStatus('error');
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          setStreamingStatus('idle');
+        } else {
+          console.error('ストリーミングエラー:', error);
+          setStreamingStatus('error');
+        }
+      } finally {
+        abortControllerRef.current = null;
       }
     },
     [
@@ -99,8 +110,7 @@ export const useChat = () => {
   /** ストリーミングを中断する */
   const stopStreaming = useCallback(() => {
     abortControllerRef.current?.abort();
-    setStreamingStatus('idle');
-  }, [setStreamingStatus]);
+  }, []);
 
   return {
     messages: activeConversation?.messages ?? [],

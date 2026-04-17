@@ -50,7 +50,8 @@ export const useUserStore = create<UserStore>()(
           }),
       }),
       {
-        name: "user-store", // localStorageのキー名
+        name: "user-store",
+        version: 1,
       },
     ),
     {

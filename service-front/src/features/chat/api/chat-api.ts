@@ -1,17 +1,26 @@
 import type { MessageRole } from '../types';
 
+interface StreamChatOptions {
+  signal?: AbortSignal;
+}
+
 /** ストリーミングでチャットAPIを呼び出す */
 export async function* streamChatResponse(
   messages: { role: MessageRole; content: string }[],
+  options?: StreamChatOptions,
 ): AsyncGenerator<string> {
   const response = await fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ messages }),
+    signal: options?.signal ?? null,
   });
 
   if (!response.ok) {
-    throw new Error(`APIエラー: ${response.status} ${response.statusText}`);
+    const body = await response.text().catch(() => '');
+    throw new Error(
+      body !== '' ? body : `APIエラー: ${response.status} ${response.statusText}`,
+    );
   }
 
   const reader = response.body?.getReader();
@@ -26,6 +35,11 @@ export async function* streamChatResponse(
       const { done, value } = await reader.read();
       if (done) break;
       yield decoder.decode(value, { stream: true });
+    }
+    /** マルチバイト文字の末尾フラッシュ */
+    const remaining = decoder.decode();
+    if (remaining !== '') {
+      yield remaining;
     }
   } finally {
     reader.releaseLock();

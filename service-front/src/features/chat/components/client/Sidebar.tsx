@@ -9,15 +9,18 @@ import { cn } from '@/shared/lib/utils';
 import { useChatStore } from '../../stores/chat-store';
 
 export const Sidebar = () => {
-  const {
-    conversations,
-    activeConversationId,
-    createConversation,
-    setActiveConversation,
-    deleteConversation,
-  } = useChatStore();
+  const conversations = useChatStore((s) => s.conversations);
+  const activeConversationId = useChatStore((s) => s.activeConversationId);
+  const createConversation = useChatStore((s) => s.createConversation);
+  const setActiveConversation = useChatStore((s) => s.setActiveConversation);
+  const deleteConversation = useChatStore((s) => s.deleteConversation);
 
   const [isOpen, setIsOpen] = useState(true);
+
+  const handleDelete = (conversation: { id: string; title: string }) => {
+    if (!window.confirm(`「${conversation.title}」を削除しますか？`)) return;
+    deleteConversation(conversation.id);
+  };
 
   return (
     <>
@@ -81,6 +84,7 @@ export const Sidebar = () => {
                   )}
                 >
                   <button
+                    type="button"
                     onClick={() => setActiveConversation(conversation.id)}
                     className="min-w-0 flex-1 truncate text-left"
                     aria-current={
@@ -92,7 +96,8 @@ export const Sidebar = () => {
                     {conversation.title}
                   </button>
                   <button
-                    onClick={() => deleteConversation(conversation.id)}
+                    type="button"
+                    onClick={() => handleDelete(conversation)}
                     className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
                     aria-label={`「${conversation.title}」を削除`}
                   >

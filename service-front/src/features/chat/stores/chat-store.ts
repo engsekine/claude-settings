@@ -113,7 +113,7 @@ export const useChatStore = create<ChatStore>()(
           set({ streamingStatus: status });
         },
       }),
-      { name: 'chat-store' },
+      { name: 'chat-store', version: 1 },
     ),
     { name: 'ChatStore' },
   ),

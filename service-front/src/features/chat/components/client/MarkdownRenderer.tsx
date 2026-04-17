@@ -68,16 +68,25 @@ export const MarkdownRenderer = memo(({ content }: MarkdownRendererProps) => {
         td: ({ children }) => (
           <td className="border border-border px-3 py-2">{children}</td>
         ),
-        a: ({ href, children }) => (
-          <a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary underline underline-offset-2 hover:text-primary/80"
-          >
-            {children}
-          </a>
-        ),
+        a: ({ href, children }) => {
+          const isSafeHref =
+            href === undefined ||
+            href.startsWith('https://') ||
+            href.startsWith('http://') ||
+            href.startsWith('/') ||
+            href.startsWith('#');
+          if (!isSafeHref) return <span>{children}</span>;
+          return (
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline underline-offset-2 hover:text-primary/80"
+            >
+              {children}
+            </a>
+          );
+        },
       }}
     >
       {content}
