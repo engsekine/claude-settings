@@ -17,7 +17,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-    title: SITE_NAME,
+    title: {
+        template: `%s | ${SITE_NAME}`,
+        default: SITE_NAME,
+    },
     description: `${SITE_NAME} - AIチャットサービス`,
 };
 

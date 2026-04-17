@@ -52,6 +52,7 @@ export const useUserStore = create<UserStore>()(
       {
         name: "user-store",
         version: 1,
+        migrate: (persisted) => persisted as UserStore,
       },
     ),
     {

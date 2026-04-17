@@ -7,8 +7,37 @@ if (apiKey === '') {
 
 const genai = new GoogleGenAI({ apiKey });
 
+const VALID_ROLES = new Set(['user', 'assistant']);
+
+function isValidMessages(
+    value: unknown,
+): value is { role: 'user' | 'assistant'; content: string }[] {
+    if (!Array.isArray(value)) return false;
+    if (value.length === 0) return false;
+    return value.every(
+        (m: unknown) =>
+            typeof m === 'object' &&
+            m !== null &&
+            'role' in m &&
+            'content' in m &&
+            typeof (m as Record<string, unknown>)['content'] === 'string' &&
+            VALID_ROLES.has((m as Record<string, unknown>)['role'] as string),
+    );
+}
+
 export async function POST(request: Request) {
-    const { messages } = (await request.json()) as {
+    const body: unknown = await request.json().catch(() => null);
+
+    if (
+        body === null ||
+        typeof body !== 'object' ||
+        !('messages' in body) ||
+        !isValidMessages((body as Record<string, unknown>)['messages'])
+    ) {
+        return new Response('リクエスト形式が不正です', { status: 400 });
+    }
+
+    const { messages } = body as {
         messages: { role: 'user' | 'assistant'; content: string }[];
     };
 

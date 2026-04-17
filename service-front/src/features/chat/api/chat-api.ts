@@ -18,9 +18,12 @@ export async function* streamChatResponse(
 
   if (!response.ok) {
     const body = await response.text().catch(() => '');
-    throw new Error(
-      body !== '' ? body : `APIエラー: ${response.status} ${response.statusText}`,
-    );
+    const maxErrorLength = 200;
+    const errorMessage =
+      body !== '' && body.length <= maxErrorLength
+        ? body
+        : `APIエラー: ${response.status}`;
+    throw new Error(errorMessage);
   }
 
   const reader = response.body?.getReader();

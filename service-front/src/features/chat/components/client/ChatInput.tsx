@@ -69,6 +69,7 @@ export const ChatInput = ({ onSend, onStop, streamingStatus }: ChatInputProps) =
               'disabled:opacity-50',
             )}
             aria-label="チャットメッセージ入力"
+            aria-busy={isStreaming}
           />
 
           {isStreaming ? (

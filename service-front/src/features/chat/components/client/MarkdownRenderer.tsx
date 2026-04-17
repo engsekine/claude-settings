@@ -73,6 +73,7 @@ export const MarkdownRenderer = memo(({ content }: MarkdownRendererProps) => {
             href === undefined ||
             href.startsWith('https://') ||
             href.startsWith('http://') ||
+            href.startsWith('mailto:') ||
             href.startsWith('/') ||
             href.startsWith('#');
           if (!isSafeHref) return <span>{children}</span>;

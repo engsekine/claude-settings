@@ -14,8 +14,8 @@ interface MessageBubbleProps {
   isStreaming?: boolean;
 }
 
-export const MessageBubble = memo(
-  ({ message, isStreaming = false }: MessageBubbleProps) => {
+export const MessageBubble = memo<MessageBubbleProps>(
+  ({ message, isStreaming = false }) => {
     const isUser = message.role === 'user';
 
     return (
@@ -63,6 +63,10 @@ export const MessageBubble = memo(
       </div>
     );
   },
+  (prev, next) =>
+    prev.message.id === next.message.id &&
+    prev.message.content === next.message.content &&
+    prev.isStreaming === next.isStreaming,
 );
 
 MessageBubble.displayName = 'MessageBubble';
