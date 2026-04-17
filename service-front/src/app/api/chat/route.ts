@@ -9,10 +9,8 @@ const genai = new GoogleGenAI({ apiKey });
 
 const VALID_ROLES = new Set(['user', 'assistant']);
 
-function isValidMessages(
-    value: unknown,
-): value is { role: 'user' | 'assistant'; content: string }[] {
-    if (!Array.isArray(value)) return false;
+function isValidMessages(value: unknown): value is { role: 'user' | 'assistant'; content: string }[] {
+    if (Array.isArray(value) === false) return false;
     if (value.length === 0) return false;
     return value.every(
         (m: unknown) =>
@@ -59,7 +57,7 @@ export async function POST(request: Request) {
 
                 for await (const chunk of stream) {
                     const text = chunk.text ?? '';
-                    if (text) {
+                    if (text !== '') {
                         controller.enqueue(encoder.encode(text));
                     }
                 }

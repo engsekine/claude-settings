@@ -1,12 +1,12 @@
-import type { Metadata } from 'next';
-
 import { ChatView } from '@/features/chat';
+import { generatePageMetadata } from '@/shared/config/metadata';
 
-export const metadata: Metadata = {
-  title: 'チャット',
-  description: 'AIチャットアシスタント',
-};
+export const metadata = generatePageMetadata({
+    slug: '/chat',
+    title: 'チャット',
+    description: 'AIチャットアシスタント',
+});
 
 export default function ChatPage() {
-  return <ChatView />;
+    return <ChatView />;
 }
