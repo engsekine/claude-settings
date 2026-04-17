@@ -99,7 +99,7 @@ export const useChatStore = create<ChatStore>()(
               if (c.id !== conversationId) return c;
               const messages = [...c.messages];
               const lastMessage = messages[messages.length - 1];
-              if (!lastMessage || lastMessage.role !== 'assistant') return c;
+              if (lastMessage?.role !== 'assistant') return c;
               messages[messages.length - 1] = {
                 ...lastMessage,
                 content: lastMessage.content + chunk,

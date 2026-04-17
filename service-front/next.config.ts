@@ -20,7 +20,7 @@ const nextConfig = {
     },
 
     // セキュリティヘッダー
-    async headers() {
+    headers() {
         return [
             {
                 source: '/:path*',

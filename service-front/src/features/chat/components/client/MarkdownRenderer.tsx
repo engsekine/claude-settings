@@ -19,7 +19,7 @@ export const MarkdownRenderer = memo(({ content }: MarkdownRendererProps) => {
           </pre>
         ),
         code: ({ children, className }) => {
-          const isInline = !className;
+          const isInline = className === undefined;
           if (isInline) {
             return (
               <code className="rounded bg-muted px-1.5 py-0.5 text-sm">

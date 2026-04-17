@@ -1,7 +1,7 @@
 'use client';
 
 import { ArrowUp, Square } from 'lucide-react';
-import { useCallback, useRef, useState, type KeyboardEvent } from 'react';
+import { type KeyboardEvent, useCallback, useRef, useState } from 'react';
 
 import { Button } from '@/shared/components/ui/button';
 import { cn } from '@/shared/lib/utils';
@@ -84,7 +84,7 @@ export const ChatInput = ({ onSend, onStop, streamingStatus }: ChatInputProps) =
             <Button
               variant="default"
               size="icon-sm"
-              onClick={handleSend}
+              onClick={() => void handleSend()}
               disabled={!canSend}
               aria-label="メッセージを送信"
             >

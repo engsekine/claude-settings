@@ -1,8 +1,11 @@
 import { GoogleGenAI } from '@google/genai';
 
-const genai = new GoogleGenAI({
-    apiKey: process.env['GEMINI_API_KEY'] ?? '',
-});
+const apiKey = process.env['GEMINI_API_KEY'] ?? '';
+if (apiKey === '') {
+    throw new Error('GEMINI_API_KEY 環境変数が設定されていません');
+}
+
+const genai = new GoogleGenAI({ apiKey });
 
 export async function POST(request: Request) {
     const { messages } = (await request.json()) as {

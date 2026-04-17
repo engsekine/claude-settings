@@ -41,10 +41,7 @@ export const useChat = () => {
       if (!trimmed) return;
 
       /** 会話がなければ新規作成 */
-      let conversationId = activeConversationId;
-      if (!conversationId) {
-        conversationId = createConversation();
-      }
+      const conversationId = activeConversationId ?? createConversation();
 
       /** ユーザーメッセージを追加 */
       const userMessage: Message = {
@@ -59,7 +56,7 @@ export const useChat = () => {
       const conversation = useChatStore
         .getState()
         .conversations.find((c) => c.id === conversationId);
-      if (conversation && conversation.messages.length === 1) {
+      if (conversation?.messages.length === 1) {
         updateConversationTitle(conversationId, generateTitle(trimmed));
       }
 

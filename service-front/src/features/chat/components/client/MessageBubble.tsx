@@ -6,6 +6,7 @@ import { memo } from 'react';
 import { cn } from '@/shared/lib/utils';
 
 import type { Message } from '../../types';
+
 import { MarkdownRenderer } from './MarkdownRenderer';
 
 interface MessageBubbleProps {

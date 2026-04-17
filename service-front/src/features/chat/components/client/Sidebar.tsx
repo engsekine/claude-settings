@@ -69,7 +69,7 @@ export const Sidebar = () => {
               まだ会話がありません
             </p>
           ) : (
-            <ul role="list" className="space-y-1">
+            <ul className="space-y-1">
               {conversations.map((conversation) => (
                 <li
                   key={conversation.id}
