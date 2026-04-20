@@ -6,10 +6,10 @@ import { PAGE_DATA as TERMS_PAGE_DATA } from '@/features/terms';
 import type { PageMetadata } from '@/shared/config/metadata';
 import { SITE_URL } from '@/shared/constants/site';
 
-type SitemapEntry = {
+interface SitemapEntry {
     url: string;
     lastModified: string;
-};
+}
 
 const HOME_SITEMAP_DATA: SitemapEntry[] = [
     {
