@@ -1,89 +1,78 @@
 {
-    "effortLevel": "high",
-    "mcpServers": {
-        "context7": {
-            "command": "npx",
-            "args": ["-y", "@context7/mcp-server"]
-        },
-        "next-devtools": {
-            "command": "npx",
-            "args": ["-y", "next-devtools-mcp"]
-        },
-        "figma": {
-            "command": "npx",
-            "args": ["-y", "@modelcontextprotocol/server-figma"]
-        },
-        "storybook": {
-            "command": "npx",
-            "args": ["-y", "@modelcontextprotocol/server-storybook"]
-        },
-        "drawio": {
-            "command": "npx",
-            "args": ["-y", "@drawio/mcp"]
-        }
+  "effortLevel": "high",
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@context7/mcp-server"]
     },
-    "permissions": {
-        "allow": ["Bash(*)", "Edit(*)", "Write(*)", "Read(*)", "WebFetch(*)"],
-        "deny": [
-            "Bash(rm -rf /*)",
-            "Bash(rm -rf ~)",
-            "Bash(rm -rf .)",
-            "Bash(curl * | bash)",
-            "Bash(wget * | bash)",
-            "Bash(curl * | sh)",
-            "Bash(wget * | sh)",
-            "Bash(sudo rm *)",
-            "Bash(> /etc/passwd)",
-            "Bash(> /etc/hosts)",
-            "Bash(git push --force)",
-            "Bash(git push -f)",
-            "Bash(git reset --hard HEAD~*)",
-            "Bash(npx * --registry *)",
-            "Bash(npm * --registry *)",
-            "Read(.env)",
-            "Read(.env.*)",
-            "Read(secrets/**)",
-            "Read(**/*.pem)",
-            "Read(**/*.key)",
-            "Write(.env)",
-            "Write(.env.*)",
-            "Write(/etc/*)",
-            "Write(~/.ssh/*)"
-        ]
+    "next-devtools": {
+      "command": "npx",
+      "args": ["-y", "next-devtools-mcp"]
     },
-    "hooks": {
-        "UserPromptSubmit": [
-            {
-                "matcher": "",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "bash .claude/hooks/log.sh"
-                    }
-                ]
-            }
-        ],
-        "PostToolUse": [
-            {
-                "matcher": "",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "bash .claude/hooks/post-tool-use.sh"
-                    }
-                ]
-            }
-        ],
-        "Stop": [
-            {
-                "matcher": "",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "bash .claude/hooks/stop.sh"
-                    }
-                ]
-            }
-        ]
+    "figma": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-figma"]
+    },
+    "storybook": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-storybook"]
+    },
+    "drawio": {
+      "command": "npx",
+      "args": ["-y", "@drawio/mcp"]
     }
+  },
+  "permissions": {
+    "allow": ["Bash(*)", "Edit(*)", "Write(*)", "Read(*)", "WebFetch(*)"],
+    "deny": [
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf .)",
+      "Bash(curl * | bash)",
+      "Bash(wget * | bash)",
+      "Bash(curl * | sh)",
+      "Bash(wget * | sh)",
+      "Bash(sudo rm *)",
+      "Bash(> /etc/passwd)",
+      "Bash(> /etc/hosts)",
+      "Bash(git push --force)",
+      "Bash(git push -f)",
+      "Bash(git reset --hard HEAD~*)",
+      "Bash(npx * --registry *)",
+      "Bash(npm * --registry *)",
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(secrets/**)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Write(.env)",
+      "Write(.env.*)",
+      "Write(/etc/*)",
+      "Write(~/.ssh/*)"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/log.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/stop.sh"
+          }
+        ]
+      }
+    ]
+  }
 }
