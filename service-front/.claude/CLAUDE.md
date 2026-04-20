@@ -18,3 +18,4 @@
 - Client Components は `'use client'` で明示的に指定する
 - データフェッチは Server Components で行う
 - ページ作成時は必ず `generatePageMetadata`（`@/shared/config/metadata`）を使用して `metadata` をエクスポートする
+- ページには基本的に `Header` と `Footer`（`@/shared/components/layout`）を含める
