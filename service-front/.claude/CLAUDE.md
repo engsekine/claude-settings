@@ -17,3 +17,4 @@
 - Server Components をデフォルトとする
 - Client Components は `'use client'` で明示的に指定する
 - データフェッチは Server Components で行う
+- ページ作成時は必ず `generatePageMetadata`（`@/shared/config/metadata`）を使用して `metadata` をエクスポートする

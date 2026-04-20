@@ -63,3 +63,4 @@
 | `/summary` | PRディスクリプションを生成する |
 | `/suggest-commit` | 変更差分からコミット名を提案する |
 | `/reply-review <コメント>` | レビューコメントへの返信ドラフトを生成する |
+| `/empirical-prompt-tuning` | プロンプトやskillを実行・評価し反復改善する |
