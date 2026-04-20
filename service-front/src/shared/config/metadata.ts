@@ -11,7 +11,7 @@ const OG_IMAGE = {
 } as const;
 
 /** ルートレイアウトで使用するサイト全体の metadata */
-export const siteMetadata: Metadata = {
+export const SITE_METADATA: Metadata = {
     title: {
         template: `%s | ${SITE_NAME}`,
         default: SITE_NAME,

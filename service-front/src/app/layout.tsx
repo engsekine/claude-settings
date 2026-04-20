@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { AuthNav } from '@/features/auth';
 import { Footer } from '@/shared/components/layout/Footer';
 import { Header } from '@/shared/components/layout/Header';
-import { siteMetadata } from '@/shared/config/metadata';
+import { SITE_METADATA } from '@/shared/config/metadata';
 
 import './globals.css';
 import { Providers } from './providers';
@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
     subsets: ['latin'],
 });
 
-export const metadata = siteMetadata;
+export const metadata = SITE_METADATA;
 
 export default function RootLayout({
     children,
