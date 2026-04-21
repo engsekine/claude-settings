@@ -9,7 +9,7 @@ user-invocable: true
 ## 使い方
 
 ```
-/check:diff-impact [ベースブランチ]
+/check-diff-impact [ベースブランチ]
 ```
 
 ベースブランチ省略時は以下の順で自動検出:

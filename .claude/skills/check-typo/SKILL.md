@@ -9,7 +9,7 @@ user-invocable: true
 ## 使い方
 
 ```
-/check:typo
+/check-typo
 ```
 
 ## 手順
