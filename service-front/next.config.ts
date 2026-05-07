@@ -50,6 +50,8 @@ const nextConfig = {
         ];
     },
 
+    transpilePackages: ['@repo/supabase'],
+
     experimental: {
         typedRoutes: true,
     },

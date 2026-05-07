@@ -1,0 +1,9 @@
+{
+    "name": "claude-settings",
+    "private": true,
+    "workspaces": [
+        "packages/*",
+        "service-front",
+        "admin-front"
+    ]
+}
