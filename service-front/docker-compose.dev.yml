@@ -3,8 +3,8 @@ services:
         container_name: service-front
 
         build:
-            context: .
-            dockerfile: docker/node/Dockerfile
+            context: ../
+            dockerfile: service-front/docker/node/Dockerfile
             target: development
             args:
                 # 公開情報のみビルド時に渡す（NEXT_PUBLIC_*）
@@ -14,10 +14,13 @@ services:
             - "3000:3000"
 
         volumes:
-            # ソースコードをマウント
-            - ./:/app
-            # node_modulesをホストから分離（パフォーマンス向上）
+            # リポジトリルートをマウント（workspace 構造を維持）
+            - ../:/app
+            # node_modules はコンテナ側を使う（ホスト OS との差異を防ぐ）
             - /app/node_modules
+            - /app/service-front/node_modules
+
+        working_dir: /app/service-front
 
         environment:
             # 開発モード
@@ -26,8 +29,18 @@ services:
             # 公開情報
             - NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
 
+            # コンテナ内からホストの Supabase に接続するための URL（host.docker.internal）。
+            # ブラウザ側は NEXT_PUBLIC_SUPABASE_URL（localhost）を使い、
+            # Server Components / Server Actions / middleware ではこちらを優先する。
+            - SUPABASE_INTERNAL_URL=http://host.docker.internal:54321
+
             # SSL証明書検証（自己署名証明書を使う場合のみ有効化）
             # - NODE_EXTRA_CA_CERTS=/app/certs/ca-cert.pem
+
+        # Linux でも host.docker.internal を host-gateway で解決可能にする
+        # （Docker Desktop の Mac/Windows では既定で動作するが明示することで Linux にも対応）
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
 
         command: sh -c "npm run dev:https"
 

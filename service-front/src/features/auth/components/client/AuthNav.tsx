@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect } from 'react';
 
-import { createBrowserClient } from '@/shared/lib/supabase';
+import { createClient } from '@/shared/lib/supabase/browser';
 import { useUserStore } from '@/shared/stores/user-store';
 
 export const AuthNav = () => {
@@ -11,7 +11,7 @@ export const AuthNav = () => {
 
     /** Supabase Auth の状態変化を監視してストアに反映 */
     useEffect(() => {
-        const supabase = createBrowserClient();
+        const supabase = createClient();
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             (_event, session) => {
@@ -27,7 +27,7 @@ export const AuthNav = () => {
     }, [setUser, clearUser]);
 
     const handleSignOut = async () => {
-        const supabase = createBrowserClient();
+        const supabase = createClient();
         await supabase.auth.signOut();
     };
 

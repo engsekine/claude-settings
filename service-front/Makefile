@@ -103,8 +103,11 @@ dev-https:
 	$(COMPOSE) up --build -d
 
 ## プロダクションビルド
+## docker-compose.dev.yml で NODE_ENV=development を設定しているため、
+## ビルド時のみ NODE_ENV=production で上書きする（Next.js の非標準 NODE_ENV 警告と
+## ReactQueryDevtools の production バンドルへの混入を防ぐ）。
 build:
-	$(COMPOSE) exec $(SERVICE) npm run build
+	$(COMPOSE) exec -e NODE_ENV=production $(SERVICE) npm run build
 
 ## テスト実行
 test:

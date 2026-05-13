@@ -1,1 +1,1 @@
-export { createBrowserClient as createClient } from '@repo/supabase';
+export { createClient } from '@repo/supabase/browser';

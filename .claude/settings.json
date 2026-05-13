@@ -9,10 +9,6 @@
             "command": "npx",
             "args": ["-y", "next-devtools-mcp"]
         },
-        "figma": {
-            "command": "npx",
-            "args": ["-y", "@modelcontextprotocol/server-figma"]
-        },
         "storybook": {
             "command": "npx",
             "args": ["-y", "@modelcontextprotocol/server-storybook"]

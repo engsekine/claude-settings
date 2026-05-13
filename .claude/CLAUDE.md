@@ -37,6 +37,10 @@
 - データフェッチは Server Components で行う
 - 動的ルーティング、ミドルウェア、APIルートの実装時も公式ドキュメントに従う
 
+## プロジェクト仕様
+
+仕様書は `docs/` 配下。実装着手前に該当機能の `requirements.md` / `design.md` / `tasks.md` を必ず確認すること。詳細な運用ルールは [docs/README.md](../docs/README.md) を参照。
+
 ## コード規約
 
 プロジェクトのコーディング規約は `rules/` を参照してください。
@@ -48,6 +52,7 @@
 | `rules/html.md` | HTML コーディング規約 |
 | `rules/css.md` | CSS コーディング規約 |
 | `rules/php.md` | PHP コーディング規約 |
+| `rules/sql.md` | SQL コーディング規約 |
 | `rules/accessibility.md` | アクセシビリティ コーディング規約（WCAG 2.1 AA準拠） |
 | `rules/readable-code.md` | リーダブルコード - 命名規則と要点整理 |
 

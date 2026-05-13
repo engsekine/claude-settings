@@ -1,1 +1,1 @@
-export { updateSession } from '@repo/supabase';
+export { updateSession } from '@repo/supabase/middleware';
