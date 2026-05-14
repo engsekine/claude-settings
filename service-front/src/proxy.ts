@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { SITE_URL } from '@/shared/constants/site';
 import { updateSession } from '@/shared/lib/supabase/middleware';
 
 /** 認証必須のパス（プレフィックス一致） */
@@ -16,11 +17,11 @@ export const proxy = async (request: NextRequest) => {
     const isAuthRoute = AUTH_ROUTES.includes(pathname);
 
     if (isAppRoute && !user) {
-        return NextResponse.redirect(new URL('/login', request.url));
+        return NextResponse.redirect(new URL('/login', SITE_URL));
     }
 
     if (isAuthRoute && user) {
-        return NextResponse.redirect(new URL('/dives', request.url));
+        return NextResponse.redirect(new URL('/dives', SITE_URL));
     }
 
     return response;
