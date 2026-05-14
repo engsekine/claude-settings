@@ -2,11 +2,9 @@ import type { NextConfig } from 'next';
 
 const nextConfig = {
     reactStrictMode: true,
+    typedRoutes: true,
     typescript: {
         ignoreBuildErrors: false,
-    },
-    eslint: {
-        ignoreDuringBuilds: false,
     },
     images: {
         formats: ['image/avif', 'image/webp'],
@@ -50,9 +48,7 @@ const nextConfig = {
         ];
     },
 
-    experimental: {
-        typedRoutes: true,
-    },
+    transpilePackages: ['@repo/supabase'],
 } as NextConfig;
 
 export default nextConfig;

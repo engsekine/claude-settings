@@ -1,0 +1,64 @@
+# ========================================
+# Build context = repository root
+# 各 workspace の build 出力・ローカル成果物を除外
+# ========================================
+
+# Node.js / npm
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker 自身（イメージに含める必要なし）
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# 環境変数（コンテナの env / Vercel に持たせる）
+.env
+.env.local
+.env.*.local
+.env.development
+.env.development.local
+.env.production
+.env.production.local
+
+# Next.js のビルドキャッシュ・出力
+**/.next
+**/.next/cache
+**/.next/static
+
+# テスト・カバレッジ
+**/coverage
+**/__mocks__
+**/__tests__
+
+# Storybook
+**/storybook-static
+
+# Git
+.git
+.gitignore
+.git/info/exclude
+
+# Claude / エディタ・IDE 設定
+.claude
+.vscode
+.idea
+.devcontainer
+.DS_Store
+
+# Supabase ローカル状態
+supabase/.branches
+supabase/.temp
+
+# 一時ファイル
+*.swp
+*.log
+*.tsbuildinfo
+
+# ドキュメント・TODO（ランタイムに不要）
+docs
+todo.md
+readme.md
+**/README.md
