@@ -78,7 +78,12 @@ export const AuthNav = ({ initialUser }: AuthNavProps) => {
 
     return (
         <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">{user?.email}</span>
+            <Link
+                href="/settings/profile"
+                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+                {user?.email}
+            </Link>
             <button
                 type="button"
                 onClick={handleSignOut}

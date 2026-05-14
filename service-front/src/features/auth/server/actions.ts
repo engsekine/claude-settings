@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 
+import type { Gender } from '@/shared/constants/gender';
 import { createClient } from '@/shared/lib/supabase/server';
 
 export interface AuthActionResult {
@@ -11,6 +12,19 @@ export interface AuthActionResult {
 export interface SignUpResult extends AuthActionResult {
     /** 確認メールを送信した場合 true（ユーザーはまだログインしていない） */
     needsEmailConfirmation?: boolean;
+}
+
+export interface SignUpInput {
+    email: string;
+    password: string;
+    lastName: string;
+    firstName: string;
+    lastNameRomaji: string;
+    firstNameRomaji: string;
+    nickname: string;
+    /** ISO 8601 date string (YYYY-MM-DD) */
+    birthOn: string;
+    gender: Gender;
 }
 
 export const signIn = async (email: string, password: string): Promise<AuthActionResult> => {
@@ -25,16 +39,29 @@ export const signIn = async (email: string, password: string): Promise<AuthActio
     redirect('/dives');
 };
 
-export const signUp = async (email: string, password: string): Promise<SignUpResult> => {
+export const signUp = async (input: SignUpInput): Promise<SignUpResult> => {
     const supabase = await createClient();
 
     const siteUrl = process.env['NEXT_PUBLIC_SITE_URL'] ?? 'https://localhost:3000';
 
     const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: input.email,
+        password: input.password,
         options: {
             emailRedirectTo: `${siteUrl}/api/auth/callback?next=/dives`,
+            /**
+             * raw_user_meta_data に格納され、handle_new_user トリガーが
+             * user_details への INSERT で参照する。
+             */
+            data: {
+                last_name: input.lastName,
+                first_name: input.firstName,
+                last_name_romaji: input.lastNameRomaji,
+                first_name_romaji: input.firstNameRomaji,
+                nickname: input.nickname,
+                birth_on: input.birthOn,
+                gender: input.gender,
+            },
         },
     });
 

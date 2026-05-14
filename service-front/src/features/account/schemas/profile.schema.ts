@@ -13,7 +13,7 @@ const isBirthOnValid = (value: string | undefined): boolean => {
     return date >= new Date('1900-01-01') && date <= new Date();
 };
 
-export const signupSchema = yup.object({
+export const profileSchema = yup.object({
     lastName: yup
         .string()
         .trim()
@@ -53,18 +53,6 @@ export const signupSchema = yup.object({
         .mixed<Gender>()
         .oneOf([...GENDER_VALUES], '性別を選択してください')
         .required('性別を選択してください'),
-    email: yup
-        .string()
-        .email('正しいメールアドレスを入力してください')
-        .required('メールアドレスを入力してください'),
-    password: yup
-        .string()
-        .min(6, 'パスワードは6文字以上で入力してください')
-        .required('パスワードを入力してください'),
-    passwordConfirm: yup
-        .string()
-        .oneOf([yup.ref('password')], 'パスワードが一致しません')
-        .required('確認用パスワードを入力してください'),
 });
 
-export type SignupFormValues = yup.InferType<typeof signupSchema>;
+export type ProfileFormValues = yup.InferType<typeof profileSchema>;
