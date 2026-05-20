@@ -1,9 +1,9 @@
 'use client';
 
+import { cn } from '@repo/ui/lib/utils';
 import { Bot, User } from 'lucide-react';
 import { memo } from 'react';
 
-import { cn } from '@/shared/lib/utils';
 
 import type { Message } from '../../types';
 

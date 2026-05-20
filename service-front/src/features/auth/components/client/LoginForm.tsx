@@ -1,14 +1,14 @@
 'use client';
 
 import { yupResolver } from '@hookform/resolvers/yup';
+import { Button } from '@repo/ui/components/button';
+import { Input } from '@repo/ui/components/input';
 import Link from 'next/link';
 import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { type LoginFormValues, loginSchema } from '@/features/auth/schemas/login.schema';
 import { signIn } from '@/features/auth/server/actions';
-import { loginSchema, type LoginFormValues } from '@/features/auth/schemas/login.schema';
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
 
 export const LoginForm = () => {
     const [isPending, startTransition] = useTransition();

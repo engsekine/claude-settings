@@ -1,0 +1,29 @@
+{
+    "name": "@repo/ui",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "exports": {
+        "./components/*": "./src/components/*.tsx",
+        "./lib/*": "./src/lib/*.ts",
+        "./styles/*.css": {
+            "style": "./src/styles/*.css",
+            "default": "./src/styles/*.css"
+        }
+    },
+    "dependencies": {
+        "class-variance-authority": "^0.7.1",
+        "clsx": "^2.1.1",
+        "lucide-react": "^1.7.0",
+        "tailwind-merge": "^3.5.0"
+    },
+    "peerDependencies": {
+        "react": ">=19",
+        "react-dom": ">=19"
+    },
+    "devDependencies": {
+        "@types/react": "19.0.2",
+        "@types/react-dom": "19.0.2",
+        "typescript": "^5.7.2"
+    }
+}

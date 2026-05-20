@@ -1,10 +1,10 @@
 'use client';
 
+import { Button } from '@repo/ui/components/button';
+import { cn } from '@repo/ui/lib/utils';
 import { ArrowUp, Square } from 'lucide-react';
 import { type KeyboardEvent, useCallback, useRef, useState } from 'react';
 
-import { Button } from '@/shared/components/ui/button';
-import { cn } from '@/shared/lib/utils';
 
 import type { StreamingStatus } from '../../types';
 
