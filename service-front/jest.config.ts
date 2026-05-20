@@ -14,7 +14,7 @@ const customJestConfig: Config = {
         '^@/(.*)$': '<rootDir>/src/$1',
         '^@mocks/(.*)$': '<rootDir>/__mocks__/$1',
         // 静的ファイルのモック
-        '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+        '\\.(css|less|scss|sass)$': '<rootDir>/__mocks__/cssModuleMock.ts',
         '\\.(jpg|jpeg|png|gif|svg|webp|avif)$': '<rootDir>/__mocks__/fileMock.ts',
     },
     testPathIgnorePatterns: ['/node_modules/', '/.next/', '/playwright/'],
