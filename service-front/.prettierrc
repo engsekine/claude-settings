@@ -8,5 +8,6 @@
     "arrowParens": "always",
     "printWidth": 120,
     "bracketSpacing": true,
-    "plugins": ["prettier-plugin-organize-imports"]
+    "plugins": ["prettier-plugin-organize-imports"],
+    "tailwindFunctions": ["cn", "cva", "clsx", "twMerge"]
 }
