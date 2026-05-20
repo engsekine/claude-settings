@@ -27,11 +27,13 @@ export default async function RootLayout({
     children: React.ReactNode;
 }>) {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
 
     return (
         <html lang="ja" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-            <body className="min-h-full flex flex-col">
+            <body className="flex min-h-full flex-col">
                 <Providers>
                     <Header actions={<AuthNav initialUser={user} />} />
                     <main className="flex flex-1 bg-background">{children}</main>

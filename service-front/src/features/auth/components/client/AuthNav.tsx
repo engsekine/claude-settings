@@ -70,7 +70,7 @@ export const AuthNav = ({ initialUser }: AuthNavProps) => {
 
     if (!isAuthenticated) {
         return (
-            <Link href="/login" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+            <Link href="/login" className="text-muted-foreground text-sm transition-colors hover:text-foreground">
                 ログイン
             </Link>
         );
@@ -80,7 +80,7 @@ export const AuthNav = ({ initialUser }: AuthNavProps) => {
         <div className="flex items-center gap-4">
             <Link
                 href="/settings/profile"
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                className="text-muted-foreground text-sm transition-colors hover:text-foreground"
             >
                 {user?.email}
             </Link>
@@ -88,7 +88,7 @@ export const AuthNav = ({ initialUser }: AuthNavProps) => {
                 type="button"
                 onClick={handleSignOut}
                 disabled={isPending}
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+                className="text-muted-foreground text-sm transition-colors hover:text-foreground disabled:opacity-50"
             >
                 {isPending ? 'ログアウト中...' : 'ログアウト'}
             </button>

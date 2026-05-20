@@ -13,7 +13,7 @@ export const metadata = generatePageMetadata(
 export default function LoginPage() {
     return (
         <div className="mx-auto flex w-full max-w-sm flex-col gap-6 px-4 py-12">
-            <h1 className="text-2xl font-semibold">ログイン</h1>
+            <h1 className="font-semibold text-2xl">ログイン</h1>
             <LoginForm />
         </div>
     );

@@ -34,7 +34,7 @@ export const LoginForm = () => {
     return (
         <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
             <div className="flex flex-col gap-1">
-                <label htmlFor="email" className="text-sm font-medium">
+                <label htmlFor="email" className="font-medium text-sm">
                     メールアドレス
                 </label>
                 <Input
@@ -47,14 +47,14 @@ export const LoginForm = () => {
                     {...register('email')}
                 />
                 {errors.email && (
-                    <span id="email-error" role="alert" className="text-sm text-red-600">
+                    <span id="email-error" role="alert" className="text-red-600 text-sm">
                         {errors.email.message}
                     </span>
                 )}
             </div>
 
             <div className="flex flex-col gap-1">
-                <label htmlFor="password" className="text-sm font-medium">
+                <label htmlFor="password" className="font-medium text-sm">
                     パスワード
                 </label>
                 <Input
@@ -67,14 +67,14 @@ export const LoginForm = () => {
                     {...register('password')}
                 />
                 {errors.password && (
-                    <span id="password-error" role="alert" className="text-sm text-red-600">
+                    <span id="password-error" role="alert" className="text-red-600 text-sm">
                         {errors.password.message}
                     </span>
                 )}
             </div>
 
             {errors.root && (
-                <div role="alert" className="text-sm text-red-600">
+                <div role="alert" className="text-red-600 text-sm">
                     {errors.root.message}
                 </div>
             )}
@@ -83,7 +83,7 @@ export const LoginForm = () => {
                 {isPending ? 'ログイン中...' : 'ログイン'}
             </Button>
 
-            <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+            <div className="flex flex-col gap-2 text-muted-foreground text-sm">
                 <Link href="/signup" className="underline hover:text-foreground">
                     新規登録はこちら
                 </Link>

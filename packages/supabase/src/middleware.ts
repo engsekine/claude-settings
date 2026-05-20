@@ -8,8 +8,8 @@ export const updateSession = async (request: NextRequest) => {
     let supabaseResponse = NextResponse.next({ request });
 
     const supabase = createServerClient<Database>(
-        process.env['SUPABASE_INTERNAL_URL'] ?? process.env['NEXT_PUBLIC_SUPABASE_URL']!,
-        process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']!,
+        process.env.SUPABASE_INTERNAL_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
             cookies: {
                 getAll: () => request.cookies.getAll(),
@@ -27,7 +27,9 @@ export const updateSession = async (request: NextRequest) => {
     );
 
     /** セッションを更新（期限切れトークンのリフレッシュ） */
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
 
     return { response: supabaseResponse, user };
 };

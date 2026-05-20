@@ -13,7 +13,7 @@ export const metadata = generatePageMetadata(
 export default function SignupPage() {
     return (
         <div className="mx-auto flex w-full max-w-sm flex-col gap-6 px-4 py-12">
-            <h1 className="text-2xl font-semibold">新規登録</h1>
+            <h1 className="font-semibold text-2xl">新規登録</h1>
             <SignupForm />
         </div>
     );

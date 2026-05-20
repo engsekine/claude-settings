@@ -13,8 +13,8 @@ export const metadata = generatePageMetadata(
 export default function ResetPasswordPage() {
     return (
         <div className="mx-auto flex w-full max-w-sm flex-col gap-6 px-4 py-12">
-            <h1 className="text-2xl font-semibold">パスワードリセット</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="font-semibold text-2xl">パスワードリセット</h1>
+            <p className="text-muted-foreground text-sm">
                 登録済みのメールアドレスを入力してください。リセット用のリンクをお送りします。
             </p>
             <ResetPasswordForm />

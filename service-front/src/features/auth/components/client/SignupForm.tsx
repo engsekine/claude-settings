@@ -51,16 +51,16 @@ export const SignupForm = () => {
     if (sentTo !== null) {
         return (
             <div className="flex flex-col gap-4" role="status" aria-live="polite">
-                <h2 className="text-lg font-semibold">確認メールを送信しました</h2>
-                <p className="text-sm text-muted-foreground">
+                <h2 className="font-semibold text-lg">確認メールを送信しました</h2>
+                <p className="text-muted-foreground text-sm">
                     <span className="font-medium text-foreground">{sentTo}</span> 宛に確認メールを送信しました。
                     <br />
                     メール内のリンクをクリックして登録を完了してください。
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                     メールが届かない場合は、迷惑メールフォルダもご確認ください。
                 </p>
-                <Link href="/login" className="text-sm text-muted-foreground underline hover:text-foreground">
+                <Link href="/login" className="text-muted-foreground text-sm underline hover:text-foreground">
                     ログイン画面に戻る
                 </Link>
             </div>
@@ -77,7 +77,7 @@ export const SignupForm = () => {
         >
             <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                    <label htmlFor="lastName" className="text-sm font-medium">
+                    <label htmlFor="lastName" className="font-medium text-sm">
                         姓
                     </label>
                     <Input
@@ -90,14 +90,14 @@ export const SignupForm = () => {
                         {...register('lastName')}
                     />
                     {errors.lastName && (
-                        <span id="lastName-error" role="alert" className="text-sm text-red-600">
+                        <span id="lastName-error" role="alert" className="text-red-600 text-sm">
                             {errors.lastName.message}
                         </span>
                     )}
                 </div>
 
                 <div className="flex flex-col gap-1">
-                    <label htmlFor="firstName" className="text-sm font-medium">
+                    <label htmlFor="firstName" className="font-medium text-sm">
                         名
                     </label>
                     <Input
@@ -110,7 +110,7 @@ export const SignupForm = () => {
                         {...register('firstName')}
                     />
                     {errors.firstName && (
-                        <span id="firstName-error" role="alert" className="text-sm text-red-600">
+                        <span id="firstName-error" role="alert" className="text-red-600 text-sm">
                             {errors.firstName.message}
                         </span>
                     )}
@@ -119,7 +119,7 @@ export const SignupForm = () => {
 
             <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                    <label htmlFor="lastNameRomaji" className="text-sm font-medium">
+                    <label htmlFor="lastNameRomaji" className="font-medium text-sm">
                         姓（ローマ字）
                     </label>
                     <Input
@@ -133,14 +133,14 @@ export const SignupForm = () => {
                         {...register('lastNameRomaji')}
                     />
                     {errors.lastNameRomaji && (
-                        <span id="lastNameRomaji-error" role="alert" className="text-sm text-red-600">
+                        <span id="lastNameRomaji-error" role="alert" className="text-red-600 text-sm">
                             {errors.lastNameRomaji.message}
                         </span>
                     )}
                 </div>
 
                 <div className="flex flex-col gap-1">
-                    <label htmlFor="firstNameRomaji" className="text-sm font-medium">
+                    <label htmlFor="firstNameRomaji" className="font-medium text-sm">
                         名（ローマ字）
                     </label>
                     <Input
@@ -154,7 +154,7 @@ export const SignupForm = () => {
                         {...register('firstNameRomaji')}
                     />
                     {errors.firstNameRomaji && (
-                        <span id="firstNameRomaji-error" role="alert" className="text-sm text-red-600">
+                        <span id="firstNameRomaji-error" role="alert" className="text-red-600 text-sm">
                             {errors.firstNameRomaji.message}
                         </span>
                     )}
@@ -162,7 +162,7 @@ export const SignupForm = () => {
             </div>
 
             <div className="flex flex-col gap-1">
-                <label htmlFor="nickname" className="text-sm font-medium">
+                <label htmlFor="nickname" className="font-medium text-sm">
                     ニックネーム
                 </label>
                 <Input
@@ -175,14 +175,14 @@ export const SignupForm = () => {
                     {...register('nickname')}
                 />
                 {errors.nickname && (
-                    <span id="nickname-error" role="alert" className="text-sm text-red-600">
+                    <span id="nickname-error" role="alert" className="text-red-600 text-sm">
                         {errors.nickname.message}
                     </span>
                 )}
             </div>
 
             <div className="flex flex-col gap-1">
-                <label htmlFor="birthOn" className="text-sm font-medium">
+                <label htmlFor="birthOn" className="font-medium text-sm">
                     生年月日
                 </label>
                 <Input
@@ -195,14 +195,14 @@ export const SignupForm = () => {
                     {...register('birthOn')}
                 />
                 {errors.birthOn && (
-                    <span id="birthOn-error" role="alert" className="text-sm text-red-600">
+                    <span id="birthOn-error" role="alert" className="text-red-600 text-sm">
                         {errors.birthOn.message}
                     </span>
                 )}
             </div>
 
             <fieldset className="flex flex-col gap-1">
-                <legend className="text-sm font-medium">性別</legend>
+                <legend className="font-medium text-sm">性別</legend>
                 <div
                     role="radiogroup"
                     aria-required="true"
@@ -218,14 +218,14 @@ export const SignupForm = () => {
                     ))}
                 </div>
                 {errors.gender && (
-                    <span id="gender-error" role="alert" className="text-sm text-red-600">
+                    <span id="gender-error" role="alert" className="text-red-600 text-sm">
                         {errors.gender.message}
                     </span>
                 )}
             </fieldset>
 
             <div className="flex flex-col gap-1">
-                <label htmlFor="email" className="text-sm font-medium">
+                <label htmlFor="email" className="font-medium text-sm">
                     メールアドレス
                 </label>
                 <Input
@@ -238,14 +238,14 @@ export const SignupForm = () => {
                     {...register('email')}
                 />
                 {errors.email && (
-                    <span id="email-error" role="alert" className="text-sm text-red-600">
+                    <span id="email-error" role="alert" className="text-red-600 text-sm">
                         {errors.email.message}
                     </span>
                 )}
             </div>
 
             <div className="flex flex-col gap-1">
-                <label htmlFor="password" className="text-sm font-medium">
+                <label htmlFor="password" className="font-medium text-sm">
                     パスワード（6文字以上）
                 </label>
                 <Input
@@ -258,14 +258,14 @@ export const SignupForm = () => {
                     {...register('password')}
                 />
                 {errors.password && (
-                    <span id="password-error" role="alert" className="text-sm text-red-600">
+                    <span id="password-error" role="alert" className="text-red-600 text-sm">
                         {errors.password.message}
                     </span>
                 )}
             </div>
 
             <div className="flex flex-col gap-1">
-                <label htmlFor="passwordConfirm" className="text-sm font-medium">
+                <label htmlFor="passwordConfirm" className="font-medium text-sm">
                     パスワード（確認）
                 </label>
                 <Input
@@ -278,14 +278,14 @@ export const SignupForm = () => {
                     {...register('passwordConfirm')}
                 />
                 {errors.passwordConfirm && (
-                    <span id="passwordConfirm-error" role="alert" className="text-sm text-red-600">
+                    <span id="passwordConfirm-error" role="alert" className="text-red-600 text-sm">
                         {errors.passwordConfirm.message}
                     </span>
                 )}
             </div>
 
             {errors.root && (
-                <div role="alert" className="text-sm text-red-600">
+                <div role="alert" className="text-red-600 text-sm">
                     {errors.root.message}
                 </div>
             )}
@@ -294,7 +294,7 @@ export const SignupForm = () => {
                 {isPending ? '登録中...' : '新規登録'}
             </Button>
 
-            <Link href="/login" className="text-sm text-muted-foreground underline hover:text-foreground">
+            <Link href="/login" className="text-muted-foreground text-sm underline hover:text-foreground">
                 ログインはこちら
             </Link>
         </form>

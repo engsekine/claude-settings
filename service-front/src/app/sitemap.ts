@@ -24,11 +24,7 @@ const generateSitemapData = (pages: PageMetadata[]): SitemapEntry[] =>
         lastModified: page.modifiedTime ?? new Date().toISOString(),
     }));
 
-const staticSitemapData = generateSitemapData([
-    CHAT_PAGE_DATA,
-    PRIVACY_POLICY_PAGE_DATA,
-    TERMS_PAGE_DATA,
-]);
+const staticSitemapData = generateSitemapData([CHAT_PAGE_DATA, PRIVACY_POLICY_PAGE_DATA, TERMS_PAGE_DATA]);
 
 export default function sitemap(): MetadataRoute.Sitemap {
     return [...HOME_SITEMAP_DATA, ...staticSitemapData];

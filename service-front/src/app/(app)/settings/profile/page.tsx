@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 
-import { ProfileEditForm, getProfile } from '@/features/account';
+import { getProfile, ProfileEditForm } from '@/features/account';
 import { generatePageMetadata } from '@/shared/config/metadata';
 
 export const metadata = generatePageMetadata(
@@ -18,7 +18,7 @@ export default async function ProfileEditPage() {
 
     return (
         <div className="mx-auto flex w-full max-w-xl flex-col gap-6 px-4 py-12">
-            <h1 className="text-2xl font-semibold">会員情報の編集</h1>
+            <h1 className="font-semibold text-2xl">会員情報の編集</h1>
             <ProfileEditForm
                 email={profile.email}
                 defaultValues={{

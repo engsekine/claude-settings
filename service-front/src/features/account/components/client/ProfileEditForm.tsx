@@ -44,16 +44,16 @@ export const ProfileEditForm = ({ email, defaultValues }: ProfileEditFormProps) 
     return (
         <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
             <div className="flex flex-col gap-1">
-                <label htmlFor="email" className="text-sm font-medium">
+                <label htmlFor="email" className="font-medium text-sm">
                     メールアドレス
                 </label>
                 <Input id="email" type="email" value={email} readOnly disabled aria-readonly="true" />
-                <span className="text-xs text-muted-foreground">メールアドレスは変更できません</span>
+                <span className="text-muted-foreground text-xs">メールアドレスは変更できません</span>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                    <label htmlFor="lastName" className="text-sm font-medium">
+                    <label htmlFor="lastName" className="font-medium text-sm">
                         姓
                     </label>
                     <Input
@@ -66,14 +66,14 @@ export const ProfileEditForm = ({ email, defaultValues }: ProfileEditFormProps) 
                         {...register('lastName')}
                     />
                     {errors.lastName && (
-                        <span id="lastName-error" role="alert" className="text-sm text-red-600">
+                        <span id="lastName-error" role="alert" className="text-red-600 text-sm">
                             {errors.lastName.message}
                         </span>
                     )}
                 </div>
 
                 <div className="flex flex-col gap-1">
-                    <label htmlFor="firstName" className="text-sm font-medium">
+                    <label htmlFor="firstName" className="font-medium text-sm">
                         名
                     </label>
                     <Input
@@ -86,7 +86,7 @@ export const ProfileEditForm = ({ email, defaultValues }: ProfileEditFormProps) 
                         {...register('firstName')}
                     />
                     {errors.firstName && (
-                        <span id="firstName-error" role="alert" className="text-sm text-red-600">
+                        <span id="firstName-error" role="alert" className="text-red-600 text-sm">
                             {errors.firstName.message}
                         </span>
                     )}
@@ -95,7 +95,7 @@ export const ProfileEditForm = ({ email, defaultValues }: ProfileEditFormProps) 
 
             <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                    <label htmlFor="lastNameRomaji" className="text-sm font-medium">
+                    <label htmlFor="lastNameRomaji" className="font-medium text-sm">
                         姓（ローマ字）
                     </label>
                     <Input
@@ -109,14 +109,14 @@ export const ProfileEditForm = ({ email, defaultValues }: ProfileEditFormProps) 
                         {...register('lastNameRomaji')}
                     />
                     {errors.lastNameRomaji && (
-                        <span id="lastNameRomaji-error" role="alert" className="text-sm text-red-600">
+                        <span id="lastNameRomaji-error" role="alert" className="text-red-600 text-sm">
                             {errors.lastNameRomaji.message}
                         </span>
                     )}
                 </div>
 
                 <div className="flex flex-col gap-1">
-                    <label htmlFor="firstNameRomaji" className="text-sm font-medium">
+                    <label htmlFor="firstNameRomaji" className="font-medium text-sm">
                         名（ローマ字）
                     </label>
                     <Input
@@ -130,7 +130,7 @@ export const ProfileEditForm = ({ email, defaultValues }: ProfileEditFormProps) 
                         {...register('firstNameRomaji')}
                     />
                     {errors.firstNameRomaji && (
-                        <span id="firstNameRomaji-error" role="alert" className="text-sm text-red-600">
+                        <span id="firstNameRomaji-error" role="alert" className="text-red-600 text-sm">
                             {errors.firstNameRomaji.message}
                         </span>
                     )}
@@ -138,7 +138,7 @@ export const ProfileEditForm = ({ email, defaultValues }: ProfileEditFormProps) 
             </div>
 
             <div className="flex flex-col gap-1">
-                <label htmlFor="nickname" className="text-sm font-medium">
+                <label htmlFor="nickname" className="font-medium text-sm">
                     ニックネーム
                 </label>
                 <Input
@@ -151,14 +151,14 @@ export const ProfileEditForm = ({ email, defaultValues }: ProfileEditFormProps) 
                     {...register('nickname')}
                 />
                 {errors.nickname && (
-                    <span id="nickname-error" role="alert" className="text-sm text-red-600">
+                    <span id="nickname-error" role="alert" className="text-red-600 text-sm">
                         {errors.nickname.message}
                     </span>
                 )}
             </div>
 
             <div className="flex flex-col gap-1">
-                <label htmlFor="birthOn" className="text-sm font-medium">
+                <label htmlFor="birthOn" className="font-medium text-sm">
                     生年月日
                 </label>
                 <Input
@@ -171,14 +171,14 @@ export const ProfileEditForm = ({ email, defaultValues }: ProfileEditFormProps) 
                     {...register('birthOn')}
                 />
                 {errors.birthOn && (
-                    <span id="birthOn-error" role="alert" className="text-sm text-red-600">
+                    <span id="birthOn-error" role="alert" className="text-red-600 text-sm">
                         {errors.birthOn.message}
                     </span>
                 )}
             </div>
 
             <fieldset className="flex flex-col gap-1">
-                <legend className="text-sm font-medium">性別</legend>
+                <legend className="font-medium text-sm">性別</legend>
                 <div
                     role="radiogroup"
                     aria-required="true"
@@ -194,20 +194,20 @@ export const ProfileEditForm = ({ email, defaultValues }: ProfileEditFormProps) 
                     ))}
                 </div>
                 {errors.gender && (
-                    <span id="gender-error" role="alert" className="text-sm text-red-600">
+                    <span id="gender-error" role="alert" className="text-red-600 text-sm">
                         {errors.gender.message}
                     </span>
                 )}
             </fieldset>
 
             {errors.root && (
-                <div role="alert" className="text-sm text-red-600">
+                <div role="alert" className="text-red-600 text-sm">
                     {errors.root.message}
                 </div>
             )}
 
             {successMessage && (
-                <div role="status" aria-live="polite" className="text-sm text-green-600">
+                <div role="status" aria-live="polite" className="text-green-600 text-sm">
                     {successMessage}
                 </div>
             )}

@@ -53,14 +53,8 @@ export const signupSchema = yup.object({
         .mixed<Gender>()
         .oneOf([...GENDER_VALUES], '性別を選択してください')
         .required('性別を選択してください'),
-    email: yup
-        .string()
-        .email('正しいメールアドレスを入力してください')
-        .required('メールアドレスを入力してください'),
-    password: yup
-        .string()
-        .min(6, 'パスワードは6文字以上で入力してください')
-        .required('パスワードを入力してください'),
+    email: yup.string().email('正しいメールアドレスを入力してください').required('メールアドレスを入力してください'),
+    password: yup.string().min(6, 'パスワードは6文字以上で入力してください').required('パスワードを入力してください'),
     passwordConfirm: yup
         .string()
         .oneOf([yup.ref('password')], 'パスワードが一致しません')

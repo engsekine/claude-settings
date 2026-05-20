@@ -20,11 +20,9 @@ export const useUserStore = create<UserStore>()(
             user: null,
             isAuthenticated: false,
 
-            setUser: (user) =>
-                set({ user, isAuthenticated: true }),
+            setUser: (user) => set({ user, isAuthenticated: true }),
 
-            clearUser: () =>
-                set({ user: null, isAuthenticated: false }),
+            clearUser: () => set({ user: null, isAuthenticated: false }),
         }),
         { name: 'UserStore' },
     ),

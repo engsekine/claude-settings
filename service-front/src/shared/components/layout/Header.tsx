@@ -9,21 +9,27 @@ interface HeaderProps {
 
 export const Header = ({ actions }: HeaderProps) => {
     return (
-        <header className="border-b border-border bg-background">
+        <header className="border-border border-b bg-background">
             <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-                <Link href="/" className="text-lg font-semibold text-foreground">
+                <Link href="/" className="font-semibold text-foreground text-lg">
                     {SITE_NAME}
                 </Link>
                 <div className="flex items-center gap-6">
                     <nav aria-label="メインナビゲーション">
                         <ul className="flex items-center gap-6">
                             <li>
-                                <Link href="/" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+                                <Link
+                                    href="/"
+                                    className="text-muted-foreground text-sm transition-colors hover:text-foreground"
+                                >
                                     Home
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/about" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+                                <Link
+                                    href="/about"
+                                    className="text-muted-foreground text-sm transition-colors hover:text-foreground"
+                                >
                                     About
                                 </Link>
                             </li>

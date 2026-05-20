@@ -1,6 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 
-const apiKey = process.env['GEMINI_API_KEY'] ?? '';
+const apiKey = process.env.GEMINI_API_KEY ?? '';
 if (apiKey === '') {
     throw new Error('GEMINI_API_KEY 環境変数が設定されていません');
 }
@@ -18,8 +18,8 @@ function isValidMessages(value: unknown): value is { role: 'user' | 'assistant';
             m !== null &&
             'role' in m &&
             'content' in m &&
-            typeof (m as Record<string, unknown>)['content'] === 'string' &&
-            VALID_ROLES.has((m as Record<string, unknown>)['role'] as string),
+            typeof (m as Record<string, unknown>).content === 'string' &&
+            VALID_ROLES.has((m as Record<string, unknown>).role as string),
     );
 }
 
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
         body === null ||
         typeof body !== 'object' ||
         !('messages' in body) ||
-        !isValidMessages((body as Record<string, unknown>)['messages'])
+        !isValidMessages((body as Record<string, unknown>).messages)
     ) {
         return new Response('リクエスト形式が不正です', { status: 400 });
     }

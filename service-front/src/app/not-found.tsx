@@ -14,13 +14,11 @@ export const metadata = generatePageMetadata(
 export default function NotFound() {
     return (
         <main className="flex min-h-screen flex-col items-center justify-center gap-6 px-4">
-            <h1 className="text-6xl font-bold text-foreground">404</h1>
-            <p className="text-lg text-muted-foreground">
-                お探しのページが見つかりませんでした
-            </p>
+            <h1 className="font-bold text-6xl text-foreground">404</h1>
+            <p className="text-lg text-muted-foreground">お探しのページが見つかりませんでした</p>
             <Link
                 href="/"
-                className="rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/80"
+                className="rounded-lg bg-primary px-6 py-2.5 font-medium text-primary-foreground text-sm hover:bg-primary/80"
             >
                 ホームに戻る
             </Link>

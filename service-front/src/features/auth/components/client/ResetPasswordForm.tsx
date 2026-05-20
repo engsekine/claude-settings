@@ -7,10 +7,7 @@ import Link from 'next/link';
 import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 
-import {
-    type ResetPasswordRequestFormValues,
-    resetPasswordRequestSchema,
-} from '@/features/auth/schemas/reset.schema';
+import { type ResetPasswordRequestFormValues, resetPasswordRequestSchema } from '@/features/auth/schemas/reset.schema';
 import { requestPasswordReset } from '@/features/auth/server/actions';
 
 export const ResetPasswordForm = () => {
@@ -49,7 +46,7 @@ export const ResetPasswordForm = () => {
     return (
         <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
             <div className="flex flex-col gap-1">
-                <label htmlFor="email" className="text-sm font-medium">
+                <label htmlFor="email" className="font-medium text-sm">
                     メールアドレス
                 </label>
                 <Input
@@ -62,7 +59,7 @@ export const ResetPasswordForm = () => {
                     {...register('email')}
                 />
                 {errors.email && (
-                    <span id="email-error" role="alert" className="text-sm text-red-600">
+                    <span id="email-error" role="alert" className="text-red-600 text-sm">
                         {errors.email.message}
                     </span>
                 )}
@@ -72,7 +69,7 @@ export const ResetPasswordForm = () => {
                 {isPending ? '送信中...' : 'リセットリンクを送信'}
             </Button>
 
-            <Link href="/login" className="text-sm text-muted-foreground underline hover:text-foreground">
+            <Link href="/login" className="text-muted-foreground text-sm underline hover:text-foreground">
                 ログイン画面に戻る
             </Link>
         </form>
