@@ -1,19 +1,26 @@
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator,
+} from '@repo/ui/components/breadcrumb';
 import Link from 'next/link';
-import { Fragment } from 'react';
 
 import { SITE_NAME, SITE_URL } from '@/shared/constants/site';
 
-export interface BreadcrumbItem {
+export interface BreadcrumbEntry {
     slug?: string;
     name: string;
 }
 
 interface BreadcrumbsProps {
-    breadcrumbs: BreadcrumbItem[];
+    breadcrumbs: BreadcrumbEntry[];
 }
 
 /** JSON-LD 構造化データを生成する */
-const generateJsonLd = (breadcrumbs: BreadcrumbItem[]) => {
+const generateJsonLd = (breadcrumbs: BreadcrumbEntry[]) => {
     const items = [
         { '@type': 'ListItem' as const, position: 1, name: SITE_NAME, item: `${SITE_URL}/` },
         ...breadcrumbs.map((breadcrumb, index) => {
@@ -44,29 +51,25 @@ export const Breadcrumbs = ({ breadcrumbs }: BreadcrumbsProps) => {
                 // biome-ignore lint/security/noDangerouslySetInnerHtml: <JSON-LD 構造化データの埋め込みは React の標準的なパターンであり、JSON.stringify でエスケープ済みのため XSS リスクはない>
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
-            <nav aria-label="パンくずリスト" className="mx-auto w-full max-w-5xl px-4 pt-4">
-                <ol className="flex flex-wrap items-center gap-1 text-muted-foreground text-sm">
-                    <li>
-                        <Link href="/" className="hover:text-foreground">
-                            ホーム
-                        </Link>
-                    </li>
-                    {breadcrumbs.map((breadcrumb) => (
-                        <Fragment key={breadcrumb.name}>
-                            <li aria-hidden="true">&gt;</li>
-                            <li>
-                                {breadcrumb.slug !== undefined ? (
-                                    <Link href={breadcrumb.slug} className="hover:text-foreground">
-                                        {breadcrumb.name}
-                                    </Link>
-                                ) : (
-                                    <span aria-current="page">{breadcrumb.name}</span>
-                                )}
-                            </li>
-                        </Fragment>
-                    ))}
-                </ol>
-            </nav>
+            <Breadcrumb className="mx-auto w-full max-w-5xl px-4 pt-4">
+                <BreadcrumbList>
+                    <BreadcrumbItem>
+                        <BreadcrumbLink render={<Link href="/" />}>ホーム</BreadcrumbLink>
+                    </BreadcrumbItem>
+                    {breadcrumbs.flatMap((breadcrumb) => [
+                        <BreadcrumbSeparator key={`sep-${breadcrumb.name}`} />,
+                        <BreadcrumbItem key={breadcrumb.name}>
+                            {breadcrumb.slug !== undefined ? (
+                                <BreadcrumbLink render={<Link href={breadcrumb.slug} />}>
+                                    {breadcrumb.name}
+                                </BreadcrumbLink>
+                            ) : (
+                                <BreadcrumbPage>{breadcrumb.name}</BreadcrumbPage>
+                            )}
+                        </BreadcrumbItem>,
+                    ])}
+                </BreadcrumbList>
+            </Breadcrumb>
         </>
     );
 };

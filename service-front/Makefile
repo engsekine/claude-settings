@@ -66,22 +66,21 @@ cert:
 		echo "Installing mkcert root CA..."; \
 		mkcert -install; \
 	fi
-	@if [ -f localhost.pem ]; then \
-		echo "⚠️  localhost.pem already exists. Skipping certificate generation."; \
+	@mkdir -p certificates
+	@if [ -f certificates/localhost.pem ]; then \
+		echo "⚠️  certificates/localhost.pem already exists. Skipping certificate generation."; \
 		echo "   To regenerate, run: make clean-cert && make cert"; \
 	else \
-		mkcert localhost 127.0.0.1 ::1; \
-		mv localhost+2.pem localhost.pem 2>/dev/null || true; \
-		mv localhost+2-key.pem localhost-key.pem 2>/dev/null || true; \
+		mkcert -cert-file certificates/localhost.pem -key-file certificates/localhost-key.pem localhost 127.0.0.1 ::1; \
 		echo "✅ SSL certificates generated:"; \
-		echo "   - localhost.pem"; \
-		echo "   - localhost-key.pem"; \
+		echo "   - certificates/localhost.pem"; \
+		echo "   - certificates/localhost-key.pem"; \
 	fi
 
 ## SSL証明書のみ削除
 clean-cert:
 	@echo "🗑️  Removing SSL certificates..."
-	rm -f localhost*.pem
+	rm -f certificates/localhost*.pem
 	@echo "✅ Certificates removed."
 
 ## すべてクリーンアップ
@@ -96,7 +95,7 @@ dev:
 
 ## 開発サーバー起動（HTTPS）
 dev-https:
-	@if [ ! -f localhost.pem ]; then \
+	@if [ ! -f certificates/localhost.pem ]; then \
 		echo "❌ SSL certificate not found. Running 'make cert'..."; \
 		$(MAKE) cert; \
 	fi
