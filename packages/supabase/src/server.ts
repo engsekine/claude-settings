@@ -14,18 +14,24 @@ import type { Database } from './types';
 export const createClient = async () => {
     const cookieStore = await cookies();
 
-    return createServerClient<Database>(
-        process.env.SUPABASE_INTERNAL_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-            cookies: {
-                getAll: () => cookieStore.getAll(),
-                setAll: (cookiesToSet: { name: string; value: string; options: Record<string, unknown> }[]) => {
-                    for (const { name, value, options } of cookiesToSet) {
-                        cookieStore.set(name, value, options);
-                    }
-                },
+    const url = process.env.SUPABASE_INTERNAL_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!url) {
+        throw new Error('環境変数 SUPABASE_INTERNAL_URL または NEXT_PUBLIC_SUPABASE_URL が設定されていません');
+    }
+    if (!anonKey) {
+        throw new Error('環境変数 NEXT_PUBLIC_SUPABASE_ANON_KEY が設定されていません');
+    }
+
+    return createServerClient<Database>(url, anonKey, {
+        cookies: {
+            getAll: () => cookieStore.getAll(),
+            setAll: (cookiesToSet: { name: string; value: string; options: Record<string, unknown> }[]) => {
+                for (const { name, value, options } of cookiesToSet) {
+                    cookieStore.set(name, value, options);
+                }
             },
         },
-    );
+    });
 };

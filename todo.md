@@ -2,6 +2,4 @@ FEの設計を考える
 
 当日の気象情報をAPIで取得
 
-supabaseのものレポをどうするか迷っていた
-
-supabaseのauthを試したい
+storybook系の動作確認を試したい
