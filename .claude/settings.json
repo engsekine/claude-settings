@@ -16,6 +16,10 @@
         "drawio": {
             "command": "npx",
             "args": ["-y", "@drawio/mcp"]
+        },
+        "figma": {
+            "command": "npx",
+            "args": ["-y", "@modelcontextprotocol/server-figma"]
         }
     },
     "permissions": {
@@ -64,6 +68,17 @@
                     {
                         "type": "command",
                         "command": "bash .claude/hooks/stop.sh"
+                    }
+                ]
+            }
+        ],
+        "PostToolUse": [
+            {
+                "matcher": "Edit|Write",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "bash .claude/hooks/lint-check.sh"
                     }
                 ]
             }
