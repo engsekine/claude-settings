@@ -21,6 +21,7 @@
         "test:coverage": "vitest run --project=unit --coverage",
         "test:storybook": "vitest run --project=storybook",
         "test:e2e": "playwright test",
+        "test:a11y": "npx playwright test tests/a11y --list ",
         "test:all": "npm run test && npm run test:e2e",
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build",
@@ -46,6 +47,7 @@
         "zustand": "^5.0.2"
     },
     "devDependencies": {
+        "@axe-core/playwright": "^4.11.3",
         "@biomejs/biome": "^2.4.15",
         "@chromatic-com/storybook": "^5.2.1",
         "@hookform/resolvers": "^4.1.3",

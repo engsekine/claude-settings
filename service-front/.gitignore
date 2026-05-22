@@ -47,3 +47,5 @@ logs/
 certificates
 *storybook.log
 storybook-static
+playwright-report
+test-results
