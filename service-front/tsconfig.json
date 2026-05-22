@@ -28,11 +28,8 @@
                 "name": "next"
             }
         ],
-        "baseUrl": "./",
         "paths": {
-            "@/*": ["./src/*"],
-            "@test/*": ["__tests__/*"],
-            "@mocks/*": ["__mocks__/*"]
+            "@/*": ["./src/*"]
         }
     },
     "include": [

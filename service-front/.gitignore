@@ -45,3 +45,5 @@ next-env.d.ts
 logs/
 *.log
 certificates
+*storybook.log
+storybook-static
