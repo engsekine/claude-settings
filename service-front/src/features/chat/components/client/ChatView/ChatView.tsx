@@ -1,11 +1,11 @@
 'use client';
 
-import { useChat } from '../../hooks/use-chat';
-import { useChatStore } from '../../stores/chat-store';
+import { useChat } from '../../../hooks/use-chat';
+import { useChatStore } from '../../../stores/chat-store';
 
-import { ChatInput } from './ChatInput';
-import { MessageList } from './MessageList';
-import { Sidebar } from './Sidebar';
+import { ChatInput } from '../ChatInput';
+import { MessageList } from '../MessageList';
+import { Sidebar } from '../Sidebar';
 
 export const ChatView = () => {
     const { messages, streamingStatus, sendMessage, stopStreaming } = useChat();

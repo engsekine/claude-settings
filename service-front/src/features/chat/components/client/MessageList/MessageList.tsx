@@ -2,10 +2,10 @@
 
 import { MessageSquare } from 'lucide-react';
 
-import { useAutoScroll } from '../../hooks/use-auto-scroll';
-import type { Message, StreamingStatus } from '../../types';
+import { useAutoScroll } from '../../../hooks/use-auto-scroll';
+import type { Message, StreamingStatus } from '../../../types';
 
-import { MessageBubble } from './MessageBubble';
+import { MessageBubble } from '../MessageBubble';
 
 interface MessageListProps {
     messages: Message[];

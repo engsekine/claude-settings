@@ -4,9 +4,9 @@ import { cn } from '@repo/ui/lib/utils';
 import { Bot, User } from 'lucide-react';
 import { memo } from 'react';
 
-import type { Message } from '../../types';
+import type { Message } from '../../../types';
 
-import { MarkdownRenderer } from './MarkdownRenderer';
+import { MarkdownRenderer } from '../MarkdownRenderer';
 
 interface MessageBubbleProps {
     message: Message;

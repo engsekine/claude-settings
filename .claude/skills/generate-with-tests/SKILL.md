@@ -32,6 +32,25 @@ user-invocable: true
 - ファイルの分類（コンポーネント / Server Component / page.tsx / Server Action / 純粋関数 等）
 - 既存のテスト / story の有無（同一ディレクトリ内を Glob で確認）
 
+### 1.5 フォルダ構成チェック（コンポーネント対象時のみ）
+
+対象がコンポーネント（`*.tsx` で `page.tsx` 等の Next.js 規約ファイル以外）の場合、**専用フォルダ構成になっているか確認**する：
+
+| 期待される構造 | 例 |
+|---|---|
+| 対象ファイルが `<ComponentName>/<ComponentName>.tsx` の形 | `Foo/Foo.tsx` ✅ |
+| 隣に `index.ts`（再 export）が存在する | `Foo/index.ts` ✅ |
+
+#### 違反パターンと対処
+
+| パターン | 例 | 対処 |
+|---|---|---|
+| コンポーネントがフォルダに入っていない | `components/Foo.tsx`（隣に同名フォルダなし） | ユーザーに **「Foo を `Foo/` フォルダに移動してから生成する」**と確認を取り、承認されたら `git mv` + `index.ts` 作成を実施 |
+| フォルダはあるが index.ts が無い | `Foo/Foo.tsx` のみ | `Foo/index.ts` を新規作成（`export { Foo } from './Foo';`） |
+| フォルダ名と中身のコンポーネント名が不一致 | `foo/Bar.tsx` 等 | ユーザーに警告。リネーム提案 |
+
+CLAUDE.md の「コンポーネント作成時のフォルダ構成」セクション参照。
+
 **既存テストがある場合の挙動**:
 - 既に `.test.tsx` がある → vitest-unit-writer は呼ばずに SKIP 報告
 - 既に `.stories.tsx` がある → storybook-story-writer は呼ばずに SKIP 報告

@@ -1,0 +1,79 @@
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { vi } from 'vitest';
+
+const signUp = vi.fn();
+
+vi.mock('@/features/auth/server/actions', () => ({
+    signUp: (...args: unknown[]) => signUp(...args),
+}));
+
+import { SignupForm } from './SignupForm';
+
+describe('SignupForm', () => {
+    beforeEach(() => {
+        signUp.mockReset();
+    });
+
+    it('必要なフォーム項目をすべて表示する', () => {
+        render(<SignupForm />);
+
+        const labels = [
+            '姓',
+            '名',
+            '姓（ローマ字）',
+            '名（ローマ字）',
+            'ニックネーム',
+            '生年月日',
+            'メールアドレス',
+            'パスワード（6文字以上）',
+            'パスワード（確認）',
+        ];
+
+        for (const label of labels) {
+            expect(screen.getByLabelText(label)).toBeInTheDocument();
+        }
+
+        expect(screen.getByRole('radiogroup')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: '新規登録' })).toBeInTheDocument();
+    });
+
+    it('signUp が needsEmailConfirmation を返すと確認メール案内画面に切り替わる', async () => {
+        signUp.mockResolvedValueOnce({ needsEmailConfirmation: true });
+        const user = userEvent.setup();
+        render(<SignupForm />);
+
+        await user.type(screen.getByLabelText('姓'), '山田');
+        await user.type(screen.getByLabelText('名'), '太郎');
+        await user.type(screen.getByLabelText('姓（ローマ字）'), 'Yamada');
+        await user.type(screen.getByLabelText('名（ローマ字）'), 'Taro');
+        await user.type(screen.getByLabelText('ニックネーム'), 'たろちゃん');
+        await user.type(screen.getByLabelText('生年月日'), '1990-01-01');
+        await user.type(screen.getByLabelText('メールアドレス'), 'user@example.com');
+        await user.type(screen.getByLabelText('パスワード（6文字以上）'), 'password123');
+        await user.type(screen.getByLabelText('パスワード（確認）'), 'password123');
+        await user.click(screen.getByRole('button', { name: '新規登録' }));
+
+        expect(await screen.findByText('確認メールを送信しました')).toBeInTheDocument();
+        expect(screen.getByText('user@example.com')).toBeInTheDocument();
+    });
+
+    it('signUp が error を返すと alert に表示される', async () => {
+        signUp.mockResolvedValueOnce({ error: 'このメールアドレスは既に登録されています' });
+        const user = userEvent.setup();
+        render(<SignupForm />);
+
+        await user.type(screen.getByLabelText('姓'), '山田');
+        await user.type(screen.getByLabelText('名'), '太郎');
+        await user.type(screen.getByLabelText('姓（ローマ字）'), 'Yamada');
+        await user.type(screen.getByLabelText('名（ローマ字）'), 'Taro');
+        await user.type(screen.getByLabelText('ニックネーム'), 'taro');
+        await user.type(screen.getByLabelText('生年月日'), '1990-01-01');
+        await user.type(screen.getByLabelText('メールアドレス'), 'existing@example.com');
+        await user.type(screen.getByLabelText('パスワード（6文字以上）'), 'password123');
+        await user.type(screen.getByLabelText('パスワード（確認）'), 'password123');
+        await user.click(screen.getByRole('button', { name: '新規登録' }));
+
+        expect(await screen.findByText('このメールアドレスは既に登録されています')).toBeInTheDocument();
+    });
+});

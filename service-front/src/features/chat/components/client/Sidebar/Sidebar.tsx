@@ -5,7 +5,7 @@ import { cn } from '@repo/ui/lib/utils';
 import { MessageSquarePlus, PanelLeftClose, PanelLeftOpen, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
-import { useChatStore } from '../../stores/chat-store';
+import { useChatStore } from '../../../stores/chat-store';
 
 export const Sidebar = () => {
     const conversations = useChatStore((s) => s.conversations);

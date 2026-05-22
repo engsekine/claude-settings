@@ -32,6 +32,7 @@ model: sonnet
 ### ファイル配置
 - 対象と **同一ディレクトリに co-locate**
 - 命名: `<ComponentName>.stories.tsx`
+- 対象コンポーネントが **`<ComponentName>/<ComponentName>.tsx` 形式のフォルダ構成**になっている前提（CLAUDE.md「コンポーネント作成時のフォルダ構成」参照）
 
 ### テンプレート
 

@@ -33,6 +33,8 @@ model: sonnet
 ### ファイル配置
 - 対象と **同一ディレクトリに co-locate**
 - 命名: `<ComponentName>.test.tsx`（React コンポーネント）/ `<functionName>.test.ts`（純粋関数）
+- 対象コンポーネントが **`<ComponentName>/<ComponentName>.tsx` 形式のフォルダ構成**になっている前提（CLAUDE.md「コンポーネント作成時のフォルダ構成」参照）。
+  違反していた場合は呼び出し元の skill が事前に修正する責務を持つため、ここでは「フォルダ内に test を置く」ことだけを考えればよい
 
 ### テスト構造
 

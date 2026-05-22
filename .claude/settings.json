@@ -79,6 +79,14 @@
                     {
                         "type": "command",
                         "command": "bash .claude/hooks/lint-check.sh"
+                    },
+                    {
+                        "type": "command",
+                        "command": "bash .claude/hooks/suggest-test-gen.sh"
+                    },
+                    {
+                        "type": "command",
+                        "command": "bash .claude/hooks/suggest-test-update.sh"
                     }
                 ]
             }

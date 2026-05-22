@@ -26,6 +26,78 @@
 2. 計画を立ててから実装する
 3. テストを書いてから実装コードを変更する
 
+## コンポーネント作成時のフォルダ構成
+
+新しい React コンポーネントを作成するときは **必ず専用フォルダに配置**し、以下の構造に揃える。
+
+```
+<対象パス>/<ComponentName>/
+├── <ComponentName>.tsx          ← コンポーネント本体
+├── <ComponentName>.test.tsx     ← Vitest 単体テスト
+├── <ComponentName>.stories.tsx  ← Storybook story
+└── index.ts                     ← 再 export 専用
+                                   例: export { ComponentName } from './ComponentName';
+```
+
+### 配置のルール
+
+| 対象 | 配置例 |
+|---|---|
+| 汎用コンポーネント | `src/shared/components/<group>/<ComponentName>/...` |
+| 機能固有コンポーネント | `src/features/<feature>/components/<ComponentName>/...` |
+| Client コンポーネント | `src/features/<feature>/components/client/<ComponentName>/...` |
+| Server コンポーネント | `src/features/<feature>/components/server/<ComponentName>/...` |
+
+### import パスの方針
+
+- **外部からは index.ts 経由で import**: `import { Foo } from '@/shared/components/Foo'`（中の `Foo/Foo.tsx` を直接指さない）
+- **コンポーネント内部の sibling 参照は親ディレクトリ経由**: `import { Bar } from '../Bar'`（`./Bar` ではなく `../Bar` で隣のフォルダの index.ts を解決）
+- **types / hooks / stores 等の上位参照**: フォルダ階層分の `..` を正確に。例えば `Foo/Foo.tsx` から `../../../types` で `features/<feature>/types/` に届く
+
+### 既存コンポーネントの配置例
+
+| パス | 構造 |
+|---|---|
+| `src/shared/components/layout/Header/` | Header.tsx + Header.test.tsx + Header.stories.tsx + index.ts |
+| `src/shared/components/layout/Breadcrumbs/` | 同上 |
+| `src/shared/components/layout/Footer/` | 同上 |
+| `src/features/chat/components/client/ChatInput/` | 同上 |
+| `src/features/chat/components/client/MessageBubble/` | 同上 |
+
+新規作成・移動の際はこれらを参照モデルとする。
+
+## テスト生成ルール
+
+新しいコンポーネントを以下のパスに作成した直後は、必ず `/generate-with-tests <作成したファイルの絶対パス>` を実行してテスト類を並列生成すること。
+
+- `src/shared/components/**/*.tsx`
+- `src/features/*/components/**/*.tsx`
+
+除外対象（テスト生成不要）：
+- `*.test.tsx` / `*.stories.tsx` / `*.spec.tsx`（テスト・story ファイル自身）
+- `index.ts` / `index.tsx`（re-export ファイル）
+- `page.tsx` / `layout.tsx` / `loading.tsx` / `error.tsx` / `not-found.tsx`（Next.js 規約ファイル）
+
+`PostToolUse` hook（`.claude/hooks/suggest-test-gen.sh`）が新規コンポーネント作成を検知してリマインダーを出すので、そのリマインダーが見えたら `/generate-with-tests` の実行を忘れずに。
+
+## テスト同期ルール（既存コンポーネント編集時）
+
+既存のコンポーネントを編集した場合、同階層に存在する以下のファイルを確認し、変更内容に合わせて **必ず同期更新する**:
+
+- `<ComponentName>.test.tsx` / `<ComponentName>.test.ts`（Vitest 単体テスト）
+- `<ComponentName>.spec.tsx` / `<ComponentName>.spec.ts`（同上）
+- `<ComponentName>.stories.tsx`（Storybook story）
+
+判断基準:
+
+| 編集の規模 | 対応方針 |
+|---|---|
+| Props 追加 / 文言変更 / class 変更などの小修正 | 該当テスト・story を Read → 必要箇所だけ Edit |
+| Props 削除 / ロジックの大幅変更 / API 変更 | `/generate-with-tests <path>` で再生成を検討 |
+| バグ修正 | 再現する回帰テストを追加 |
+
+`PostToolUse` hook（`.claude/hooks/suggest-test-update.sh`）が編集を検知して該当ファイルを列挙してくれるので、そのリマインダーが見えたら無視せず確認する。
+
 ## フレームワーク・ライブラリの公式ドキュメント参照
 
 実装時は必ず最新の公式ドキュメントを参照すること。

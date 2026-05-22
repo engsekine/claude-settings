@@ -5,7 +5,7 @@ import { cn } from '@repo/ui/lib/utils';
 import { ArrowUp, Square } from 'lucide-react';
 import { type KeyboardEvent, useCallback, useRef, useState } from 'react';
 
-import type { StreamingStatus } from '../../types';
+import type { StreamingStatus } from '../../../types';
 
 interface ChatInputProps {
     onSend: (message: string) => void | Promise<void>;
