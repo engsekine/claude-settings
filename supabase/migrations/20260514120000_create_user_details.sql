@@ -20,6 +20,8 @@ create table public.user_details (
     nickname text not null check (length(trim(nickname)) > 0),
     birth_on date not null check (birth_on >= '1900-01-01' and birth_on <= current_date),
     gender text not null default 'unanswered' check (gender in ('male', 'female', 'unanswered')),
+    height_cm numeric(5, 2) check (height_cm > 0 and height_cm <= 300),
+    weight_kg numeric(5, 2) check (weight_kg > 0 and weight_kg <= 500),
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
 );
@@ -32,6 +34,8 @@ comment on column public.user_details.first_name_romaji is '名（ローマ字�
 comment on column public.user_details.nickname is 'ニックネーム（表示用）。サインアップ時必須';
 comment on column public.user_details.birth_on is '生年月日。サインアップ時必須。1900-01-01 〜 当日';
 comment on column public.user_details.gender is '性別。male / female / unanswered の 3 値。未選択時は unanswered';
+comment on column public.user_details.height_cm is '身長（cm）。0 < height_cm <= 300 の範囲。任意入力';
+comment on column public.user_details.weight_kg is '体重（kg）。0 < weight_kg <= 500 の範囲。任意入力';
 
 -- updated_at 自動更新（handle_updated_at は users マイグレーションで定義済み）
 create trigger user_details_handle_updated_at
@@ -61,7 +65,9 @@ begin
         first_name_romaji,
         nickname,
         birth_on,
-        gender
+        gender,
+        height_cm,
+        weight_kg
     )
     values (
         new.id,
@@ -71,7 +77,9 @@ begin
         new.raw_user_meta_data->>'first_name_romaji',
         new.raw_user_meta_data->>'nickname',
         (new.raw_user_meta_data->>'birth_on')::date,
-        coalesce(new.raw_user_meta_data->>'gender', 'unanswered')
+        coalesce(new.raw_user_meta_data->>'gender', 'unanswered'),
+        nullif(new.raw_user_meta_data->>'height_cm', '')::numeric,
+        nullif(new.raw_user_meta_data->>'weight_kg', '')::numeric
     );
     return new;
 end;

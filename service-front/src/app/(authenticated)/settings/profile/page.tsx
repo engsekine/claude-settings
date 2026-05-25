@@ -32,6 +32,8 @@ export default async function ProfileEditPage() {
                         nickname: profile.nickname,
                         birthOn: profile.birthOn,
                         gender: profile.gender,
+                        heightCm: profile.heightCm,
+                        weightKg: profile.weightKg,
                     }}
                 />
             </div>

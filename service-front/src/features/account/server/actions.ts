@@ -14,6 +14,10 @@ export interface UpdateProfileInput {
     /** ISO 8601 date string (YYYY-MM-DD) */
     birthOn: string;
     gender: Gender;
+    /** 身長（cm）。任意入力 */
+    heightCm: number | null;
+    /** 体重（kg）。任意入力 */
+    weightKg: number | null;
 }
 
 export interface UpdateProfileResult {
@@ -31,6 +35,10 @@ export interface ProfileData {
     /** ISO 8601 date string (YYYY-MM-DD) */
     birthOn: string;
     gender: Gender;
+    /** 身長（cm）。未登録時は null */
+    heightCm: number | null;
+    /** 体重（kg）。未登録時は null */
+    weightKg: number | null;
 }
 
 export const getProfile = async (): Promise<ProfileData | null> => {
@@ -43,7 +51,9 @@ export const getProfile = async (): Promise<ProfileData | null> => {
 
     const { data, error } = await supabase
         .from('user_details')
-        .select('last_name, first_name, last_name_romaji, first_name_romaji, nickname, birth_on, gender')
+        .select(
+            'last_name, first_name, last_name_romaji, first_name_romaji, nickname, birth_on, gender, height_cm, weight_kg',
+        )
         .eq('user_id', user.id)
         .single();
 
@@ -61,6 +71,8 @@ export const getProfile = async (): Promise<ProfileData | null> => {
         nickname: data.nickname,
         birthOn: data.birth_on,
         gender: data.gender as Gender,
+        heightCm: data.height_cm === null ? null : Number(data.height_cm),
+        weightKg: data.weight_kg === null ? null : Number(data.weight_kg),
     };
 };
 
@@ -82,6 +94,8 @@ export const updateProfile = async (input: UpdateProfileInput): Promise<UpdatePr
             nickname: input.nickname,
             birth_on: input.birthOn,
             gender: input.gender,
+            height_cm: input.heightCm,
+            weight_kg: input.weightKg,
         })
         .eq('user_id', user.id);
 

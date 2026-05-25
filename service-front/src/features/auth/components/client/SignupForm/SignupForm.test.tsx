@@ -25,6 +25,8 @@ describe('SignupForm', () => {
             '名（ローマ字）',
             'ニックネーム',
             '生年月日',
+            '身長(cm)',
+            '体重(kg)',
             'メールアドレス',
             'パスワード（6文字以上）',
             'パスワード（確認）',
@@ -56,6 +58,28 @@ describe('SignupForm', () => {
 
         expect(await screen.findByText('確認メールを送信しました')).toBeInTheDocument();
         expect(screen.getByText('user@example.com')).toBeInTheDocument();
+    });
+
+    it('身長・体重を入力すると signUp にその値が渡る', async () => {
+        signUp.mockResolvedValueOnce({ needsEmailConfirmation: true });
+        const user = userEvent.setup();
+        render(<SignupForm />);
+
+        await user.type(screen.getByLabelText('姓'), '山田');
+        await user.type(screen.getByLabelText('名'), '太郎');
+        await user.type(screen.getByLabelText('姓（ローマ字）'), 'Yamada');
+        await user.type(screen.getByLabelText('名（ローマ字）'), 'Taro');
+        await user.type(screen.getByLabelText('ニックネーム'), 'taro');
+        await user.type(screen.getByLabelText('生年月日'), '1990-01-01');
+        await user.type(screen.getByLabelText('身長(cm)'), '170');
+        await user.type(screen.getByLabelText('体重(kg)'), '60.5');
+        await user.type(screen.getByLabelText('メールアドレス'), 'user@example.com');
+        await user.type(screen.getByLabelText('パスワード（6文字以上）'), 'password123');
+        await user.type(screen.getByLabelText('パスワード（確認）'), 'password123');
+        await user.click(screen.getByRole('button', { name: '新規登録' }));
+
+        await screen.findByText('確認メールを送信しました');
+        expect(signUp).toHaveBeenCalledWith(expect.objectContaining({ heightCm: 170, weightKg: 60.5 }));
     });
 
     it('signUp が error を返すと alert に表示される', async () => {

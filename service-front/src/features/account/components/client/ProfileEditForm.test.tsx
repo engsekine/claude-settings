@@ -19,6 +19,8 @@ const defaultValues: ProfileFormValues = {
     nickname: 'たろちゃん',
     birthOn: '1990-01-01',
     gender: 'male',
+    heightCm: null,
+    weightKg: null,
 };
 
 describe('ProfileEditForm', () => {
@@ -46,6 +48,18 @@ describe('ProfileEditForm', () => {
         render(<ProfileEditForm email="user@example.com" defaultValues={defaultValues} />);
 
         expect(screen.getByRole('button', { name: '更新する' })).toBeDisabled();
+    });
+
+    it('身長・体重フィールドを表示し、初期値がある場合は反映される', () => {
+        render(
+            <ProfileEditForm
+                email="user@example.com"
+                defaultValues={{ ...defaultValues, heightCm: 170.5, weightKg: 65 }}
+            />,
+        );
+
+        expect(screen.getByLabelText<HTMLInputElement>('身長（cm）').value).toBe('170.5');
+        expect(screen.getByLabelText<HTMLInputElement>('体重（kg）').value).toBe('65');
     });
 
     it('updateProfile が成功すると status メッセージを表示する', async () => {

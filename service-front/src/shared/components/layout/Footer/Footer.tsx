@@ -1,6 +1,7 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
-import { COPYRIGHT_HOLDER } from '@/shared/constants/site';
+import { COPYRIGHT_HOLDER, SITE_NAME } from '@/shared/constants/site';
 
 const FOOTER_LINKS = [
     { href: '/', label: 'ホーム' },
@@ -13,6 +14,11 @@ export const Footer = () => {
     return (
         <footer className="border-border border-t bg-background">
             <div className="mx-auto max-w-5xl px-4 py-6">
+                <div className="mb-4 flex justify-center">
+                    <Link href="/" aria-label={SITE_NAME} className="inline-flex">
+                        <Image src="/logo.png" alt={SITE_NAME} width={110} height={48} className="h-12 w-auto" />
+                    </Link>
+                </div>
                 <nav aria-label="フッターナビゲーション">
                     <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2">
                         {FOOTER_LINKS.map((link) => (

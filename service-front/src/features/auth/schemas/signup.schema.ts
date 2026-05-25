@@ -53,6 +53,22 @@ export const signupSchema = yup.object({
         .mixed<Gender>()
         .oneOf([...GENDER_VALUES], '性別を選択してください')
         .required('性別を選択してください'),
+    heightCm: yup
+        .number()
+        .typeError('身長は数値で入力してください')
+        .transform((value, originalValue) => (originalValue === '' || originalValue == null ? null : value))
+        .nullable()
+        .min(30, '身長は30cm以上で入力してください')
+        .max(300, '身長は300cm以下で入力してください')
+        .defined(),
+    weightKg: yup
+        .number()
+        .typeError('体重は数値で入力してください')
+        .transform((value, originalValue) => (originalValue === '' || originalValue == null ? null : value))
+        .nullable()
+        .min(1, '体重は1kg以上で入力してください')
+        .max(500, '体重は500kg以下で入力してください')
+        .defined(),
     email: yup.string().email('正しいメールアドレスを入力してください').required('メールアドレスを入力してください'),
     password: yup.string().min(6, 'パスワードは6文字以上で入力してください').required('パスワードを入力してください'),
     passwordConfirm: yup

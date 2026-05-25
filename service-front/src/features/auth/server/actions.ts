@@ -25,6 +25,10 @@ export interface SignUpInput {
     /** ISO 8601 date string (YYYY-MM-DD) */
     birthOn: string;
     gender: Gender;
+    /** 身長（cm）。任意入力 */
+    heightCm: number | null;
+    /** 体重（kg）。任意入力 */
+    weightKg: number | null;
 }
 
 export const signIn = async (email: string, password: string): Promise<AuthActionResult> => {
@@ -61,6 +65,8 @@ export const signUp = async (input: SignUpInput): Promise<SignUpResult> => {
                 nickname: input.nickname,
                 birth_on: input.birthOn,
                 gender: input.gender,
+                height_cm: input.heightCm,
+                weight_kg: input.weightKg,
             },
         },
     });

@@ -24,6 +24,8 @@ export const Default: Story = {
             nickname: 'たろちゃん',
             birthOn: '1990-01-01',
             gender: 'male',
+            heightCm: 175,
+            weightKg: 68.5,
         },
     },
 };
@@ -39,6 +41,8 @@ export const Female: Story = {
             nickname: 'はなちゃん',
             birthOn: '1992-05-10',
             gender: 'female',
+            heightCm: 160,
+            weightKg: 50,
         },
     },
 };
@@ -54,6 +58,8 @@ export const Unanswered: Story = {
             nickname: 'anon',
             birthOn: '2000-01-01',
             gender: 'unanswered',
+            heightCm: null,
+            weightKg: null,
         },
     },
 };

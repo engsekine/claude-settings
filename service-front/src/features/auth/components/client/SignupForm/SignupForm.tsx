@@ -37,6 +37,8 @@ export const SignupForm = () => {
                 nickname: values.nickname,
                 birthOn: values.birthOn,
                 gender: values.gender,
+                heightCm: values.heightCm,
+                weightKg: values.weightKg,
             });
             if (result.error !== undefined) {
                 setError('root', { message: result.error });
@@ -223,6 +225,54 @@ export const SignupForm = () => {
                     </span>
                 )}
             </fieldset>
+
+            <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                    <label htmlFor="heightCm" className="font-medium text-sm">
+                        身長(cm)
+                    </label>
+                    <Input
+                        id="heightCm"
+                        type="number"
+                        inputMode="decimal"
+                        step="0.1"
+                        min={30}
+                        max={300}
+                        autoComplete="off"
+                        aria-invalid={!!errors.heightCm}
+                        aria-describedby={errors.heightCm ? 'heightCm-error' : undefined}
+                        {...register('heightCm')}
+                    />
+                    {errors.heightCm && (
+                        <span id="heightCm-error" role="alert" className="text-red-600 text-sm">
+                            {errors.heightCm.message}
+                        </span>
+                    )}
+                </div>
+
+                <div className="flex flex-col gap-1">
+                    <label htmlFor="weightKg" className="font-medium text-sm">
+                        体重(kg)
+                    </label>
+                    <Input
+                        id="weightKg"
+                        type="number"
+                        inputMode="decimal"
+                        step="0.1"
+                        min={1}
+                        max={500}
+                        autoComplete="off"
+                        aria-invalid={!!errors.weightKg}
+                        aria-describedby={errors.weightKg ? 'weightKg-error' : undefined}
+                        {...register('weightKg')}
+                    />
+                    {errors.weightKg && (
+                        <span id="weightKg-error" role="alert" className="text-red-600 text-sm">
+                            {errors.weightKg.message}
+                        </span>
+                    )}
+                </div>
+            </div>
 
             <div className="flex flex-col gap-1">
                 <label htmlFor="email" className="font-medium text-sm">
