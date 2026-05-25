@@ -53,22 +53,48 @@ describe('AuthNav', () => {
         mockStoreState.clearUser.mockClear();
     });
 
-    it('未ログイン状態（initialUser=null）ではログインリンクを表示する', () => {
+    it('未ログイン状態ではログインメニューを開くアイコンボタンを表示する', () => {
         render(<AuthNav initialUser={null} />);
 
-        const loginLink = screen.getByRole('link', { name: 'ログイン' });
-        expect(loginLink).toHaveAttribute('href', '/login');
+        expect(screen.getByRole('button', { name: 'ログインメニューを開く' })).toBeInTheDocument();
     });
 
-    it('ログイン済み状態ではメールアドレスとログアウトボタンを表示する', () => {
-        const user = buildUser({ email: 'user@example.com' });
+    it('ログイン済み状態ではアカウントメニューを開くアイコンボタンを表示する', () => {
+        const user = buildUser();
         mockStoreState.user = user;
 
         render(<AuthNav initialUser={user} />);
 
-        const profileLink = screen.getByRole('link', { name: 'user@example.com' });
+        expect(screen.getByRole('button', { name: 'アカウントメニューを開く' })).toBeInTheDocument();
+    });
+
+    it('未ログイン状態でアイコンボタンを押すとシート内にログイン・会員登録リンクを表示する', async () => {
+        const userEventInstance = userEvent.setup();
+        render(<AuthNav initialUser={null} />);
+
+        await userEventInstance.click(screen.getByRole('button', { name: 'ログインメニューを開く' }));
+
+        const loginLink = await screen.findByRole('link', { name: /ログイン/ });
+        expect(loginLink).toHaveAttribute('href', '/login');
+
+        const signupLink = screen.getByRole('link', { name: /会員登録/ });
+        expect(signupLink).toHaveAttribute('href', '/signup');
+    });
+
+    it('ログイン済み状態でアイコンボタンを押すとシート内に会員情報リンクとログアウトボタンを表示する', async () => {
+        const user = buildUser({ email: 'user@example.com' });
+        mockStoreState.user = user;
+
+        const userEventInstance = userEvent.setup();
+        render(<AuthNav initialUser={user} />);
+
+        await userEventInstance.click(screen.getByRole('button', { name: 'アカウントメニューを開く' }));
+
+        const profileLink = await screen.findByRole('link', { name: /会員情報/ });
         expect(profileLink).toHaveAttribute('href', '/settings/profile');
-        expect(screen.getByRole('button', { name: 'ログアウト' })).toBeInTheDocument();
+
+        expect(screen.getByRole('button', { name: /ログアウト/ })).toBeInTheDocument();
+        expect(screen.getByText('user@example.com')).toBeInTheDocument();
     });
 
     it('ログアウトボタンを押すと signOut が呼ばれる', async () => {
@@ -79,7 +105,8 @@ describe('AuthNav', () => {
         const userEventInstance = userEvent.setup();
         render(<AuthNav initialUser={user} />);
 
-        await userEventInstance.click(screen.getByRole('button', { name: 'ログアウト' }));
+        await userEventInstance.click(screen.getByRole('button', { name: 'アカウントメニューを開く' }));
+        await userEventInstance.click(await screen.findByRole('button', { name: /ログアウト/ }));
 
         expect(signOut).toHaveBeenCalled();
     });

@@ -36,7 +36,7 @@ export default async function RootLayout({
             <body className="flex min-h-full flex-col">
                 <Providers>
                     <Header actions={<AuthNav initialUser={user} />} />
-                    <main className="flex flex-1 bg-background">{children}</main>
+                    <main className="flex flex-1 justify-center bg-background">{children}</main>
                     <Footer />
                 </Providers>
             </body>

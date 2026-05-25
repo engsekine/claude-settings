@@ -20,7 +20,7 @@ const meta = {
         docs: {
             description: {
                 component:
-                    'zustand store と Supabase Auth に依存。Storybook 上では `initialUser` を変えて未ログイン / ログイン済み状態を切り替えて確認する。',
+                    'ユーザーアイコンボタンを押すと右からシートが開き、ログイン状態に応じたメニューを表示する。zustand store と Supabase Auth に依存し、Storybook 上では `initialUser` を変えて未ログイン / ログイン済み状態を切り替えて確認する。',
             },
         },
     },

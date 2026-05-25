@@ -1,6 +1,9 @@
 'use client';
 
+import { Button } from '@repo/ui/components/button';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@repo/ui/components/sheet';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { LogOut, User, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState, useTransition } from 'react';
 
@@ -18,6 +21,7 @@ export const AuthNav = ({ initialUser }: AuthNavProps) => {
     const setUser = useUserStore((s) => s.setUser);
     const clearUser = useUserStore((s) => s.clearUser);
     const [isPending, startTransition] = useTransition();
+    const [isOpen, setIsOpen] = useState(false);
 
     /**
      * ハイドレート完了フラグ。
@@ -62,36 +66,76 @@ export const AuthNav = ({ initialUser }: AuthNavProps) => {
     const handleSignOut = () => {
         startTransition(async () => {
             await signOut();
+            setIsOpen(false);
         });
     };
 
     const user = hasHydrated ? storeUser : initialUser;
     const isAuthenticated = !!user;
 
-    if (!isAuthenticated) {
-        return (
-            <Link href="/login" className="text-muted-foreground text-sm transition-colors hover:text-foreground">
-                ログイン
-            </Link>
-        );
-    }
-
     return (
-        <div className="flex items-center gap-4">
-            <Link
-                href="/settings/profile"
-                className="text-muted-foreground text-sm transition-colors hover:text-foreground"
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger
+                render={
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={isAuthenticated ? 'アカウントメニューを開く' : 'ログインメニューを開く'}
+                    />
+                }
             >
-                {user?.email}
-            </Link>
-            <button
-                type="button"
-                onClick={handleSignOut}
-                disabled={isPending}
-                className="text-muted-foreground text-sm transition-colors hover:text-foreground disabled:opacity-50"
-            >
-                {isPending ? 'ログアウト中...' : 'ログアウト'}
-            </button>
-        </div>
+                <User />
+            </SheetTrigger>
+            <SheetContent side="right">
+                <SheetHeader>
+                    <SheetTitle>アカウント</SheetTitle>
+                </SheetHeader>
+                <nav aria-label="アカウントナビゲーション" className="flex flex-col gap-2 p-4">
+                    {isAuthenticated ? (
+                        <>
+                            <p className="text-muted-foreground text-sm" aria-label="ログイン中のメールアドレス">
+                                {user?.email}
+                            </p>
+                            <Link
+                                href="/settings/profile"
+                                onClick={() => setIsOpen(false)}
+                                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
+                            >
+                                <User aria-hidden="true" />
+                                会員情報
+                            </Link>
+                            <Button
+                                variant="outline"
+                                onClick={handleSignOut}
+                                disabled={isPending}
+                                className="justify-start"
+                            >
+                                <LogOut aria-hidden="true" />
+                                {isPending ? 'ログアウト中...' : 'ログアウト'}
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <Link
+                                href="/signup"
+                                onClick={() => setIsOpen(false)}
+                                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
+                            >
+                                <UserPlus aria-hidden="true" />
+                                会員登録
+                            </Link>
+                            <Link
+                                href="/login"
+                                onClick={() => setIsOpen(false)}
+                                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
+                            >
+                                <User aria-hidden="true" />
+                                ログイン
+                            </Link>
+                        </>
+                    )}
+                </nav>
+            </SheetContent>
+        </Sheet>
     );
 };

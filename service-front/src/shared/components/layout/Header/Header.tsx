@@ -10,7 +10,7 @@ interface HeaderProps {
 export const Header = ({ actions }: HeaderProps) => {
     return (
         <header className="border-border border-b bg-background">
-            <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
+            <div className="flex h-14 items-center justify-between px-4">
                 <Link href="/" className="font-semibold text-foreground text-lg">
                     {SITE_NAME}
                 </Link>
