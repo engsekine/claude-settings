@@ -5,7 +5,13 @@ const meta = {
     title: 'features/dives/DiveForm',
     component: DiveForm,
     tags: ['autodocs'],
-    parameters: { layout: 'padded' },
+    parameters: {
+        layout: 'padded',
+        nextjs: {
+            appDirectory: true,
+            navigation: { pathname: '/dives/new' },
+        },
+    },
 } satisfies Meta<typeof DiveForm>;
 
 export default meta;
