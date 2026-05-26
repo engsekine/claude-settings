@@ -4,9 +4,11 @@ import { vi } from 'vitest';
 import { DiveSearchBar } from './DiveSearchBar';
 
 describe('DiveSearchBar', () => {
-    it('search role の form を描画する', () => {
-        render(<DiveSearchBar onSubmit={vi.fn()} />);
-        expect(screen.getByRole('search', { name: 'ダイビングログ検索' })).toBeInTheDocument();
+    it('search landmark として <search> を描画する', () => {
+        // testing-library / jsdom が <search> 要素の暗黙ロール（search）を未対応のため、querySelector で代替
+        const { container } = render(<DiveSearchBar onSubmit={vi.fn()} />);
+        const searchLandmark = container.querySelector('search[aria-label="ダイビングログ検索"]');
+        expect(searchLandmark).not.toBeNull();
     });
 
     it('検索ボタンを押すと入力値で onSubmit を呼ぶ', async () => {
