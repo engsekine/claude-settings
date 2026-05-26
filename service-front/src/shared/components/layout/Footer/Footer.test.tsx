@@ -9,11 +9,12 @@ describe('Footer', () => {
         expect(screen.getByRole('navigation', { name: 'フッターナビゲーション' })).toBeInTheDocument();
     });
 
-    it('4 つの基本リンクを表示する', () => {
+    it('基本リンクを表示する', () => {
         render(<Footer />);
 
         const expectedLinks = [
             { label: 'ホーム', href: '/' },
+            { label: 'ダイビングログ', href: '/dives' },
             { label: 'チャット', href: '/chat' },
             { label: '利用規約', href: '/terms' },
             { label: 'プライバシーポリシー', href: '/privacy-policy' },

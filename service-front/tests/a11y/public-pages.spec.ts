@@ -14,8 +14,8 @@ const EXCLUDED_GROUPS = new Set(['(authenticated)']);
  * `src/app/` 配下を再帰スキャンし、route group `()` を除いた URL に変換する。
  * 動的セグメント（`[id]` など）と `api/` は範囲外。
  */
-function discoverPages(dir: string, urlSegments: string[] = []): { path: string; name: string }[] {
-    const results: { path: string; name: string }[] = [];
+function discoverPages(dir: string, urlSegments: string[] = []): string[] {
+    const results: string[] = [];
 
     for (const entry of readdirSync(dir)) {
         const fullPath = join(dir, entry);
@@ -30,8 +30,7 @@ function discoverPages(dir: string, urlSegments: string[] = []): { path: string;
             results.push(...discoverPages(fullPath, nextSegments));
         } else if (entry === 'page.tsx' || entry === 'page.ts') {
             const path = urlSegments.length === 0 ? '/' : `/${urlSegments.join('/')}`;
-            const name = path === '/' ? 'ホーム' : path;
-            results.push({ path, name });
+            results.push(path);
         }
     }
 
@@ -40,9 +39,9 @@ function discoverPages(dir: string, urlSegments: string[] = []): { path: string;
 
 const PUBLIC_PAGES = discoverPages(APP_DIR);
 
-for (const page of PUBLIC_PAGES) {
-    test(`${page.name} - WCAG 2.1 AA 違反なし`, async ({ page: playwrightPage }) => {
-        await playwrightPage.goto(page.path);
+for (const path of PUBLIC_PAGES) {
+    test(`${path} - WCAG 2.1 AA 違反なし`, async ({ page: playwrightPage }) => {
+        await playwrightPage.goto(path);
         await playwrightPage.waitForLoadState('networkidle');
 
         const results = await new AxeBuilder({ page: playwrightPage })

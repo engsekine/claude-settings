@@ -1,3 +1,8 @@
+import { buttonVariants } from '@repo/ui/components/button';
+import Link from 'next/link';
+
+import { DiveList, listDives } from '@/features/dives';
+import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
 import { generatePageMetadata } from '@/shared/config/metadata';
 
 export const metadata = generatePageMetadata(
@@ -9,12 +14,21 @@ export const metadata = generatePageMetadata(
     { noIndex: true },
 );
 
-/** 002 ログ CRUD で本実装する。現状は認証ガード確認用の仮ページ。 */
-export default function DivesPage() {
+export default async function DivesPage() {
+    const initialPage = await listDives();
+
     return (
-        <div className="mx-auto w-full max-w-5xl px-4 py-8">
-            <h1 className="font-semibold text-2xl">ダイビングログ</h1>
-            <p className="mt-4 text-muted-foreground">ここに 002 でログ一覧を実装します。</p>
+        <div className="flex flex-1 flex-col">
+            <Breadcrumbs breadcrumbs={[{ name: 'ダイビングログ' }]} />
+            <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8">
+                <div className="flex items-center justify-between">
+                    <h1 className="font-semibold text-2xl">ダイビングログ</h1>
+                    <Link href="/dives/new" className={buttonVariants({ variant: 'default' })}>
+                        新規作成
+                    </Link>
+                </div>
+                <DiveList initialPage={initialPage} />
+            </div>
         </div>
     );
 }

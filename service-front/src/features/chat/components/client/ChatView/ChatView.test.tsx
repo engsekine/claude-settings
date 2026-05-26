@@ -5,7 +5,14 @@ import type { Message, StreamingStatus } from '../../../types';
 
 const useChatMock = vi.fn();
 const setStreamingStatus = vi.fn();
-const mockChatStoreState = { setStreamingStatus };
+const mockChatStoreState = {
+    setStreamingStatus,
+    conversations: [],
+    activeConversationId: null,
+    createConversation: vi.fn(),
+    setActiveConversation: vi.fn(),
+    deleteConversation: vi.fn(),
+};
 
 vi.mock('../../../hooks/use-chat', () => ({
     useChat: () => useChatMock(),

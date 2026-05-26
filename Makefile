@@ -3,7 +3,7 @@ CLAUDE_DIR := $(HOME)/.claude
 
 CLAUDE_TARGETS := skills agents rules
 
-.PHONY: link unlink re status help front-setup front-dev front-dev-https front-build front-test front-lint front-format front-validate front-clean front-up front-down front-logs
+.PHONY: link unlink re status help front-setup front-dev front-dev-https front-build front-test front-lint front-format front-validate front-clean front-up front-down front-logs front-storybook front-build-storybook
 
 ## グローバルの ~/.claude に対してシンボリックリンクを作成する
 link:
@@ -113,6 +113,12 @@ front-validate:
 front-clean:
 	$(MAKE) -C service-front clean
 
+front-storybook:
+	$(MAKE) -C service-front storybook
+
+front-build-storybook:
+	$(MAKE) -C service-front build-storybook
+
 help:
 	@echo "Usage:"
 	@echo ""
@@ -135,3 +141,5 @@ help:
 	@echo "  make front-format     フォーマット実行"
 	@echo "  make front-validate   すべてのチェックを実行"
 	@echo "  make front-clean      クリーンアップ"
+	@echo "  make front-storybook       Storybook開発サーバー起動（http://localhost:6006）"
+	@echo "  make front-build-storybook Storybookを静的ビルド"

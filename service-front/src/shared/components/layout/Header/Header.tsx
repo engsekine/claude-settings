@@ -23,7 +23,7 @@ export const Header = ({ actions }: HeaderProps) => {
                                     href="/"
                                     className="text-muted-foreground text-sm transition-colors hover:text-foreground"
                                 >
-                                    Home
+                                    ホーム
                                 </Link>
                             </li>
                             <li>
@@ -31,7 +31,15 @@ export const Header = ({ actions }: HeaderProps) => {
                                     href="/about"
                                     className="text-muted-foreground text-sm transition-colors hover:text-foreground"
                                 >
-                                    About
+                                    概要
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
+                                    href="/dives"
+                                    className="text-muted-foreground text-sm transition-colors hover:text-foreground"
+                                >
+                                    ダイビングログ
                                 </Link>
                             </li>
                         </ul>

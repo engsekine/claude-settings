@@ -51,7 +51,7 @@ export const Breadcrumbs = ({ breadcrumbs }: BreadcrumbsProps) => {
                 // biome-ignore lint/security/noDangerouslySetInnerHtml: <JSON-LD 構造化データの埋め込みは React の標準的なパターンであり、JSON.stringify でエスケープ済みのため XSS リスクはない>
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
-            <Breadcrumb className="mx-auto w-full max-w-5xl px-4 pt-4">
+            <Breadcrumb aria-label="パンくずリスト" className="mx-auto w-full max-w-5xl px-4 pt-4">
                 <BreadcrumbList>
                     <BreadcrumbItem>
                         <BreadcrumbLink render={<Link href="/" />}>ホーム</BreadcrumbLink>

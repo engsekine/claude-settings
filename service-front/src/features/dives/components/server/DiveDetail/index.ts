@@ -1,0 +1,1 @@
+export { DiveDetail } from './DiveDetail';

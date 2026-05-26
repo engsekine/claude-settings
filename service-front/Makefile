@@ -1,4 +1,4 @@
-.PHONY: help setup cert clean clean-cert dev dev-https build test lint format type-check validate up down logs
+.PHONY: help setup cert clean clean-cert dev dev-https build test lint format type-check validate up down logs storybook build-storybook
 
 COMPOSE := docker compose -f docker-compose.dev.yml
 SERVICE := app
@@ -17,12 +17,16 @@ help:
 	@echo "  make dev-https   開発サーバー起動（HTTPS）"
 	@echo ""
 	@echo "  [ビルド・テスト]"
-	@echo "  make build       プロダクションビルド"
-	@echo "  make test        テスト実行"
-	@echo "  make lint        Lint実行"
-	@echo "  make format      フォーマット実行"
-	@echo "  make type-check  型チェック"
-	@echo "  make validate    すべてのチェックを実行"
+	@echo "  make build           プロダクションビルド"
+	@echo "  make test            テスト実行"
+	@echo "  make lint            Lint実行"
+	@echo "  make format          フォーマット実行"
+	@echo "  make type-check      型チェック"
+	@echo "  make validate        すべてのチェックを実行"
+	@echo ""
+	@echo "  [Storybook]"
+	@echo "  make storybook       Storybook開発サーバー起動（http://localhost:6006）"
+	@echo "  make build-storybook Storybookを静的ビルド"
 	@echo ""
 	@echo "  [セットアップ]"
 	@echo "  make setup       初回セットアップ（npm install + SSL証明書生成）"
@@ -127,3 +131,11 @@ type-check:
 ## すべてのチェックを実行
 validate:
 	$(COMPOSE) exec $(SERVICE) npm run validate
+
+## Storybook開発サーバー起動（http://localhost:6006）
+storybook:
+	$(COMPOSE) run --rm -p 6006:6006 $(SERVICE) npm run storybook
+
+## Storybookを静的ビルド
+build-storybook:
+	$(COMPOSE) exec $(SERVICE) npm run build-storybook

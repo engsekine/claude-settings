@@ -10,17 +10,20 @@ describe('Header', () => {
         expect(siteNameLink).toHaveAttribute('href', '/');
     });
 
-    it('メインナビゲーションのリンク（Home, About）を表示する', () => {
+    it('メインナビゲーションのリンク（ホーム, 概要, ダイビングログ）を表示する', () => {
         render(<Header />);
 
         const nav = screen.getByRole('navigation', { name: 'メインナビゲーション' });
         expect(nav).toBeInTheDocument();
 
-        const home = screen.getByRole('link', { name: 'Home' });
+        const home = screen.getByRole('link', { name: 'ホーム' });
         expect(home).toHaveAttribute('href', '/');
 
-        const about = screen.getByRole('link', { name: 'About' });
+        const about = screen.getByRole('link', { name: '概要' });
         expect(about).toHaveAttribute('href', '/about');
+
+        const dives = screen.getByRole('link', { name: 'ダイビングログ' });
+        expect(dives).toHaveAttribute('href', '/dives');
     });
 
     it('actions プロパティで渡された要素を表示する', () => {
