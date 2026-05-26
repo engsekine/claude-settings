@@ -98,7 +98,8 @@
             "complexity": {
                 "useOptionalChain": "error",
                 "useArrowFunction": "error",
-                "noUselessTypeConstraint": "error"
+                "noUselessTypeConstraint": "error",
+                "useLiteralKeys": "off"
             },
             "a11y": {
                 "recommended": true,

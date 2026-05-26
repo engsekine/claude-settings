@@ -49,7 +49,7 @@ export const DiveList = ({ initialPage }: DiveListProps) => {
                 </p>
             )}
 
-            <ul role="list" className="flex flex-col gap-3">
+            <ul className="flex flex-col gap-3">
                 {items.map((dive) => (
                     <li key={dive.id}>
                         <DiveCard dive={dive} />

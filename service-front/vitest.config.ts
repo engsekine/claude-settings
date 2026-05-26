@@ -2,14 +2,33 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
 import { playwright } from '@vitest/browser-playwright';
-import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 
 const dirname = typeof __dirname !== 'undefined' ? __dirname : path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
-    plugins: [tsconfigPaths()],
+    resolve: {
+        tsconfigPaths: true,
+    },
     test: {
+        coverage: {
+            provider: 'v8',
+            include: ['src/**/*.{ts,tsx}'],
+            exclude: [
+                'src/**/*.d.ts',
+                'src/**/*.stories.tsx',
+                'src/app/**/layout.tsx',
+                'src/app/**/loading.tsx',
+                'src/app/**/error.tsx',
+                'src/app/**/not-found.tsx',
+            ],
+            thresholds: {
+                branches: 70,
+                functions: 70,
+                lines: 70,
+                statements: 70,
+            },
+        },
         projects: [
             {
                 extends: true,
@@ -20,24 +39,6 @@ export default defineConfig({
                     setupFiles: ['./vitest.setup.ts'],
                     include: ['src/**/*.{test,spec}.{ts,tsx}', '__tests__/**/*.{test,spec}.{ts,tsx}'],
                     exclude: ['node_modules', '.next', 'playwright', '**/*.stories.{ts,tsx}'],
-                    coverage: {
-                        provider: 'v8',
-                        include: ['src/**/*.{ts,tsx}'],
-                        exclude: [
-                            'src/**/*.d.ts',
-                            'src/**/*.stories.tsx',
-                            'src/app/**/layout.tsx',
-                            'src/app/**/loading.tsx',
-                            'src/app/**/error.tsx',
-                            'src/app/**/not-found.tsx',
-                        ],
-                        thresholds: {
-                            branches: 70,
-                            functions: 70,
-                            lines: 70,
-                            statements: 70,
-                        },
-                    },
                 },
             },
             {

@@ -7,8 +7,8 @@ import type { Database } from './types';
 export const updateSession = async (request: NextRequest) => {
     let supabaseResponse = NextResponse.next({ request });
 
-    const url = process.env.SUPABASE_INTERNAL_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const url = process.env['SUPABASE_INTERNAL_URL'] ?? process.env['NEXT_PUBLIC_SUPABASE_URL'];
+    const anonKey = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'];
 
     if (!url) {
         throw new Error('環境変数 SUPABASE_INTERNAL_URL または NEXT_PUBLIC_SUPABASE_URL が設定されていません');

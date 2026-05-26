@@ -27,25 +27,50 @@ export const Headings: Story = {
 
 export const Lists: Story = {
     args: {
-        content: ['## 順序なし', '- りんご', '- バナナ', '- みかん', '', '## 順序付き', '1. 一番目', '2. 二番目', '3. 三番目'].join('\n'),
+        content: [
+            '## 順序なし',
+            '- りんご',
+            '- バナナ',
+            '- みかん',
+            '',
+            '## 順序付き',
+            '1. 一番目',
+            '2. 二番目',
+            '3. 三番目',
+        ].join('\n'),
     },
 };
 
 export const Links: Story = {
     args: {
-        content: '安全なリンク: [公式サイト](https://example.com) / 不正リンク（描画されない）: [危険](javascript:alert(1))',
+        content:
+            '安全なリンク: [公式サイト](https://example.com) / 不正リンク（描画されない）: [危険](javascript:alert(1))',
     },
 };
 
 export const CodeBlock: Story = {
     args: {
-        content: ['インラインは `useState` のように表示されます。', '', '```ts', "const greet = (name: string) => `Hello, ${name}`;", '```'].join('\n'),
+        content: [
+            'インラインは `useState` のように表示されます。',
+            '',
+            '```ts',
+            // biome-ignore lint/suspicious/noTemplateCurlyInString: Markdown コードブロックの内容として TS のテンプレートリテラル例を表示するため
+            'const greet = (name: string) => `Hello, ${name}`;',
+            '```',
+        ].join('\n'),
     },
 };
 
 export const Table: Story = {
     args: {
-        content: ['## 比較表', '', '| プラン | 月額 | 機能 |', '|--------|------|------|', '| Free   | ¥0   | 基本 |', '| Pro    | ¥980 | 全機能 |'].join('\n'),
+        content: [
+            '## 比較表',
+            '',
+            '| プラン | 月額 | 機能 |',
+            '|--------|------|------|',
+            '| Free   | ¥0   | 基本 |',
+            '| Pro    | ¥980 | 全機能 |',
+        ].join('\n'),
     },
 };
 

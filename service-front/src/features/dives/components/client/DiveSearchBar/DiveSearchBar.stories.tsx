@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { fn } from 'storybook/test';
 import { DiveSearchBar } from './DiveSearchBar';
 
 const meta = {
@@ -6,7 +7,7 @@ const meta = {
     component: DiveSearchBar,
     tags: ['autodocs'],
     parameters: { layout: 'padded' },
-    args: { onSubmit: () => {} },
+    args: { onSubmit: fn() },
 } satisfies Meta<typeof DiveSearchBar>;
 
 export default meta;

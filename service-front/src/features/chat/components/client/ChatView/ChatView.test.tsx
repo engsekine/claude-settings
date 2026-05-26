@@ -26,12 +26,14 @@ vi.mock('../../../stores/chat-store', () => ({
     useChatStore: <T,>(selector: (state: typeof mockChatStoreState) => T): T => selector(mockChatStoreState),
 }));
 
-const buildChatState = (overrides: Partial<{
-    messages: Message[];
-    streamingStatus: StreamingStatus;
-    sendMessage: ReturnType<typeof vi.fn>;
-    stopStreaming: ReturnType<typeof vi.fn>;
-}> = {}) => ({
+const buildChatState = (
+    overrides: Partial<{
+        messages: Message[];
+        streamingStatus: StreamingStatus;
+        sendMessage: ReturnType<typeof vi.fn>;
+        stopStreaming: ReturnType<typeof vi.fn>;
+    }> = {},
+) => ({
     messages: [],
     streamingStatus: 'idle' as StreamingStatus,
     sendMessage: vi.fn(),

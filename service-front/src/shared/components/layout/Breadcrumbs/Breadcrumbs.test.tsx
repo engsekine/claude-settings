@@ -11,14 +11,7 @@ describe('Breadcrumbs', () => {
     });
 
     it('slug を持つ階層はリンクとしてレンダリングする', () => {
-        render(
-            <Breadcrumbs
-                breadcrumbs={[
-                    { name: '設定', slug: '/settings' },
-                    { name: '会員情報の編集' },
-                ]}
-            />,
-        );
+        render(<Breadcrumbs breadcrumbs={[{ name: '設定', slug: '/settings' }, { name: '会員情報の編集' }]} />);
 
         const settingsLink = screen.getByRole('link', { name: '設定' });
         expect(settingsLink).toHaveAttribute('href', '/settings');

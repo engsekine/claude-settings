@@ -13,7 +13,7 @@ export const Header = ({ actions }: HeaderProps) => {
         <header className="border-border border-b bg-background">
             <div className="flex h-14 items-center justify-between px-4">
                 <Link href="/" className="flex items-center" aria-label={SITE_NAME}>
-                    <Image src="/logo.png" alt={SITE_NAME} width={92} height={40} priority className="h-10 w-auto" />
+                    <Image src="/logo.png" alt={SITE_NAME} width={80} height={40} priority className="h-10 w-auto" />
                 </Link>
                 <div className="flex items-center gap-6">
                     <nav aria-label="メインナビゲーション">

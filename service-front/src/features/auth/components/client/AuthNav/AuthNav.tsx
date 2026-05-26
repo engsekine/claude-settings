@@ -93,7 +93,8 @@ export const AuthNav = ({ initialUser }: AuthNavProps) => {
                 <nav aria-label="アカウントナビゲーション" className="flex flex-col gap-2 p-4">
                     {isAuthenticated ? (
                         <>
-                            <p className="text-muted-foreground text-sm" aria-label="ログイン中のメールアドレス">
+                            <p className="text-muted-foreground text-sm">
+                                <span className="sr-only">ログイン中のメールアドレス: </span>
                                 {user?.email}
                             </p>
                             <Link

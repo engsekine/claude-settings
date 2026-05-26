@@ -147,9 +147,7 @@ export const listDives = async (options: ListDivesOptions = {}): Promise<DiveLis
 
     if (cursor) {
         /** (dive_date, id) の降順タプル比較を or で表現 */
-        query = query.or(
-            `dive_date.lt.${cursor.diveDate},and(dive_date.eq.${cursor.diveDate},id.lt.${cursor.id})`,
-        );
+        query = query.or(`dive_date.lt.${cursor.diveDate},and(dive_date.eq.${cursor.diveDate},id.lt.${cursor.id})`);
     }
 
     const { data, error } = await query;

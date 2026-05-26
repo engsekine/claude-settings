@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
-import { DiveCard } from './DiveCard';
 import type { DiveListItem } from '@/features/dives/types';
+import { DiveCard } from './DiveCard';
 
 const baseDive: DiveListItem = {
     id: 'dive-1',

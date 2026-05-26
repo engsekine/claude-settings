@@ -17,7 +17,7 @@ export const Footer = () => {
             <div className="mx-auto max-w-5xl px-4 py-6">
                 <div className="mb-4 flex justify-center">
                     <Link href="/" aria-label={SITE_NAME} className="inline-flex">
-                        <Image src="/logo.png" alt={SITE_NAME} width={110} height={48} className="h-12 w-auto" />
+                        <Image src="/logo.png" alt={SITE_NAME} width={96} height={48} className="h-12 w-auto" />
                     </Link>
                 </div>
                 <nav aria-label="フッターナビゲーション">

@@ -14,6 +14,7 @@ vi.mock('@/shared/lib/supabase/browser', () => ({
                             gte: () => Promise.resolve({ data: [], error: null }),
                             lte: () => Promise.resolve({ data: [], error: null }),
                             ilike: () => Promise.resolve({ data: [], error: null }),
+                            // biome-ignore lint/suspicious/noThenProperty: Supabase クエリビルダーは thenable のため、モックでも then を実装する必要がある
                             then: (resolve: (v: { data: unknown[]; error: null }) => void) =>
                                 resolve({ data: [], error: null }),
                         }),
@@ -36,10 +37,7 @@ describe('DiveList', () => {
         render(<DiveList initialPage={{ items: [], nextCursor: null }} />, { wrapper });
 
         expect(screen.getByText('ログがまだありません')).toBeInTheDocument();
-        expect(screen.getByRole('link', { name: '最初のログを記録しよう' })).toHaveAttribute(
-            'href',
-            '/dives/new',
-        );
+        expect(screen.getByRole('link', { name: '最初のログを記録しよう' })).toHaveAttribute('href', '/dives/new');
     });
 
     it('initialPage にデータがあるとカードリストを表示する', () => {

@@ -43,13 +43,7 @@ export const DeleteDiveButton = ({ diveId }: DeleteDiveButtonProps) => {
             </Button>
 
             {isOpen && (
-                <div
-                    role="presentation"
-                    onClick={(e) => {
-                        if (e.target === e.currentTarget) setIsOpen(false);
-                    }}
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-                >
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                     <div
                         role="dialog"
                         aria-modal="true"

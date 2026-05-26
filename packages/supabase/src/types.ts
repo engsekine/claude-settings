@@ -1,7 +1,377 @@
-/**
- * Supabase の Database 型定義
- *
- * TODO: `supabase gen types typescript` で生成した型に置き換える
- * 例: npx supabase gen types typescript --project-id <project-id> > src/types.ts
- */
-export type Database = Record<string, never>;
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  public: {
+    Tables: {
+      dives: {
+        Row: {
+          air_temp_c: number | null
+          avg_depth_m: number | null
+          bottom_time_min: number
+          buddy_name: string | null
+          certification_dive: boolean
+          country: string | null
+          created_at: string
+          current_condition: string | null
+          dive_date: string
+          dive_number: number | null
+          dive_site: string | null
+          dive_type: string | null
+          entry_time: string | null
+          equipment_notes: string | null
+          exit_time: string | null
+          gas_type: string | null
+          id: string
+          instructor_name: string | null
+          is_public: boolean
+          location: string
+          max_depth_m: number
+          notes: string | null
+          o2_percent: number | null
+          pressure_end_bar: number | null
+          pressure_start_bar: number | null
+          public_slug: string | null
+          suit_type: string | null
+          surface_interval_min: number | null
+          tank_type: string | null
+          tank_volume_l: number | null
+          updated_at: string
+          user_id: string
+          visibility_m: number | null
+          water_temp_c: number | null
+          wave: string | null
+          weather: string | null
+          weight_kg: number | null
+        }
+        Insert: {
+          air_temp_c?: number | null
+          avg_depth_m?: number | null
+          bottom_time_min: number
+          buddy_name?: string | null
+          certification_dive?: boolean
+          country?: string | null
+          created_at?: string
+          current_condition?: string | null
+          dive_date: string
+          dive_number?: number | null
+          dive_site?: string | null
+          dive_type?: string | null
+          entry_time?: string | null
+          equipment_notes?: string | null
+          exit_time?: string | null
+          gas_type?: string | null
+          id?: string
+          instructor_name?: string | null
+          is_public?: boolean
+          location: string
+          max_depth_m: number
+          notes?: string | null
+          o2_percent?: number | null
+          pressure_end_bar?: number | null
+          pressure_start_bar?: number | null
+          public_slug?: string | null
+          suit_type?: string | null
+          surface_interval_min?: number | null
+          tank_type?: string | null
+          tank_volume_l?: number | null
+          updated_at?: string
+          user_id: string
+          visibility_m?: number | null
+          water_temp_c?: number | null
+          wave?: string | null
+          weather?: string | null
+          weight_kg?: number | null
+        }
+        Update: {
+          air_temp_c?: number | null
+          avg_depth_m?: number | null
+          bottom_time_min?: number
+          buddy_name?: string | null
+          certification_dive?: boolean
+          country?: string | null
+          created_at?: string
+          current_condition?: string | null
+          dive_date?: string
+          dive_number?: number | null
+          dive_site?: string | null
+          dive_type?: string | null
+          entry_time?: string | null
+          equipment_notes?: string | null
+          exit_time?: string | null
+          gas_type?: string | null
+          id?: string
+          instructor_name?: string | null
+          is_public?: boolean
+          location?: string
+          max_depth_m?: number
+          notes?: string | null
+          o2_percent?: number | null
+          pressure_end_bar?: number | null
+          pressure_start_bar?: number | null
+          public_slug?: string | null
+          suit_type?: string | null
+          surface_interval_min?: number | null
+          tank_type?: string | null
+          tank_volume_l?: number | null
+          updated_at?: string
+          user_id?: string
+          visibility_m?: number | null
+          water_temp_c?: number | null
+          wave?: string | null
+          weather?: string | null
+          weight_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dives_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_details: {
+        Row: {
+          birth_on: string
+          created_at: string
+          first_name: string
+          first_name_romaji: string
+          gender: string
+          height_cm: number | null
+          last_name: string
+          last_name_romaji: string
+          nickname: string
+          updated_at: string
+          user_id: string
+          weight_kg: number | null
+        }
+        Insert: {
+          birth_on: string
+          created_at?: string
+          first_name: string
+          first_name_romaji: string
+          gender?: string
+          height_cm?: number | null
+          last_name: string
+          last_name_romaji: string
+          nickname: string
+          updated_at?: string
+          user_id: string
+          weight_kg?: number | null
+        }
+        Update: {
+          birth_on?: string
+          created_at?: string
+          first_name?: string
+          first_name_romaji?: string
+          gender?: string
+          height_cm?: number | null
+          last_name?: string
+          last_name_romaji?: string
+          nickname?: string
+          updated_at?: string
+          user_id?: string
+          weight_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_details_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          created_at: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
+  public: {
+    Enums: {},
+  },
+} as const
+

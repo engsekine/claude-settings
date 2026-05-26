@@ -21,7 +21,7 @@
         "test:coverage": "vitest run --project=unit --coverage",
         "test:storybook": "vitest run --project=storybook",
         "test:e2e": "playwright test",
-        "test:a11y": "npx playwright test tests/a11y --list ",
+        "test:a11y": "npx playwright test tests/a11y --list",
         "test:all": "npm run test && npm run test:e2e",
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build",
@@ -82,7 +82,6 @@
         "ts-node": "10.9.2",
         "typescript": "5.7.2",
         "vite": "^8.0.14",
-        "vite-tsconfig-paths": "^6.1.1",
         "vitest": "^4.1.7"
     },
     "volta": {

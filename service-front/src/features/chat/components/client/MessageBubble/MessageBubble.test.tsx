@@ -6,6 +6,7 @@ const buildMessage = (overrides: Partial<Message> = {}): Message => ({
     id: 'msg-1',
     role: 'user',
     content: 'テストメッセージ',
+    createdAt: 0,
     ...overrides,
 });
 

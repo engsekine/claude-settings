@@ -28,9 +28,7 @@ const fetchDivesPage = async ({ filter, cursor }: FetchPageArgs): Promise<DiveLi
     if (filter.location) query = query.ilike('location', `%${filter.location}%`);
 
     if (cursor) {
-        query = query.or(
-            `dive_date.lt.${cursor.diveDate},and(dive_date.eq.${cursor.diveDate},id.lt.${cursor.id})`,
-        );
+        query = query.or(`dive_date.lt.${cursor.diveDate},and(dive_date.eq.${cursor.diveDate},id.lt.${cursor.id})`);
     }
 
     const { data, error } = await query;
@@ -72,8 +70,7 @@ const fetchDivesPage = async ({ filter, cursor }: FetchPageArgs): Promise<DiveLi
     };
 };
 
-const isEmptyFilter = (filter: DiveListFilter): boolean =>
-    !filter.dateFrom && !filter.dateTo && !filter.location;
+const isEmptyFilter = (filter: DiveListFilter): boolean => !filter.dateFrom && !filter.dateTo && !filter.location;
 
 /**
  * dives 一覧の検索 + 追加読み込みフック。
@@ -82,15 +79,13 @@ const isEmptyFilter = (filter: DiveListFilter): boolean =>
  */
 export const useDives = (filter: DiveListFilter, initialPage?: DiveListPage) => {
     const initialData: InfiniteData<DiveListPage, DiveCursor | null> | undefined =
-        initialPage && isEmptyFilter(filter)
-            ? { pages: [initialPage], pageParams: [null] }
-            : undefined;
+        initialPage && isEmptyFilter(filter) ? { pages: [initialPage], pageParams: [null] } : undefined;
 
     return useInfiniteQuery({
         queryKey: ['dives', filter],
         queryFn: ({ pageParam }) => fetchDivesPage({ filter, cursor: pageParam }),
         initialPageParam: null as DiveCursor | null,
         getNextPageParam: (lastPage) => lastPage.nextCursor,
-        initialData,
+        ...(initialData ? { initialData } : {}),
     });
 };

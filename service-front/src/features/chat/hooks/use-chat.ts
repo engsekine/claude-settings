@@ -68,6 +68,10 @@ export const useChat = () => {
                 .conversations.find((c) => c.id === conversationId)
                 ?.messages.filter((m) => m.content !== '')
                 .map(({ role, content }) => ({ role, content }));
+            if (!apiMessages) {
+                setStreamingStatus('error');
+                return;
+            }
 
             /** AbortController を生成してストリーミングに渡す */
             const abortController = new AbortController();

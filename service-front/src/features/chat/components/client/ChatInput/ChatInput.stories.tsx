@@ -26,6 +26,6 @@ export const Streaming: Story = {
     args: { streamingStatus: 'streaming' },
 };
 
-export const Error: Story = {
+export const ErrorState: Story = {
     args: { streamingStatus: 'error' },
 };

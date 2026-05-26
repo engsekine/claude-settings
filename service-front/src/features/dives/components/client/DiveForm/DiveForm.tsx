@@ -303,9 +303,7 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                             min={0}
                             autoComplete="off"
                             aria-invalid={!!errors.surfaceIntervalMin}
-                            aria-describedby={
-                                errors.surfaceIntervalMin ? 'surfaceIntervalMin-error' : undefined
-                            }
+                            aria-describedby={errors.surfaceIntervalMin ? 'surfaceIntervalMin-error' : undefined}
                             {...register('surfaceIntervalMin')}
                         />
                         {errors.surfaceIntervalMin && (
@@ -383,12 +381,7 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                         <label htmlFor="currentCondition" className="font-medium text-sm">
                             流れ
                         </label>
-                        <Input
-                            id="currentCondition"
-                            type="text"
-                            autoComplete="off"
-                            {...register('currentCondition')}
-                        />
+                        <Input id="currentCondition" type="text" autoComplete="off" {...register('currentCondition')} />
                     </div>
                 </div>
             </section>
@@ -553,12 +546,7 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                         <label htmlFor="instructorName" className="font-medium text-sm">
                             インストラクター名
                         </label>
-                        <Input
-                            id="instructorName"
-                            type="text"
-                            autoComplete="off"
-                            {...register('instructorName')}
-                        />
+                        <Input id="instructorName" type="text" autoComplete="off" {...register('instructorName')} />
                     </div>
                 </div>
 

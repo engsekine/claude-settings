@@ -20,12 +20,13 @@ export const DiveCard = ({ dive }: DiveCardProps) => {
         <article className="rounded-lg border border-border bg-background p-4 transition-colors hover:bg-muted/50">
             <Link href={`/dives/${dive.id}`} className="flex flex-col gap-2">
                 <div className="flex items-center justify-between gap-2">
-                    <span className="text-muted-foreground text-sm" aria-label="潜水日">
+                    <span className="text-muted-foreground text-sm">
+                        <span className="sr-only">潜水日: </span>
                         {formatDate(dive.diveDate)}
                     </span>
                     {dive.diveNumber !== null && (
-                        <span className="text-muted-foreground text-xs" aria-label="ダイブ番号">
-                            #{dive.diveNumber}
+                        <span className="text-muted-foreground text-xs">
+                            <span className="sr-only">ダイブ番号: </span>#{dive.diveNumber}
                         </span>
                     )}
                 </div>

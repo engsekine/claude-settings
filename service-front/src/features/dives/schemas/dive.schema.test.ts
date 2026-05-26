@@ -19,9 +19,7 @@ describe('diveSchema', () => {
     });
 
     it('location が空だと失敗する', async () => {
-        await expect(diveSchema.validate({ ...validBase, location: '' })).rejects.toThrow(
-            /エリア \/ ポイント名/,
-        );
+        await expect(diveSchema.validate({ ...validBase, location: '' })).rejects.toThrow(/エリア \/ ポイント名/);
     });
 
     it('maxDepthM が 0 以下だと失敗する', async () => {
@@ -34,9 +32,7 @@ describe('diveSchema', () => {
     });
 
     it('未来日付の diveDate は失敗する', async () => {
-        await expect(diveSchema.validate({ ...validBase, diveDate: '9999-12-31' })).rejects.toThrow(
-            /正しい日付/,
-        );
+        await expect(diveSchema.validate({ ...validBase, diveDate: '9999-12-31' })).rejects.toThrow(/正しい日付/);
     });
 
     it('空文字の任意数値フィールドは null に変換される', async () => {

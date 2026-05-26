@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
-
-import { DiveForm, getDive } from '@/features/dives';
 import type { DiveFormValues } from '@/features/dives';
+import { DiveForm, getDive } from '@/features/dives';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
 import { generatePageMetadata } from '@/shared/config/metadata';
 

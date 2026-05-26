@@ -12,6 +12,7 @@ const buildMessages = (count: number): Message[] =>
         id: `msg-${i + 1}`,
         role: i % 2 === 0 ? ('user' as const) : ('assistant' as const),
         content: `メッセージ ${i + 1}`,
+        createdAt: 0,
     }));
 
 describe('MessageList', () => {

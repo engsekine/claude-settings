@@ -49,7 +49,14 @@ export const AssistantWithCodeBlock: Story = {
         message: {
             id: 'assistant-code',
             role: 'assistant',
-            content: ['以下のコードを試してください:', '', '```ts', 'const greet = (name: string) => `Hello, ${name}`;', '```'].join('\n'),
+            content: [
+                '以下のコードを試してください:',
+                '',
+                '```ts',
+                // biome-ignore lint/suspicious/noTemplateCurlyInString: Markdown コードブロックの内容として TS のテンプレートリテラル例を表示するため
+                'const greet = (name: string) => `Hello, ${name}`;',
+                '```',
+            ].join('\n'),
         },
     },
 };

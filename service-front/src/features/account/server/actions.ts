@@ -5,6 +5,8 @@ import { revalidatePath } from 'next/cache';
 import type { Gender } from '@/shared/constants/gender';
 import { createClient } from '@/shared/lib/supabase/server';
 
+import { toProfile, toUserDetailsUpdate } from './mappers/profile';
+
 export interface UpdateProfileInput {
     lastName: string;
     firstName: string;
@@ -62,18 +64,7 @@ export const getProfile = async (): Promise<ProfileData | null> => {
         return null;
     }
 
-    return {
-        email: user.email ?? '',
-        lastName: data.last_name,
-        firstName: data.first_name,
-        lastNameRomaji: data.last_name_romaji,
-        firstNameRomaji: data.first_name_romaji,
-        nickname: data.nickname,
-        birthOn: data.birth_on,
-        gender: data.gender as Gender,
-        heightCm: data.height_cm === null ? null : Number(data.height_cm),
-        weightKg: data.weight_kg === null ? null : Number(data.weight_kg),
-    };
+    return toProfile(data, user.email ?? '');
 };
 
 export const updateProfile = async (input: UpdateProfileInput): Promise<UpdateProfileResult> => {
@@ -84,20 +75,7 @@ export const updateProfile = async (input: UpdateProfileInput): Promise<UpdatePr
     } = await supabase.auth.getUser();
     if (!user) return { error: 'ログインが必要です' };
 
-    const { error } = await supabase
-        .from('user_details')
-        .update({
-            last_name: input.lastName,
-            first_name: input.firstName,
-            last_name_romaji: input.lastNameRomaji,
-            first_name_romaji: input.firstNameRomaji,
-            nickname: input.nickname,
-            birth_on: input.birthOn,
-            gender: input.gender,
-            height_cm: input.heightCm,
-            weight_kg: input.weightKg,
-        })
-        .eq('user_id', user.id);
+    const { error } = await supabase.from('user_details').update(toUserDetailsUpdate(input)).eq('user_id', user.id);
 
     if (error) {
         console.error('[updateProfile] supabase error:', {

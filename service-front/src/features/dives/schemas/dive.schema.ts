@@ -43,10 +43,34 @@ export const diveSchema = yup.object({
         .min(1, 'エリア / ポイント名を入力してください')
         .max(120, 'エリア / ポイント名は120文字以内で入力してください')
         .required('エリア / ポイント名を入力してください'),
-    country: yup.string().trim().max(60).transform((v) => (v === '' ? null : v)).nullable().default(null),
-    diveSite: yup.string().trim().max(120).transform((v) => (v === '' ? null : v)).nullable().default(null),
-    diveType: yup.string().trim().max(40).transform((v) => (v === '' ? null : v)).nullable().default(null),
-    weather: yup.string().trim().max(60).transform((v) => (v === '' ? null : v)).nullable().default(null),
+    country: yup
+        .string()
+        .trim()
+        .max(60)
+        .transform((v) => (v === '' ? null : v))
+        .nullable()
+        .default(null),
+    diveSite: yup
+        .string()
+        .trim()
+        .max(120)
+        .transform((v) => (v === '' ? null : v))
+        .nullable()
+        .default(null),
+    diveType: yup
+        .string()
+        .trim()
+        .max(40)
+        .transform((v) => (v === '' ? null : v))
+        .nullable()
+        .default(null),
+    weather: yup
+        .string()
+        .trim()
+        .max(60)
+        .transform((v) => (v === '' ? null : v))
+        .nullable()
+        .default(null),
     airTempC: yup
         .number()
         .typeError('気温は数値で入力してください')
@@ -71,8 +95,20 @@ export const diveSchema = yup.object({
         .min(0, '透明度は0m以上で入力してください')
         .max(100, '透明度は100m以下で入力してください')
         .default(null),
-    wave: yup.string().trim().max(60).transform((v) => (v === '' ? null : v)).nullable().default(null),
-    currentCondition: yup.string().trim().max(60).transform((v) => (v === '' ? null : v)).nullable().default(null),
+    wave: yup
+        .string()
+        .trim()
+        .max(60)
+        .transform((v) => (v === '' ? null : v))
+        .nullable()
+        .default(null),
+    currentCondition: yup
+        .string()
+        .trim()
+        .max(60)
+        .transform((v) => (v === '' ? null : v))
+        .nullable()
+        .default(null),
     maxDepthM: yup
         .number()
         .typeError('最大水深は数値で入力してください')
@@ -102,7 +138,13 @@ export const diveSchema = yup.object({
         .integer('水面休息時間は整数で入力してください')
         .min(0, '水面休息時間は0分以上で入力してください')
         .default(null),
-    tankType: yup.string().trim().max(40).transform((v) => (v === '' ? null : v)).nullable().default(null),
+    tankType: yup
+        .string()
+        .trim()
+        .max(40)
+        .transform((v) => (v === '' ? null : v))
+        .nullable()
+        .default(null),
     tankVolumeL: yup
         .number()
         .typeError('タンク容量は数値で入力してください')
@@ -111,7 +153,13 @@ export const diveSchema = yup.object({
         .positive('タンク容量は0より大きい値を入力してください')
         .max(50, 'タンク容量は50L以下で入力してください')
         .default(null),
-    gasType: yup.string().trim().max(40).transform((v) => (v === '' ? null : v)).nullable().default(null),
+    gasType: yup
+        .string()
+        .trim()
+        .max(40)
+        .transform((v) => (v === '' ? null : v))
+        .nullable()
+        .default(null),
     o2Percent: yup
         .number()
         .typeError('酸素濃度は数値で入力してください')
@@ -146,12 +194,42 @@ export const diveSchema = yup.object({
         .min(0, 'ウェイトは0kg以上で入力してください')
         .max(30, 'ウェイトは30kg以下で入力してください')
         .default(null),
-    suitType: yup.string().trim().max(40).transform((v) => (v === '' ? null : v)).nullable().default(null),
-    equipmentNotes: yup.string().trim().max(1000).transform((v) => (v === '' ? null : v)).nullable().default(null),
-    buddyName: yup.string().trim().max(100).transform((v) => (v === '' ? null : v)).nullable().default(null),
-    instructorName: yup.string().trim().max(100).transform((v) => (v === '' ? null : v)).nullable().default(null),
+    suitType: yup
+        .string()
+        .trim()
+        .max(40)
+        .transform((v) => (v === '' ? null : v))
+        .nullable()
+        .default(null),
+    equipmentNotes: yup
+        .string()
+        .trim()
+        .max(1000)
+        .transform((v) => (v === '' ? null : v))
+        .nullable()
+        .default(null),
+    buddyName: yup
+        .string()
+        .trim()
+        .max(100)
+        .transform((v) => (v === '' ? null : v))
+        .nullable()
+        .default(null),
+    instructorName: yup
+        .string()
+        .trim()
+        .max(100)
+        .transform((v) => (v === '' ? null : v))
+        .nullable()
+        .default(null),
     certificationDive: yup.boolean().default(false).required(),
-    notes: yup.string().trim().max(2000).transform((v) => (v === '' ? null : v)).nullable().default(null),
+    notes: yup
+        .string()
+        .trim()
+        .max(2000)
+        .transform((v) => (v === '' ? null : v))
+        .nullable()
+        .default(null),
 });
 
 export type DiveFormValues = yup.InferType<typeof diveSchema>;

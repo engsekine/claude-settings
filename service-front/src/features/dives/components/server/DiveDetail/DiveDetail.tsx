@@ -21,17 +21,17 @@ const formatTime = (value: string | null): string | null => {
 const Field = ({ label, value }: { label: string; value: string | number | null | undefined }) => {
     if (value === null || value === undefined || value === '') return null;
     return (
-        <div className="flex flex-col gap-0.5">
+        <dl className="flex flex-col gap-0.5">
             <dt className="font-medium text-muted-foreground text-xs">{label}</dt>
             <dd className="text-sm">{value}</dd>
-        </div>
+        </dl>
     );
 };
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
     <section className="flex flex-col gap-3">
         <h2 className="font-semibold text-base">{title}</h2>
-        <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">{children}</dl>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{children}</div>
     </section>
 );
 
@@ -87,14 +87,8 @@ export const DiveDetail = ({ dive }: DiveDetailProps) => {
                 <Field label="タンク容量" value={dive.tankVolumeL === null ? null : `${dive.tankVolumeL}L`} />
                 <Field label="ガス種類" value={dive.gasType} />
                 <Field label="酸素濃度" value={dive.o2Percent === null ? null : `${dive.o2Percent}%`} />
-                <Field
-                    label="開始残圧"
-                    value={dive.pressureStartBar === null ? null : `${dive.pressureStartBar}bar`}
-                />
-                <Field
-                    label="終了残圧"
-                    value={dive.pressureEndBar === null ? null : `${dive.pressureEndBar}bar`}
-                />
+                <Field label="開始残圧" value={dive.pressureStartBar === null ? null : `${dive.pressureStartBar}bar`} />
+                <Field label="終了残圧" value={dive.pressureEndBar === null ? null : `${dive.pressureEndBar}bar`} />
                 <Field label="ウェイト" value={dive.weightKg === null ? null : `${dive.weightKg}kg`} />
                 <Field label="スーツ" value={dive.suitType} />
             </Section>
