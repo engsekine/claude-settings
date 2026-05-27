@@ -62,7 +62,12 @@ service-front/src/
 
 ## 5. 仕様書の構成（Spec-Driven Development）
 
-機能ごとに `specs/<連番>-<機能名>/` を切り、以下 3 ファイルを置く。
+仕様書は用途に応じて 2 種類に分けて管理する。
+
+- `specs/features/<連番>-<機能名>/` — 機能単位（実装順）
+- `specs/screens/<画面名>.md` — 画面単位（横断的な参照ドキュメント）
+
+機能仕様は以下 3 ファイルを置く。
 
 | ファイル | 内容 |
 |---------|------|
@@ -70,12 +75,12 @@ service-front/src/
 | `design.md` | 技術設計（HOW: データモデル / API / 画面） |
 | `tasks.md` | 実装タスク（DO: チェックボックス） |
 
-### 仕様書一覧
+### 機能仕様一覧
 
 | ID | 機能 | フェーズ | パス |
 |----|------|---------|------|
-| 001 | 認証 | Phase 1 | `specs/001-auth/` |
-| 002 | ログ CRUD | Phase 1 | `specs/002-dive-log-crud/` |
+| 001 | 認証 | Phase 1 | `specs/features/001-auth/` |
+| 002 | ログ CRUD | Phase 1 | `specs/features/002-dive-log-crud/` |
 | 003 | PDF 出力 | Phase 2 | 未作成 |
 | 004 | 公開機能 | Phase 2 | 未作成 |
 
@@ -83,4 +88,5 @@ service-front/src/
 
 - 実装前に `requirements.md` → `design.md` → `tasks.md` の順で書く
 - 実装中に決まった仕様は逐次反映する（Living Document）
-- AI への指示は「`specs/002-dive-log-crud/tasks.md` の T5 をやって」のようにファイル + タスク番号で指定する
+- AI への指示は「`specs/features/002-dive-log-crud/tasks.md` の T5 をやって」のようにファイル + タスク番号で指定する
+- 画面単位の仕様（項目定義・遷移・状態）は `specs/screens/<画面名>.md` に分離し、対応する機能仕様からリンクで紐付ける

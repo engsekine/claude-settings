@@ -46,7 +46,9 @@ git log main..HEAD --oneline      # コミット一覧
 | `eslint.config.*` / `.eslintrc.*` | ESLint設定（ルートのみ） |
 | `tsconfig.json` | TypeScript設定 |
 | `docs/designs/` | 該当する設計書 |
-| `docs/specs/` | 該当する仕様書 |
+| `docs/specs/features/` | 該当する機能仕様 |
+| `docs/specs/screens/` | 該当する画面仕様 |
+| `docs/specs/tables/` | 該当するテーブル仕様 |
 
 **出力**: レビュー基準の集合 → 手順3・4のチェック観点
 
@@ -78,7 +80,7 @@ git log main..HEAD --oneline      # コミット一覧
 報告形式: 整合 / 差異あり（差異の内容）で返す
 ```
 
-設計書・仕様書の特定方法: `docs/designs/` と `docs/specs/` 配下のファイル名・見出しを確認し、変更ファイルの機能領域と一致するものを渡す。該当なしの場合は「なし」と指定する。
+設計書・仕様書の特定方法: `docs/designs/`、`docs/specs/features/`、`docs/specs/screens/`、`docs/specs/tables/` 配下のファイル名・見出しを確認し、変更ファイルの機能領域・画面・テーブルと一致するものを渡す。該当なしの場合は「なし」と指定する。
 
 **3. impact-analyzer**（変更影響の分析）
 
