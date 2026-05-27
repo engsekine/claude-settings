@@ -1,4 +1,14 @@
-.PHONY: help setup cert clean clean-cert dev dev-https build test lint format type-check validate up down logs storybook build-storybook
+.PHONY: help setup cert clean clean-cert \
+        up down logs \
+        dev dev-https build start \
+        lint lint-fix lint-markup \
+        format format-check \
+        check check-fix \
+        type-check \
+        test test-watch test-coverage \
+        test-storybook test-e2e test-e2e-ui test-a11y test-all \
+        storybook build-storybook ci-storybook \
+        validate
 
 COMPOSE := docker compose -f docker-compose.dev.yml
 SERVICE := app
@@ -8,30 +18,46 @@ help:
 	@echo "Usage:"
 	@echo ""
 	@echo "  [Docker]"
-	@echo "  make up          コンテナ起動（バックグラウンド）"
-	@echo "  make down        コンテナ停止・削除"
-	@echo "  make logs        コンテナログ表示"
+	@echo "  make up              コンテナ起動（バックグラウンド）"
+	@echo "  make down            コンテナ停止・削除"
+	@echo "  make logs            コンテナログ表示"
 	@echo ""
 	@echo "  [開発]"
-	@echo "  make dev         開発サーバー起動（HTTP）"
-	@echo "  make dev-https   開発サーバー起動（HTTPS）"
-	@echo ""
-	@echo "  [ビルド・テスト]"
+	@echo "  make dev             開発サーバー起動（HTTP）"
+	@echo "  make dev-https       開発サーバー起動（HTTPS）"
 	@echo "  make build           プロダクションビルド"
-	@echo "  make test            テスト実行"
-	@echo "  make lint            Lint実行"
-	@echo "  make format          フォーマット実行"
-	@echo "  make type-check      型チェック"
-	@echo "  make validate        すべてのチェックを実行"
+	@echo "  make start           本番サーバー起動"
+	@echo ""
+	@echo "  [Lint / Format]"
+	@echo "  make lint            Biome lint"
+	@echo "  make lint-fix        Biome lint (--write)"
+	@echo "  make lint-markup     markuplint"
+	@echo "  make format          Biome format (--write)"
+	@echo "  make format-check    Biome format チェックのみ"
+	@echo "  make check           Biome check"
+	@echo "  make check-fix       Biome check (--write --unsafe)"
+	@echo "  make type-check      TypeScript 型チェック"
+	@echo ""
+	@echo "  [Test]"
+	@echo "  make test            単体テスト"
+	@echo "  make test-watch      単体テスト (watch)"
+	@echo "  make test-coverage   単体テスト + coverage"
+	@echo "  make test-storybook  Storybook テスト"
+	@echo "  make test-e2e        E2E テスト"
+	@echo "  make test-e2e-ui     E2E テスト (UI モード)"
+	@echo "  make test-a11y       a11y E2E テスト 一覧"
+	@echo "  make test-all        単体 + E2E"
+	@echo "  make validate        type-check + lint + test"
 	@echo ""
 	@echo "  [Storybook]"
-	@echo "  make storybook       Storybook開発サーバー起動（http://localhost:6006）"
-	@echo "  make build-storybook Storybookを静的ビルド"
+	@echo "  make storybook       Storybook 開発サーバー起動（http://localhost:6006）"
+	@echo "  make build-storybook Storybook を静的ビルド"
+	@echo "  make ci-storybook    Storybook build + テスト (CI 用)"
 	@echo ""
 	@echo "  [セットアップ]"
-	@echo "  make setup       初回セットアップ（npm install + SSL証明書生成）"
-	@echo "  make cert        SSL証明書を生成"
-	@echo "  make clean       node_modules と証明書を削除"
+	@echo "  make setup           初回セットアップ（npm install + SSL証明書生成）"
+	@echo "  make cert            SSL証明書を生成"
+	@echo "  make clean           node_modules と証明書を削除"
 
 ## コンテナ起動（バックグラウンド）
 up:
@@ -112,23 +138,75 @@ dev-https:
 build:
 	$(COMPOSE) exec -e NODE_ENV=production $(SERVICE) npm run build
 
-## テスト実行
-test:
-	$(COMPOSE) exec $(SERVICE) npm run test
+## 本番サーバー起動
+start:
+	$(COMPOSE) exec $(SERVICE) npm run start
 
-## Lint実行
+## Lint 実行
 lint:
 	$(COMPOSE) exec $(SERVICE) npm run lint
+
+## Lint auto-fix
+lint-fix:
+	$(COMPOSE) exec $(SERVICE) npm run lint:fix
+
+## markuplint
+lint-markup:
+	$(COMPOSE) exec $(SERVICE) npm run lint:markup
 
 ## フォーマット実行
 format:
 	$(COMPOSE) exec $(SERVICE) npm run format
 
+## フォーマットチェック
+format-check:
+	$(COMPOSE) exec $(SERVICE) npm run format:check
+
+## Biome check
+check:
+	$(COMPOSE) exec $(SERVICE) npm run check
+
+## Biome check (--write --unsafe)
+check-fix:
+	$(COMPOSE) exec $(SERVICE) npm run check:fix
+
 ## 型チェック
 type-check:
 	$(COMPOSE) exec $(SERVICE) npm run type-check
 
-## すべてのチェックを実行
+## 単体テスト
+test:
+	$(COMPOSE) exec $(SERVICE) npm run test
+
+## 単体テスト (watch モード)
+test-watch:
+	$(COMPOSE) exec $(SERVICE) npm run test:watch
+
+## 単体テスト + coverage
+test-coverage:
+	$(COMPOSE) exec $(SERVICE) npm run test:coverage
+
+## Storybook テスト
+test-storybook:
+	$(COMPOSE) exec $(SERVICE) npm run test:storybook
+
+## E2E テスト (Playwright)
+test-e2e:
+	$(COMPOSE) exec $(SERVICE) npm run test:e2e
+
+## E2E テスト UI モード（Playwright UI はブラウザ表示が必要なため、コンテナ内では起動しづらい。ホスト直で実行する）
+test-e2e-ui:
+	cd $(CURDIR) && npm run test:e2e:ui
+
+## a11y E2E テスト 一覧
+test-a11y:
+	$(COMPOSE) exec $(SERVICE) npm run test:a11y
+
+## 単体 + E2E をまとめて実行
+test-all:
+	$(COMPOSE) exec $(SERVICE) npm run test:all
+
+## すべてのチェックを実行（type-check + lint + test）
 validate:
 	$(COMPOSE) exec $(SERVICE) npm run validate
 
@@ -139,3 +217,7 @@ storybook:
 ## Storybookを静的ビルド
 build-storybook:
 	$(COMPOSE) exec $(SERVICE) npm run build-storybook
+
+## Storybook build + テスト（CI 用）
+ci-storybook:
+	$(COMPOSE) exec $(SERVICE) npm run ci:storybook
