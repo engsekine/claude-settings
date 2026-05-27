@@ -122,6 +122,12 @@ export const diveSchema = yup.object({
         .nullable()
         .positive('平均水深は0より大きい値を入力してください')
         .max(300, '平均水深は300m以下で入力してください')
+        .test('lte-max-depth', '平均水深は最大水深以下で入力してください', function (value) {
+            if (value === null || value === undefined) return true;
+            const maxDepth = (this.parent as { maxDepthM?: number | null }).maxDepthM;
+            if (maxDepth === null || maxDepth === undefined) return true;
+            return value <= maxDepth;
+        })
         .default(null),
     bottomTimeMin: yup
         .number()

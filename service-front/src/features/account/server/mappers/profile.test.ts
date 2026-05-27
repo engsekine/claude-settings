@@ -8,8 +8,8 @@ const baseRow: ProfileRow = {
     nickname: 'タロー',
     birth_on: '1990-01-01',
     gender: 'male',
-    height_cm: '170.5',
-    weight_kg: '65.2',
+    height_cm: 170.5,
+    weight_kg: 65.2,
 };
 
 describe('toProfile', () => {
@@ -36,8 +36,8 @@ describe('toProfile', () => {
         expect(result.weightKg).toBeNull();
     });
 
-    it('height_cm / weight_kg は文字列でも数値に変換される', () => {
-        const row: ProfileRow = { ...baseRow, height_cm: '180', weight_kg: '70' };
+    it('height_cm / weight_kg が数値ならそのまま数値で返す', () => {
+        const row: ProfileRow = { ...baseRow, height_cm: 180, weight_kg: 70 };
         const result = toProfile(row, 'test@example.com');
 
         expect(result.heightCm).toBe(180);

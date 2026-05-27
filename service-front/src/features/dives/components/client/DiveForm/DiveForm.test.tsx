@@ -58,6 +58,56 @@ describe('DiveForm', () => {
         expect(screen.getByRole('button', { name: '更新する' })).toBeInTheDocument();
     });
 
+    it('エントリー / エキジット時刻を入力すると潜水時間が自動計算される', async () => {
+        const user = userEvent.setup();
+        render(<DiveForm />);
+
+        const entry = screen.getByLabelText('エントリー時刻') as HTMLInputElement;
+        const exit = screen.getByLabelText('エキジット時刻') as HTMLInputElement;
+        const bottomTime = screen.getByLabelText(/潜水時間\(分\)/) as HTMLInputElement;
+
+        await user.type(entry, '09:00');
+        await user.type(exit, '09:45');
+
+        expect(bottomTime.value).toBe('45');
+        expect(screen.getByText('エントリー / エキジット時刻から自動計算します')).toBeInTheDocument();
+    });
+
+    it('潜水時間を手動編集すると以降は自動計算しない', async () => {
+        const user = userEvent.setup();
+        render(<DiveForm />);
+
+        const entry = screen.getByLabelText('エントリー時刻') as HTMLInputElement;
+        const exit = screen.getByLabelText('エキジット時刻') as HTMLInputElement;
+        const bottomTime = screen.getByLabelText(/潜水時間\(分\)/) as HTMLInputElement;
+
+        await user.type(entry, '09:00');
+        await user.type(exit, '09:45');
+        expect(bottomTime.value).toBe('45');
+
+        await user.clear(bottomTime);
+        await user.type(bottomTime, '60');
+        expect(bottomTime.value).toBe('60');
+
+        await user.clear(exit);
+        await user.type(exit, '10:30');
+        expect(bottomTime.value).toBe('60');
+        expect(screen.queryByText('エントリー / エキジット時刻から自動計算します')).not.toBeInTheDocument();
+    });
+
+    it('編集モード（既存値あり）では自動計算しない', async () => {
+        const user = userEvent.setup();
+        render(<DiveForm diveId="existing-id" defaultValues={{ bottomTimeMin: 50 }} />);
+
+        const bottomTime = screen.getByLabelText(/潜水時間\(分\)/) as HTMLInputElement;
+        expect(bottomTime.value).toBe('50');
+        expect(screen.queryByText('エントリー / エキジット時刻から自動計算します')).not.toBeInTheDocument();
+
+        await user.type(screen.getByLabelText('エントリー時刻'), '09:00');
+        await user.type(screen.getByLabelText('エキジット時刻'), '09:45');
+        expect(bottomTime.value).toBe('50');
+    });
+
     it('createDive がエラーを返すと alert を表示する', async () => {
         createDive.mockResolvedValueOnce({ error: '失敗しました' });
         const user = userEvent.setup();

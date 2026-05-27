@@ -10,5 +10,5 @@ export { useDives } from './hooks/useDives';
 export type { DiveFormValues, DiveSearchValues } from './schemas/dive.schema';
 export { diveSchema, diveSearchSchema } from './schemas/dive.schema';
 export { createDive, deleteDive, updateDive } from './server/actions';
-export { getDive, listDives } from './server/queries';
+export { getDive, getLatestDiveNumber, listDives } from './server/queries';
 export type { Dive, DiveCursor, DiveListFilter, DiveListItem, DiveListPage } from './types';

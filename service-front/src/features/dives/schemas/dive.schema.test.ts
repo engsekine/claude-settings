@@ -112,6 +112,27 @@ describe('diveSchema', () => {
         await expect(diveSchema.validate({ ...validBase, avgDepthM: 301 })).rejects.toThrow(/平均水深/);
     });
 
+    it('avgDepthM が maxDepthM を超えると失敗する', async () => {
+        await expect(diveSchema.validate({ ...validBase, maxDepthM: 18, avgDepthM: 20 })).rejects.toThrow(
+            /平均水深は最大水深以下/,
+        );
+    });
+
+    it('avgDepthM と maxDepthM が等しい場合は通過する', async () => {
+        const result = await diveSchema.validate({ ...validBase, maxDepthM: 18, avgDepthM: 18 });
+        expect(result.avgDepthM).toBe(18);
+    });
+
+    it('avgDepthM が maxDepthM 未満なら通過する', async () => {
+        const result = await diveSchema.validate({ ...validBase, maxDepthM: 18, avgDepthM: 12 });
+        expect(result.avgDepthM).toBe(12);
+    });
+
+    it('avgDepthM が空（null）なら maxDepthM との比較はスキップされる', async () => {
+        const result = await diveSchema.validate({ ...validBase, maxDepthM: 18 });
+        expect(result.avgDepthM).toBeNull();
+    });
+
     it('bottomTimeMin が小数だと失敗する', async () => {
         await expect(diveSchema.validate({ ...validBase, bottomTimeMin: 1.5 })).rejects.toThrow(/整数/);
     });

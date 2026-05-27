@@ -1,4 +1,4 @@
-import { DiveForm } from '@/features/dives';
+import { DiveForm, getLatestDiveNumber } from '@/features/dives';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
 import { generatePageMetadata } from '@/shared/config/metadata';
 
@@ -11,13 +11,16 @@ export const metadata = generatePageMetadata(
     { noIndex: true },
 );
 
-export default function NewDivePage() {
+export default async function NewDivePage() {
+    const latestDiveNumber = await getLatestDiveNumber();
+    const nextDiveNumber = (latestDiveNumber ?? 0) + 1;
+
     return (
         <div className="flex flex-1 flex-col">
             <Breadcrumbs breadcrumbs={[{ name: 'ダイビングログ', slug: '/dives' }, { name: '新規作成' }]} />
             <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
                 <h1 className="font-semibold text-2xl">新規ダイビングログ</h1>
-                <DiveForm />
+                <DiveForm defaultValues={{ diveNumber: nextDiveNumber }} />
             </div>
         </div>
     );

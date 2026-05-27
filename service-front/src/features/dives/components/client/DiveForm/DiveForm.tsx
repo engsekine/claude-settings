@@ -4,10 +4,12 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@repo/ui/components/button';
 import { Input } from '@repo/ui/components/input';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { DIVE_TYPE_OPTIONS, GAS_TYPE_OPTIONS, SUIT_TYPE_OPTIONS } from '@/features/dives/constants';
 import { useDiveFormSubmit } from '@/features/dives/hooks/useDiveFormSubmit';
+import { calcBottomTimeMin } from '@/features/dives/lib/calcBottomTime';
 import { type DiveFormValues, diveSchema } from '@/features/dives/schemas/dive.schema';
 
 interface DiveFormProps {
@@ -60,6 +62,8 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
     const {
         register,
         handleSubmit,
+        setValue,
+        watch,
         formState: { errors },
     } = useForm<DiveFormValues>({
         resolver: yupResolver(diveSchema),
@@ -67,6 +71,26 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
     });
 
     const onSubmit = handleSubmit(submit);
+
+    /**
+     * 編集モードで既存値が渡されている場合は手動扱いで初期化する。
+     * 新規作成は自動計算モードで開始し、ユーザーが潜水時間を編集した時点で停止する。
+     */
+    const [isBottomTimeAutoCalc, setIsBottomTimeAutoCalc] = useState(defaultValues?.bottomTimeMin == null);
+
+    const entryTime = watch('entryTime');
+    const exitTime = watch('exitTime');
+
+    useEffect(() => {
+        if (!isBottomTimeAutoCalc) return;
+        const calculated = calcBottomTimeMin(entryTime, exitTime);
+        if (calculated === null) return;
+        setValue('bottomTimeMin', calculated, { shouldDirty: false, shouldValidate: true });
+    }, [entryTime, exitTime, isBottomTimeAutoCalc, setValue]);
+
+    const bottomTimeRegister = register('bottomTimeMin', {
+        onChange: () => setIsBottomTimeAutoCalc(false),
+    });
 
     return (
         <form
@@ -281,9 +305,20 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                             autoComplete="off"
                             aria-required="true"
                             aria-invalid={!!errors.bottomTimeMin}
-                            aria-describedby={errors.bottomTimeMin ? 'bottomTimeMin-error' : undefined}
-                            {...register('bottomTimeMin')}
+                            aria-describedby={
+                                errors.bottomTimeMin
+                                    ? 'bottomTimeMin-error'
+                                    : isBottomTimeAutoCalc
+                                      ? 'bottomTimeMin-hint'
+                                      : undefined
+                            }
+                            {...bottomTimeRegister}
                         />
+                        {isBottomTimeAutoCalc && !errors.bottomTimeMin && (
+                            <span id="bottomTimeMin-hint" className="text-muted-foreground text-xs">
+                                エントリー / エキジット時刻から自動計算します
+                            </span>
+                        )}
                         {errors.bottomTimeMin && (
                             <span id="bottomTimeMin-error" role="alert" className="text-red-600 text-sm">
                                 {errors.bottomTimeMin.message}

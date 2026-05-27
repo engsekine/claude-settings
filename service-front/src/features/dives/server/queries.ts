@@ -167,6 +167,29 @@ export const listDives = async (options: ListDivesOptions = {}): Promise<DiveLis
     return { items, nextCursor };
 };
 
+/**
+ * 自分の dives の中で最大の dive_number を取得する。
+ * 一度も dive_number を入力していない / ログがない場合は null を返す。
+ * 新規作成画面で「前回の番号 + 1」を初期値として提示するために使う。
+ */
+export const getLatestDiveNumber = async (): Promise<number | null> => {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+        .from('dives')
+        .select('dive_number')
+        .not('dive_number', 'is', null)
+        .order('dive_number', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    if (error) {
+        console.error('[getLatestDiveNumber] supabase error:', error);
+        return null;
+    }
+    return data?.dive_number ?? null;
+};
+
 /** 自分の dive を 1 件取得。RLS により他人のレコードは null になる */
 export const getDive = async (id: string): Promise<Dive | null> => {
     const supabase = await createClient();
