@@ -15,12 +15,33 @@ export default defineConfig({
             provider: 'v8',
             include: ['src/**/*.{ts,tsx}'],
             exclude: [
+                // 型・定数・再 export
                 'src/**/*.d.ts',
                 'src/**/*.stories.tsx',
+                'src/**/index.ts',
+                'src/**/types.ts',
+                'src/**/constants.ts',
+                // Next.js 規約ファイル（E2E でカバー）
                 'src/app/**/layout.tsx',
                 'src/app/**/loading.tsx',
                 'src/app/**/error.tsx',
                 'src/app/**/not-found.tsx',
+                'src/app/**/page.tsx',
+                'src/app/**/route.ts',
+                'src/app/sitemap.ts',
+                'src/app/providers.tsx',
+                'src/middleware.ts',
+                'src/proxy.ts',
+                'src/shared/lib/supabase/middleware.ts',
+                // Server Components / Server Actions（E2E or integration テストでカバー）
+                'src/**/server/actions.ts',
+                'src/**/server/queries.ts',
+                'src/**/components/server/**',
+                // 設定 / wiring（ロジックを持たない）
+                'src/shared/lib/react-query.ts',
+                'src/shared/config/metadata.ts',
+                // 外部 API クライアント（MSW 整備後にテスト追加）
+                'src/features/chat/api/**',
             ],
             thresholds: {
                 branches: 70,
