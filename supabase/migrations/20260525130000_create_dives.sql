@@ -13,8 +13,6 @@ create table public.dives (
     exit_time time,
 
     location text not null check (length(trim(location)) > 0),
-    country text,
-    dive_site text,
     dive_type text,
     weather text,
 
@@ -27,9 +25,8 @@ create table public.dives (
     max_depth_m numeric(5, 2) not null check (max_depth_m > 0 and max_depth_m <= 300),
     avg_depth_m numeric(5, 2) check (avg_depth_m is null or (avg_depth_m > 0 and avg_depth_m <= 300)),
     bottom_time_min integer not null check (bottom_time_min >= 1),
-    surface_interval_min integer check (surface_interval_min is null or surface_interval_min >= 0),
 
-    tank_type text,
+    tank_type text check (tank_type is null or tank_type in ('aluminum', 'steel')),
     tank_volume_l numeric(4, 1) check (tank_volume_l is null or tank_volume_l > 0),
     gas_type text,
     o2_percent numeric(4, 1) check (o2_percent is null or (o2_percent >= 0 and o2_percent <= 100)),
@@ -58,6 +55,7 @@ comment on column public.dives.location is 'エリア / ポイント名（必須
 comment on column public.dives.max_depth_m is '最大水深（m）。0 < x <= 300';
 comment on column public.dives.bottom_time_min is '潜水時間（分）。>= 1';
 comment on column public.dives.current_condition is '流れの状況。予約語 current を避けて current_condition';
+comment on column public.dives.tank_type is 'タンク種別。aluminum / steel のみ許容';
 comment on column public.dives.is_public is '公開フラグ。phase2 で使用';
 comment on column public.dives.public_slug is '公開URL用 slug。is_public=true のときのみ意味を持つ';
 

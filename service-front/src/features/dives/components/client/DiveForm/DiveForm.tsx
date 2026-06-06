@@ -4,12 +4,13 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@repo/ui/components/button';
 import { Input } from '@repo/ui/components/input';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type WheelEvent } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { DIVE_TYPE_OPTIONS, GAS_TYPE_OPTIONS, SUIT_TYPE_OPTIONS } from '@/features/dives/constants';
+import { DIVE_TYPE_OPTIONS, GAS_TYPE_OPTIONS, TANK_TYPE_OPTIONS } from '@/features/dives/constants';
 import { useDiveFormSubmit } from '@/features/dives/hooks/useDiveFormSubmit';
 import { calcBottomTimeMin } from '@/features/dives/lib/calcBottomTime';
+import { todayInJst } from '@/features/dives/lib/today';
 import { type DiveFormValues, diveSchema } from '@/features/dives/schemas/dive.schema';
 
 interface DiveFormProps {
@@ -18,14 +19,17 @@ interface DiveFormProps {
     defaultValues?: Partial<DiveFormValues>;
 }
 
+/** number 入力にホイールでフォーカスしたまま値が変わる事故を防ぐ */
+const blurOnWheel = (e: WheelEvent<HTMLInputElement>) => {
+    e.currentTarget.blur();
+};
+
 const createDefaultValues = (overrides?: Partial<DiveFormValues>): DiveFormValues => ({
     diveNumber: null,
-    diveDate: new Date().toISOString().slice(0, 10),
+    diveDate: todayInJst(),
     entryTime: null,
     exitTime: null,
     location: '',
-    country: null,
-    diveSite: null,
     diveType: null,
     weather: null,
     airTempC: null,
@@ -36,11 +40,10 @@ const createDefaultValues = (overrides?: Partial<DiveFormValues>): DiveFormValue
     maxDepthM: 0,
     avgDepthM: null,
     bottomTimeMin: 1,
-    surfaceIntervalMin: null,
-    tankType: null,
-    tankVolumeL: null,
-    gasType: null,
-    o2Percent: null,
+    tankType: 'steel',
+    tankVolumeL: 10,
+    gasType: 'air',
+    o2Percent: 21,
     pressureStartBar: null,
     pressureEndBar: null,
     weightKg: null,
@@ -105,7 +108,30 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                     基本情報
                 </h2>
 
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-2 gap-3">
+                    <div className="flex flex-col gap-1">
+                        <label htmlFor="diveNumber" className="font-medium text-sm">
+                            ダイブ番号
+                        </label>
+                        <Input
+                            id="diveNumber"
+                            type="number"
+                            onWheel={blurOnWheel}
+                            inputMode="numeric"
+                            min={0}
+                            step={1}
+                            autoComplete="off"
+                            aria-invalid={!!errors.diveNumber}
+                            aria-describedby={errors.diveNumber ? 'diveNumber-error' : undefined}
+                            {...register('diveNumber')}
+                        />
+                        {errors.diveNumber && (
+                            <span id="diveNumber-error" role="alert" className="text-red-600 text-sm">
+                                {errors.diveNumber.message}
+                            </span>
+                        )}
+                    </div>
+
                     <div className="flex flex-col gap-1">
                         <label htmlFor="diveDate" className="font-medium text-sm">
                             潜水日
@@ -129,33 +155,11 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                             </span>
                         )}
                     </div>
-
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="diveNumber" className="font-medium text-sm">
-                            ダイブ番号
-                        </label>
-                        <Input
-                            id="diveNumber"
-                            type="number"
-                            inputMode="numeric"
-                            min={0}
-                            step={1}
-                            autoComplete="off"
-                            aria-invalid={!!errors.diveNumber}
-                            aria-describedby={errors.diveNumber ? 'diveNumber-error' : undefined}
-                            {...register('diveNumber')}
-                        />
-                        {errors.diveNumber && (
-                            <span id="diveNumber-error" role="alert" className="text-red-600 text-sm">
-                                {errors.diveNumber.message}
-                            </span>
-                        )}
-                    </div>
                 </div>
 
                 <div className="flex flex-col gap-1">
                     <label htmlFor="location" className="font-medium text-sm">
-                        エリア / ポイント名
+                        ポイント名
                         <span aria-hidden="true" className="ml-1 text-red-600">
                             *
                         </span>
@@ -177,23 +181,7 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                     )}
                 </div>
 
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="diveSite" className="font-medium text-sm">
-                            詳細ポイント名
-                        </label>
-                        <Input id="diveSite" type="text" autoComplete="off" {...register('diveSite')} />
-                    </div>
-
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="country" className="font-medium text-sm">
-                            国
-                        </label>
-                        <Input id="country" type="text" autoComplete="off" {...register('country')} />
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                     <div className="flex flex-col gap-1">
                         <label htmlFor="entryTime" className="font-medium text-sm">
                             エントリー時刻
@@ -206,6 +194,46 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                             エキジット時刻
                         </label>
                         <Input id="exitTime" type="time" autoComplete="off" {...register('exitTime')} />
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                        <label htmlFor="pressureStartBar" className="font-medium text-sm">
+                            開始残圧(bar)
+                        </label>
+                        <Input
+                            id="pressureStartBar"
+                            type="number"
+                            onWheel={blurOnWheel}
+                            inputMode="numeric"
+                            step={5}
+                            min={0}
+                            max={400}
+                            autoComplete="off"
+                            {...register('pressureStartBar')}
+                        />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        <label htmlFor="pressureEndBar" className="font-medium text-sm">
+                            終了残圧(bar)
+                        </label>
+                        <Input
+                            id="pressureEndBar"
+                            type="number"
+                            onWheel={blurOnWheel}
+                            inputMode="numeric"
+                            step={5}
+                            min={0}
+                            max={400}
+                            autoComplete="off"
+                            aria-invalid={!!errors.pressureEndBar}
+                            aria-describedby={errors.pressureEndBar ? 'pressureEndBar-error' : undefined}
+                            {...register('pressureEndBar')}
+                        />
+                        {errors.pressureEndBar && (
+                            <span id="pressureEndBar-error" role="alert" className="text-red-600 text-sm">
+                                {errors.pressureEndBar.message}
+                            </span>
+                        )}
                     </div>
                 </div>
 
@@ -233,7 +261,7 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                     水深・時間
                 </h2>
 
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-3 gap-3">
                     <div className="flex flex-col gap-1">
                         <label htmlFor="maxDepthM" className="font-medium text-sm">
                             最大水深(m)
@@ -245,6 +273,7 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                         <Input
                             id="maxDepthM"
                             type="number"
+                            onWheel={blurOnWheel}
                             inputMode="decimal"
                             step="0.1"
                             min={0}
@@ -269,6 +298,7 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                         <Input
                             id="avgDepthM"
                             type="number"
+                            onWheel={blurOnWheel}
                             inputMode="decimal"
                             step="0.1"
                             min={0}
@@ -284,9 +314,7 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                             </span>
                         )}
                     </div>
-                </div>
 
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="flex flex-col gap-1">
                         <label htmlFor="bottomTimeMin" className="font-medium text-sm">
                             潜水時間(分)
@@ -298,6 +326,7 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                         <Input
                             id="bottomTimeMin"
                             type="number"
+                            onWheel={blurOnWheel}
                             inputMode="numeric"
                             step={1}
                             min={1}
@@ -325,28 +354,6 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                             </span>
                         )}
                     </div>
-
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="surfaceIntervalMin" className="font-medium text-sm">
-                            水面休息時間(分)
-                        </label>
-                        <Input
-                            id="surfaceIntervalMin"
-                            type="number"
-                            inputMode="numeric"
-                            step={1}
-                            min={0}
-                            autoComplete="off"
-                            aria-invalid={!!errors.surfaceIntervalMin}
-                            aria-describedby={errors.surfaceIntervalMin ? 'surfaceIntervalMin-error' : undefined}
-                            {...register('surfaceIntervalMin')}
-                        />
-                        {errors.surfaceIntervalMin && (
-                            <span id="surfaceIntervalMin-error" role="alert" className="text-red-600 text-sm">
-                                {errors.surfaceIntervalMin.message}
-                            </span>
-                        )}
-                    </div>
                 </div>
             </section>
 
@@ -355,7 +362,7 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                     コンディション
                 </h2>
 
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="grid grid-cols-3 gap-3">
                     <div className="flex flex-col gap-1">
                         <label htmlFor="airTempC" className="font-medium text-sm">
                             気温(℃)
@@ -363,6 +370,7 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                         <Input
                             id="airTempC"
                             type="number"
+                            onWheel={blurOnWheel}
                             inputMode="decimal"
                             step="0.1"
                             autoComplete="off"
@@ -376,6 +384,7 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                         <Input
                             id="waterTempC"
                             type="number"
+                            onWheel={blurOnWheel}
                             inputMode="decimal"
                             step="0.1"
                             autoComplete="off"
@@ -389,6 +398,7 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                         <Input
                             id="visibilityM"
                             type="number"
+                            onWheel={blurOnWheel}
                             inputMode="decimal"
                             step="0.1"
                             min={0}
@@ -426,12 +436,23 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                     タンク・装備
                 </h2>
 
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                     <div className="flex flex-col gap-1">
                         <label htmlFor="tankType" className="font-medium text-sm">
                             タンク種別
                         </label>
-                        <Input id="tankType" type="text" autoComplete="off" {...register('tankType')} />
+                        <select
+                            id="tankType"
+                            className="rounded-md border border-border bg-background px-3 py-2 text-sm"
+                            {...register('tankType')}
+                        >
+                            <option value="">選択しない</option>
+                            {TANK_TYPE_OPTIONS.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                    {option.label}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                     <div className="flex flex-col gap-1">
                         <label htmlFor="tankVolumeL" className="font-medium text-sm">
@@ -440,6 +461,7 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                         <Input
                             id="tankVolumeL"
                             type="number"
+                            onWheel={blurOnWheel}
                             inputMode="decimal"
                             step="0.1"
                             min={0}
@@ -447,9 +469,6 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                             {...register('tankVolumeL')}
                         />
                     </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="flex flex-col gap-1">
                         <label htmlFor="gasType" className="font-medium text-sm">
                             ガス種類
@@ -474,6 +493,7 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                         <Input
                             id="o2Percent"
                             type="number"
+                            onWheel={blurOnWheel}
                             inputMode="decimal"
                             step="0.1"
                             min={0}
@@ -484,40 +504,7 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="pressureStartBar" className="font-medium text-sm">
-                            開始残圧(bar)
-                        </label>
-                        <Input
-                            id="pressureStartBar"
-                            type="number"
-                            inputMode="numeric"
-                            step={1}
-                            min={0}
-                            max={400}
-                            autoComplete="off"
-                            {...register('pressureStartBar')}
-                        />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="pressureEndBar" className="font-medium text-sm">
-                            終了残圧(bar)
-                        </label>
-                        <Input
-                            id="pressureEndBar"
-                            type="number"
-                            inputMode="numeric"
-                            step={1}
-                            min={0}
-                            max={400}
-                            autoComplete="off"
-                            {...register('pressureEndBar')}
-                        />
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-2 gap-3">
                     <div className="flex flex-col gap-1">
                         <label htmlFor="weightKg" className="font-medium text-sm">
                             ウェイト(kg)
@@ -525,6 +512,7 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                         <Input
                             id="weightKg"
                             type="number"
+                            onWheel={blurOnWheel}
                             inputMode="decimal"
                             step="0.1"
                             min={0}
@@ -537,18 +525,14 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                         <label htmlFor="suitType" className="font-medium text-sm">
                             スーツ
                         </label>
-                        <select
+                        <Input
                             id="suitType"
-                            className="rounded-md border border-border bg-background px-3 py-2 text-sm"
+                            type="text"
+                            maxLength={40}
+                            autoComplete="off"
+                            placeholder="例: ウェット 5mm"
                             {...register('suitType')}
-                        >
-                            <option value="">選択しない</option>
-                            {SUIT_TYPE_OPTIONS.map((option) => (
-                                <option key={option.value} value={option.value}>
-                                    {option.label}
-                                </option>
-                            ))}
-                        </select>
+                        />
                     </div>
                 </div>
 

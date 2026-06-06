@@ -1,3 +1,5 @@
+import type { TankTypeValue } from '@/features/dives/constants';
+
 /** ダイビングログのドメイン型。DB スキーマ（snake_case）はマッピング層で camelCase に変換する */
 export interface Dive {
     id: string;
@@ -10,8 +12,6 @@ export interface Dive {
     /** HH:MM:SS */
     exitTime: string | null;
     location: string;
-    country: string | null;
-    diveSite: string | null;
     diveType: string | null;
     weather: string | null;
     airTempC: number | null;
@@ -22,8 +22,7 @@ export interface Dive {
     maxDepthM: number;
     avgDepthM: number | null;
     bottomTimeMin: number;
-    surfaceIntervalMin: number | null;
-    tankType: string | null;
+    tankType: TankTypeValue | null;
     tankVolumeL: number | null;
     gasType: string | null;
     o2Percent: number | null;
@@ -51,7 +50,6 @@ export type DiveListItem = Pick<
     | 'diveNumber'
     | 'diveDate'
     | 'location'
-    | 'diveSite'
     | 'maxDepthM'
     | 'bottomTimeMin'
     | 'waterTempC'

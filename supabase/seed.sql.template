@@ -1,0 +1,164 @@
+-- ========================================
+-- 開発用シードデータ（テンプレート）
+--
+-- これは envsubst で展開する元ファイル。
+-- ${...} プレースホルダはルートの .env.local の値で置換され、
+-- 生成物 supabase/seed.sql は supabase db reset 時に自動で流れる。
+--
+-- 生成・適用は `make supabase-reset` で行う:
+--   1. .env.local を読み込み
+--   2. envsubst で ${...} を展開して supabase/seed.sql を生成
+--   3. supabase db reset を実行
+--
+-- 投入内容:
+--   - テストユーザー 1 名（auth.users 経由 → トリガで public.users / public.user_details 自動挿入）
+--   - ダイビングログ 5 件
+--
+-- 本番では使用しない（local development 専用）
+-- ========================================
+
+-- ========================================
+-- 冪等性: 再実行できるようにテストユーザーを掃除
+-- public.users への ON DELETE CASCADE で
+-- public.user_details / public.dives も連動削除される
+-- ========================================
+delete from auth.users where email = '${TEST_USER_EMAIL}';
+
+-- ========================================
+-- テストユーザー
+--   email   : ${TEST_USER_EMAIL}
+--   password: .env.local の TEST_USER_PASSWORD
+--
+-- auth.users への INSERT で on_auth_user_created トリガが起動し、
+-- raw_user_meta_data の値をもとに public.users / public.user_details が
+-- 自動挿入される（user_details の必須項目はここで埋める）
+-- ========================================
+insert into auth.users (
+    instance_id,
+    id,
+    aud,
+    role,
+    email,
+    encrypted_password,
+    email_confirmed_at,
+    raw_app_meta_data,
+    raw_user_meta_data,
+    confirmation_token,
+    email_change,
+    email_change_token_new,
+    recovery_token,
+    created_at,
+    updated_at
+) values (
+    '00000000-0000-0000-0000-000000000000',
+    '${TEST_USER_ID}',
+    'authenticated',
+    'authenticated',
+    '${TEST_USER_EMAIL}',
+    crypt('${TEST_USER_PASSWORD}', gen_salt('bf')),
+    now(),
+    '{"provider": "email", "providers": ["email"]}'::jsonb,
+    jsonb_build_object(
+        'last_name', '田中',
+        'first_name', '太郎',
+        'last_name_romaji', 'Tanaka',
+        'first_name_romaji', 'Taro',
+        'nickname', 'たろう',
+        'birth_on', '1990-05-15',
+        'gender', 'male',
+        'height_cm', '170',
+        'weight_kg', '65'
+    ),
+    '',
+    '',
+    '',
+    '',
+    now(),
+    now()
+);
+
+-- email / password 認証で必要な identity レコード
+-- 新しめの Supabase は auth.identities ベースで認証するため必須
+insert into auth.identities (
+    id,
+    user_id,
+    identity_data,
+    provider,
+    provider_id,
+    last_sign_in_at,
+    created_at,
+    updated_at
+) values (
+    gen_random_uuid(),
+    '${TEST_USER_ID}',
+    jsonb_build_object(
+        'sub', '${TEST_USER_ID}',
+        'email', '${TEST_USER_EMAIL}',
+        'email_verified', true,
+        'phone_verified', false
+    ),
+    'email',
+    '${TEST_USER_ID}',
+    now(),
+    now(),
+    now()
+);
+
+-- ========================================
+-- サンプルダイビングログ
+-- dive_type / gas_type / tank_type の値は features/dives/constants.ts の value と一致させる
+-- ========================================
+insert into public.dives (
+    user_id, dive_number, dive_date, entry_time, exit_time,
+    location, dive_type, weather,
+    air_temp_c, water_temp_c, visibility_m, wave, current_condition,
+    max_depth_m, avg_depth_m, bottom_time_min,
+    tank_type, tank_volume_l, gas_type, o2_percent,
+    pressure_start_bar, pressure_end_bar, weight_kg, suit_type,
+    buddy_name, instructor_name, certification_dive, notes
+) values
+    (
+        '${TEST_USER_ID}', 1, '2026-04-15', '09:00', '09:45',
+        '伊豆 / 大瀬崎', 'beach', '晴れ',
+        18.0, 17.5, 12.0, 'なし', '弱',
+        18.5, 15.0, 45,
+        'steel', 12.0, 'air', null,
+        200, 50, 5.0, 'ウェット 5mm',
+        '山田花子', null, false, '透明度抜群。ハナタツ多数。'
+    ),
+    (
+        '${TEST_USER_ID}', 2, '2026-04-15', '11:30', '12:10',
+        '伊豆 / 大瀬崎', 'beach', '晴れ',
+        19.0, 17.5, 10.0, 'なし', 'なし',
+        22.0, 18.0, 40,
+        'steel', 12.0, 'air', null,
+        200, 60, 5.0, 'ウェット 5mm',
+        '山田花子', null, false, '2 本目。ウミウシ多め。'
+    ),
+    (
+        '${TEST_USER_ID}', 3, '2026-05-03', '10:15', '10:55',
+        '石垣島 / 米原ビーチ', 'boat', '曇り',
+        27.0, 26.0, 25.0, '弱', '弱',
+        28.0, 22.0, 40,
+        'aluminum', 11.0, 'nitrox', 32.0,
+        220, 70, 4.0, 'ウェット 3mm',
+        null, null, false, '青い海と透明度。アオウミガメに遭遇。'
+    ),
+    (
+        '${TEST_USER_ID}', 4, '2026-05-04', '09:00', '09:50',
+        '石垣島 / マンタスクランブル', 'drift', '晴れ',
+        28.0, 26.5, 20.0, 'なし', '強',
+        24.0, 18.0, 50,
+        'aluminum', 11.0, 'nitrox', 32.0,
+        220, 60, 4.0, 'ウェット 3mm',
+        null, null, false, 'マンタ 3 匹確認。最高だった。'
+    ),
+    (
+        '${TEST_USER_ID}', null, '2025-12-20', '13:00', '13:30',
+        '沖縄 / 真栄田岬', 'training', '晴れ',
+        22.0, 23.0, 15.0, '弱', 'なし',
+        12.0, 8.0, 30,
+        'steel', 10.0, 'air', null,
+        200, 100, 6.0, 'ウェット 5mm',
+        null, '佐藤インストラクター', true, 'AOW 講習 1 本目。'
+    );

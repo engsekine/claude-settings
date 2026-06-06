@@ -35,9 +35,7 @@ Phase 2 で「公開機能」を実装する予定があり、`is_public` / `pub
 
 | カラム | 型 | NULL | デフォルト | 説明 |
 |-------|----|------|----------|------|
-| `location` | `text` | NO | — | エリア / ポイント名 |
-| `country` | `text` | YES | — | 国 |
-| `dive_site` | `text` | YES | — | 詳細ポイント名 |
+| `location` | `text` | NO | — | ポイント名（必須） |
 | `dive_type` | `text` | YES | — | ボート / ビーチ / ドリフト など |
 
 ### コンディション
@@ -58,20 +56,19 @@ Phase 2 で「公開機能」を実装する予定があり、`is_public` / `pub
 | `max_depth_m` | `numeric(5, 2)` | NO | — | 最大水深（m）。0 < x ≦ 300 |
 | `avg_depth_m` | `numeric(5, 2)` | YES | — | 平均水深（m） |
 | `bottom_time_min` | `integer` | NO | — | 潜水時間（分）。≧ 1 |
-| `surface_interval_min` | `integer` | YES | — | 水面休息時間（分） |
 
 ### 装備・ガス
 
 | カラム | 型 | NULL | デフォルト | 説明 |
 |-------|----|------|----------|------|
-| `tank_type` | `text` | YES | — | スチール / アルミ など |
+| `tank_type` | `text` | YES | — | `aluminum`（アルミ） / `steel`（スチール）。CHECK 制約で限定 |
 | `tank_volume_l` | `numeric(4, 1)` | YES | — | タンク容量（L） |
 | `gas_type` | `text` | YES | — | Air / Nitrox など |
 | `o2_percent` | `numeric(4, 1)` | YES | — | 酸素濃度（%、Nitrox 用） |
 | `pressure_start_bar` | `integer` | YES | — | 開始残圧（bar） |
 | `pressure_end_bar` | `integer` | YES | — | 終了残圧（bar） |
 | `weight_kg` | `numeric(4, 1)` | YES | — | ウェイト（kg） |
-| `suit_type` | `text` | YES | — | ウェット / ドライ / 厚さ |
+| `suit_type` | `text` | YES | — | 任意フリーテキスト（例: `ウェット 5mm` / `ドライ`）。アプリは 40 文字以内で受理 |
 | `equipment_notes` | `text` | YES | — | 装備メモ |
 
 ### メンバー・メモ
@@ -128,7 +125,6 @@ Phase 2 で「公開機能」を実装する予定があり、`is_public` / `pub
 | `dives_max_depth_m_check` | `max_depth_m > 0 and max_depth_m <= 300` |
 | `dives_avg_depth_m_check` | `avg_depth_m is null or (avg_depth_m > 0 and avg_depth_m <= 300)` |
 | `dives_bottom_time_min_check` | `bottom_time_min >= 1` |
-| `dives_surface_interval_min_check` | `surface_interval_min is null or surface_interval_min >= 0` |
 | `dives_tank_volume_l_check` | `tank_volume_l is null or tank_volume_l > 0` |
 | `dives_o2_percent_check` | `o2_percent is null or (o2_percent >= 0 and o2_percent <= 100)` |
 | `dives_pressure_start_bar_check` | `pressure_start_bar is null or pressure_start_bar >= 0` |

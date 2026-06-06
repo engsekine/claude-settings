@@ -19,7 +19,7 @@ describe('diveSchema', () => {
     });
 
     it('location が空だと失敗する', async () => {
-        await expect(diveSchema.validate({ ...validBase, location: '' })).rejects.toThrow(/エリア \/ ポイント名/);
+        await expect(diveSchema.validate({ ...validBase, location: '' })).rejects.toThrow(/ポイント名/);
     });
 
     it('maxDepthM が 0 以下だと失敗する', async () => {
@@ -149,11 +149,24 @@ describe('diveSchema', () => {
         await expect(diveSchema.validate({ ...validBase, weightKg: 31 })).rejects.toThrow(/ウェイト/);
     });
 
+    it('pressureEndBar が pressureStartBar より大きいと失敗する', async () => {
+        await expect(
+            diveSchema.validate({ ...validBase, pressureStartBar: 100, pressureEndBar: 150 }),
+        ).rejects.toThrow(/終了残圧は開始残圧以下/);
+    });
+
+    it('pressureEndBar が pressureStartBar 以下であれば通過する', async () => {
+        await expect(
+            diveSchema.validate({ ...validBase, pressureStartBar: 200, pressureEndBar: 50 }),
+        ).resolves.toMatchObject({ pressureStartBar: 200, pressureEndBar: 50 });
+        await expect(
+            diveSchema.validate({ ...validBase, pressureStartBar: 100, pressureEndBar: 100 }),
+        ).resolves.toMatchObject({ pressureEndBar: 100 });
+    });
+
     it('文字列項目の空文字は null に変換される', async () => {
         const result = await diveSchema.validate({
             ...validBase,
-            country: '',
-            diveSite: '',
             diveType: '',
             weather: '',
             wave: '',
@@ -166,8 +179,6 @@ describe('diveSchema', () => {
             instructorName: '',
             notes: '',
         });
-        expect(result.country).toBeNull();
-        expect(result.diveSite).toBeNull();
         expect(result.notes).toBeNull();
         expect(result.buddyName).toBeNull();
     });

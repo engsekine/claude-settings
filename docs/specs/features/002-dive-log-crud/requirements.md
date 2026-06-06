@@ -46,7 +46,7 @@
 ## 必須項目
 
 - `dive_date`（潜水日）
-- `location`（エリア / ポイント名）
+- `location`（ポイント名）
 - `max_depth_m`（最大水深、> 0）
 - `bottom_time_min`（潜水時間、≧ 1）
 

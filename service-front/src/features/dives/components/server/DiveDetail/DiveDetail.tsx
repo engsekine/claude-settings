@@ -2,6 +2,7 @@ import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
 
 import { DeleteDiveButton } from '@/features/dives/components/client/DeleteDiveButton';
+import { TANK_TYPE_LABEL_MAP, type TankTypeValue } from '@/features/dives/constants';
 import type { Dive } from '@/features/dives/types';
 
 interface DiveDetailProps {
@@ -16,6 +17,11 @@ const formatDate = (isoDate: string): string => {
 const formatTime = (value: string | null): string | null => {
     if (!value) return null;
     return value.slice(0, 5);
+};
+
+const formatTankType = (value: TankTypeValue | null): string | null => {
+    if (!value) return null;
+    return TANK_TYPE_LABEL_MAP[value];
 };
 
 const Field = ({ label, value }: { label: string; value: string | number | null | undefined }) => {
@@ -45,10 +51,7 @@ export const DiveDetail = ({ dive }: DiveDetailProps) => {
                         <span className="text-muted-foreground text-sm">#{dive.diveNumber}</span>
                     )}
                 </div>
-                <h1 className="font-semibold text-2xl">{dive.diveSite ?? dive.location}</h1>
-                {dive.diveSite && dive.location !== dive.diveSite && (
-                    <p className="text-muted-foreground text-sm">{dive.location}</p>
-                )}
+                <h1 className="font-semibold text-2xl">{dive.location}</h1>
                 {dive.certificationDive && (
                     <span className="inline-block w-fit rounded-md bg-primary/10 px-2 py-0.5 text-primary text-xs">
                         講習ダイブ
@@ -57,7 +60,6 @@ export const DiveDetail = ({ dive }: DiveDetailProps) => {
             </header>
 
             <Section title="基本情報">
-                <Field label="国" value={dive.country} />
                 <Field label="エントリー時刻" value={formatTime(dive.entryTime)} />
                 <Field label="エキジット時刻" value={formatTime(dive.exitTime)} />
                 <Field label="ダイブタイプ" value={dive.diveType} />
@@ -67,10 +69,6 @@ export const DiveDetail = ({ dive }: DiveDetailProps) => {
                 <Field label="最大水深" value={`${dive.maxDepthM}m`} />
                 <Field label="平均水深" value={dive.avgDepthM === null ? null : `${dive.avgDepthM}m`} />
                 <Field label="潜水時間" value={`${dive.bottomTimeMin}分`} />
-                <Field
-                    label="水面休息時間"
-                    value={dive.surfaceIntervalMin === null ? null : `${dive.surfaceIntervalMin}分`}
-                />
             </Section>
 
             <Section title="コンディション">
@@ -83,7 +81,7 @@ export const DiveDetail = ({ dive }: DiveDetailProps) => {
             </Section>
 
             <Section title="タンク・装備">
-                <Field label="タンク種別" value={dive.tankType} />
+                <Field label="タンク種別" value={formatTankType(dive.tankType)} />
                 <Field label="タンク容量" value={dive.tankVolumeL === null ? null : `${dive.tankVolumeL}L`} />
                 <Field label="ガス種類" value={dive.gasType} />
                 <Field label="酸素濃度" value={dive.o2Percent === null ? null : `${dive.o2Percent}%`} />

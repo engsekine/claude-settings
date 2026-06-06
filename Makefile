@@ -13,7 +13,8 @@ CLAUDE_TARGETS := skills agents rules
         front-test front-test-watch front-test-coverage \
         front-test-storybook front-test-e2e front-test-e2e-ui front-test-a11y front-test-all \
         front-storybook front-build-storybook front-ci-storybook \
-        front-validate
+        front-validate \
+        supabase-seed supabase-reset
 
 ## グローバルの ~/.claude に対してシンボリックリンクを作成する
 link:
@@ -225,3 +226,24 @@ help:
 	@echo "  make front-storybook        Storybook開発サーバー起動（http://localhost:6006）"
 	@echo "  make front-build-storybook  Storybook を静的ビルド"
 	@echo "  make front-ci-storybook     Storybook build + テスト (CI 用)"
+	@echo ""
+	@echo "  [supabase]"
+	@echo "  make supabase-seed          seed.sql.template を .env.local で展開して seed.sql を生成"
+	@echo "  make supabase-reset         seed.sql を生成してから supabase db reset を実行"
+
+## supabase: seed.sql.template を envsubst で展開して seed.sql を生成
+## supabase/.env.local から TEST_USER_* を読み込む
+supabase-seed:
+	@if [ ! -f supabase/.env.local ]; then \
+		echo "Error: supabase/.env.local が見つかりません"; \
+		echo "       supabase/.env.example をコピーして作成してください"; \
+		exit 1; \
+	fi
+	@set -a; . ./supabase/.env.local; set +a; \
+		envsubst '$$TEST_USER_ID $$TEST_USER_EMAIL $$TEST_USER_PASSWORD' \
+		< supabase/seed.sql.template > supabase/seed.sql
+	@echo "Generated supabase/seed.sql from seed.sql.template"
+
+## supabase: seed.sql 生成 + db reset を一気に実行
+supabase-reset: supabase-seed
+	supabase db reset

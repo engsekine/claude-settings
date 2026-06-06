@@ -46,7 +46,6 @@ export type Database = {
           current_condition: string | null
           dive_date: string
           dive_number: number | null
-          dive_site: string | null
           dive_type: string | null
           entry_time: string | null
           equipment_notes: string | null
@@ -63,7 +62,6 @@ export type Database = {
           pressure_start_bar: number | null
           public_slug: string | null
           suit_type: string | null
-          surface_interval_min: number | null
           tank_type: string | null
           tank_volume_l: number | null
           updated_at: string
@@ -85,7 +83,6 @@ export type Database = {
           current_condition?: string | null
           dive_date: string
           dive_number?: number | null
-          dive_site?: string | null
           dive_type?: string | null
           entry_time?: string | null
           equipment_notes?: string | null
@@ -102,7 +99,6 @@ export type Database = {
           pressure_start_bar?: number | null
           public_slug?: string | null
           suit_type?: string | null
-          surface_interval_min?: number | null
           tank_type?: string | null
           tank_volume_l?: number | null
           updated_at?: string
@@ -124,7 +120,6 @@ export type Database = {
           current_condition?: string | null
           dive_date?: string
           dive_number?: number | null
-          dive_site?: string | null
           dive_type?: string | null
           entry_time?: string | null
           equipment_notes?: string | null
@@ -141,7 +136,6 @@ export type Database = {
           pressure_start_bar?: number | null
           public_slug?: string | null
           suit_type?: string | null
-          surface_interval_min?: number | null
           tank_type?: string | null
           tank_volume_l?: number | null
           updated_at?: string

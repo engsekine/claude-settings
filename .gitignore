@@ -19,6 +19,9 @@ out/
 .env.local
 .env.*.local
 
+# Supabase: seed.sql は seed.sql.template を envsubst で展開した生成物
+supabase/seed.sql
+
 # Logs
 logs/
 *.log

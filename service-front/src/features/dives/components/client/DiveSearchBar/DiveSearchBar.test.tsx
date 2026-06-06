@@ -18,7 +18,7 @@ describe('DiveSearchBar', () => {
 
         await user.type(screen.getByLabelText('開始日'), '2026-01-01');
         await user.type(screen.getByLabelText('終了日'), '2026-12-31');
-        await user.type(screen.getByLabelText('エリア / ポイント名'), '伊豆');
+        await user.type(screen.getByLabelText('ポイント名'), '伊豆');
         await user.click(screen.getByRole('button', { name: '検索' }));
 
         expect(handleSubmit).toHaveBeenCalledWith({

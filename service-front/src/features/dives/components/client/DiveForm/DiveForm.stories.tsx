@@ -25,8 +25,7 @@ export const EditMode: Story = {
         defaultValues: {
             diveNumber: 42,
             diveDate: '2026-04-15',
-            location: '伊豆',
-            diveSite: '大瀬崎',
+            location: '伊豆 / 大瀬崎',
             maxDepthM: 22.5,
             bottomTimeMin: 48,
             waterTempC: 18.2,

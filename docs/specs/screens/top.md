@@ -1,17 +1,17 @@
 # TOP（ダッシュボード）
 
-> **ステータス: ドラフト** — 設計上の判断が必要な箇所は 🟡 TBD で明示しています。
+> **ステータス: 確定** — 003-dashboard 設計時に主要 TBD は解消済み。詳細は [`../features/003-dashboard/`](../features/003-dashboard/) を参照。
 
 ## メタ情報
 
 | 項目 | 内容 |
 |------|------|
 | 画面ID | `top` |
-| 関連機能 | 002 ダイブログ CRUD / 003 レギュレーター OH（新規）/ 004 累計統計（新規） |
+| 関連機能 | [003 ダッシュボード](../features/003-dashboard/requirements.md) |
 | ルート | `/` |
-| 認証 | 必須（🟡 TBD: 未認証時はランディングか `/login` リダイレクトか） |
+| 認証 | 必須（未認証は `/login` にリダイレクト。`src/proxy.ts` の `APP_ROUTE_PREFIXES` に `/` を追加） |
 | 対応端末 | モバイル / タブレット / PC |
-| ステータス | ドラフト |
+| ステータス | 確定（実装未着手） |
 
 ## 1. 目的・概要
 
@@ -75,7 +75,7 @@
 | 累計ダイブ本数 | `count(*) from dives where user_id = auth.uid()` |
 | 累計潜水時間 | `sum(bottom_time_min) from dives where user_id = auth.uid()` |
 | 最大水深 | `max(max_depth_m) from dives where user_id = auth.uid()` |
-| 訪問スポット数 | `count(distinct location) from dives where user_id = auth.uid()`（🟡 TBD: `location` か `dive_site` か） |
+| 訪問スポット数 | `count(distinct location) from dives where user_id = auth.uid()` |
 
 ### 表示
 
@@ -236,12 +236,11 @@ graph LR
 
 1. **未認証時の挙動**: TOP は認証必須 / 未認証はランディング or `/login`
 2. **レギュレーターのデータモデル**: 案 A（user_details 拡張） / 案 B（regulators テーブル新規）
-3. **訪問スポット数の定義**: `location` で数えるか `dive_site` で数えるか（または両方）
-4. **OH 警告閾値**: 残日数 30 日 / 残本数 10 本でいいか
-5. **OH 完了記録アクション**: TOP に置くか機材設定画面に置くか
-6. **月別グラフ**: Phase 1 で実装するか後回しか
-7. **集計戦略**: 都度集計で問題ないか、キャッシュ層を入れるか
-8. **タブレット以上のレイアウト**: 2 カラム化するか縦長 1 カラムを維持するか
+3. **OH 警告閾値**: 残日数 30 日 / 残本数 10 本でいいか
+4. **OH 完了記録アクション**: TOP に置くか機材設定画面に置くか
+5. **月別グラフ**: Phase 1 で実装するか後回しか
+6. **集計戦略**: 都度集計で問題ないか、キャッシュ層を入れるか
+7. **タブレット以上のレイアウト**: 2 カラム化するか縦長 1 カラムを維持するか
 
 ## 12. 変更履歴
 

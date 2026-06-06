@@ -19,15 +19,19 @@ export const GAS_TYPE_OPTIONS = [
     { value: 'other', label: 'その他' },
 ] as const;
 
-/** suit_type の選択肢 */
-export const SUIT_TYPE_OPTIONS = [
-    { value: 'wetsuit_3mm', label: 'ウェット 3mm' },
-    { value: 'wetsuit_5mm', label: 'ウェット 5mm' },
-    { value: 'wetsuit_7mm', label: 'ウェット 7mm' },
-    { value: 'drysuit', label: 'ドライ' },
-    { value: 'skin', label: 'スキン' },
-    { value: 'other', label: 'その他' },
+/** tank_type の選択肢 */
+export const TANK_TYPE_OPTIONS = [
+    { value: 'steel', label: 'スチール' },
+    { value: 'aluminum', label: 'アルミ' },
 ] as const;
+
+export type TankTypeValue = (typeof TANK_TYPE_OPTIONS)[number]['value'];
+
+/** tank_type の DB 値 → 表示ラベル変換 */
+export const TANK_TYPE_LABEL_MAP: Record<TankTypeValue, string> = {
+    aluminum: 'アルミ',
+    steel: 'スチール',
+};
 
 /** 一覧 1 ページあたりの件数 */
 export const DIVE_PAGE_SIZE = 20;

@@ -146,8 +146,36 @@ supabase gen types typescript --local > ../packages/supabase/src/database.types.
 
 開発時に毎回投入したいデータは `seed.sql` に書きます。`supabase db reset` 時に自動で流れます。
 
-```sql
--- seed.sql
-insert into public.users (email, name) values
-  ('test@example.com', 'テストユーザー');
+### テンプレート + envsubst 方式
+
+このリポジトリではテストユーザーの認証情報を環境変数で管理するため、`seed.sql` は `seed.sql.template` から生成する運用にしています。
+
 ```
+supabase/
+├── .env.example       # サンプル値（commit する）
+├── .env.local         # 実値（gitignore）
+├── seed.sql.template  # ${TEST_USER_*} を含むテンプレート（commit する）
+└── seed.sql           # envsubst で展開した生成物（gitignore）
+```
+
+#### 初回セットアップ
+
+```bash
+# .env.local を作成して実値を入れる
+cp supabase/.env.example supabase/.env.local
+$EDITOR supabase/.env.local
+```
+
+#### 適用
+
+```bash
+# seed.sql を生成して supabase db reset を実行
+make supabase-reset
+
+# seed.sql の生成だけしたい場合
+make supabase-seed
+```
+
+### `seed.sql` を直接書く場合
+
+テンプレート不要なら `seed.sql.template` を消して `seed.sql` を直接編集すれば従来通り動きます（`.gitignore` の `supabase/seed.sql` 行も外す）。

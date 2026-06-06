@@ -1,17 +1,27 @@
 import * as yup from 'yup';
 
+import { TANK_TYPE_OPTIONS } from '@/features/dives/constants';
+
+const TANK_TYPE_VALUES = TANK_TYPE_OPTIONS.map((option) => option.value);
+
 /** 空文字 / null / undefined を null に、それ以外は yup の number 変換結果を返す */
 const optionalNumber = (value: number, originalValue: unknown): number | null => {
     if (originalValue === '' || originalValue == null) return null;
     return value;
 };
 
-/** YYYY-MM-DD の日付文字列が 1900-01-01 〜 当日の範囲内かチェック */
+/**
+ * YYYY-MM-DD の日付文字列が 1900-01-01 〜 日本時間の当日の範囲内かチェック。
+ *
+ * UTC 比較だと JST 早朝（UTC 前日）に「JST の今日」が未来扱いになるため、
+ * 上限は日本時間の今日（YYYY-MM-DD）と文字列比較する。
+ * ISO 形式は辞書順 = 時系列順なので文字列比較で正しく判定できる。
+ */
 const isDiveDateValid = (value: string | undefined): boolean => {
     if (!value) return false;
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return false;
-    return date >= new Date('1900-01-01') && date <= new Date();
+    if (Number.isNaN(new Date(value).getTime())) return false;
+    const todayJst = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Tokyo' });
+    return value >= '1900-01-01' && value <= todayJst;
 };
 
 const optionalTime = yup
@@ -40,23 +50,9 @@ export const diveSchema = yup.object({
     location: yup
         .string()
         .trim()
-        .min(1, 'エリア / ポイント名を入力してください')
-        .max(120, 'エリア / ポイント名は120文字以内で入力してください')
-        .required('エリア / ポイント名を入力してください'),
-    country: yup
-        .string()
-        .trim()
-        .max(60)
-        .transform((v) => (v === '' ? null : v))
-        .nullable()
-        .default(null),
-    diveSite: yup
-        .string()
-        .trim()
-        .max(120)
-        .transform((v) => (v === '' ? null : v))
-        .nullable()
-        .default(null),
+        .min(1, 'ポイント名を入力してください')
+        .max(120, 'ポイント名は120文字以内で入力してください')
+        .required('ポイント名を入力してください'),
     diveType: yup
         .string()
         .trim()
@@ -136,21 +132,12 @@ export const diveSchema = yup.object({
         .min(1, '潜水時間は1分以上で入力してください')
         .max(1440, '潜水時間は1440分以下で入力してください')
         .required('潜水時間を入力してください'),
-    surfaceIntervalMin: yup
-        .number()
-        .typeError('水面休息時間は数値で入力してください')
-        .transform(optionalNumber)
-        .nullable()
-        .integer('水面休息時間は整数で入力してください')
-        .min(0, '水面休息時間は0分以上で入力してください')
-        .default(null),
     tankType: yup
         .string()
-        .trim()
-        .max(40)
         .transform((v) => (v === '' ? null : v))
         .nullable()
-        .default(null),
+        .oneOf([null, ...TANK_TYPE_VALUES], 'タンク種別が正しくありません')
+        .default('steel'),
     tankVolumeL: yup
         .number()
         .typeError('タンク容量は数値で入力してください')
@@ -158,14 +145,14 @@ export const diveSchema = yup.object({
         .nullable()
         .positive('タンク容量は0より大きい値を入力してください')
         .max(50, 'タンク容量は50L以下で入力してください')
-        .default(null),
+        .default(10),
     gasType: yup
         .string()
         .trim()
         .max(40)
         .transform((v) => (v === '' ? null : v))
         .nullable()
-        .default(null),
+        .default('air'),
     o2Percent: yup
         .number()
         .typeError('酸素濃度は数値で入力してください')
@@ -173,7 +160,7 @@ export const diveSchema = yup.object({
         .nullable()
         .min(0, '酸素濃度は0%以上で入力してください')
         .max(100, '酸素濃度は100%以下で入力してください')
-        .default(null),
+        .default(21),
     pressureStartBar: yup
         .number()
         .typeError('開始残圧は数値で入力してください')
@@ -191,6 +178,12 @@ export const diveSchema = yup.object({
         .integer('終了残圧は整数で入力してください')
         .min(0, '終了残圧は0bar以上で入力してください')
         .max(400, '終了残圧は400bar以下で入力してください')
+        .test('lte-pressure-start', '終了残圧は開始残圧以下で入力してください', function (value) {
+            if (value === null || value === undefined) return true;
+            const start = (this.parent as { pressureStartBar?: number | null }).pressureStartBar;
+            if (start === null || start === undefined) return true;
+            return value <= start;
+        })
         .default(null),
     weightKg: yup
         .number()
@@ -257,7 +250,7 @@ export const diveSearchSchema = yup.object({
     location: yup
         .string()
         .trim()
-        .max(120, 'エリア / ポイント名は120文字以内で入力してください')
+        .max(120, 'ポイント名は120文字以内で入力してください')
         .transform((v) => (v === '' ? null : v))
         .nullable()
         .default(null),

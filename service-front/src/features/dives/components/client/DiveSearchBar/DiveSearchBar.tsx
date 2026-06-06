@@ -90,7 +90,7 @@ export const DiveSearchBar = ({ initialFilter, onSubmit: onSubmitFilter }: DiveS
 
                     <div className="flex flex-col gap-1">
                         <label htmlFor="dive-search-location" className="font-medium text-sm">
-                            エリア / ポイント名
+                            ポイント名
                         </label>
                         <Input
                             id="dive-search-location"

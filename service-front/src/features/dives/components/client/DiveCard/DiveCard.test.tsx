@@ -6,8 +6,7 @@ const baseDive: DiveListItem = {
     id: 'dive-1',
     diveNumber: 42,
     diveDate: '2026-04-15',
-    location: '伊豆',
-    diveSite: '大瀬崎',
+    location: '伊豆 / 大瀬崎',
     maxDepthM: 22.5,
     bottomTimeMin: 48,
     waterTempC: 18.2,
@@ -22,14 +21,9 @@ describe('DiveCard', () => {
         expect(link).toHaveAttribute('href', '/dives/dive-1');
     });
 
-    it('diveSite を見出しとして表示する', () => {
+    it('location を見出しとして表示する', () => {
         render(<DiveCard dive={baseDive} />);
-        expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('大瀬崎');
-    });
-
-    it('diveSite が無いときは location を見出しとして表示する', () => {
-        render(<DiveCard dive={{ ...baseDive, diveSite: null }} />);
-        expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('伊豆');
+        expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('伊豆 / 大瀬崎');
     });
 
     it('講習ダイブのときはバッジを表示する', () => {

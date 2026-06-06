@@ -14,8 +14,6 @@ const formatDate = (isoDate: string): string => {
 };
 
 export const DiveCard = ({ dive }: DiveCardProps) => {
-    const heading = dive.diveSite ?? dive.location;
-
     return (
         <article className="rounded-lg border border-border bg-background p-4 transition-colors hover:bg-muted/50">
             <Link href={`/dives/${dive.id}`} className="flex flex-col gap-2">
@@ -30,10 +28,7 @@ export const DiveCard = ({ dive }: DiveCardProps) => {
                         </span>
                     )}
                 </div>
-                <h2 className="font-semibold text-base text-foreground">{heading}</h2>
-                {dive.diveSite && dive.location !== dive.diveSite && (
-                    <p className="text-muted-foreground text-xs">{dive.location}</p>
-                )}
+                <h2 className="font-semibold text-base text-foreground">{dive.location}</h2>
                 <dl className="flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground text-sm">
                     <div className="flex items-center gap-1">
                         <dt className="font-medium">最大水深</dt>

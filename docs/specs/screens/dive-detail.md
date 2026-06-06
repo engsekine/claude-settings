@@ -70,9 +70,7 @@
 | 基本情報 | 潜水日 | `dives.dive_date` | `YYYY/MM/DD` | 必須 |
 | 基本情報 | エントリー時刻 | `dives.entry_time` | `HH:mm` | 行ごと非表示 |
 | 基本情報 | エキジット時刻 | `dives.exit_time` | `HH:mm` | 行ごと非表示 |
-| 基本情報 | 場所 | `dives.location` | 文字列 | 必須 |
-| 基本情報 | 国 | `dives.country` | 文字列 | 行ごと非表示 |
-| 基本情報 | ポイント | `dives.dive_site` | 文字列 | 行ごと非表示 |
+| 基本情報 | ポイント名 | `dives.location` | 文字列 | 必須 |
 | 基本情報 | ダイブ形態 | `dives.dive_type` | 文字列 | 行ごと非表示 |
 | 基本情報 | 講習ダイブ | `dives.certification_dive` | `はい` / `いいえ` | 常時表示 |
 | コンディション | 天気 | `dives.weather` | 文字列 | 行ごと非表示 |
@@ -84,8 +82,7 @@
 | 潜水データ | 最大水深 | `dives.max_depth_m` | `XX.XX m` | 必須 |
 | 潜水データ | 平均水深 | `dives.avg_depth_m` | `XX.XX m` | 行ごと非表示 |
 | 潜水データ | 潜水時間 | `dives.bottom_time_min` | `XX 分` | 必須 |
-| 潜水データ | 水面休息 | `dives.surface_interval_min` | `XX 分` | 行ごと非表示 |
-| 装備・ガス | タンク種別 | `dives.tank_type` | 文字列 | 行ごと非表示 |
+| 装備・ガス | タンク種別 | `dives.tank_type` | アルミ / スチール（ラベル表示） | 行ごと非表示 |
 | 装備・ガス | タンク容量 | `dives.tank_volume_l` | `XX.X L` | 行ごと非表示 |
 | 装備・ガス | ガス種別 | `dives.gas_type` | 文字列 | 行ごと非表示 |
 | 装備・ガス | 酸素濃度 | `dives.o2_percent` | `XX.X %` | `gas_type=Nitrox` のみ |

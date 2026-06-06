@@ -31,8 +31,6 @@ export default async function EditDivePage({ params }: EditDivePageProps) {
         entryTime: dive.entryTime,
         exitTime: dive.exitTime,
         location: dive.location,
-        country: dive.country,
-        diveSite: dive.diveSite,
         diveType: dive.diveType,
         weather: dive.weather,
         airTempC: dive.airTempC,
@@ -43,7 +41,6 @@ export default async function EditDivePage({ params }: EditDivePageProps) {
         maxDepthM: dive.maxDepthM,
         avgDepthM: dive.avgDepthM,
         bottomTimeMin: dive.bottomTimeMin,
-        surfaceIntervalMin: dive.surfaceIntervalMin,
         tankType: dive.tankType,
         tankVolumeL: dive.tankVolumeL,
         gasType: dive.gasType,
@@ -64,7 +61,7 @@ export default async function EditDivePage({ params }: EditDivePageProps) {
             <Breadcrumbs
                 breadcrumbs={[
                     { name: 'ダイビングログ', slug: '/dives' },
-                    { name: dive.diveSite ?? dive.location, slug: `/dives/${id}` },
+                    { name: dive.location, slug: `/dives/${id}` },
                     { name: '編集' },
                 ]}
             />

@@ -27,10 +27,10 @@ describe('DiveForm', () => {
         routerRefresh.mockReset();
     });
 
-    it('必須項目（潜水日・エリア / ポイント名・最大水深・潜水時間）を表示する', () => {
+    it('必須項目（潜水日・ポイント名・最大水深・潜水時間）を表示する', () => {
         render(<DiveForm />);
         expect(screen.getByLabelText(/潜水日/)).toBeInTheDocument();
-        expect(screen.getByLabelText(/エリア \/ ポイント名/)).toBeInTheDocument();
+        expect(screen.getByLabelText(/ポイント名/)).toBeInTheDocument();
         expect(screen.getByLabelText(/最大水深\(m\)/)).toBeInTheDocument();
         expect(screen.getByLabelText(/潜水時間\(分\)/)).toBeInTheDocument();
     });
@@ -40,8 +40,8 @@ describe('DiveForm', () => {
         const user = userEvent.setup();
         render(<DiveForm />);
 
-        await user.clear(screen.getByLabelText(/エリア \/ ポイント名/));
-        await user.type(screen.getByLabelText(/エリア \/ ポイント名/), '伊豆');
+        await user.clear(screen.getByLabelText(/ポイント名/));
+        await user.type(screen.getByLabelText(/ポイント名/), '伊豆');
         await user.clear(screen.getByLabelText(/最大水深\(m\)/));
         await user.type(screen.getByLabelText(/最大水深\(m\)/), '18');
         await user.clear(screen.getByLabelText(/潜水時間\(分\)/));

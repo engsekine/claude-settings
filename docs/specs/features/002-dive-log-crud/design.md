@@ -14,9 +14,7 @@ PADI ログブックの標準項目を踏襲する。
 | `dive_date` | `date` | NO | 潜水日 |
 | `entry_time` | `time` | YES | エントリー時刻 |
 | `exit_time` | `time` | YES | エキジット時刻 |
-| `location` | `text` | NO | エリア / ポイント名 |
-| `country` | `text` | YES | 国 |
-| `dive_site` | `text` | YES | 詳細ポイント名 |
+| `location` | `text` | NO | ポイント名 |
 | `dive_type` | `text` | YES | ボート / ビーチ / 流れ など |
 | `weather` | `text` | YES | 天気 |
 | `air_temp_c` | `numeric(4,1)` | YES | 気温（℃） |
@@ -27,8 +25,7 @@ PADI ログブックの標準項目を踏襲する。
 | `max_depth_m` | `numeric(5,2)` | NO | 最大水深（m） |
 | `avg_depth_m` | `numeric(5,2)` | YES | 平均水深（m） |
 | `bottom_time_min` | `int` | NO | 潜水時間（分） |
-| `surface_interval_min` | `int` | YES | 水面休息時間（分） |
-| `tank_type` | `text` | YES | スチール / アルミ など |
+| `tank_type` | `text` | YES | `aluminum` / `steel` の二値（CHECK 制約） |
 | `tank_volume_l` | `numeric(4,1)` | YES | タンク容量（L） |
 | `gas_type` | `text` | YES | Air / Nitrox など |
 | `o2_percent` | `numeric(4,1)` | YES | 酸素濃度（%、Nitrox 用） |

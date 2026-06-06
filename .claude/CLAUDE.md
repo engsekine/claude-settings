@@ -98,6 +98,33 @@
 
 `PostToolUse` hook（`.claude/hooks/suggest-test-update.sh`）が編集を検知して該当ファイルを列挙してくれるので、そのリマインダーが見えたら無視せず確認する。
 
+## 仕様書同期ルール（コード変更時）
+
+コード（特に schema・component・migration・route）を編集した場合、`docs/specs/` 配下の関連仕様書に **必ず同期確認をかける**。実装が真実なので、ズレを見つけたら仕様書側を実装に合わせて更新する。
+
+同期対象の主なマッピング:
+
+| 編集したコード | 確認する仕様書 |
+|---|---|
+| `src/features/<feature>/schemas/*.schema.ts` | `docs/specs/screens/*.md` の項目定義・バリデーション表 |
+| `src/features/<feature>/components/**/*.tsx` | `docs/specs/screens/*.md` の画面要素・状態 |
+| `src/features/<feature>/server/{queries,actions}.ts` | `docs/specs/features/<NNN>-<feature>/design.md` |
+| `src/features/<feature>/lib/*.ts`（自動計算・変換ロジック等） | `docs/specs/screens/*.md` の挙動説明 |
+| `src/features/<feature>/constants.ts` | `docs/specs/screens/*.md` の選択肢一覧 |
+| `src/app/<route>/page.tsx` | `docs/specs/screens/<route>.md` |
+| `src/proxy.ts` / `src/middleware.ts` | `docs/specs/features/*/design.md` のルーティング節 |
+| `supabase/migrations/*.sql` | `docs/specs/tables/<table>.md` |
+
+判断基準:
+
+| 編集の規模 | 対応方針 |
+|---|---|
+| 値や文言の微変更（max 値・ラベル・エラーメッセージ等） | 該当仕様書を Read → 該当行だけ Edit |
+| カラム / 項目の追加・削除、UI 種別の変更（select↔text 等）、デフォルト値の意味変更 | `/sync-spec` で一括チェック + 修正 |
+| 大規模リファクタ | `/sync-spec` で全範囲スキャン後、ユーザーと合意してから書き換え |
+
+`/sync-spec <path>` は対象ファイルを絞ったチェックも可能。コミット前に `/sync-spec` を 1 回回す運用が安全。
+
 ## フレームワーク・ライブラリの公式ドキュメント参照
 
 実装時は必ず最新の公式ドキュメントを参照すること。
@@ -137,6 +164,7 @@
 | `/check-typo` | 変更差分に含まれるタイポ・不要な文字変更をチェックする |
 | `/check-diff-impact` | 変更差分の影響を受けるURLを特定する |
 | `/code-fix [ファイル]` | コード規約に基づいてコードを修正する |
+| `/sync-spec [ファイル]` | 変更コードと `docs/specs/` のずれを検出し、仕様書を実装に合わせて修正する |
 | `/summary` | PRディスクリプションを生成する |
 | `/suggest-commit` | 変更差分からコミット名を提案する |
 | `/reply-review <コメント>` | レビューコメントへの返信ドラフトを生成する |

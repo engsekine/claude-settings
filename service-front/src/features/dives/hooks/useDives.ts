@@ -12,7 +12,7 @@ interface FetchPageArgs {
 }
 
 const LIST_COLUMNS =
-    'id, dive_number, dive_date, location, dive_site, max_depth_m, bottom_time_min, water_temp_c, visibility_m, certification_dive';
+    'id, dive_number, dive_date, location, max_depth_m, bottom_time_min, water_temp_c, visibility_m, certification_dive';
 
 const fetchDivesPage = async ({ filter, cursor }: FetchPageArgs): Promise<DiveListPage> => {
     const supabase = createClient();
@@ -41,7 +41,6 @@ const fetchDivesPage = async ({ filter, cursor }: FetchPageArgs): Promise<DiveLi
         dive_number: number | null;
         dive_date: string;
         location: string;
-        dive_site: string | null;
         max_depth_m: number | string;
         bottom_time_min: number;
         water_temp_c: number | string | null;
@@ -55,7 +54,6 @@ const fetchDivesPage = async ({ filter, cursor }: FetchPageArgs): Promise<DiveLi
         diveNumber: row.dive_number,
         diveDate: row.dive_date,
         location: row.location,
-        diveSite: row.dive_site,
         maxDepthM: Number(row.max_depth_m),
         bottomTimeMin: row.bottom_time_min,
         waterTempC: row.water_temp_c === null ? null : Number(row.water_temp_c),

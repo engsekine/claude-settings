@@ -49,8 +49,7 @@ describe('DiveList', () => {
                             id: 'd1',
                             diveNumber: 1,
                             diveDate: '2026-04-15',
-                            location: '伊豆',
-                            diveSite: '大瀬崎',
+                            location: '伊豆 / 大瀬崎',
                             maxDepthM: 18,
                             bottomTimeMin: 40,
                             waterTempC: null,
@@ -64,6 +63,6 @@ describe('DiveList', () => {
             { wrapper },
         );
 
-        expect(screen.getByRole('heading', { level: 2, name: '大瀬崎' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { level: 2, name: '伊豆 / 大瀬崎' })).toBeInTheDocument();
     });
 });

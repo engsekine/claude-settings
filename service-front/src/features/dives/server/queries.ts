@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { DIVE_PAGE_SIZE } from '@/features/dives/constants';
+import { DIVE_PAGE_SIZE, type TankTypeValue } from '@/features/dives/constants';
 import type { Dive, DiveCursor, DiveListFilter, DiveListItem, DiveListPage } from '@/features/dives/types';
 import { createClient } from '@/shared/lib/supabase/server';
 
@@ -13,8 +13,6 @@ type DiveRow = {
     entry_time: string | null;
     exit_time: string | null;
     location: string;
-    country: string | null;
-    dive_site: string | null;
     dive_type: string | null;
     weather: string | null;
     air_temp_c: number | string | null;
@@ -25,7 +23,6 @@ type DiveRow = {
     max_depth_m: number | string;
     avg_depth_m: number | string | null;
     bottom_time_min: number;
-    surface_interval_min: number | null;
     tank_type: string | null;
     tank_volume_l: number | string | null;
     gas_type: string | null;
@@ -58,8 +55,6 @@ const mapDive = (row: DiveRow): Dive => ({
     entryTime: row.entry_time,
     exitTime: row.exit_time,
     location: row.location,
-    country: row.country,
-    diveSite: row.dive_site,
     diveType: row.dive_type,
     weather: row.weather,
     airTempC: toNumber(row.air_temp_c),
@@ -70,8 +65,7 @@ const mapDive = (row: DiveRow): Dive => ({
     maxDepthM: Number(row.max_depth_m),
     avgDepthM: toNumber(row.avg_depth_m),
     bottomTimeMin: row.bottom_time_min,
-    surfaceIntervalMin: row.surface_interval_min,
-    tankType: row.tank_type,
+    tankType: row.tank_type as TankTypeValue | null,
     tankVolumeL: toNumber(row.tank_volume_l),
     gasType: row.gas_type,
     o2Percent: toNumber(row.o2_percent),
@@ -96,7 +90,6 @@ type DiveListRow = Pick<
     | 'dive_number'
     | 'dive_date'
     | 'location'
-    | 'dive_site'
     | 'max_depth_m'
     | 'bottom_time_min'
     | 'water_temp_c'
@@ -105,14 +98,13 @@ type DiveListRow = Pick<
 >;
 
 const LIST_COLUMNS =
-    'id, dive_number, dive_date, location, dive_site, max_depth_m, bottom_time_min, water_temp_c, visibility_m, certification_dive';
+    'id, dive_number, dive_date, location, max_depth_m, bottom_time_min, water_temp_c, visibility_m, certification_dive';
 
 const mapDiveListItem = (row: DiveListRow): DiveListItem => ({
     id: row.id,
     diveNumber: row.dive_number,
     diveDate: row.dive_date,
     location: row.location,
-    diveSite: row.dive_site,
     maxDepthM: Number(row.max_depth_m),
     bottomTimeMin: row.bottom_time_min,
     waterTempC: toNumber(row.water_temp_c),
