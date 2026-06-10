@@ -1,5 +1,6 @@
 import { createBrowserClient } from '@supabase/ssr';
 
+import { AUTH_COOKIE_NAME } from './constants';
 import type { Database } from './types';
 
 /** ブラウザ（Client Component）用の Supabase クライアント */
@@ -14,5 +15,7 @@ export const createClient = () => {
         throw new Error('環境変数 NEXT_PUBLIC_SUPABASE_ANON_KEY が設定されていません');
     }
 
-    return createBrowserClient<Database>(url, anonKey);
+    return createBrowserClient<Database>(url, anonKey, {
+        cookieOptions: { name: AUTH_COOKIE_NAME },
+    });
 };

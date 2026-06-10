@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { AUTH_COOKIE_NAME } from './constants';
 import type { Database } from './types';
 
 /** Middleware 用の Supabase クライアント（セッション更新） */
@@ -18,6 +19,7 @@ export const updateSession = async (request: NextRequest) => {
     }
 
     const supabase = createServerClient<Database>(url, anonKey, {
+        cookieOptions: { name: AUTH_COOKIE_NAME },
         cookies: {
             getAll: () => request.cookies.getAll(),
             setAll: (cookiesToSet: { name: string; value: string; options: Record<string, unknown> }[]) => {
