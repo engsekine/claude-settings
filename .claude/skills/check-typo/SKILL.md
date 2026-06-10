@@ -56,7 +56,7 @@ git diff HEAD -- ':!package-lock.json' ':!yarn.lock' ':!pnpm-lock.yaml' ':!node_
 - バッククォート `` ` `` とシングルクォート `'` の混在（テンプレートリテラル以外でのバッククォート使用）
 
 **判定基準:**
-- `.vscode/settings.json` の `cSpell.words` に登録されている単語はタイポとしない
+- `cspell.json` の `words`（無ければ `.vscode/settings.json` の `cSpell.words`）に登録されている単語はタイポとしない
 - プロジェクト固有の略語・造語は警告レベルで報告する（Error にしない）
 
 ### 3. 不要な文字変更チェック

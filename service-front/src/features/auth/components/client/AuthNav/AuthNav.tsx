@@ -1,0 +1,142 @@
+'use client';
+
+import { Button } from '@repo/ui/components/button';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@repo/ui/components/sheet';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { LogOut, User, UserPlus } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect, useState, useTransition } from 'react';
+
+import { signOut } from '@/features/auth/server/actions';
+import { createClient } from '@/shared/lib/supabase/browser';
+import { useUserStore } from '@/shared/stores/user-store';
+
+interface AuthNavProps {
+    /** SSR でサーバーから取得した初期ユーザー（ハイドレーションのちらつき防止） */
+    initialUser: SupabaseUser | null;
+}
+
+export const AuthNav = ({ initialUser }: AuthNavProps) => {
+    const storeUser = useUserStore((s) => s.user);
+    const setUser = useUserStore((s) => s.setUser);
+    const clearUser = useUserStore((s) => s.clearUser);
+    const [isPending, startTransition] = useTransition();
+    const [isOpen, setIsOpen] = useState(false);
+
+    /**
+     * ハイドレート完了フラグ。
+     * ハイドレート前は initialUser を、後はストアの値を採用することで、
+     * SSR/CSR の初回レンダリング結果を一致させちらつきを防ぐ。
+     */
+    const [hasHydrated, setHasHydrated] = useState(false);
+
+    /** SSR で取得した初期ユーザーをストアに同期 */
+    useEffect(() => {
+        if (initialUser) {
+            setUser(initialUser);
+        } else {
+            clearUser();
+        }
+        setHasHydrated(true);
+    }, [initialUser, setUser, clearUser]);
+
+    /**
+     * Supabase Auth の状態変化を監視してストアに反映。
+     * INITIAL_SESSION は Cookie 復元前のタイミングで session=null で発火し
+     * initialUser を上書きしてしまうため無視する（初期状態は SSR を信頼する）。
+     */
+    useEffect(() => {
+        const supabase = createClient();
+
+        const {
+            data: { subscription },
+        } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'INITIAL_SESSION') return;
+
+            if (session?.user) {
+                setUser(session.user);
+            } else {
+                clearUser();
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, [setUser, clearUser]);
+
+    const handleSignOut = () => {
+        startTransition(async () => {
+            await signOut();
+            setIsOpen(false);
+        });
+    };
+
+    const user = hasHydrated ? storeUser : initialUser;
+    const isAuthenticated = !!user;
+
+    return (
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger
+                render={
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={isAuthenticated ? 'アカウントメニューを開く' : 'ログインメニューを開く'}
+                    />
+                }
+            >
+                <User />
+            </SheetTrigger>
+            <SheetContent side="right">
+                <SheetHeader>
+                    <SheetTitle>アカウント</SheetTitle>
+                </SheetHeader>
+                <nav aria-label="アカウントナビゲーション" className="flex flex-col gap-2 p-4">
+                    {isAuthenticated ? (
+                        <>
+                            <p className="text-muted-foreground text-sm">
+                                <span className="sr-only">ログイン中のメールアドレス: </span>
+                                {user?.email}
+                            </p>
+                            <Link
+                                href="/settings/profile"
+                                onClick={() => setIsOpen(false)}
+                                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
+                            >
+                                <User aria-hidden="true" />
+                                会員情報
+                            </Link>
+                            <Button
+                                variant="outline"
+                                onClick={handleSignOut}
+                                disabled={isPending}
+                                className="justify-start"
+                            >
+                                <LogOut aria-hidden="true" />
+                                {isPending ? 'ログアウト中...' : 'ログアウト'}
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <Link
+                                href="/signup"
+                                onClick={() => setIsOpen(false)}
+                                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
+                            >
+                                <UserPlus aria-hidden="true" />
+                                会員登録
+                            </Link>
+                            <Link
+                                href="/login"
+                                onClick={() => setIsOpen(false)}
+                                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
+                            >
+                                <User aria-hidden="true" />
+                                ログイン
+                            </Link>
+                        </>
+                    )}
+                </nav>
+            </SheetContent>
+        </Sheet>
+    );
+};

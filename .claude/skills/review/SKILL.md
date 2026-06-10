@@ -9,7 +9,7 @@ user-invocable: true
 ## 入力パターン
 
 - `/review` - 現在のブランチのmainとの差分をレビュー
-- `/review TASK-XXX` - 指定タスクに関連する変更をレビュー（タスクのスコープ・完了条件も参照）
+- `/review <NNN>-<feature>` - 指定 feature（例: `002-dive-log-crud`）の仕様スコープに沿ってレビュー（`specs/<NNN>-<feature>/` の spec.md / tasks.md の受け入れ条件も参照）
 
 ## 前提確認
 
@@ -31,7 +31,7 @@ git log main..HEAD --oneline      # コミット一覧
 
 上記を統合して「レビュー対象の全差分」「変更ファイルリスト」を構成する。
 
-タスクIDが指定されている場合は `docs/tasks/TASK-XXX.md` を読み、タスクのスコープ・完了条件をレビュー観点に含める。
+feature ID が指定されている場合は `specs/<NNN>-<feature>/spec.md`（受け入れシナリオ・FR）と `tasks.md`（タスクのスコープ・完了条件）を読み、レビュー観点に含める。
 
 **出力**: 変更ファイルリスト、差分詳細、コミット一覧 → 手順2〜4の入力
 
@@ -42,11 +42,14 @@ git log main..HEAD --oneline      # コミット一覧
 | ファイル | 内容 |
 | --- | --- |
 | `.coderabbit.yaml` | CodeRabbitのレビュールール |
-| `CLAUDE.md` | プロジェクトのコードスタイル・規約 |
+| `.claude/CLAUDE.md` | プロジェクトのコードスタイル・規約 |
+| `.claude/rules/*.md` | 言語別コーディング規約 |
 | `eslint.config.*` / `.eslintrc.*` | ESLint設定（ルートのみ） |
 | `tsconfig.json` | TypeScript設定 |
-| `docs/designs/` | 該当する設計書 |
-| `docs/specs/` | 該当する仕様書 |
+| `specs/<NNN>-<feature>/spec.md` | 該当する機能仕様（spec-kit 形式） |
+| `specs/<NNN>-<feature>/plan.md` | 該当する実装計画 |
+| `specs/<NNN>-<feature>/screens/` | 該当する画面仕様 |
+| `specs/<NNN>-<feature>/data-model.md` | 該当するテーブル仕様 |
 
 **出力**: レビュー基準の集合 → 手順3・4のチェック観点
 
@@ -78,7 +81,7 @@ git log main..HEAD --oneline      # コミット一覧
 報告形式: 整合 / 差異あり（差異の内容）で返す
 ```
 
-設計書・仕様書の特定方法: `docs/designs/` と `docs/specs/` 配下のファイル名・見出しを確認し、変更ファイルの機能領域と一致するものを渡す。該当なしの場合は「なし」と指定する。
+設計書・仕様書の特定方法: `specs/<NNN>-<feature>/`（spec.md / plan.md / data-model.md / screens/）配下のファイル名・見出しを確認し、変更ファイルの機能領域・画面・テーブルと一致するものを渡す（設計書としては plan.md を渡す）。該当なしの場合は「なし」と指定する。
 
 **3. impact-analyzer**（変更影響の分析）
 
@@ -127,7 +130,7 @@ git log main..HEAD --oneline      # コミット一覧
 コードレビューレポート
 
 対象: main...<ブランチ名> (<コミット数>コミット, <変更ファイル数>ファイル)
-タスク: TASK-XXX（該当する場合。なければ省略）
+feature: <NNN>-<feature>（該当する場合。なければ省略）
 
 ─────────────────────────
 Error（修正必須）
@@ -197,4 +200,4 @@ Errorがある場合:
 ## $ARGUMENTS
 
 - `/review` - 現在のブランチの変更をレビュー
-- `/review TASK-XXX` - 指定タスクのスコープに沿ってレビュー
+- `/review <NNN>-<feature>` - 指定 feature の仕様スコープに沿ってレビュー

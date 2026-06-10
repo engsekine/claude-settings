@@ -12,6 +12,7 @@
 
 # testing
 /coverage
+/coverage-e2e
 
 # next.js
 /.next/
@@ -44,3 +45,8 @@ next-env.d.ts
 # Logs
 logs/
 *.log
+certificates
+*storybook.log
+storybook-static
+playwright-report
+test-results

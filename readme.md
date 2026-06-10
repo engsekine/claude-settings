@@ -69,3 +69,9 @@ echo ".devcontainer/devcontainer.json" >> .git/info/exclude
 
 ---
 
+## Supabase（ローカル開発）
+
+Supabase CLI を使ったローカルスタックの起動方法・主要エンドポイント・環境変数設定・マイグレーション運用については [supabase/README.md](supabase/README.md) を参照してください。
+
+---
+

@@ -1,17 +1,15 @@
 {
     "extends": "./tsconfig.json",
     "compilerOptions": {
-        "types": ["jest", "@testing-library/jest-dom", "node"],
-        "module": "commonjs"
+        "types": ["vitest/globals", "@testing-library/jest-dom", "node"]
     },
     "include": [
         "**/*.test.ts",
         "**/*.test.tsx",
         "**/*.spec.ts",
         "**/*.spec.tsx",
-        "jest.setup.ts",
-        "jest.config.ts",
-        "__tests__/**/*",
-        "__mocks__/**/*"
+        "vitest.setup.ts",
+        "vitest.config.ts",
+        "__tests__/**/*"
     ]
 }

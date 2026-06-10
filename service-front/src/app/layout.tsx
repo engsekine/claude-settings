@@ -4,6 +4,7 @@ import { AuthNav } from '@/features/auth';
 import { Footer } from '@/shared/components/layout/Footer';
 import { Header } from '@/shared/components/layout/Header';
 import { SITE_METADATA } from '@/shared/config/metadata';
+import { createClient } from '@/shared/lib/supabase/server';
 
 import './globals.css';
 import { Providers } from './providers';
@@ -20,17 +21,22 @@ const geistMono = Geist_Mono({
 
 export const metadata = SITE_METADATA;
 
-export default function RootLayout({
+export default async function RootLayout({
     children,
 }: Readonly<{
     children: React.ReactNode;
 }>) {
+    const supabase = await createClient();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
     return (
         <html lang="ja" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-            <body className="min-h-full flex flex-col">
+            <body className="flex min-h-full flex-col">
                 <Providers>
-                    <Header actions={<AuthNav />} />
-                    <main className="flex flex-1 bg-background">{children}</main>
+                    <Header actions={<AuthNav initialUser={user} />} />
+                    <main className="flex flex-1 justify-center bg-background">{children}</main>
                     <Footer />
                 </Providers>
             </body>

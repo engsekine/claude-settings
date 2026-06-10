@@ -1,0 +1,23 @@
+{
+    "name": "@repo/supabase",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": "./src/index.ts",
+        "./browser": "./src/browser.ts",
+        "./server": "./src/server.ts",
+        "./middleware": "./src/middleware.ts",
+        "./constants": "./src/constants.ts"
+    },
+    "dependencies": {
+        "@supabase/ssr": "^0.10.3",
+        "@supabase/supabase-js": "^2.49.8"
+    },
+    "devDependencies": {
+        "typescript": "^5.7.2"
+    },
+    "peerDependencies": {
+        "next": ">=15"
+    }
+}

@@ -78,10 +78,7 @@ interface GeneratePageMetadataOptions {
 }
 
 /** ページ用の metadata を生成する */
-export const generatePageMetadata = (
-    page: PageMetadata,
-    options?: GeneratePageMetadataOptions,
-): Metadata => ({
+export const generatePageMetadata = (page: PageMetadata, options?: GeneratePageMetadataOptions): Metadata => ({
     title: page.title,
     description: page.description,
     ...(options?.noIndex === true && {
