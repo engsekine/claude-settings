@@ -59,10 +59,9 @@ export type DiveListItem = Pick<
 
 /** 一覧検索の入力 */
 export interface DiveListFilter {
+    diveNumber?: number;
     /** ISO 8601 date string (YYYY-MM-DD) */
-    dateFrom?: string;
-    /** ISO 8601 date string (YYYY-MM-DD) */
-    dateTo?: string;
+    diveDate?: string;
     location?: string;
 }
 

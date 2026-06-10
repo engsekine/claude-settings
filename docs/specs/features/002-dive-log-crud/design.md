@@ -126,8 +126,8 @@ export const diveSchema = yup.object({
 
 ## 7. 検索
 
-- 入力: `dateFrom` / `dateTo` / `location`（部分一致）
-- クエリ: `where user_id = $1 and dive_date between $2 and $3 and location ilike $4`
+- 入力: `diveNumber`（完全一致） / `diveDate`（完全一致） / `location`（部分一致）
+- クエリ: `where user_id = $1 and dive_number = $2 and dive_date = $3 and location ilike $4`
 - 並び順: `dive_date desc, id desc`
 
 ## 8. アクセシビリティ

@@ -67,6 +67,17 @@ create index idx_dives_user_id_location on public.dives (user_id, location);
 create index idx_dives_public_slug on public.dives (public_slug) where is_public = true;
 
 -- ========================================
+-- dive_number にユーザー単位の部分ユニーク制約を追加
+-- NULL は対象外（ダイブ番号は任意項目で、未入力ログは複数共存可）
+-- ========================================
+create unique index dives_user_id_dive_number_key
+    on public.dives (user_id, dive_number)
+    where dive_number is not null;
+
+comment on index public.dives_user_id_dive_number_key is
+    '同一ユーザー内で dive_number は重複不可（NULL は対象外）';
+
+-- ========================================
 -- updated_at 自動更新（handle_updated_at は users マイグレーションで定義済み）
 -- ========================================
 create trigger dives_handle_updated_at

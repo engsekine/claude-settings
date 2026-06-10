@@ -3,6 +3,7 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@repo/ui/components/button';
 import { Input } from '@repo/ui/components/input';
+import type { KeyboardEvent, WheelEvent } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { type DiveSearchValues, diveSearchSchema } from '@/features/dives/schemas/dive.schema';
@@ -13,6 +14,19 @@ interface DiveSearchBarProps {
     onSubmit: (filter: DiveListFilter) => void;
 }
 
+/** number 入力にホイールでフォーカスしたまま値が変わる事故を防ぐ */
+const blurOnWheel = (e: WheelEvent<HTMLInputElement>) => {
+    e.currentTarget.blur();
+};
+
+/** type=number でも 'e' / '+' / '-' / '.' などは入力できてしまうのでブロックする（非負整数用） */
+const BLOCKED_INTEGER_KEYS = new Set(['e', 'E', '+', '-', '.', ',']);
+const blockNonIntegerKeys = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (BLOCKED_INTEGER_KEYS.has(e.key)) {
+        e.preventDefault();
+    }
+};
+
 export const DiveSearchBar = ({ initialFilter, onSubmit: onSubmitFilter }: DiveSearchBarProps) => {
     const {
         register,
@@ -22,22 +36,22 @@ export const DiveSearchBar = ({ initialFilter, onSubmit: onSubmitFilter }: DiveS
     } = useForm<DiveSearchValues>({
         resolver: yupResolver(diveSearchSchema),
         defaultValues: {
-            dateFrom: initialFilter?.dateFrom ?? null,
-            dateTo: initialFilter?.dateTo ?? null,
+            diveNumber: initialFilter?.diveNumber ?? null,
+            diveDate: initialFilter?.diveDate ?? null,
             location: initialFilter?.location ?? null,
         },
     });
 
     const onSubmit = handleSubmit((values) => {
         const filter: DiveListFilter = {};
-        if (values.dateFrom) filter.dateFrom = values.dateFrom;
-        if (values.dateTo) filter.dateTo = values.dateTo;
+        if (values.diveNumber != null) filter.diveNumber = values.diveNumber;
+        if (values.diveDate) filter.diveDate = values.diveDate;
         if (values.location) filter.location = values.location;
         onSubmitFilter(filter);
     });
 
     const handleClear = () => {
-        reset({ dateFrom: null, dateTo: null, location: null });
+        reset({ diveNumber: null, diveDate: null, location: null });
         onSubmitFilter({});
     };
 
@@ -51,46 +65,51 @@ export const DiveSearchBar = ({ initialFilter, onSubmit: onSubmitFilter }: DiveS
             >
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                     <div className="flex flex-col gap-1">
-                        <label htmlFor="dive-search-date-from" className="font-medium text-sm">
-                            開始日
+                        <label htmlFor="dive-search-number" className="font-medium text-sm">
+                            ダイブ番号
                         </label>
                         <Input
-                            id="dive-search-date-from"
-                            type="date"
+                            id="dive-search-number"
+                            type="number"
+                            onWheel={blurOnWheel}
+                            onKeyDown={blockNonIntegerKeys}
+                            inputMode="numeric"
+                            min={0}
+                            step={1}
                             autoComplete="off"
-                            aria-invalid={!!errors.dateFrom}
-                            aria-describedby={errors.dateFrom ? 'dive-search-date-from-error' : undefined}
-                            {...register('dateFrom')}
+                            aria-invalid={!!errors.diveNumber}
+                            aria-describedby={errors.diveNumber ? 'dive-search-number-error' : undefined}
+                            {...register('diveNumber')}
                         />
-                        {errors.dateFrom && (
-                            <span id="dive-search-date-from-error" role="alert" className="text-red-600 text-sm">
-                                {errors.dateFrom.message}
+                        {errors.diveNumber && (
+                            <span id="dive-search-number-error" role="alert" className="text-red-600 text-sm">
+                                {errors.diveNumber.message}
                             </span>
                         )}
                     </div>
 
                     <div className="flex flex-col gap-1">
-                        <label htmlFor="dive-search-date-to" className="font-medium text-sm">
-                            終了日
+                        <label htmlFor="dive-search-date" className="font-medium text-sm">
+                            潜水日
                         </label>
                         <Input
-                            id="dive-search-date-to"
+                            id="dive-search-date"
                             type="date"
                             autoComplete="off"
-                            aria-invalid={!!errors.dateTo}
-                            aria-describedby={errors.dateTo ? 'dive-search-date-to-error' : undefined}
-                            {...register('dateTo')}
+                            aria-invalid={!!errors.diveDate}
+                            aria-describedby={errors.diveDate ? 'dive-search-date-error' : undefined}
+                            {...register('diveDate')}
                         />
-                        {errors.dateTo && (
-                            <span id="dive-search-date-to-error" role="alert" className="text-red-600 text-sm">
-                                {errors.dateTo.message}
+                        {errors.diveDate && (
+                            <span id="dive-search-date-error" role="alert" className="text-red-600 text-sm">
+                                {errors.diveDate.message}
                             </span>
                         )}
                     </div>
 
                     <div className="flex flex-col gap-1">
                         <label htmlFor="dive-search-location" className="font-medium text-sm">
-                            ポイント名
+                            ポイント名（部分一致）
                         </label>
                         <Input
                             id="dive-search-location"

@@ -1,5 +1,15 @@
 import type { NextConfig } from 'next';
 
+/**
+ * Supabase クライアントは ブラウザから直接 REST / Realtime に接続するため、
+ * connect-src に Supabase の origin（HTTP と WS の両方）を許可する必要がある。
+ * 環境ごとに URL が変わるので NEXT_PUBLIC_SUPABASE_URL から導出する。
+ */
+const supabaseUrl = process.env['NEXT_PUBLIC_SUPABASE_URL'] ?? '';
+const supabaseOrigin = supabaseUrl ? new URL(supabaseUrl).origin : '';
+const supabaseWsOrigin = supabaseOrigin.replace(/^http/, 'ws');
+const connectSrc = ["'self'", supabaseOrigin, supabaseWsOrigin].filter(Boolean).join(' ');
+
 const nextConfig = {
     reactStrictMode: true,
     typedRoutes: true,
@@ -41,7 +51,7 @@ const nextConfig = {
                     },
                     {
                         key: 'Content-Security-Policy',
-                        value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'none'",
+                        value: `default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' https://fonts.gstatic.com; connect-src ${connectSrc}; frame-ancestors 'none'`,
                     },
                 ],
             },

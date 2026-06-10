@@ -56,7 +56,7 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/log.sh\""
+                        "command": "bash .claude/hooks/log.sh"
                     }
                 ]
             }
@@ -67,7 +67,7 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop.sh\""
+                        "command": "bash .claude/hooks/stop.sh"
                     }
                 ]
             }
@@ -78,19 +78,19 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/lint-check.sh\""
+                        "command": "bash .claude/hooks/lint-check.sh"
                     },
                     {
                         "type": "command",
-                        "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/suggest-test-gen.sh\""
+                        "command": "bash .claude/hooks/suggest-test-gen.sh"
                     },
                     {
                         "type": "command",
-                        "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/suggest-test-update.sh\""
+                        "command": "bash .claude/hooks/suggest-test-update.sh"
                     },
                     {
                         "type": "command",
-                        "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/suggest-spec-sync.sh\""
+                        "command": "bash .claude/hooks/suggest-spec-sync.sh"
                     }
                 ]
             }

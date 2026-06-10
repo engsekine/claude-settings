@@ -16,14 +16,14 @@ describe('DiveSearchBar', () => {
         const user = userEvent.setup();
         render(<DiveSearchBar onSubmit={handleSubmit} />);
 
-        await user.type(screen.getByLabelText('開始日'), '2026-01-01');
-        await user.type(screen.getByLabelText('終了日'), '2026-12-31');
-        await user.type(screen.getByLabelText('ポイント名'), '伊豆');
+        await user.type(screen.getByLabelText('ダイブ番号'), '12');
+        await user.type(screen.getByLabelText('潜水日'), '2026-01-01');
+        await user.type(screen.getByLabelText('ポイント名（部分一致）'), '伊豆');
         await user.click(screen.getByRole('button', { name: '検索' }));
 
         expect(handleSubmit).toHaveBeenCalledWith({
-            dateFrom: '2026-01-01',
-            dateTo: '2026-12-31',
+            diveNumber: 12,
+            diveDate: '2026-01-01',
             location: '伊豆',
         });
     });

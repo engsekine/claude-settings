@@ -23,8 +23,8 @@ const fetchDivesPage = async ({ filter, cursor }: FetchPageArgs): Promise<DiveLi
         .order('id', { ascending: false })
         .limit(DIVE_PAGE_SIZE + 1);
 
-    if (filter.dateFrom) query = query.gte('dive_date', filter.dateFrom);
-    if (filter.dateTo) query = query.lte('dive_date', filter.dateTo);
+    if (filter.diveNumber !== undefined) query = query.eq('dive_number', filter.diveNumber);
+    if (filter.diveDate) query = query.eq('dive_date', filter.diveDate);
     if (filter.location) query = query.ilike('location', `%${filter.location}%`);
 
     if (cursor) {
@@ -68,7 +68,8 @@ const fetchDivesPage = async ({ filter, cursor }: FetchPageArgs): Promise<DiveLi
     };
 };
 
-const isEmptyFilter = (filter: DiveListFilter): boolean => !filter.dateFrom && !filter.dateTo && !filter.location;
+const isEmptyFilter = (filter: DiveListFilter): boolean =>
+    filter.diveNumber === undefined && !filter.diveDate && !filter.location;
 
 /**
  * dives 一覧の検索 + 追加読み込みフック。

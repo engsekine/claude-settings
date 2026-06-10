@@ -113,6 +113,7 @@ Phase 2 で「公開機能」を実装する予定があり、`is_public` / `pub
 | 制約名 | カラム | 補足 |
 |--------|------|------|
 | `dives_public_slug_key` | `public_slug` | 公開 URL 用。`NULL` は重複可（PostgreSQL のユニーク制約仕様） |
+| `dives_user_id_dive_number_key` | `(user_id, dive_number) where dive_number is not null` | 同一ユーザー内で `dive_number` は重複不可。`NULL` は対象外（未入力ログは複数共存可） |
 
 ### CHECK 制約
 
@@ -137,6 +138,7 @@ Phase 2 で「公開機能」を実装する予定があり、`is_public` / `pub
 |-------------|------|------|------|
 | `idx_dives_user_id_dive_date` | `(user_id, dive_date desc)` | btree | 一覧表示（自分のログを日付降順） |
 | `idx_dives_user_id_location` | `(user_id, location)` | btree | ポイント名検索 |
+| `dives_user_id_dive_number_key` | `(user_id, dive_number) where dive_number is not null` | partial unique btree | ダイブ番号のユーザー内一意制約（兼インデックス） |
 | `idx_dives_public_slug` | `(public_slug) where is_public = true` | 部分 btree | Phase 2 の公開 URL 解決 |
 
 主キー `(id)` および `public_slug` のユニーク暗黙インデックスは別途存在。

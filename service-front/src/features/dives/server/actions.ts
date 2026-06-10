@@ -14,6 +14,13 @@ export interface CreateDiveResult extends DiveActionResult {
     id?: string;
 }
 
+/** Postgres ユニーク制約違反のエラーコード */
+const PG_UNIQUE_VIOLATION = '23505';
+
+/** dives_user_id_dive_number_key 違反を判定 */
+const isDiveNumberDuplicate = (error: { code?: string; message?: string } | null): boolean =>
+    error?.code === PG_UNIQUE_VIOLATION && (error.message?.includes('dives_user_id_dive_number_key') ?? false);
+
 /** DiveFormValues を DB の snake_case にマッピング */
 const toDbRow = (input: DiveFormValues) => ({
     dive_number: input.diveNumber,
@@ -61,6 +68,9 @@ export const createDive = async (input: DiveFormValues): Promise<CreateDiveResul
         .single();
 
     if (error || !data) {
+        if (isDiveNumberDuplicate(error)) {
+            return { error: `ダイブ番号 ${input.diveNumber} はすでに使用されています` };
+        }
         console.error('[createDive] supabase error:', error);
         return { error: 'ログの作成に失敗しました。時間をおいて再度お試しください' };
     }
@@ -80,6 +90,9 @@ export const updateDive = async (id: string, input: DiveFormValues): Promise<Div
     const { error } = await supabase.from('dives').update(toDbRow(input)).eq('id', id);
 
     if (error) {
+        if (isDiveNumberDuplicate(error)) {
+            return { error: `ダイブ番号 ${input.diveNumber} はすでに使用されています` };
+        }
         console.error('[updateDive] supabase error:', error);
         return { error: 'ログの更新に失敗しました。時間をおいて再度お試しください' };
     }

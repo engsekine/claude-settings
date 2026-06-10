@@ -4,7 +4,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@repo/ui/components/button';
 import { Input } from '@repo/ui/components/input';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, type WheelEvent } from 'react';
+import { type KeyboardEvent, useEffect, useState, type WheelEvent } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { DIVE_TYPE_OPTIONS, GAS_TYPE_OPTIONS, TANK_TYPE_OPTIONS } from '@/features/dives/constants';
@@ -24,6 +24,14 @@ const blurOnWheel = (e: WheelEvent<HTMLInputElement>) => {
     e.currentTarget.blur();
 };
 
+/** type=number でも 'e' / '+' / '-' / '.' などは入力できてしまうのでブロックする（非負整数用） */
+const BLOCKED_INTEGER_KEYS = new Set(['e', 'E', '+', '-', '.', ',']);
+const blockNonIntegerKeys = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (BLOCKED_INTEGER_KEYS.has(e.key)) {
+        e.preventDefault();
+    }
+};
+
 const createDefaultValues = (overrides?: Partial<DiveFormValues>): DiveFormValues => ({
     diveNumber: null,
     diveDate: todayInJst(),
@@ -37,7 +45,7 @@ const createDefaultValues = (overrides?: Partial<DiveFormValues>): DiveFormValue
     visibilityM: null,
     wave: null,
     currentCondition: null,
-    maxDepthM: 0,
+    maxDepthM: 1,
     avgDepthM: null,
     bottomTimeMin: 1,
     tankType: 'steel',
@@ -117,6 +125,7 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                             id="diveNumber"
                             type="number"
                             onWheel={blurOnWheel}
+                            onKeyDown={blockNonIntegerKeys}
                             inputMode="numeric"
                             min={0}
                             step={1}

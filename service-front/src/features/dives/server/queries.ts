@@ -133,8 +133,8 @@ export const listDives = async (options: ListDivesOptions = {}): Promise<DiveLis
         .order('id', { ascending: false })
         .limit(limit + 1);
 
-    if (filter?.dateFrom) query = query.gte('dive_date', filter.dateFrom);
-    if (filter?.dateTo) query = query.lte('dive_date', filter.dateTo);
+    if (filter?.diveNumber !== undefined) query = query.eq('dive_number', filter.diveNumber);
+    if (filter?.diveDate) query = query.eq('dive_date', filter.diveDate);
     if (filter?.location) query = query.ilike('location', `%${filter.location}%`);
 
     if (cursor) {

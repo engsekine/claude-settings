@@ -192,14 +192,23 @@ describe('diveSchema', () => {
 describe('diveSearchSchema', () => {
     it('全て空でも通過する', async () => {
         await expect(diveSearchSchema.validate({})).resolves.toEqual({
-            dateFrom: null,
-            dateTo: null,
+            diveNumber: null,
+            diveDate: null,
             location: null,
         });
     });
 
-    it('不正な dateFrom は失敗する', async () => {
-        await expect(diveSearchSchema.validate({ dateFrom: '2026/01/01' })).rejects.toThrow(/正しい日付/);
+    it('不正な diveDate は失敗する', async () => {
+        await expect(diveSearchSchema.validate({ diveDate: '2026/01/01' })).rejects.toThrow(/正しい日付/);
+    });
+
+    it('diveNumber は数値に変換される', async () => {
+        const result = await diveSearchSchema.validate({ diveNumber: '12' });
+        expect(result.diveNumber).toBe(12);
+    });
+
+    it('負の diveNumber は失敗する', async () => {
+        await expect(diveSearchSchema.validate({ diveNumber: -1 })).rejects.toThrow(/0以上/);
     });
 
     it('location は trim されて null/値が決まる', async () => {

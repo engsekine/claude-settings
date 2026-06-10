@@ -235,13 +235,16 @@ export type DiveFormValues = yup.InferType<typeof diveSchema>;
 
 /** 検索バー用の軽量スキーマ */
 export const diveSearchSchema = yup.object({
-    dateFrom: yup
-        .string()
-        .transform((v) => (v === '' || v == null ? null : v))
+    diveNumber: yup
+        .number()
+        .transform((v, orig) => (orig === '' || orig == null ? null : v))
         .nullable()
-        .matches(/^\d{4}-\d{2}-\d{2}$/, { message: '正しい日付を入力してください', excludeEmptyString: true })
+        .integer('ダイブ番号は整数で入力してください')
+        .min(0, 'ダイブ番号は0以上で入力してください')
+        .max(9999, 'ダイブ番号は9999以下で入力してください')
+        .typeError('ダイブ番号は数値で入力してください')
         .default(null),
-    dateTo: yup
+    diveDate: yup
         .string()
         .transform((v) => (v === '' || v == null ? null : v))
         .nullable()

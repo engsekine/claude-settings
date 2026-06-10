@@ -21,11 +21,25 @@ export const DiveList = ({ initialPage }: DiveListProps) => {
 
     const pages = data?.pages ?? [];
     const items = pages.flatMap((page) => page.items);
+    const hasActiveFilter = filter.diveNumber !== undefined || !!filter.diveDate || !!filter.location;
 
-    if (items.length === 0) {
-        return (
-            <div className="flex flex-col gap-4">
-                <DiveSearchBar initialFilter={filter} onSubmit={setFilter} />
+    return (
+        <div className="flex flex-col gap-4">
+            <DiveSearchBar initialFilter={filter} onSubmit={setFilter} />
+
+            {isError && (
+                <p role="alert" className="text-red-600 text-sm">
+                    ログの取得に失敗しました。時間をおいて再度お試しください。
+                </p>
+            )}
+
+            {items.length === 0 && hasActiveFilter && (
+                <div className="rounded-lg border border-border border-dashed bg-background p-8 text-center">
+                    <p className="text-muted-foreground">検索条件に一致するログはありません</p>
+                </div>
+            )}
+
+            {items.length === 0 && !hasActiveFilter && (
                 <div className="flex flex-col items-center gap-3 rounded-lg border border-border border-dashed bg-background p-12 text-center">
                     <p className="text-muted-foreground">ログがまだありません</p>
                     <Link
@@ -35,18 +49,6 @@ export const DiveList = ({ initialPage }: DiveListProps) => {
                         最初のログを記録しよう
                     </Link>
                 </div>
-            </div>
-        );
-    }
-
-    return (
-        <div className="flex flex-col gap-4">
-            <DiveSearchBar initialFilter={filter} onSubmit={setFilter} />
-
-            {isError && (
-                <p role="alert" className="text-red-600 text-sm">
-                    ログの取得に失敗しました。時間をおいて再度お試しください
-                </p>
             )}
 
             <ul className="flex flex-col gap-3">

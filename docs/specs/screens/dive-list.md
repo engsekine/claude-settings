@@ -97,11 +97,11 @@ graph LR
 
 | 項目 | 入力 | クエリ |
 |------|------|--------|
-| 日付 From | `<input type="date">` | `dive_date >= ?` |
-| 日付 To | `<input type="date">` | `dive_date <= ?` |
-| ポイント名 | `<input type="search">` | `location ilike '%?%'` |
+| ダイブ番号 | `<input type="number">` | `dive_number = ?` |
+| 潜水日 | `<input type="date">` | `dive_date = ?` |
+| ポイント名（部分一致） | `<input type="text">` | `location ilike '%?%'` |
 
-- 検索条件は URL クエリ（`?dateFrom=&dateTo=&location=`）で保持
+- 検索条件は URL クエリ（`?diveNumber=&diveDate=&location=`）で保持
 - 並び順: `dive_date desc, id desc`
 - ページサイズ: 20
 

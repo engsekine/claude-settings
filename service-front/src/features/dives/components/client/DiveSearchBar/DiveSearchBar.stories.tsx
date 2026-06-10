@@ -17,6 +17,6 @@ export const Default: Story = {};
 
 export const WithInitialFilter: Story = {
     args: {
-        initialFilter: { dateFrom: '2026-01-01', dateTo: '2026-12-31', location: '伊豆' },
+        initialFilter: { diveNumber: 12, diveDate: '2026-01-01', location: '伊豆' },
     },
 };
