@@ -100,20 +100,20 @@
 
 ## 仕様書同期ルール（コード変更時）
 
-コード（特に schema・component・migration・route）を編集した場合、`docs/specs/` 配下の関連仕様書に **必ず同期確認をかける**。実装が真実なので、ズレを見つけたら仕様書側を実装に合わせて更新する。
+コード（特に schema・component・migration・route）を編集した場合、`specs/` 配下の関連仕様書（spec-kit 形式）に **必ず同期確認をかける**。実装が真実なので、ズレを見つけたら仕様書側を実装に合わせて更新する。
 
 同期対象の主なマッピング:
 
 | 編集したコード | 確認する仕様書 |
 |---|---|
-| `src/features/<feature>/schemas/*.schema.ts` | `docs/specs/screens/*.md` の項目定義・バリデーション表 |
-| `src/features/<feature>/components/**/*.tsx` | `docs/specs/screens/*.md` の画面要素・状態 |
-| `src/features/<feature>/server/{queries,actions}.ts` | `docs/specs/features/<NNN>-<feature>/design.md` |
-| `src/features/<feature>/lib/*.ts`（自動計算・変換ロジック等） | `docs/specs/screens/*.md` の挙動説明 |
-| `src/features/<feature>/constants.ts` | `docs/specs/screens/*.md` の選択肢一覧 |
-| `src/app/<route>/page.tsx` | `docs/specs/screens/<route>.md` |
-| `src/proxy.ts` / `src/middleware.ts` | `docs/specs/features/*/design.md` のルーティング節 |
-| `supabase/migrations/*.sql` | `docs/specs/tables/<table>.md` |
+| `src/features/<feature>/schemas/*.schema.ts` | `specs/<NNN>-<feature>/screens/*.md` の項目定義・バリデーション表、`spec.md` の Functional Requirements |
+| `src/features/<feature>/components/**/*.tsx` | `specs/<NNN>-<feature>/screens/*.md` の画面要素・状態 |
+| `src/features/<feature>/server/{queries,actions}.ts` | `specs/<NNN>-<feature>/plan.md` |
+| `src/features/<feature>/lib/*.ts`（自動計算・変換ロジック等） | `specs/<NNN>-<feature>/screens/*.md` の挙動説明 |
+| `src/features/<feature>/constants.ts` | `specs/<NNN>-<feature>/screens/*.md` の選択肢一覧 |
+| `src/app/<route>/page.tsx` | `specs/<NNN>-<feature>/screens/<screen>.md` |
+| `src/proxy.ts` / `src/middleware.ts` | `specs/<NNN>-<feature>/plan.md` のルーティング節 |
+| `supabase/migrations/*.sql` | `specs/<NNN>-<feature>/data-model.md` |
 
 判断基準:
 
@@ -136,9 +136,21 @@
 - データフェッチは Server Components で行う
 - 動的ルーティング、ミドルウェア、APIルートの実装時も公式ドキュメントに従う
 
-## プロジェクト仕様
+## プロジェクト仕様（spec-kit）
 
-仕様書は `docs/` 配下。実装着手前に該当機能の `requirements.md` / `design.md` / `tasks.md` を必ず確認すること。詳細な運用ルールは [docs/README.md](../docs/README.md) を参照。
+仕様書は **spec-kit 形式** で `specs/NNN-feature-name/` 配下に管理する（spec-kit が正）。実装着手前に該当機能の `spec.md` / `plan.md` / `tasks.md` を必ず確認すること。
+
+| ファイル | 内容 |
+|---------|------|
+| `spec.md` | 要件（ユーザーストーリー・FR・Success Criteria） |
+| `plan.md` | 実装計画（技術選定・構成・設計詳細） |
+| `tasks.md` | タスク分解（T001 連番・Phase 構成） |
+| `data-model.md` | テーブル定義（カラム・制約・RLS・トリガー） |
+| `screens/*.md` | 画面仕様（補助ドキュメント） |
+
+- プロジェクト原則は [.specify/memory/constitution.md](../.specify/memory/constitution.md) を参照
+- 新機能は `/speckit-specify` → `/speckit-plan` → `/speckit-tasks` → `/speckit-implement` のフローで進める
+- 旧仕様書 `docs/specs/` は spec-kit へ移行済みのアーカイブ。新規参照・更新はしない（プロダクト方針は引き続き [docs/product.md](../docs/product.md)）
 
 ## コード規約
 
@@ -164,7 +176,7 @@
 | `/check-typo` | 変更差分に含まれるタイポ・不要な文字変更をチェックする |
 | `/check-diff-impact` | 変更差分の影響を受けるURLを特定する |
 | `/code-fix [ファイル]` | コード規約に基づいてコードを修正する |
-| `/sync-spec [ファイル]` | 変更コードと `docs/specs/` のずれを検出し、仕様書を実装に合わせて修正する |
+| `/sync-spec [ファイル]` | 変更コードと `specs/` のずれを検出し、仕様書を実装に合わせて修正する |
 | `/summary` | PRディスクリプションを生成する |
 | `/suggest-commit` | 変更差分からコミット名を提案する |
 | `/reply-review <コメント>` | レビューコメントへの返信ドラフトを生成する |
@@ -172,6 +184,11 @@
 | `/generate-with-tests <path>` | コンポーネントに対し Vitest / Storybook / Playwright テストを並列生成する |
 | `/pkg-update` | 指定ブランチの package.json パッケージバージョンをアップデートする |
 | `/markup` | スクリーンショットをもとにマークアップ（HTML/CSS実装）する |
+| `/speckit-specify <説明>` | spec-kit: 機能の spec.md を作成する |
+| `/speckit-plan` | spec-kit: plan.md（実装計画）を作成する |
+| `/speckit-tasks` | spec-kit: tasks.md（タスク分解）を生成する |
+| `/speckit-implement` | spec-kit: tasks.md に従って実装する |
+| `/speckit-clarify` / `/speckit-analyze` / `/speckit-checklist` | spec-kit: 仕様の明確化・整合性分析・チェックリスト生成 |
 
 ## service-front プロジェクト
 
@@ -194,3 +211,13 @@
 - データフェッチは Server Components で行う
 - ページ作成時は必ず `generatePageMetadata`（`@/shared/config/metadata`）を使用して `metadata` をエクスポートする
 - ページには基本的に `Header` と `Footer`（`@/shared/components/layout`）を含める
+
+## spec-kit agent context（自動管理セクション）
+
+以下のマーカー間は spec-kit の agent-context 拡張（`/speckit-plan` 実行時）が自動更新する。手動で編集しない。
+
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan
+at specs/003-dashboard/plan.md
+<!-- SPECKIT END -->

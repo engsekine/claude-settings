@@ -16,9 +16,10 @@ model: sonnet
 以下のディレクトリに存在するファイルを確認する。
 
 - `docs/designs/` — 設計書
-- `docs/specs/features/` — 機能仕様（連番管理）
-- `docs/specs/screens/` — 画面仕様（横断的な参照ドキュメント）
-- `docs/specs/tables/` — テーブル仕様（DB スキーマ定義書）
+- `specs/<NNN>-<feature>/spec.md` — 機能仕様（spec-kit 形式・連番管理）
+- `specs/<NNN>-<feature>/plan.md` — 実装計画
+- `specs/<NNN>-<feature>/screens/` — 画面仕様（補助ドキュメント）
+- `specs/<NNN>-<feature>/data-model.md` — テーブル仕様（DB スキーマ定義書）
 
 ファイルが存在しない場合は「ドキュメントなし（スキップ）」と報告して終了。
 

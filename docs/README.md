@@ -1,5 +1,9 @@
 # ドキュメント
 
+> **⚠️ 移行済み（2026-06-10）**: `docs/specs/` 配下の仕様書は **spec-kit 形式** でリポジトリルートの [`specs/`](../specs/) に移行しました。現在の正は `specs/NNN-feature-name/`（spec.md / plan.md / tasks.md / data-model.md / screens/）です。本ディレクトリの `specs/` はアーカイブとして残しており、新規参照・更新はしません。新機能は `/speckit-specify` から始めてください（プロジェクト原則: [`.specify/memory/constitution.md`](../.specify/memory/constitution.md)）。
+>
+> [product.md](product.md)（プロダクト全体方針）は引き続き本ディレクトリで管理します。
+
 このリポジトリは「ダイビングログアプリ」のプロダクトです。本ディレクトリにはプロダクト方針と仕様書を配置します。
 
 ## 構成

@@ -1,6 +1,6 @@
 ---
 name: sync-spec
-description: 変更コードと仕様書（docs/specs/）の整合性をチェックし、ずれを検出した場合は仕様書を更新する。
+description: 変更コードと仕様書（specs/ 配下の spec-kit 形式仕様書）の整合性をチェックし、ずれを検出した場合は仕様書を更新する。
 user-invocable: true
 ---
 
@@ -13,10 +13,13 @@ user-invocable: true
 
 ## 前提
 
-- 仕様書は `docs/specs/` 配下に配置されている
-  - `docs/specs/features/<NNN>-<name>/` — 機能仕様（requirements / design / tasks）
-  - `docs/specs/screens/<name>.md` — 画面仕様
-  - `docs/specs/tables/<table>.md` — テーブル仕様
+- 仕様書は **spec-kit 形式** で `specs/` 配下に配置されている
+  - `specs/<NNN>-<name>/spec.md` — 要件（ユーザーストーリー / FR / Success Criteria）
+  - `specs/<NNN>-<name>/plan.md` — 実装計画（技術選定・設計詳細）
+  - `specs/<NNN>-<name>/tasks.md` — タスク分解
+  - `specs/<NNN>-<name>/data-model.md` — テーブル仕様（カラム / 制約 / RLS / トリガー）
+  - `specs/<NNN>-<name>/screens/<name>.md` — 画面仕様（補助ドキュメント）
+- 旧 `docs/specs/` はアーカイブのため同期対象外
 - 仕様書は **実装に合わせて更新する**（実装が真実）。逆方向（仕様書通りに実装を直す）は本スキルの対象外
 
 ## 手順
@@ -40,16 +43,16 @@ git diff --name-only main...HEAD # コミット済みの変更
 
 | 変更ファイルのパターン | 対応する仕様書 |
 |----------------------|--------------|
-| `src/features/<feature>/components/client/<Comp>/<Comp>.tsx` | `docs/specs/screens/<関連画面>.md`（フォーム項目 / 表示要素） |
-| `src/features/<feature>/schemas/*.schema.ts` | `docs/specs/screens/*.md` の「項目定義」「バリデーション」表 |
-| `src/features/<feature>/server/queries.ts` / `actions.ts` | `docs/specs/features/<NNN>-<feature>/design.md`（データ取得方針） |
-| `src/features/<feature>/lib/*.ts` | `docs/specs/screens/*.md`（自動計算等の挙動説明） |
-| `src/features/<feature>/constants.ts` | `docs/specs/screens/*.md`（選択肢一覧） |
-| `src/app/<route>/page.tsx` | `docs/specs/screens/<route 対応>.md` |
-| `src/proxy.ts` / `src/middleware.ts` | `docs/specs/features/<NNN>-<feature>/design.md`（ルーティング） |
-| `supabase/migrations/<ts>_<verb>_<table>.sql` | `docs/specs/tables/<table>.md` |
+| `src/features/<feature>/components/client/<Comp>/<Comp>.tsx` | `specs/<NNN>-<feature>/screens/<関連画面>.md`（フォーム項目 / 表示要素） |
+| `src/features/<feature>/schemas/*.schema.ts` | `specs/<NNN>-<feature>/screens/*.md` の「項目定義」「バリデーション」表、`spec.md` の Functional Requirements |
+| `src/features/<feature>/server/queries.ts` / `actions.ts` | `specs/<NNN>-<feature>/plan.md`（データ取得方針） |
+| `src/features/<feature>/lib/*.ts` | `specs/<NNN>-<feature>/screens/*.md`（自動計算等の挙動説明） |
+| `src/features/<feature>/constants.ts` | `specs/<NNN>-<feature>/screens/*.md`（選択肢一覧） |
+| `src/app/<route>/page.tsx` | `specs/<NNN>-<feature>/screens/<route 対応>.md` |
+| `src/proxy.ts` / `src/middleware.ts` | `specs/<NNN>-<feature>/plan.md`（ルーティング） |
+| `supabase/migrations/<ts>_<verb>_<table>.sql` | `specs/<NNN>-<feature>/data-model.md` |
 
-`docs/specs/` が存在しない、またはマッピング先が見つからない場合はそのファイルをスキップ。
+`specs/` が存在しない、またはマッピング先が見つからない場合はそのファイルをスキップ。
 
 ### 3. ドリフト検出
 
@@ -66,7 +69,7 @@ git diff --name-only main...HEAD # コミット済みの変更
 | **挙動の追記漏れ** | 自動計算 / 自動入力など実装にあるが spec に書かれていない |
 | **ラベル** | UI ラベルと spec の項目名がズレ |
 | **ルート / 認証** | proxy.ts の `APP_ROUTE_PREFIXES` 変更が spec の「認証」欄に未反映 |
-| **DB スキーマ** | マイグレーション SQL の制約 / 型と `tables/*.md` の記述が齟齬 |
+| **DB スキーマ** | マイグレーション SQL の制約 / 型と `data-model.md` の記述が齟齬 |
 
 ### 4. 修正の適用
 
@@ -104,7 +107,7 @@ git diff --name-only main...HEAD # コミット済みの変更
 
 ### 6. 仕様書を更新したらタスクファイルも確認
 
-`docs/specs/features/<NNN>-<feature>/tasks.md` に「仕様書を XX に書き換える」というタスクがあって、その内容を今回反映したなら、対応するチェックボックスを完了に更新する（`[ ]` → `[x]`）。
+`specs/<NNN>-<feature>/tasks.md` に「仕様書を XX に書き換える」というタスクがあって、その内容を今回反映したなら、対応するチェックボックスを完了に更新する（`[ ]` → `[x]`）。
 
 ## 自動起動
 

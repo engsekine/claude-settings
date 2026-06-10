@@ -19,7 +19,9 @@
     "timestamptz",
     "jsonb",
     "SAMEORIGIN",
-    "nosniff"
+    "nosniff",
+    "speckit",
+    "SPECKIT"
   ],
   "ignorePaths": [
     "node_modules/**",
