@@ -2,13 +2,13 @@
 
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@repo/ui/components/button';
-import { Input } from '@repo/ui/components/input';
 import Link from 'next/link';
 import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { type LoginFormValues, loginSchema } from '@/features/auth/schemas/login.schema';
 import { signIn } from '@/features/auth/server/actions';
+import { FormField } from '@/shared/components/form';
 
 export const LoginForm = () => {
     const [isPending, startTransition] = useTransition();
@@ -24,8 +24,9 @@ export const LoginForm = () => {
 
     const onSubmit = handleSubmit((values) => {
         startTransition(async () => {
+            /** 成功時は signIn 内で redirect されるため、戻り値を受け取るのは失敗時のみ */
             const result = await signIn(values.email, values.password);
-            if (result?.error) {
+            if (!result.success) {
                 setError('root', { message: result.error });
             }
         });
@@ -33,45 +34,25 @@ export const LoginForm = () => {
 
     return (
         <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-            <div className="flex flex-col gap-1">
-                <label htmlFor="email" className="font-medium text-sm">
-                    メールアドレス
-                </label>
-                <Input
-                    id="email"
-                    type="email"
-                    autoComplete="email"
-                    aria-required="true"
-                    aria-invalid={!!errors.email}
-                    aria-describedby={errors.email ? 'email-error' : undefined}
-                    {...register('email')}
-                />
-                {errors.email && (
-                    <span id="email-error" role="alert" className="text-red-600 text-sm">
-                        {errors.email.message}
-                    </span>
-                )}
-            </div>
+            <FormField
+                id="email"
+                label="メールアドレス"
+                type="email"
+                autoComplete="email"
+                aria-required="true"
+                error={errors.email?.message}
+                {...register('email')}
+            />
 
-            <div className="flex flex-col gap-1">
-                <label htmlFor="password" className="font-medium text-sm">
-                    パスワード
-                </label>
-                <Input
-                    id="password"
-                    type="password"
-                    autoComplete="current-password"
-                    aria-required="true"
-                    aria-invalid={!!errors.password}
-                    aria-describedby={errors.password ? 'password-error' : undefined}
-                    {...register('password')}
-                />
-                {errors.password && (
-                    <span id="password-error" role="alert" className="text-red-600 text-sm">
-                        {errors.password.message}
-                    </span>
-                )}
-            </div>
+            <FormField
+                id="password"
+                label="パスワード"
+                type="password"
+                autoComplete="current-password"
+                aria-required="true"
+                error={errors.password?.message}
+                {...register('password')}
+            />
 
             {errors.root && (
                 <div role="alert" className="text-red-600 text-sm">

@@ -4,14 +4,12 @@ import { redirect } from 'next/navigation';
 
 import type { Gender } from '@/shared/constants/gender';
 import { createClient } from '@/shared/lib/supabase/server';
+import { type ActionResult, actionFailure, actionSuccess } from '@/shared/types/action-result';
 
-export interface AuthActionResult {
-    error?: string;
-}
-
-export interface SignUpResult extends AuthActionResult {
+/** signUp の成功ペイロード */
+export interface SignUpPayload {
     /** 確認メールを送信した場合 true（ユーザーはまだログインしていない） */
-    needsEmailConfirmation?: boolean;
+    needsEmailConfirmation: boolean;
 }
 
 export interface SignUpInput {
@@ -31,19 +29,19 @@ export interface SignUpInput {
     weightKg: number | null;
 }
 
-export const signIn = async (email: string, password: string): Promise<AuthActionResult> => {
+export const signIn = async (email: string, password: string): Promise<ActionResult> => {
     const supabase = await createClient();
 
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-        return { error: 'メールアドレスまたはパスワードが間違っています' };
+        return actionFailure('メールアドレスまたはパスワードが間違っています');
     }
 
     redirect('/dives');
 };
 
-export const signUp = async (input: SignUpInput): Promise<SignUpResult> => {
+export const signUp = async (input: SignUpInput): Promise<ActionResult<SignUpPayload>> => {
     const supabase = await createClient();
 
     const siteUrl = process.env['NEXT_PUBLIC_SITE_URL'] ?? 'https://localhost:3000';
@@ -79,9 +77,9 @@ export const signUp = async (input: SignUpInput): Promise<SignUpResult> => {
             name: error.name,
         });
         if (error.message.includes('already registered')) {
-            return { error: 'このメールアドレスは既に登録されています' };
+            return actionFailure('このメールアドレスは既に登録されています');
         }
-        return { error: 'サインアップに失敗しました。時間をおいて再度お試しください' };
+        return actionFailure('サインアップに失敗しました。時間をおいて再度お試しください');
     }
 
     /**
@@ -90,10 +88,10 @@ export const signUp = async (input: SignUpInput): Promise<SignUpResult> => {
      * identities が空のときは情報漏洩防止のメッセージを差し戻す。
      */
     if (data.user && data.user.identities?.length === 0) {
-        return { error: 'このメールアドレスは既に登録されています' };
+        return actionFailure('このメールアドレスは既に登録されています');
     }
 
-    return { needsEmailConfirmation: true };
+    return actionSuccess<SignUpPayload>({ needsEmailConfirmation: true });
 };
 
 export const signOut = async (): Promise<void> => {
@@ -102,11 +100,11 @@ export const signOut = async (): Promise<void> => {
     redirect('/login');
 };
 
-export const requestPasswordReset = async (email: string): Promise<AuthActionResult> => {
+export const requestPasswordReset = async (email: string): Promise<ActionResult> => {
     const supabase = await createClient();
 
     /** 登録済みかどうかに関わらず成功扱い（情報漏洩防止） */
     await supabase.auth.resetPasswordForEmail(email);
 
-    return {};
+    return actionSuccess();
 };

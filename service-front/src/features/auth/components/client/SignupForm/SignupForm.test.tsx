@@ -36,12 +36,12 @@ describe('SignupForm', () => {
             expect(screen.getByLabelText(label)).toBeInTheDocument();
         }
 
-        expect(screen.getByRole('radiogroup')).toBeInTheDocument();
+        expect(screen.getByRole('group', { name: '性別' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: '新規登録' })).toBeInTheDocument();
     });
 
     it('signUp が needsEmailConfirmation を返すと確認メール案内画面に切り替わる', async () => {
-        signUp.mockResolvedValueOnce({ needsEmailConfirmation: true });
+        signUp.mockResolvedValueOnce({ success: true, needsEmailConfirmation: true });
         const user = userEvent.setup();
         render(<SignupForm />);
 
@@ -61,7 +61,7 @@ describe('SignupForm', () => {
     });
 
     it('身長・体重を入力すると signUp にその値が渡る', async () => {
-        signUp.mockResolvedValueOnce({ needsEmailConfirmation: true });
+        signUp.mockResolvedValueOnce({ success: true, needsEmailConfirmation: true });
         const user = userEvent.setup();
         render(<SignupForm />);
 
@@ -83,7 +83,7 @@ describe('SignupForm', () => {
     });
 
     it('signUp が error を返すと alert に表示される', async () => {
-        signUp.mockResolvedValueOnce({ error: 'このメールアドレスは既に登録されています' });
+        signUp.mockResolvedValueOnce({ success: false, error: 'このメールアドレスは既に登録されています' });
         const user = userEvent.setup();
         render(<SignupForm />);
 

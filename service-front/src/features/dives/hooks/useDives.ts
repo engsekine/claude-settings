@@ -2,71 +2,9 @@
 
 import { type InfiniteData, useInfiniteQuery } from '@tanstack/react-query';
 
-import { DIVE_PAGE_SIZE } from '@/features/dives/constants';
+import { fetchDiveListPage } from '@/features/dives/lib/list-query';
 import type { DiveCursor, DiveListFilter, DiveListPage } from '@/features/dives/types';
 import { createClient } from '@/shared/lib/supabase/browser';
-
-interface FetchPageArgs {
-    filter: DiveListFilter;
-    cursor: DiveCursor | null;
-}
-
-const LIST_COLUMNS =
-    'id, dive_number, dive_date, location, max_depth_m, bottom_time_min, water_temp_c, visibility_m, certification_dive';
-
-const fetchDivesPage = async ({ filter, cursor }: FetchPageArgs): Promise<DiveListPage> => {
-    const supabase = createClient();
-    let query = supabase
-        .from('dives')
-        .select(LIST_COLUMNS)
-        .order('dive_date', { ascending: false })
-        .order('id', { ascending: false })
-        .limit(DIVE_PAGE_SIZE + 1);
-
-    if (filter.diveNumber !== undefined) query = query.eq('dive_number', filter.diveNumber);
-    if (filter.diveDate) query = query.eq('dive_date', filter.diveDate);
-    if (filter.location) query = query.ilike('location', `%${filter.location}%`);
-
-    if (cursor) {
-        query = query.or(`dive_date.lt.${cursor.diveDate},and(dive_date.eq.${cursor.diveDate},id.lt.${cursor.id})`);
-    }
-
-    const { data, error } = await query;
-    if (error || !data) {
-        throw new Error(error?.message ?? 'failed to fetch dives');
-    }
-
-    const rows = data as Array<{
-        id: string;
-        dive_number: number | null;
-        dive_date: string;
-        location: string;
-        max_depth_m: number | string;
-        bottom_time_min: number;
-        water_temp_c: number | string | null;
-        visibility_m: number | string | null;
-        certification_dive: boolean;
-    }>;
-
-    const hasNext = rows.length > DIVE_PAGE_SIZE;
-    const items = (hasNext ? rows.slice(0, DIVE_PAGE_SIZE) : rows).map((row) => ({
-        id: row.id,
-        diveNumber: row.dive_number,
-        diveDate: row.dive_date,
-        location: row.location,
-        maxDepthM: Number(row.max_depth_m),
-        bottomTimeMin: row.bottom_time_min,
-        waterTempC: row.water_temp_c === null ? null : Number(row.water_temp_c),
-        visibilityM: row.visibility_m === null ? null : Number(row.visibility_m),
-        certificationDive: row.certification_dive,
-    }));
-
-    const last = items.at(-1);
-    return {
-        items,
-        nextCursor: hasNext && last ? { diveDate: last.diveDate, id: last.id } : null,
-    };
-};
 
 const isEmptyFilter = (filter: DiveListFilter): boolean =>
     filter.diveNumber === undefined && !filter.diveDate && !filter.location;
@@ -82,7 +20,7 @@ export const useDives = (filter: DiveListFilter, initialPage?: DiveListPage) => 
 
     return useInfiniteQuery({
         queryKey: ['dives', filter],
-        queryFn: ({ pageParam }) => fetchDivesPage({ filter, cursor: pageParam }),
+        queryFn: ({ pageParam }) => fetchDiveListPage(createClient(), { filter, cursor: pageParam }),
         initialPageParam: null as DiveCursor | null,
         getNextPageParam: (lastPage) => lastPage.nextCursor,
         ...(initialData ? { initialData } : {}),

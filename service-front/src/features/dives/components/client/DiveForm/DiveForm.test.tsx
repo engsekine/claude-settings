@@ -36,7 +36,7 @@ describe('DiveForm', () => {
     });
 
     it('新規作成成功時に詳細ページへ遷移する', async () => {
-        createDive.mockResolvedValueOnce({ id: 'new-id' });
+        createDive.mockResolvedValueOnce({ success: true, id: 'new-id' });
         const user = userEvent.setup();
         render(<DiveForm />);
 
@@ -109,12 +109,12 @@ describe('DiveForm', () => {
     });
 
     it('createDive がエラーを返すと alert を表示する', async () => {
-        createDive.mockResolvedValueOnce({ error: '失敗しました' });
+        createDive.mockResolvedValueOnce({ success: false, error: '失敗しました' });
         const user = userEvent.setup();
         render(<DiveForm />);
 
-        await user.clear(screen.getByLabelText(/エリア \/ ポイント名/));
-        await user.type(screen.getByLabelText(/エリア \/ ポイント名/), '伊豆');
+        await user.clear(screen.getByLabelText(/ポイント名/));
+        await user.type(screen.getByLabelText(/ポイント名/), '伊豆');
         await user.clear(screen.getByLabelText(/最大水深\(m\)/));
         await user.type(screen.getByLabelText(/最大水深\(m\)/), '18');
         await user.clear(screen.getByLabelText(/潜水時間\(分\)/));

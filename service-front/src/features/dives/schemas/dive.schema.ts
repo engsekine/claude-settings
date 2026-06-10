@@ -1,14 +1,10 @@
 import * as yup from 'yup';
 
 import { TANK_TYPE_OPTIONS } from '@/features/dives/constants';
+import { todayInJst } from '@/shared/lib/date';
+import { optionalNumber } from '@/shared/schemas/transforms';
 
 const TANK_TYPE_VALUES = TANK_TYPE_OPTIONS.map((option) => option.value);
-
-/** 空文字 / null / undefined を null に、それ以外は yup の number 変換結果を返す */
-const optionalNumber = (value: number, originalValue: unknown): number | null => {
-    if (originalValue === '' || originalValue == null) return null;
-    return value;
-};
 
 /**
  * YYYY-MM-DD の日付文字列が 1900-01-01 〜 日本時間の当日の範囲内かチェック。
@@ -20,8 +16,7 @@ const optionalNumber = (value: number, originalValue: unknown): number | null =>
 const isDiveDateValid = (value: string | undefined): boolean => {
     if (!value) return false;
     if (Number.isNaN(new Date(value).getTime())) return false;
-    const todayJst = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Tokyo' });
-    return value >= '1900-01-01' && value <= todayJst;
+    return value >= '1900-01-01' && value <= todayInJst();
 };
 
 const optionalTime = yup

@@ -5,14 +5,7 @@ import { redirect } from 'next/navigation';
 
 import type { DiveFormValues } from '@/features/dives/schemas/dive.schema';
 import { createClient } from '@/shared/lib/supabase/server';
-
-export interface DiveActionResult {
-    error?: string;
-}
-
-export interface CreateDiveResult extends DiveActionResult {
-    id?: string;
-}
+import { type ActionResult, actionFailure, actionSuccess } from '@/shared/types/action-result';
 
 /** Postgres ユニーク制約違反のエラーコード */
 const PG_UNIQUE_VIOLATION = '23505';
@@ -53,13 +46,13 @@ const toDbRow = (input: DiveFormValues) => ({
     notes: input.notes,
 });
 
-export const createDive = async (input: DiveFormValues): Promise<CreateDiveResult> => {
+export const createDive = async (input: DiveFormValues): Promise<ActionResult<{ id: string }>> => {
     const supabase = await createClient();
 
     const {
         data: { user },
     } = await supabase.auth.getUser();
-    if (!user) return { error: 'ログインが必要です' };
+    if (!user) return actionFailure('ログインが必要です');
 
     const { data, error } = await supabase
         .from('dives')
@@ -69,52 +62,52 @@ export const createDive = async (input: DiveFormValues): Promise<CreateDiveResul
 
     if (error || !data) {
         if (isDiveNumberDuplicate(error)) {
-            return { error: `ダイブ番号 ${input.diveNumber} はすでに使用されています` };
+            return actionFailure(`ダイブ番号 ${input.diveNumber} はすでに使用されています`);
         }
         console.error('[createDive] supabase error:', error);
-        return { error: 'ログの作成に失敗しました。時間をおいて再度お試しください' };
+        return actionFailure('ログの作成に失敗しました。時間をおいて再度お試しください');
     }
 
     revalidatePath('/dives');
-    return { id: data.id as string };
+    return actionSuccess({ id: data.id });
 };
 
-export const updateDive = async (id: string, input: DiveFormValues): Promise<DiveActionResult> => {
+export const updateDive = async (id: string, input: DiveFormValues): Promise<ActionResult> => {
     const supabase = await createClient();
 
     const {
         data: { user },
     } = await supabase.auth.getUser();
-    if (!user) return { error: 'ログインが必要です' };
+    if (!user) return actionFailure('ログインが必要です');
 
     const { error } = await supabase.from('dives').update(toDbRow(input)).eq('id', id);
 
     if (error) {
         if (isDiveNumberDuplicate(error)) {
-            return { error: `ダイブ番号 ${input.diveNumber} はすでに使用されています` };
+            return actionFailure(`ダイブ番号 ${input.diveNumber} はすでに使用されています`);
         }
         console.error('[updateDive] supabase error:', error);
-        return { error: 'ログの更新に失敗しました。時間をおいて再度お試しください' };
+        return actionFailure('ログの更新に失敗しました。時間をおいて再度お試しください');
     }
 
     revalidatePath('/dives');
     revalidatePath(`/dives/${id}`);
-    return {};
+    return actionSuccess();
 };
 
-export const deleteDive = async (id: string): Promise<DiveActionResult> => {
+export const deleteDive = async (id: string): Promise<ActionResult> => {
     const supabase = await createClient();
 
     const {
         data: { user },
     } = await supabase.auth.getUser();
-    if (!user) return { error: 'ログインが必要です' };
+    if (!user) return actionFailure('ログインが必要です');
 
     const { error } = await supabase.from('dives').delete().eq('id', id);
 
     if (error) {
         console.error('[deleteDive] supabase error:', error);
-        return { error: 'ログの削除に失敗しました。時間をおいて再度お試しください' };
+        return actionFailure('ログの削除に失敗しました。時間をおいて再度お試しください');
     }
 
     revalidatePath('/dives');

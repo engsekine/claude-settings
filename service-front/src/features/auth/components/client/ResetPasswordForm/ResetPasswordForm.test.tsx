@@ -34,7 +34,7 @@ describe('ResetPasswordForm', () => {
     });
 
     it('送信成功時は完了メッセージに切り替わる', async () => {
-        requestPasswordReset.mockResolvedValueOnce(undefined);
+        requestPasswordReset.mockResolvedValueOnce({ success: true });
         const user = userEvent.setup();
         render(<ResetPasswordForm />);
 

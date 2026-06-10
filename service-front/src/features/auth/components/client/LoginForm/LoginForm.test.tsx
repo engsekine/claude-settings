@@ -42,7 +42,7 @@ describe('LoginForm', () => {
     });
 
     it('signIn がエラーを返すと root エラーが表示される', async () => {
-        signIn.mockResolvedValueOnce({ error: 'メールアドレスまたはパスワードが正しくありません' });
+        signIn.mockResolvedValueOnce({ success: false, error: 'メールアドレスまたはパスワードが正しくありません' });
         const user = userEvent.setup();
         render(<LoginForm />);
 

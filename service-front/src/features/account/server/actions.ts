@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 
 import type { Gender } from '@/shared/constants/gender';
 import { createClient } from '@/shared/lib/supabase/server';
+import { type ActionResult, actionFailure, actionSuccess } from '@/shared/types/action-result';
 
 import { toProfile, toUserDetailsUpdate } from './mappers/profile';
 
@@ -20,11 +21,6 @@ export interface UpdateProfileInput {
     heightCm: number | null;
     /** 体重（kg）。任意入力 */
     weightKg: number | null;
-}
-
-export interface UpdateProfileResult {
-    error?: string;
-    success?: boolean;
 }
 
 export interface ProfileData {
@@ -67,13 +63,13 @@ export const getProfile = async (): Promise<ProfileData | null> => {
     return toProfile(data, user.email ?? '');
 };
 
-export const updateProfile = async (input: UpdateProfileInput): Promise<UpdateProfileResult> => {
+export const updateProfile = async (input: UpdateProfileInput): Promise<ActionResult> => {
     const supabase = await createClient();
 
     const {
         data: { user },
     } = await supabase.auth.getUser();
-    if (!user) return { error: 'ログインが必要です' };
+    if (!user) return actionFailure('ログインが必要です');
 
     const { error } = await supabase.from('user_details').update(toUserDetailsUpdate(input)).eq('user_id', user.id);
 
@@ -82,9 +78,9 @@ export const updateProfile = async (input: UpdateProfileInput): Promise<UpdatePr
             message: error.message,
             code: error.code,
         });
-        return { error: 'プロフィールの更新に失敗しました。時間をおいて再度お試しください' };
+        return actionFailure('プロフィールの更新に失敗しました。時間をおいて再度お試しください');
     }
 
     revalidatePath('/settings/profile');
-    return { success: true };
+    return actionSuccess();
 };

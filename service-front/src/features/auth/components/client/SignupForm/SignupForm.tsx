@@ -2,13 +2,13 @@
 
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@repo/ui/components/button';
-import { Input } from '@repo/ui/components/input';
 import Link from 'next/link';
 import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { type SignupFormValues, signupSchema } from '@/features/auth/schemas/signup.schema';
 import { signUp } from '@/features/auth/server/actions';
+import { FormField, FormRadioGroup } from '@/shared/components/form';
 import { DEFAULT_GENDER, GENDER_OPTIONS } from '@/shared/constants/gender';
 
 export const SignupForm = () => {
@@ -40,11 +40,11 @@ export const SignupForm = () => {
                 heightCm: values.heightCm,
                 weightKg: values.weightKg,
             });
-            if (result.error !== undefined) {
+            if (!result.success) {
                 setError('root', { message: result.error });
                 return;
             }
-            if (result.needsEmailConfirmation === true) {
+            if (result.needsEmailConfirmation) {
                 setSentTo(values.email);
             }
         });
@@ -78,261 +78,136 @@ export const SignupForm = () => {
             noValidate
         >
             <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1">
-                    <label htmlFor="lastName" className="font-medium text-sm">
-                        姓
-                    </label>
-                    <Input
-                        id="lastName"
-                        type="text"
-                        autoComplete="family-name"
-                        aria-required="true"
-                        aria-invalid={!!errors.lastName}
-                        aria-describedby={errors.lastName ? 'lastName-error' : undefined}
-                        {...register('lastName')}
-                    />
-                    {errors.lastName && (
-                        <span id="lastName-error" role="alert" className="text-red-600 text-sm">
-                            {errors.lastName.message}
-                        </span>
-                    )}
-                </div>
-
-                <div className="flex flex-col gap-1">
-                    <label htmlFor="firstName" className="font-medium text-sm">
-                        名
-                    </label>
-                    <Input
-                        id="firstName"
-                        type="text"
-                        autoComplete="given-name"
-                        aria-required="true"
-                        aria-invalid={!!errors.firstName}
-                        aria-describedby={errors.firstName ? 'firstName-error' : undefined}
-                        {...register('firstName')}
-                    />
-                    {errors.firstName && (
-                        <span id="firstName-error" role="alert" className="text-red-600 text-sm">
-                            {errors.firstName.message}
-                        </span>
-                    )}
-                </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1">
-                    <label htmlFor="lastNameRomaji" className="font-medium text-sm">
-                        姓（ローマ字）
-                    </label>
-                    <Input
-                        id="lastNameRomaji"
-                        type="text"
-                        autoComplete="off"
-                        placeholder="Yamada"
-                        aria-required="true"
-                        aria-invalid={!!errors.lastNameRomaji}
-                        aria-describedby={errors.lastNameRomaji ? 'lastNameRomaji-error' : undefined}
-                        {...register('lastNameRomaji')}
-                    />
-                    {errors.lastNameRomaji && (
-                        <span id="lastNameRomaji-error" role="alert" className="text-red-600 text-sm">
-                            {errors.lastNameRomaji.message}
-                        </span>
-                    )}
-                </div>
-
-                <div className="flex flex-col gap-1">
-                    <label htmlFor="firstNameRomaji" className="font-medium text-sm">
-                        名（ローマ字）
-                    </label>
-                    <Input
-                        id="firstNameRomaji"
-                        type="text"
-                        autoComplete="off"
-                        placeholder="Taro"
-                        aria-required="true"
-                        aria-invalid={!!errors.firstNameRomaji}
-                        aria-describedby={errors.firstNameRomaji ? 'firstNameRomaji-error' : undefined}
-                        {...register('firstNameRomaji')}
-                    />
-                    {errors.firstNameRomaji && (
-                        <span id="firstNameRomaji-error" role="alert" className="text-red-600 text-sm">
-                            {errors.firstNameRomaji.message}
-                        </span>
-                    )}
-                </div>
-            </div>
-
-            <div className="flex flex-col gap-1">
-                <label htmlFor="nickname" className="font-medium text-sm">
-                    ニックネーム
-                </label>
-                <Input
-                    id="nickname"
+                <FormField
+                    id="lastName"
+                    label="姓"
                     type="text"
-                    autoComplete="nickname"
+                    autoComplete="family-name"
                     aria-required="true"
-                    aria-invalid={!!errors.nickname}
-                    aria-describedby={errors.nickname ? 'nickname-error' : undefined}
-                    {...register('nickname')}
+                    error={errors.lastName?.message}
+                    {...register('lastName')}
                 />
-                {errors.nickname && (
-                    <span id="nickname-error" role="alert" className="text-red-600 text-sm">
-                        {errors.nickname.message}
-                    </span>
-                )}
-            </div>
 
-            <div className="flex flex-col gap-1">
-                <label htmlFor="birthOn" className="font-medium text-sm">
-                    生年月日
-                </label>
-                <Input
-                    id="birthOn"
-                    type="date"
-                    autoComplete="bday"
+                <FormField
+                    id="firstName"
+                    label="名"
+                    type="text"
+                    autoComplete="given-name"
                     aria-required="true"
-                    aria-invalid={!!errors.birthOn}
-                    aria-describedby={errors.birthOn ? 'birthOn-error' : undefined}
-                    {...register('birthOn')}
+                    error={errors.firstName?.message}
+                    {...register('firstName')}
                 />
-                {errors.birthOn && (
-                    <span id="birthOn-error" role="alert" className="text-red-600 text-sm">
-                        {errors.birthOn.message}
-                    </span>
-                )}
             </div>
-
-            <fieldset className="flex flex-col gap-1">
-                <legend className="font-medium text-sm">性別</legend>
-                <div
-                    role="radiogroup"
-                    aria-required="true"
-                    aria-invalid={!!errors.gender}
-                    aria-describedby={errors.gender ? 'gender-error' : undefined}
-                    className="flex gap-4"
-                >
-                    {GENDER_OPTIONS.map((option) => (
-                        <label key={option.value} className="flex items-center gap-2 text-sm">
-                            <input type="radio" value={option.value} {...register('gender')} />
-                            {option.label}
-                        </label>
-                    ))}
-                </div>
-                {errors.gender && (
-                    <span id="gender-error" role="alert" className="text-red-600 text-sm">
-                        {errors.gender.message}
-                    </span>
-                )}
-            </fieldset>
 
             <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1">
-                    <label htmlFor="heightCm" className="font-medium text-sm">
-                        身長(cm)
-                    </label>
-                    <Input
-                        id="heightCm"
-                        type="number"
-                        inputMode="decimal"
-                        step="0.1"
-                        min={30}
-                        max={300}
-                        autoComplete="off"
-                        aria-invalid={!!errors.heightCm}
-                        aria-describedby={errors.heightCm ? 'heightCm-error' : undefined}
-                        {...register('heightCm')}
-                    />
-                    {errors.heightCm && (
-                        <span id="heightCm-error" role="alert" className="text-red-600 text-sm">
-                            {errors.heightCm.message}
-                        </span>
-                    )}
-                </div>
-
-                <div className="flex flex-col gap-1">
-                    <label htmlFor="weightKg" className="font-medium text-sm">
-                        体重(kg)
-                    </label>
-                    <Input
-                        id="weightKg"
-                        type="number"
-                        inputMode="decimal"
-                        step="0.1"
-                        min={1}
-                        max={500}
-                        autoComplete="off"
-                        aria-invalid={!!errors.weightKg}
-                        aria-describedby={errors.weightKg ? 'weightKg-error' : undefined}
-                        {...register('weightKg')}
-                    />
-                    {errors.weightKg && (
-                        <span id="weightKg-error" role="alert" className="text-red-600 text-sm">
-                            {errors.weightKg.message}
-                        </span>
-                    )}
-                </div>
-            </div>
-
-            <div className="flex flex-col gap-1">
-                <label htmlFor="email" className="font-medium text-sm">
-                    メールアドレス
-                </label>
-                <Input
-                    id="email"
-                    type="email"
-                    autoComplete="email"
+                <FormField
+                    id="lastNameRomaji"
+                    label="姓（ローマ字）"
+                    type="text"
+                    autoComplete="off"
+                    placeholder="Yamada"
                     aria-required="true"
-                    aria-invalid={!!errors.email}
-                    aria-describedby={errors.email ? 'email-error' : undefined}
-                    {...register('email')}
+                    error={errors.lastNameRomaji?.message}
+                    {...register('lastNameRomaji')}
                 />
-                {errors.email && (
-                    <span id="email-error" role="alert" className="text-red-600 text-sm">
-                        {errors.email.message}
-                    </span>
-                )}
+
+                <FormField
+                    id="firstNameRomaji"
+                    label="名（ローマ字）"
+                    type="text"
+                    autoComplete="off"
+                    placeholder="Taro"
+                    aria-required="true"
+                    error={errors.firstNameRomaji?.message}
+                    {...register('firstNameRomaji')}
+                />
             </div>
 
-            <div className="flex flex-col gap-1">
-                <label htmlFor="password" className="font-medium text-sm">
-                    パスワード（6文字以上）
-                </label>
-                <Input
-                    id="password"
-                    type="password"
-                    autoComplete="new-password"
-                    aria-required="true"
-                    aria-invalid={!!errors.password}
-                    aria-describedby={errors.password ? 'password-error' : undefined}
-                    {...register('password')}
+            <FormField
+                id="nickname"
+                label="ニックネーム"
+                type="text"
+                autoComplete="nickname"
+                aria-required="true"
+                error={errors.nickname?.message}
+                {...register('nickname')}
+            />
+
+            <FormField
+                id="birthOn"
+                label="生年月日"
+                type="date"
+                autoComplete="bday"
+                aria-required="true"
+                error={errors.birthOn?.message}
+                {...register('birthOn')}
+            />
+
+            <FormRadioGroup
+                legend="性別"
+                options={GENDER_OPTIONS}
+                aria-required="true"
+                error={errors.gender?.message}
+                {...register('gender')}
+            />
+
+            <div className="grid grid-cols-2 gap-3">
+                <FormField
+                    id="heightCm"
+                    label="身長(cm)"
+                    type="number"
+                    inputMode="decimal"
+                    step="0.1"
+                    min={30}
+                    max={300}
+                    autoComplete="off"
+                    error={errors.heightCm?.message}
+                    {...register('heightCm')}
                 />
-                {errors.password && (
-                    <span id="password-error" role="alert" className="text-red-600 text-sm">
-                        {errors.password.message}
-                    </span>
-                )}
+
+                <FormField
+                    id="weightKg"
+                    label="体重(kg)"
+                    type="number"
+                    inputMode="decimal"
+                    step="0.1"
+                    min={1}
+                    max={500}
+                    autoComplete="off"
+                    error={errors.weightKg?.message}
+                    {...register('weightKg')}
+                />
             </div>
 
-            <div className="flex flex-col gap-1">
-                <label htmlFor="passwordConfirm" className="font-medium text-sm">
-                    パスワード（確認）
-                </label>
-                <Input
-                    id="passwordConfirm"
-                    type="password"
-                    autoComplete="new-password"
-                    aria-required="true"
-                    aria-invalid={!!errors.passwordConfirm}
-                    aria-describedby={errors.passwordConfirm ? 'passwordConfirm-error' : undefined}
-                    {...register('passwordConfirm')}
-                />
-                {errors.passwordConfirm && (
-                    <span id="passwordConfirm-error" role="alert" className="text-red-600 text-sm">
-                        {errors.passwordConfirm.message}
-                    </span>
-                )}
-            </div>
+            <FormField
+                id="email"
+                label="メールアドレス"
+                type="email"
+                autoComplete="email"
+                aria-required="true"
+                error={errors.email?.message}
+                {...register('email')}
+            />
+
+            <FormField
+                id="password"
+                label="パスワード（6文字以上）"
+                type="password"
+                autoComplete="new-password"
+                aria-required="true"
+                error={errors.password?.message}
+                {...register('password')}
+            />
+
+            <FormField
+                id="passwordConfirm"
+                label="パスワード（確認）"
+                type="password"
+                autoComplete="new-password"
+                aria-required="true"
+                error={errors.passwordConfirm?.message}
+                {...register('passwordConfirm')}
+            />
 
             {errors.root && (
                 <div role="alert" className="text-red-600 text-sm">

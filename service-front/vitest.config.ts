@@ -40,8 +40,6 @@ export default defineConfig({
                 // 設定 / wiring（ロジックを持たない）
                 'src/shared/lib/react-query.ts',
                 'src/shared/config/metadata.ts',
-                // 外部 API クライアント（MSW 整備後にテスト追加）
-                'src/features/chat/api/**',
             ],
             thresholds: {
                 branches: 70,

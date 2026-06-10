@@ -1,52 +1,19 @@
 import 'server-only';
 
-import { DIVE_PAGE_SIZE, type TankTypeValue } from '@/features/dives/constants';
-import type { Dive, DiveCursor, DiveListFilter, DiveListItem, DiveListPage } from '@/features/dives/types';
+import type { Database } from '@repo/supabase';
+
+import type { TankTypeValue } from '@/features/dives/constants';
+import { fetchDiveListPage } from '@/features/dives/lib/list-query';
+import type { Dive, DiveCursor, DiveListFilter, DiveListPage } from '@/features/dives/types';
+import { toNumber } from '@/shared/lib/number';
 import { createClient } from '@/shared/lib/supabase/server';
 
-/** DB レコードを Dive 型に変換 */
-type DiveRow = {
-    id: string;
-    user_id: string;
-    dive_number: number | null;
-    dive_date: string;
-    entry_time: string | null;
-    exit_time: string | null;
-    location: string;
-    dive_type: string | null;
-    weather: string | null;
-    air_temp_c: number | string | null;
-    water_temp_c: number | string | null;
-    visibility_m: number | string | null;
-    wave: string | null;
-    current_condition: string | null;
-    max_depth_m: number | string;
-    avg_depth_m: number | string | null;
-    bottom_time_min: number;
-    tank_type: string | null;
-    tank_volume_l: number | string | null;
-    gas_type: string | null;
-    o2_percent: number | string | null;
-    pressure_start_bar: number | null;
-    pressure_end_bar: number | null;
-    weight_kg: number | string | null;
-    suit_type: string | null;
-    equipment_notes: string | null;
-    buddy_name: string | null;
-    instructor_name: string | null;
-    certification_dive: boolean;
-    notes: string | null;
-    is_public: boolean;
-    public_slug: string | null;
-    created_at: string;
-    updated_at: string;
-};
+type DiveRow = Database['public']['Tables']['dives']['Row'];
 
-const toNumber = (value: number | string | null): number | null => {
-    if (value === null) return null;
-    return typeof value === 'number' ? value : Number(value);
-};
-
+/**
+ * DB の snake_case 行をドメイン型 Dive に変換する。
+ * numeric カラムは Supabase 経由で string になることがあるため数値へ正規化する。
+ */
 const mapDive = (row: DiveRow): Dive => ({
     id: row.id,
     userId: row.user_id,
@@ -65,6 +32,7 @@ const mapDive = (row: DiveRow): Dive => ({
     maxDepthM: Number(row.max_depth_m),
     avgDepthM: toNumber(row.avg_depth_m),
     bottomTimeMin: row.bottom_time_min,
+    // DB 側は CHECK 制約で選択肢を保証しているため、ここでは型を狭めるだけ
     tankType: row.tank_type as TankTypeValue | null,
     tankVolumeL: toNumber(row.tank_volume_l),
     gasType: row.gas_type,
@@ -84,34 +52,6 @@ const mapDive = (row: DiveRow): Dive => ({
     updatedAt: row.updated_at,
 });
 
-type DiveListRow = Pick<
-    DiveRow,
-    | 'id'
-    | 'dive_number'
-    | 'dive_date'
-    | 'location'
-    | 'max_depth_m'
-    | 'bottom_time_min'
-    | 'water_temp_c'
-    | 'visibility_m'
-    | 'certification_dive'
->;
-
-const LIST_COLUMNS =
-    'id, dive_number, dive_date, location, max_depth_m, bottom_time_min, water_temp_c, visibility_m, certification_dive';
-
-const mapDiveListItem = (row: DiveListRow): DiveListItem => ({
-    id: row.id,
-    diveNumber: row.dive_number,
-    diveDate: row.dive_date,
-    location: row.location,
-    maxDepthM: Number(row.max_depth_m),
-    bottomTimeMin: row.bottom_time_min,
-    waterTempC: toNumber(row.water_temp_c),
-    visibilityM: toNumber(row.visibility_m),
-    certificationDive: row.certification_dive,
-});
-
 export interface ListDivesOptions {
     filter?: DiveListFilter;
     cursor?: DiveCursor;
@@ -121,42 +61,11 @@ export interface ListDivesOptions {
 /**
  * 自分の dives を日付降順で取得。
  * キーセットページネーション（(dive_date, id) の複合カーソル）対応。
+ * Supabase エラー時は throw し、Next.js の error.tsx に委ねる。
  */
 export const listDives = async (options: ListDivesOptions = {}): Promise<DiveListPage> => {
-    const { filter, cursor, limit = DIVE_PAGE_SIZE } = options;
     const supabase = await createClient();
-
-    let query = supabase
-        .from('dives')
-        .select(LIST_COLUMNS)
-        .order('dive_date', { ascending: false })
-        .order('id', { ascending: false })
-        .limit(limit + 1);
-
-    if (filter?.diveNumber !== undefined) query = query.eq('dive_number', filter.diveNumber);
-    if (filter?.diveDate) query = query.eq('dive_date', filter.diveDate);
-    if (filter?.location) query = query.ilike('location', `%${filter.location}%`);
-
-    if (cursor) {
-        /** (dive_date, id) の降順タプル比較を or で表現 */
-        query = query.or(`dive_date.lt.${cursor.diveDate},and(dive_date.eq.${cursor.diveDate},id.lt.${cursor.id})`);
-    }
-
-    const { data, error } = await query;
-
-    if (error || !data) {
-        console.error('[listDives] supabase error:', error);
-        return { items: [], nextCursor: null };
-    }
-
-    const rows = data as DiveListRow[];
-    const hasNext = rows.length > limit;
-    const items = (hasNext ? rows.slice(0, limit) : rows).map(mapDiveListItem);
-
-    const last = items.at(-1);
-    const nextCursor = hasNext && last ? { diveDate: last.diveDate, id: last.id } : null;
-
-    return { items, nextCursor };
+    return fetchDiveListPage(supabase, options);
 };
 
 /**
@@ -175,24 +84,19 @@ export const getLatestDiveNumber = async (): Promise<number | null> => {
         .limit(1)
         .maybeSingle();
 
-    if (error) {
-        console.error('[getLatestDiveNumber] supabase error:', error);
-        return null;
-    }
+    if (error) throw new Error(`dive_number の取得に失敗しました: ${error.message}`);
+
     return data?.dive_number ?? null;
 };
 
-/** 自分の dive を 1 件取得。RLS により他人のレコードは null になる */
+/** 自分の dive を 1 件取得。データなし（RLS により他人のレコードを含む）は null を返す */
 export const getDive = async (id: string): Promise<Dive | null> => {
     const supabase = await createClient();
 
     const { data, error } = await supabase.from('dives').select('*').eq('id', id).maybeSingle();
 
-    if (error) {
-        console.error('[getDive] supabase error:', error);
-        return null;
-    }
+    if (error) throw new Error(`dive の取得に失敗しました: ${error.message}`);
     if (!data) return null;
 
-    return mapDive(data as DiveRow);
+    return mapDive(data);
 };

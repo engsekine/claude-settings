@@ -1,0 +1,175 @@
+'use client';
+
+import { yupResolver } from '@hookform/resolvers/yup';
+import { Button } from '@repo/ui/components/button';
+import { Input } from '@repo/ui/components/input';
+import { useState, useTransition } from 'react';
+import { useForm } from 'react-hook-form';
+
+import { type ProfileFormValues, profileSchema } from '@/features/account/schemas/profile.schema';
+import { updateProfile } from '@/features/account/server/actions';
+import { FormField, FormRadioGroup } from '@/shared/components/form';
+import { GENDER_OPTIONS } from '@/shared/constants/gender';
+
+interface ProfileEditFormProps {
+    email: string;
+    defaultValues: ProfileFormValues;
+}
+
+export const ProfileEditForm = ({ email, defaultValues }: ProfileEditFormProps) => {
+    const [isPending, startTransition] = useTransition();
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+    const {
+        register,
+        handleSubmit,
+        setError,
+        formState: { errors, isDirty },
+    } = useForm<ProfileFormValues>({
+        resolver: yupResolver(profileSchema),
+        defaultValues,
+    });
+
+    const onSubmit = handleSubmit((values) => {
+        setSuccessMessage(null);
+        startTransition(async () => {
+            const result = await updateProfile(values);
+            if (!result.success) {
+                setError('root', { message: result.error });
+                return;
+            }
+            setSuccessMessage('プロフィールを更新しました');
+        });
+    });
+
+    return (
+        <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
+            {/* メールアドレスは変更不可の読み取り専用表示 + 補足文があるため FormField を使わない */}
+            <div className="flex flex-col gap-1">
+                <label htmlFor="email" className="font-medium text-sm">
+                    メールアドレス
+                </label>
+                <Input id="email" type="email" value={email} readOnly disabled aria-readonly="true" />
+                <span className="text-muted-foreground text-xs">メールアドレスは変更できません</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+                <FormField
+                    id="lastName"
+                    label="姓"
+                    type="text"
+                    autoComplete="family-name"
+                    aria-required="true"
+                    error={errors.lastName?.message}
+                    {...register('lastName')}
+                />
+
+                <FormField
+                    id="firstName"
+                    label="名"
+                    type="text"
+                    autoComplete="given-name"
+                    aria-required="true"
+                    error={errors.firstName?.message}
+                    {...register('firstName')}
+                />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+                <FormField
+                    id="lastNameRomaji"
+                    label="姓（ローマ字）"
+                    type="text"
+                    autoComplete="off"
+                    placeholder="Yamada"
+                    aria-required="true"
+                    error={errors.lastNameRomaji?.message}
+                    {...register('lastNameRomaji')}
+                />
+
+                <FormField
+                    id="firstNameRomaji"
+                    label="名（ローマ字）"
+                    type="text"
+                    autoComplete="off"
+                    placeholder="Taro"
+                    aria-required="true"
+                    error={errors.firstNameRomaji?.message}
+                    {...register('firstNameRomaji')}
+                />
+            </div>
+
+            <FormField
+                id="nickname"
+                label="ニックネーム"
+                type="text"
+                autoComplete="nickname"
+                aria-required="true"
+                error={errors.nickname?.message}
+                {...register('nickname')}
+            />
+
+            <FormField
+                id="birthOn"
+                label="生年月日"
+                type="date"
+                autoComplete="bday"
+                aria-required="true"
+                error={errors.birthOn?.message}
+                {...register('birthOn')}
+            />
+
+            <FormRadioGroup
+                legend="性別"
+                options={GENDER_OPTIONS}
+                aria-required="true"
+                error={errors.gender?.message}
+                {...register('gender')}
+            />
+
+            <div className="grid grid-cols-2 gap-3">
+                <FormField
+                    id="heightCm"
+                    label="身長（cm）"
+                    type="number"
+                    inputMode="decimal"
+                    step="0.1"
+                    min={30}
+                    max={300}
+                    autoComplete="off"
+                    error={errors.heightCm?.message}
+                    {...register('heightCm')}
+                />
+
+                <FormField
+                    id="weightKg"
+                    label="体重（kg）"
+                    type="number"
+                    inputMode="decimal"
+                    step="0.1"
+                    min={1}
+                    max={500}
+                    autoComplete="off"
+                    error={errors.weightKg?.message}
+                    {...register('weightKg')}
+                />
+            </div>
+
+            {errors.root && (
+                <div role="alert" className="text-red-600 text-sm">
+                    {errors.root.message}
+                </div>
+            )}
+
+            {successMessage && (
+                <div role="status" aria-live="polite" className="text-green-600 text-sm">
+                    {successMessage}
+                </div>
+            )}
+
+            <Button type="submit" disabled={isPending || !isDirty} aria-busy={isPending}>
+                {isPending ? '更新中...' : '更新する'}
+            </Button>
+        </form>
+    );
+};

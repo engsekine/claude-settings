@@ -61,8 +61,8 @@
 | `src/shared/components/layout/Header/` | Header.tsx + Header.test.tsx + Header.stories.tsx + index.ts |
 | `src/shared/components/layout/Breadcrumbs/` | 同上 |
 | `src/shared/components/layout/Footer/` | 同上 |
-| `src/features/chat/components/client/ChatInput/` | 同上 |
-| `src/features/chat/components/client/MessageBubble/` | 同上 |
+| `src/shared/components/form/FormField/` | 同上 |
+| `src/features/dives/components/client/DiveSearchBar/` | 同上 |
 
 新規作成・移動の際はこれらを参照モデルとする。
 

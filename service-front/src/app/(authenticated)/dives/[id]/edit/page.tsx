@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation';
-import type { DiveFormValues } from '@/features/dives';
-import { DiveForm, getDive } from '@/features/dives';
+import { DiveForm, getDive, mapDiveToFormValues } from '@/features/dives';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
 import { generatePageMetadata } from '@/shared/config/metadata';
 
@@ -25,36 +24,7 @@ export default async function EditDivePage({ params }: EditDivePageProps) {
     const dive = await getDive(id);
     if (!dive) notFound();
 
-    const defaultValues: Partial<DiveFormValues> = {
-        diveNumber: dive.diveNumber,
-        diveDate: dive.diveDate,
-        entryTime: dive.entryTime,
-        exitTime: dive.exitTime,
-        location: dive.location,
-        diveType: dive.diveType,
-        weather: dive.weather,
-        airTempC: dive.airTempC,
-        waterTempC: dive.waterTempC,
-        visibilityM: dive.visibilityM,
-        wave: dive.wave,
-        currentCondition: dive.currentCondition,
-        maxDepthM: dive.maxDepthM,
-        avgDepthM: dive.avgDepthM,
-        bottomTimeMin: dive.bottomTimeMin,
-        tankType: dive.tankType,
-        tankVolumeL: dive.tankVolumeL,
-        gasType: dive.gasType,
-        o2Percent: dive.o2Percent,
-        pressureStartBar: dive.pressureStartBar,
-        pressureEndBar: dive.pressureEndBar,
-        weightKg: dive.weightKg,
-        suitType: dive.suitType,
-        equipmentNotes: dive.equipmentNotes,
-        buddyName: dive.buddyName,
-        instructorName: dive.instructorName,
-        certificationDive: dive.certificationDive,
-        notes: dive.notes,
-    };
+    const defaultValues = mapDiveToFormValues(dive);
 
     return (
         <div className="flex flex-1 flex-col">

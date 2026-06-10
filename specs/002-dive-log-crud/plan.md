@@ -177,6 +177,8 @@ export const diveSchema = yup.object({
 - RLS 違反 / 存在しない id → `notFound()` で 404
 - バリデーションエラー → フォームにフィールド単位で表示
 - ネットワークエラー → トースト通知
+- SSR データ取得（`server/queries.ts`）の Supabase エラー → throw して `error.tsx` に委ねる（「データなし」とエラーを区別するため空配列は返さない）
+- Server Actions の戻り値は `ActionResult<T>`（`@/shared/types/action-result` の discriminated union）で統一
 
 ## Complexity Tracking
 

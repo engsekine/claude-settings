@@ -41,7 +41,7 @@ describe('DeleteDiveButton', () => {
     });
 
     it('削除するを押すと deleteDive(diveId) が呼ばれる', async () => {
-        deleteDive.mockResolvedValueOnce({});
+        deleteDive.mockResolvedValueOnce({ success: true });
         const user = userEvent.setup();
         render(<DeleteDiveButton diveId="d1" />);
 
@@ -49,5 +49,16 @@ describe('DeleteDiveButton', () => {
         await user.click(screen.getByRole('button', { name: '削除する' }));
 
         expect(deleteDive).toHaveBeenCalledWith('d1');
+    });
+
+    it('deleteDive が失敗するとエラーメッセージを表示する', async () => {
+        deleteDive.mockResolvedValueOnce({ success: false, error: '削除に失敗しました' });
+        const user = userEvent.setup();
+        render(<DeleteDiveButton diveId="d1" />);
+
+        await user.click(screen.getByRole('button', { name: '削除' }));
+        await user.click(screen.getByRole('button', { name: '削除する' }));
+
+        expect(await screen.findByRole('alert')).toHaveTextContent('削除に失敗しました');
     });
 });

@@ -45,7 +45,6 @@ for (const path of PUBLIC_PAGES) {
         await playwrightPage.waitForLoadState('networkidle');
 
         const results = await new AxeBuilder({
-            // @ts-expect-error monorepo の root と service-front で playwright-core が重複インストールされており、Page 型のインスタンスが一致しない
             page: playwrightPage,
         })
             .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])

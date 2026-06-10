@@ -2,12 +2,12 @@
 
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@repo/ui/components/button';
-import { Input } from '@repo/ui/components/input';
 import type { KeyboardEvent, WheelEvent } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { type DiveSearchValues, diveSearchSchema } from '@/features/dives/schemas/dive.schema';
 import type { DiveListFilter } from '@/features/dives/types';
+import { FormField } from '@/shared/components/form';
 
 interface DiveSearchBarProps {
     initialFilter?: DiveListFilter;
@@ -64,68 +64,38 @@ export const DiveSearchBar = ({ initialFilter, onSubmit: onSubmitFilter }: DiveS
                 className="flex flex-col gap-3 rounded-lg border border-border bg-background p-4"
             >
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="dive-search-number" className="font-medium text-sm">
-                            ダイブ番号
-                        </label>
-                        <Input
-                            id="dive-search-number"
-                            type="number"
-                            onWheel={blurOnWheel}
-                            onKeyDown={blockNonIntegerKeys}
-                            inputMode="numeric"
-                            min={0}
-                            step={1}
-                            autoComplete="off"
-                            aria-invalid={!!errors.diveNumber}
-                            aria-describedby={errors.diveNumber ? 'dive-search-number-error' : undefined}
-                            {...register('diveNumber')}
-                        />
-                        {errors.diveNumber && (
-                            <span id="dive-search-number-error" role="alert" className="text-red-600 text-sm">
-                                {errors.diveNumber.message}
-                            </span>
-                        )}
-                    </div>
+                    <FormField
+                        id="dive-search-number"
+                        label="ダイブ番号"
+                        error={errors.diveNumber?.message}
+                        type="number"
+                        onWheel={blurOnWheel}
+                        onKeyDown={blockNonIntegerKeys}
+                        inputMode="numeric"
+                        min={0}
+                        step={1}
+                        autoComplete="off"
+                        {...register('diveNumber')}
+                    />
 
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="dive-search-date" className="font-medium text-sm">
-                            潜水日
-                        </label>
-                        <Input
-                            id="dive-search-date"
-                            type="date"
-                            autoComplete="off"
-                            aria-invalid={!!errors.diveDate}
-                            aria-describedby={errors.diveDate ? 'dive-search-date-error' : undefined}
-                            {...register('diveDate')}
-                        />
-                        {errors.diveDate && (
-                            <span id="dive-search-date-error" role="alert" className="text-red-600 text-sm">
-                                {errors.diveDate.message}
-                            </span>
-                        )}
-                    </div>
+                    <FormField
+                        id="dive-search-date"
+                        label="潜水日"
+                        error={errors.diveDate?.message}
+                        type="date"
+                        autoComplete="off"
+                        {...register('diveDate')}
+                    />
 
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="dive-search-location" className="font-medium text-sm">
-                            ポイント名（部分一致）
-                        </label>
-                        <Input
-                            id="dive-search-location"
-                            type="text"
-                            autoComplete="off"
-                            placeholder="例: 伊豆"
-                            aria-invalid={!!errors.location}
-                            aria-describedby={errors.location ? 'dive-search-location-error' : undefined}
-                            {...register('location')}
-                        />
-                        {errors.location && (
-                            <span id="dive-search-location-error" role="alert" className="text-red-600 text-sm">
-                                {errors.location.message}
-                            </span>
-                        )}
-                    </div>
+                    <FormField
+                        id="dive-search-location"
+                        label="ポイント名（部分一致）"
+                        error={errors.location?.message}
+                        type="text"
+                        autoComplete="off"
+                        placeholder="例: 伊豆"
+                        {...register('location')}
+                    />
                 </div>
 
                 <div className="flex items-center gap-2">

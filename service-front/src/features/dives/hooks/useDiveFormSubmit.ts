@@ -30,7 +30,7 @@ export const useDiveFormSubmit = (diveId?: string): UseDiveFormSubmitResult => {
         startTransition(async () => {
             if (isEdit) {
                 const result = await updateDive(diveId, values);
-                if (result.error) {
+                if (!result.success) {
                     setServerError(result.error);
                     return;
                 }
@@ -40,8 +40,8 @@ export const useDiveFormSubmit = (diveId?: string): UseDiveFormSubmitResult => {
             }
 
             const result = await createDive(values);
-            if (result.error || !result.id) {
-                setServerError(result.error ?? 'ログの作成に失敗しました');
+            if (!result.success) {
+                setServerError(result.error);
                 return;
             }
             router.push(`/dives/${result.id}`);

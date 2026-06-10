@@ -2,7 +2,6 @@
 
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@repo/ui/components/button';
-import { Input } from '@repo/ui/components/input';
 import { useRouter } from 'next/navigation';
 import { type KeyboardEvent, useEffect, useState, type WheelEvent } from 'react';
 import { useForm } from 'react-hook-form';
@@ -10,8 +9,9 @@ import { useForm } from 'react-hook-form';
 import { DIVE_TYPE_OPTIONS, GAS_TYPE_OPTIONS, TANK_TYPE_OPTIONS } from '@/features/dives/constants';
 import { useDiveFormSubmit } from '@/features/dives/hooks/useDiveFormSubmit';
 import { calcBottomTimeMin } from '@/features/dives/lib/calcBottomTime';
-import { todayInJst } from '@/features/dives/lib/today';
 import { type DiveFormValues, diveSchema } from '@/features/dives/schemas/dive.schema';
+import { FormField, FormSelect, FormTextarea } from '@/shared/components/form';
+import { todayInJst } from '@/shared/lib/date';
 
 interface DiveFormProps {
     /** 編集モードで指定。新規作成のときは undefined */
@@ -117,152 +117,93 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                 </h2>
 
                 <div className="grid grid-cols-2 gap-3">
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="diveNumber" className="font-medium text-sm">
-                            ダイブ番号
-                        </label>
-                        <Input
-                            id="diveNumber"
-                            type="number"
-                            onWheel={blurOnWheel}
-                            onKeyDown={blockNonIntegerKeys}
-                            inputMode="numeric"
-                            min={0}
-                            step={1}
-                            autoComplete="off"
-                            aria-invalid={!!errors.diveNumber}
-                            aria-describedby={errors.diveNumber ? 'diveNumber-error' : undefined}
-                            {...register('diveNumber')}
-                        />
-                        {errors.diveNumber && (
-                            <span id="diveNumber-error" role="alert" className="text-red-600 text-sm">
-                                {errors.diveNumber.message}
-                            </span>
-                        )}
-                    </div>
-
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="diveDate" className="font-medium text-sm">
-                            潜水日
-                            <span aria-hidden="true" className="ml-1 text-red-600">
-                                *
-                            </span>
-                            <span className="sr-only">（必須）</span>
-                        </label>
-                        <Input
-                            id="diveDate"
-                            type="date"
-                            autoComplete="off"
-                            aria-required="true"
-                            aria-invalid={!!errors.diveDate}
-                            aria-describedby={errors.diveDate ? 'diveDate-error' : undefined}
-                            {...register('diveDate')}
-                        />
-                        {errors.diveDate && (
-                            <span id="diveDate-error" role="alert" className="text-red-600 text-sm">
-                                {errors.diveDate.message}
-                            </span>
-                        )}
-                    </div>
-                </div>
-
-                <div className="flex flex-col gap-1">
-                    <label htmlFor="location" className="font-medium text-sm">
-                        ポイント名
-                        <span aria-hidden="true" className="ml-1 text-red-600">
-                            *
-                        </span>
-                        <span className="sr-only">（必須）</span>
-                    </label>
-                    <Input
-                        id="location"
-                        type="text"
+                    <FormField
+                        id="diveNumber"
+                        label="ダイブ番号"
+                        error={errors.diveNumber?.message}
+                        type="number"
+                        onWheel={blurOnWheel}
+                        onKeyDown={blockNonIntegerKeys}
+                        inputMode="numeric"
+                        min={0}
+                        step={1}
                         autoComplete="off"
-                        aria-required="true"
-                        aria-invalid={!!errors.location}
-                        aria-describedby={errors.location ? 'location-error' : undefined}
-                        {...register('location')}
+                        {...register('diveNumber')}
                     />
-                    {errors.location && (
-                        <span id="location-error" role="alert" className="text-red-600 text-sm">
-                            {errors.location.message}
-                        </span>
-                    )}
+
+                    <FormField
+                        id="diveDate"
+                        label="潜水日"
+                        required
+                        error={errors.diveDate?.message}
+                        type="date"
+                        autoComplete="off"
+                        {...register('diveDate')}
+                    />
                 </div>
+
+                <FormField
+                    id="location"
+                    label="ポイント名"
+                    required
+                    error={errors.location?.message}
+                    type="text"
+                    autoComplete="off"
+                    {...register('location')}
+                />
 
                 <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="entryTime" className="font-medium text-sm">
-                            エントリー時刻
-                        </label>
-                        <Input id="entryTime" type="time" autoComplete="off" {...register('entryTime')} />
-                    </div>
+                    <FormField
+                        id="entryTime"
+                        label="エントリー時刻"
+                        type="time"
+                        autoComplete="off"
+                        {...register('entryTime')}
+                    />
 
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="exitTime" className="font-medium text-sm">
-                            エキジット時刻
-                        </label>
-                        <Input id="exitTime" type="time" autoComplete="off" {...register('exitTime')} />
-                    </div>
+                    <FormField
+                        id="exitTime"
+                        label="エキジット時刻"
+                        type="time"
+                        autoComplete="off"
+                        {...register('exitTime')}
+                    />
 
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="pressureStartBar" className="font-medium text-sm">
-                            開始残圧(bar)
-                        </label>
-                        <Input
-                            id="pressureStartBar"
-                            type="number"
-                            onWheel={blurOnWheel}
-                            inputMode="numeric"
-                            step={5}
-                            min={0}
-                            max={400}
-                            autoComplete="off"
-                            {...register('pressureStartBar')}
-                        />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="pressureEndBar" className="font-medium text-sm">
-                            終了残圧(bar)
-                        </label>
-                        <Input
-                            id="pressureEndBar"
-                            type="number"
-                            onWheel={blurOnWheel}
-                            inputMode="numeric"
-                            step={5}
-                            min={0}
-                            max={400}
-                            autoComplete="off"
-                            aria-invalid={!!errors.pressureEndBar}
-                            aria-describedby={errors.pressureEndBar ? 'pressureEndBar-error' : undefined}
-                            {...register('pressureEndBar')}
-                        />
-                        {errors.pressureEndBar && (
-                            <span id="pressureEndBar-error" role="alert" className="text-red-600 text-sm">
-                                {errors.pressureEndBar.message}
-                            </span>
-                        )}
-                    </div>
+                    <FormField
+                        id="pressureStartBar"
+                        label="開始残圧(bar)"
+                        type="number"
+                        onWheel={blurOnWheel}
+                        inputMode="numeric"
+                        step={5}
+                        min={0}
+                        max={400}
+                        autoComplete="off"
+                        {...register('pressureStartBar')}
+                    />
+
+                    <FormField
+                        id="pressureEndBar"
+                        label="終了残圧(bar)"
+                        error={errors.pressureEndBar?.message}
+                        type="number"
+                        onWheel={blurOnWheel}
+                        inputMode="numeric"
+                        step={5}
+                        min={0}
+                        max={400}
+                        autoComplete="off"
+                        {...register('pressureEndBar')}
+                    />
                 </div>
 
-                <div className="flex flex-col gap-1">
-                    <label htmlFor="diveType" className="font-medium text-sm">
-                        ダイブタイプ
-                    </label>
-                    <select
-                        id="diveType"
-                        className="rounded-md border border-border bg-background px-3 py-2 text-sm"
-                        {...register('diveType')}
-                    >
-                        <option value="">選択しない</option>
-                        {DIVE_TYPE_OPTIONS.map((option) => (
-                            <option key={option.value} value={option.value}>
-                                {option.label}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                <FormSelect
+                    id="diveType"
+                    label="ダイブタイプ"
+                    options={DIVE_TYPE_OPTIONS}
+                    placeholder="選択しない"
+                    {...register('diveType')}
+                />
             </section>
 
             <section aria-labelledby="dive-form-numbers" className="flex flex-col gap-4">
@@ -271,69 +212,42 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                 </h2>
 
                 <div className="grid grid-cols-3 gap-3">
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="maxDepthM" className="font-medium text-sm">
-                            最大水深(m)
-                            <span aria-hidden="true" className="ml-1 text-red-600">
-                                *
-                            </span>
-                            <span className="sr-only">（必須）</span>
-                        </label>
-                        <Input
-                            id="maxDepthM"
-                            type="number"
-                            onWheel={blurOnWheel}
-                            inputMode="decimal"
-                            step="0.1"
-                            min={0}
-                            max={300}
-                            autoComplete="off"
-                            aria-required="true"
-                            aria-invalid={!!errors.maxDepthM}
-                            aria-describedby={errors.maxDepthM ? 'maxDepthM-error' : undefined}
-                            {...register('maxDepthM')}
-                        />
-                        {errors.maxDepthM && (
-                            <span id="maxDepthM-error" role="alert" className="text-red-600 text-sm">
-                                {errors.maxDepthM.message}
-                            </span>
-                        )}
-                    </div>
+                    <FormField
+                        id="maxDepthM"
+                        label="最大水深(m)"
+                        required
+                        error={errors.maxDepthM?.message}
+                        type="number"
+                        onWheel={blurOnWheel}
+                        inputMode="decimal"
+                        step="0.1"
+                        min={0}
+                        max={300}
+                        autoComplete="off"
+                        {...register('maxDepthM')}
+                    />
 
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="avgDepthM" className="font-medium text-sm">
-                            平均水深(m)
-                        </label>
-                        <Input
-                            id="avgDepthM"
-                            type="number"
-                            onWheel={blurOnWheel}
-                            inputMode="decimal"
-                            step="0.1"
-                            min={0}
-                            max={300}
-                            autoComplete="off"
-                            aria-invalid={!!errors.avgDepthM}
-                            aria-describedby={errors.avgDepthM ? 'avgDepthM-error' : undefined}
-                            {...register('avgDepthM')}
-                        />
-                        {errors.avgDepthM && (
-                            <span id="avgDepthM-error" role="alert" className="text-red-600 text-sm">
-                                {errors.avgDepthM.message}
-                            </span>
-                        )}
-                    </div>
+                    <FormField
+                        id="avgDepthM"
+                        label="平均水深(m)"
+                        error={errors.avgDepthM?.message}
+                        type="number"
+                        onWheel={blurOnWheel}
+                        inputMode="decimal"
+                        step="0.1"
+                        min={0}
+                        max={300}
+                        autoComplete="off"
+                        {...register('avgDepthM')}
+                    />
 
+                    {/* 自動計算ヒントは FormField 非対応のため外側に置き、aria-describedby を明示的に上書きする */}
                     <div className="flex flex-col gap-1">
-                        <label htmlFor="bottomTimeMin" className="font-medium text-sm">
-                            潜水時間(分)
-                            <span aria-hidden="true" className="ml-1 text-red-600">
-                                *
-                            </span>
-                            <span className="sr-only">（必須）</span>
-                        </label>
-                        <Input
+                        <FormField
                             id="bottomTimeMin"
+                            label="潜水時間(分)"
+                            required
+                            error={errors.bottomTimeMin?.message}
                             type="number"
                             onWheel={blurOnWheel}
                             inputMode="numeric"
@@ -341,8 +255,6 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                             min={1}
                             max={1440}
                             autoComplete="off"
-                            aria-required="true"
-                            aria-invalid={!!errors.bottomTimeMin}
                             aria-describedby={
                                 errors.bottomTimeMin
                                     ? 'bottomTimeMin-error'
@@ -357,11 +269,6 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                                 エントリー / エキジット時刻から自動計算します
                             </span>
                         )}
-                        {errors.bottomTimeMin && (
-                            <span id="bottomTimeMin-error" role="alert" className="text-red-600 text-sm">
-                                {errors.bottomTimeMin.message}
-                            </span>
-                        )}
                     </div>
                 </div>
             </section>
@@ -372,71 +279,50 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                 </h2>
 
                 <div className="grid grid-cols-3 gap-3">
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="airTempC" className="font-medium text-sm">
-                            気温(℃)
-                        </label>
-                        <Input
-                            id="airTempC"
-                            type="number"
-                            onWheel={blurOnWheel}
-                            inputMode="decimal"
-                            step="0.1"
-                            autoComplete="off"
-                            {...register('airTempC')}
-                        />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="waterTempC" className="font-medium text-sm">
-                            水温(℃)
-                        </label>
-                        <Input
-                            id="waterTempC"
-                            type="number"
-                            onWheel={blurOnWheel}
-                            inputMode="decimal"
-                            step="0.1"
-                            autoComplete="off"
-                            {...register('waterTempC')}
-                        />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="visibilityM" className="font-medium text-sm">
-                            透明度(m)
-                        </label>
-                        <Input
-                            id="visibilityM"
-                            type="number"
-                            onWheel={blurOnWheel}
-                            inputMode="decimal"
-                            step="0.1"
-                            min={0}
-                            max={100}
-                            autoComplete="off"
-                            {...register('visibilityM')}
-                        />
-                    </div>
+                    <FormField
+                        id="airTempC"
+                        label="気温(℃)"
+                        type="number"
+                        onWheel={blurOnWheel}
+                        inputMode="decimal"
+                        step="0.1"
+                        autoComplete="off"
+                        {...register('airTempC')}
+                    />
+                    <FormField
+                        id="waterTempC"
+                        label="水温(℃)"
+                        type="number"
+                        onWheel={blurOnWheel}
+                        inputMode="decimal"
+                        step="0.1"
+                        autoComplete="off"
+                        {...register('waterTempC')}
+                    />
+                    <FormField
+                        id="visibilityM"
+                        label="透明度(m)"
+                        type="number"
+                        onWheel={blurOnWheel}
+                        inputMode="decimal"
+                        step="0.1"
+                        min={0}
+                        max={100}
+                        autoComplete="off"
+                        {...register('visibilityM')}
+                    />
                 </div>
 
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="weather" className="font-medium text-sm">
-                            天気
-                        </label>
-                        <Input id="weather" type="text" autoComplete="off" {...register('weather')} />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="wave" className="font-medium text-sm">
-                            波・うねり
-                        </label>
-                        <Input id="wave" type="text" autoComplete="off" {...register('wave')} />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="currentCondition" className="font-medium text-sm">
-                            流れ
-                        </label>
-                        <Input id="currentCondition" type="text" autoComplete="off" {...register('currentCondition')} />
-                    </div>
+                    <FormField id="weather" label="天気" type="text" autoComplete="off" {...register('weather')} />
+                    <FormField id="wave" label="波・うねり" type="text" autoComplete="off" {...register('wave')} />
+                    <FormField
+                        id="currentCondition"
+                        label="流れ"
+                        type="text"
+                        autoComplete="off"
+                        {...register('currentCondition')}
+                    />
                 </div>
             </section>
 
@@ -446,116 +332,70 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                 </h2>
 
                 <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="tankType" className="font-medium text-sm">
-                            タンク種別
-                        </label>
-                        <select
-                            id="tankType"
-                            className="rounded-md border border-border bg-background px-3 py-2 text-sm"
-                            {...register('tankType')}
-                        >
-                            <option value="">選択しない</option>
-                            {TANK_TYPE_OPTIONS.map((option) => (
-                                <option key={option.value} value={option.value}>
-                                    {option.label}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="tankVolumeL" className="font-medium text-sm">
-                            タンク容量(L)
-                        </label>
-                        <Input
-                            id="tankVolumeL"
-                            type="number"
-                            onWheel={blurOnWheel}
-                            inputMode="decimal"
-                            step="0.1"
-                            min={0}
-                            autoComplete="off"
-                            {...register('tankVolumeL')}
-                        />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="gasType" className="font-medium text-sm">
-                            ガス種類
-                        </label>
-                        <select
-                            id="gasType"
-                            className="rounded-md border border-border bg-background px-3 py-2 text-sm"
-                            {...register('gasType')}
-                        >
-                            <option value="">選択しない</option>
-                            {GAS_TYPE_OPTIONS.map((option) => (
-                                <option key={option.value} value={option.value}>
-                                    {option.label}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="o2Percent" className="font-medium text-sm">
-                            酸素濃度(%)
-                        </label>
-                        <Input
-                            id="o2Percent"
-                            type="number"
-                            onWheel={blurOnWheel}
-                            inputMode="decimal"
-                            step="0.1"
-                            min={0}
-                            max={100}
-                            autoComplete="off"
-                            {...register('o2Percent')}
-                        />
-                    </div>
+                    <FormSelect
+                        id="tankType"
+                        label="タンク種別"
+                        options={TANK_TYPE_OPTIONS}
+                        placeholder="選択しない"
+                        {...register('tankType')}
+                    />
+                    <FormField
+                        id="tankVolumeL"
+                        label="タンク容量(L)"
+                        type="number"
+                        onWheel={blurOnWheel}
+                        inputMode="decimal"
+                        step="0.1"
+                        min={0}
+                        autoComplete="off"
+                        {...register('tankVolumeL')}
+                    />
+                    <FormSelect
+                        id="gasType"
+                        label="ガス種類"
+                        options={GAS_TYPE_OPTIONS}
+                        placeholder="選択しない"
+                        {...register('gasType')}
+                    />
+                    <FormField
+                        id="o2Percent"
+                        label="酸素濃度(%)"
+                        type="number"
+                        onWheel={blurOnWheel}
+                        inputMode="decimal"
+                        step="0.1"
+                        min={0}
+                        max={100}
+                        autoComplete="off"
+                        {...register('o2Percent')}
+                    />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="weightKg" className="font-medium text-sm">
-                            ウェイト(kg)
-                        </label>
-                        <Input
-                            id="weightKg"
-                            type="number"
-                            onWheel={blurOnWheel}
-                            inputMode="decimal"
-                            step="0.1"
-                            min={0}
-                            max={30}
-                            autoComplete="off"
-                            {...register('weightKg')}
-                        />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="suitType" className="font-medium text-sm">
-                            スーツ
-                        </label>
-                        <Input
-                            id="suitType"
-                            type="text"
-                            maxLength={40}
-                            autoComplete="off"
-                            placeholder="例: ウェット 5mm"
-                            {...register('suitType')}
-                        />
-                    </div>
-                </div>
-
-                <div className="flex flex-col gap-1">
-                    <label htmlFor="equipmentNotes" className="font-medium text-sm">
-                        装備メモ
-                    </label>
-                    <textarea
-                        id="equipmentNotes"
-                        rows={2}
-                        className="rounded-md border border-border bg-background px-3 py-2 text-sm"
-                        {...register('equipmentNotes')}
+                    <FormField
+                        id="weightKg"
+                        label="ウェイト(kg)"
+                        type="number"
+                        onWheel={blurOnWheel}
+                        inputMode="decimal"
+                        step="0.1"
+                        min={0}
+                        max={30}
+                        autoComplete="off"
+                        {...register('weightKg')}
+                    />
+                    <FormField
+                        id="suitType"
+                        label="スーツ"
+                        type="text"
+                        maxLength={40}
+                        autoComplete="off"
+                        placeholder="例: ウェット 5mm"
+                        {...register('suitType')}
                     />
                 </div>
+
+                <FormTextarea id="equipmentNotes" label="装備メモ" rows={2} {...register('equipmentNotes')} />
             </section>
 
             <section aria-labelledby="dive-form-others" className="flex flex-col gap-4">
@@ -564,18 +404,20 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                 </h2>
 
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="buddyName" className="font-medium text-sm">
-                            バディ名
-                        </label>
-                        <Input id="buddyName" type="text" autoComplete="off" {...register('buddyName')} />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <label htmlFor="instructorName" className="font-medium text-sm">
-                            インストラクター名
-                        </label>
-                        <Input id="instructorName" type="text" autoComplete="off" {...register('instructorName')} />
-                    </div>
+                    <FormField
+                        id="buddyName"
+                        label="バディ名"
+                        type="text"
+                        autoComplete="off"
+                        {...register('buddyName')}
+                    />
+                    <FormField
+                        id="instructorName"
+                        label="インストラクター名"
+                        type="text"
+                        autoComplete="off"
+                        {...register('instructorName')}
+                    />
                 </div>
 
                 <label className="flex items-center gap-2 text-sm">
@@ -583,17 +425,7 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                     講習ダイブ
                 </label>
 
-                <div className="flex flex-col gap-1">
-                    <label htmlFor="notes" className="font-medium text-sm">
-                        メモ・印象
-                    </label>
-                    <textarea
-                        id="notes"
-                        rows={4}
-                        className="rounded-md border border-border bg-background px-3 py-2 text-sm"
-                        {...register('notes')}
-                    />
-                </div>
+                <FormTextarea id="notes" label="メモ・印象" rows={4} {...register('notes')} />
             </section>
 
             {serverError && (

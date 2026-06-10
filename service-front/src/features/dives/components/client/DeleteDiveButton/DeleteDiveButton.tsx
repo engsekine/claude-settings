@@ -30,7 +30,7 @@ export const DeleteDiveButton = ({ diveId }: DeleteDiveButtonProps) => {
         setError(null);
         startTransition(async () => {
             const result = await deleteDive(diveId);
-            if (result.error) {
+            if (!result.success) {
                 setError(result.error);
             }
         });

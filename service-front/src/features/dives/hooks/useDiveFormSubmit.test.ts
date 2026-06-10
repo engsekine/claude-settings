@@ -60,7 +60,7 @@ describe('useDiveFormSubmit', () => {
     });
 
     it('diveId 未指定（新規作成）で submit すると createDive を呼び詳細ページへ遷移する', async () => {
-        createDive.mockResolvedValueOnce({ id: 'new-id' });
+        createDive.mockResolvedValueOnce({ success: true, id: 'new-id' });
         const { result } = renderHook(() => useDiveFormSubmit());
 
         act(() => {
@@ -77,7 +77,7 @@ describe('useDiveFormSubmit', () => {
     });
 
     it('createDive がエラーを返すと serverError に反映する', async () => {
-        createDive.mockResolvedValueOnce({ error: '作成に失敗しました' });
+        createDive.mockResolvedValueOnce({ success: false, error: '作成に失敗しました' });
         const { result } = renderHook(() => useDiveFormSubmit());
 
         act(() => {
@@ -91,7 +91,7 @@ describe('useDiveFormSubmit', () => {
     });
 
     it('diveId 指定時は updateDive を呼び詳細ページへ遷移する', async () => {
-        updateDive.mockResolvedValueOnce({});
+        updateDive.mockResolvedValueOnce({ success: true });
         const { result } = renderHook(() => useDiveFormSubmit('existing-id'));
 
         act(() => {
@@ -106,7 +106,7 @@ describe('useDiveFormSubmit', () => {
     });
 
     it('updateDive がエラーを返すと serverError に反映し遷移しない', async () => {
-        updateDive.mockResolvedValueOnce({ error: '更新に失敗しました' });
+        updateDive.mockResolvedValueOnce({ success: false, error: '更新に失敗しました' });
         const { result } = renderHook(() => useDiveFormSubmit('existing-id'));
 
         act(() => {
@@ -117,18 +117,5 @@ describe('useDiveFormSubmit', () => {
             expect(result.current.serverError).toBe('更新に失敗しました');
         });
         expect(routerPush).not.toHaveBeenCalled();
-    });
-
-    it('createDive が id を返さなかったときは汎用エラーを serverError に反映する', async () => {
-        createDive.mockResolvedValueOnce({});
-        const { result } = renderHook(() => useDiveFormSubmit());
-
-        act(() => {
-            result.current.submit(buildValues());
-        });
-
-        await waitFor(() => {
-            expect(result.current.serverError).toBe('ログの作成に失敗しました');
-        });
     });
 });
