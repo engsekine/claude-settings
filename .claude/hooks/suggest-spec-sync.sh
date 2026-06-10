@@ -28,15 +28,15 @@ case "$FILE_PATH" in
         ;;
 esac
 
-# docs/specs/ が存在しないリポジトリでは無効化
-if [[ ! -d "docs/specs" && ! -d "$(dirname "$FILE_PATH")/../docs/specs" ]]; then
+# specs/（spec-kit 形式の仕様書）が存在しないリポジトリでは無効化
+if [[ ! -d "specs" ]]; then
     REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
-    if [[ -z "$REPO_ROOT" || ! -d "$REPO_ROOT/docs/specs" ]]; then
+    if [[ -z "$REPO_ROOT" || ! -d "$REPO_ROOT/specs" ]]; then
         exit 0
     fi
 fi
 
 # リマインダー出力（stderr に書くと system-reminder として Claude に渡る）
 echo "💡 '$FILE_PATH' は仕様書同期の対象になり得るファイルです。" >&2
-echo "   コミット前に \`/sync-spec\` で docs/specs/ とのずれを確認してください。" >&2
+echo "   コミット前に \`/sync-spec\` で specs/ とのずれを確認してください。" >&2
 echo "   個別チェックなら: /sync-spec $FILE_PATH" >&2

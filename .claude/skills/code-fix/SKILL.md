@@ -31,19 +31,20 @@ git diff --name-only HEAD
 
 | 拡張子 | 読み込む規約 |
 |--------|------------|
-| `.ts`, `.tsx` | `rules/typescript.md`, `rules/react.md` |
-| `.css` | `rules/css.md` |
-| `.html` | `rules/html.md` |
-| `.php` | `rules/php.md` |
+| `.ts`, `.tsx` | `.claude/rules/typescript.md`, `.claude/rules/react.md` |
+| `.css` | `.claude/rules/css.md` |
+| `.html` | `.claude/rules/html.md` |
+| `.php` | `.claude/rules/php.md` |
+| `.sql` | `.claude/rules/sql.md` |
 
 全ファイル共通で以下も読み込む:
 - `.claude/CLAUDE.md` — プロジェクト共通規約
-- `rules/accessibility.md` — アクセシビリティ規約（`.tsx`, `.html` の場合）
-- `rules/readable-code.md` — 命名規則（全拡張子）
+- `.claude/rules/accessibility.md` — アクセシビリティ規約（`.tsx`, `.html` の場合）
+- `.claude/rules/readable-code.md` — 命名規則（全拡張子）
 
-規約ファイルが一つも存在しない場合は「コード規約ファイルが見つかりません。`rules/` に規約を追加してください」と出力して終了。
+規約ファイルが一つも存在しない場合は「コード規約ファイルが見つかりません。`.claude/rules/` に規約を追加してください」と出力して終了。
 
-**規約間の競合時**: `.claude/CLAUDE.md` > `rules/` 配下の個別規約。プロジェクト共通規約が最優先。
+**規約間の競合時**: `.claude/CLAUDE.md` > `.claude/rules/` 配下の個別規約。プロジェクト共通規約が最優先。
 
 ### 3. レビュー結果の参照
 

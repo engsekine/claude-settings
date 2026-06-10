@@ -58,8 +58,8 @@ ls <画像パス>
 
 | 拡張子 | 実装内容 |
 |-------|---------|
-| `.tsx` / `.jsx` | React コンポーネント + Tailwind CSS or CSS Modules |
-| `.html` | セマンティックHTML + インラインスタイルまたは別途CSSファイル |
+| `.tsx` / `.jsx` | React コンポーネント + Tailwind CSS（`.claude/rules/css.md` 準拠） |
+| `.html` | セマンティックHTML + 別途CSSファイル（インラインスタイルは使わない） |
 | `.vue` | Vue SFC形式 |
 | `.css` / `.scss` | スタイルのみ |
 

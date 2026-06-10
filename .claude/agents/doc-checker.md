@@ -15,7 +15,6 @@ model: sonnet
 
 以下のディレクトリに存在するファイルを確認する。
 
-- `docs/designs/` — 設計書
 - `specs/<NNN>-<feature>/spec.md` — 機能仕様（spec-kit 形式・連番管理）
 - `specs/<NNN>-<feature>/plan.md` — 実装計画
 - `specs/<NNN>-<feature>/screens/` — 画面仕様（補助ドキュメント）
