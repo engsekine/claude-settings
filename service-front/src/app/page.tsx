@@ -1,29 +1,50 @@
+import { RecordOverhaulButton, TopDashboard } from '@/features/dashboard';
+import { listDives } from '@/features/dives';
 import { NextPlanCard } from '@/features/plans';
-import { createClient } from '@/shared/lib/supabase/server';
+import { recordOverhaul } from '@/features/regulators';
+import { generatePageMetadata } from '@/shared/config/metadata';
 
+export const metadata = generatePageMetadata(
+    {
+        slug: '/',
+        title: 'ダッシュボード',
+        description: 'あなたのダイビング活動のいまを一望できるダッシュボード',
+    },
+    { noIndex: true },
+);
+
+/**
+ * TOP ダッシュボード（認証必須。未認証は proxy.ts が /login へリダイレクト）。
+ * feature 間 import 禁止のため、dives / plans / regulators 由来のデータ・コンポーネントは
+ * ここ（app 層）で組み立てて TopDashboard に注入する。
+ */
 export default async function Home() {
-    // 現行 TOP（`/`）は公開ルートのため、認証ユーザーにのみ「次の予定」を表示する（FR-006）。
-    // 003-dashboard 実装時は本セクションをダッシュボードのレイアウトへ移設する。
-    const supabase = await createClient();
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
+    const recentPage = await listDives({ limit: 5 });
+    const recentDives = recentPage.items.map((dive) => ({
+        id: dive.id,
+        diveDate: dive.diveDate,
+        location: dive.location,
+        maxDepthM: dive.maxDepthM,
+        bottomTimeMin: dive.bottomTimeMin,
+    }));
 
     return (
         <div className="flex flex-1 flex-col">
-            <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-16">
-                <div className="text-center">
-                    <h1 className="font-semibold text-3xl text-foreground tracking-tight">Welcome</h1>
-                    <p className="mt-4 text-lg text-muted-foreground">ここにコンテンツを追加してください。</p>
-                </div>
-                {user && (
-                    <section aria-labelledby="next-plan-heading" className="mx-auto w-full max-w-2xl">
-                        <h2 id="next-plan-heading" className="sr-only">
-                            次のダイビング予定
-                        </h2>
-                        <NextPlanCard />
-                    </section>
-                )}
+            <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-8">
+                <TopDashboard
+                    recentDives={recentDives}
+                    nextPlanSection={
+                        <section aria-labelledby="dashboard-next-plan" className="flex flex-col gap-3">
+                            <h2 id="dashboard-next-plan" className="font-semibold text-lg">
+                                次のダイビング予定
+                            </h2>
+                            <NextPlanCard />
+                        </section>
+                    }
+                    renderRecordButton={(regulatorId) => (
+                        <RecordOverhaulButton regulatorId={regulatorId} onRecord={recordOverhaul} />
+                    )}
+                />
             </div>
         </div>
     );

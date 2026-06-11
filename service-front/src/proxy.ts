@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { SITE_URL } from '@/shared/constants/site';
 import { updateSession } from '@/shared/lib/supabase/middleware';
 
-/** 認証必須のパス（プレフィックス一致） */
+/** 認証必須のパス（プレフィックス一致）。TOP（`/`）はプレフィックスだと全パスに一致するため完全一致で別判定 */
 const APP_ROUTE_PREFIXES = ['/dives', '/plans', '/settings'];
 
 /** 未認証ユーザー向けのパス（認証済みなら /dives へ飛ばす） */
@@ -13,7 +13,7 @@ export const proxy = async (request: NextRequest) => {
     const { response, user } = await updateSession(request);
 
     const { pathname } = request.nextUrl;
-    const isAppRoute = APP_ROUTE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+    const isAppRoute = pathname === '/' || APP_ROUTE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
     const isAuthRoute = AUTH_ROUTES.includes(pathname);
 
     if (isAppRoute && !user) {

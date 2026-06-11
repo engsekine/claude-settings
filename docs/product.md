@@ -9,11 +9,12 @@ Web 上でダイビングのログ（ログブック）を作成・管理でき�
 - 001 認証
 - 002 ログ機能（CRUD）
 - 003 ダッシュボード（TOP / 累計統計 / レギュレーター OH）
+- 004 TOP 拡張（ダイビング予定 / 持ち物リスト）
 
 ### Phase 2
 
-- 004 PDF 出力
-- 005 公開機能
+- 005 PDF 出力
+- 006 公開機能
 
 ### 将来構想
 
@@ -80,11 +81,12 @@ service-front/src/
 
 | ID | 機能 | フェーズ | パス |
 |----|------|---------|------|
-| 001 | 認証 | Phase 1 | `specs/features/001-auth/` |
-| 002 | ログ CRUD | Phase 1 | `specs/features/002-dive-log-crud/` |
-| 003 | ダッシュボード | Phase 1 | `specs/features/003-dashboard/` |
-| 004 | PDF 出力 | Phase 2 | 未作成 |
-| 005 | 公開機能 | Phase 2 | 未作成 |
+| 001 | 認証 | Phase 1 | `specs/001-auth/` |
+| 002 | ログ CRUD | Phase 1 | `specs/002-dive-log-crud/` |
+| 003 | ダッシュボード | Phase 1 | `specs/003-dashboard/` |
+| 004 | ダイビング予定 / 持ち物リスト | Phase 1 | `specs/004-top-dive-plans/` |
+| 005 | PDF 出力 | Phase 2 | 未作成 |
+| 006 | 公開機能 | Phase 2 | 未作成 |
 
 ### 運用ルール
 

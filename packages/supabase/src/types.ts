@@ -229,6 +229,59 @@ export type Database = {
           },
         ]
       }
+      regulators: {
+        Row: {
+          brand: string
+          created_at: string
+          id: string
+          is_primary: boolean
+          last_overhauled_on: string
+          model: string
+          notes: string | null
+          overhaul_interval_dives: number
+          overhaul_interval_months: number
+          purchased_on: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brand: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          last_overhauled_on: string
+          model: string
+          notes?: string | null
+          overhaul_interval_dives?: number
+          overhaul_interval_months?: number
+          purchased_on?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brand?: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          last_overhauled_on?: string
+          model?: string
+          notes?: string | null
+          overhaul_interval_dives?: number
+          overhaul_interval_months?: number
+          purchased_on?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "regulators_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_details: {
         Row: {
           birth_on: string
@@ -305,7 +358,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_dive_stats: {
+        Args: never
+        Returns: {
+          max_depth_m: number
+          total_bottom_time_min: number
+          total_dives: number
+          visited_locations: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

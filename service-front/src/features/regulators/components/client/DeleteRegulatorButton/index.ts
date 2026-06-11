@@ -1,0 +1,1 @@
+export { DeleteRegulatorButton } from './DeleteRegulatorButton';

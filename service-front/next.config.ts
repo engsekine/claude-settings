@@ -11,6 +11,9 @@ const supabaseWsOrigin = supabaseOrigin.replace(/^http/, 'ws');
 const connectSrc = ["'self'", supabaseOrigin, supabaseWsOrigin].filter(Boolean).join(' ');
 
 const nextConfig = {
+    // Playwright の webServer（ホスト側）と Docker の dev サーバーが同じ .next を
+    // 共有してキャッシュが破損する事故を防ぐため、ビルドディレクトリを上書き可能にする
+    distDir: process.env['NEXT_DIST_DIR'] ?? '.next',
     reactStrictMode: true,
     typedRoutes: true,
     typescript: {

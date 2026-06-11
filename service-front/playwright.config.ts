@@ -26,7 +26,8 @@ export default defineConfig({
     ],
 
     webServer: {
-        command: `next dev -p ${PORT}`,
+        // Docker 側 dev サーバーと .next を共有しないよう専用 dist dir を使う（キャッシュ破損防止）
+        command: `NEXT_DIST_DIR=.next-playwright next dev -p ${PORT}`,
         url: BASE_URL,
         reuseExistingServer: !process.env['CI'],
         stdout: 'ignore',

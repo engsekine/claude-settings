@@ -38,8 +38,8 @@ description: "Task list for 003-dashboard feature implementation"
 
 **Purpose**: 認証ルーティングの整備（全ストーリーの前提）
 
-- [ ] T001 `service-front/src/proxy.ts` の `APP_ROUTE_PREFIXES` に `/` と `/settings` を追加（旧 T8）
-- [ ] T002 未認証で `/` にアクセスすると `/login` にリダイレクトされることを確認（旧 T9）
+- [x] T001 `service-front/src/proxy.ts` の `APP_ROUTE_PREFIXES` に `/` と `/settings` を追加（旧 T8）
+- [x] T002 未認証で `/` にアクセスすると `/login` にリダイレクトされることを確認（旧 T9）
 
 ---
 
@@ -49,13 +49,13 @@ description: "Task list for 003-dashboard feature implementation"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 `supabase/migrations/<ts>_create_regulators.sql` を作成（テーブル + 制約 + 部分ユニーク）（旧 T1）
-- [ ] T004 `regulators` の RLS ポリシー（select/insert/update/delete を `(select auth.uid()) = user_id` で）（旧 T2）
-- [ ] T005 インデックス `idx_regulators_user_id_is_primary`（旧 T3）
-- [ ] T006 `updated_at` 自動更新 trigger（`handle_updated_at` を再利用）（旧 T4）
-- [ ] T007 [P] RPC `get_dive_stats()` を `supabase/migrations/<ts>_create_get_dive_stats.sql` で作成（`stable security invoker search_path=''`）（旧 T5）
-- [ ] T008 `npx supabase db reset` で全マイグレーションが通ることを確認（旧 T6）
-- [ ] T009 型を再生成（`supabase gen types`）して `@repo/supabase` の Database 型を更新（旧 T7）
+- [x] T003 `supabase/migrations/<ts>_create_regulators.sql` を作成（テーブル + 制約 + 部分ユニーク）（旧 T1）
+- [x] T004 `regulators` の RLS ポリシー（select/insert/update/delete を `(select auth.uid()) = user_id` で）（旧 T2）
+- [x] T005 インデックス `idx_regulators_user_id_is_primary`（旧 T3）
+- [x] T006 `updated_at` 自動更新 trigger（`handle_updated_at` を再利用）（旧 T4）
+- [x] T007 [P] RPC `get_dive_stats()` を `supabase/migrations/<ts>_create_get_dive_stats.sql` で作成（`stable security invoker search_path=''`）（旧 T5）
+- [x] T008 `npx supabase db reset` で全マイグレーションが通ることを確認（旧 T6）
+- [x] T009 型を再生成（`supabase gen types`）して `@repo/supabase` の Database 型を更新（旧 T7）
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
@@ -69,17 +69,17 @@ description: "Task list for 003-dashboard feature implementation"
 
 ### Implementation for User Story 1
 
-- [ ] T010 [P] [US1] `service-front/src/features/dashboard/types.ts` 定義（`DiveStats`、`RegulatorOverhaulStatus` など。後者は US3 でも使用）（旧 T17）
-- [ ] T011 [US1] `service-front/src/features/dashboard/server/queries.ts` に `getDiveStats` を実装（RPC `get_dive_stats()` 呼び出し）（旧 T19 の一部）
-- [ ] T012 [US1] `StatsCards`（統計カード × 4 を表示）を `service-front/src/features/dashboard/components/server/StatsCards/` に作成（旧 T20）
-- [ ] T013 [P] [US1] `RecentDives`（最近 5 件、`listDives({ limit: 5 })` を再利用）を `service-front/src/features/dashboard/components/server/RecentDives/` に作成（旧 T23）
-- [ ] T014 [US1] `TopDashboard`（Server Component、各セクションを組み立てる）を `service-front/src/features/dashboard/components/server/TopDashboard/` に作成（旧 T24）
-- [ ] T015 [US1] `service-front/src/app/page.tsx` を書き換えて `TopDashboard` を描画（旧 T25）
+- [x] T010 [P] [US1] `service-front/src/features/dashboard/types.ts` 定義（`DiveStats`、`RegulatorOverhaulStatus` など。後者は US3 でも使用）（旧 T17）
+- [x] T011 [US1] `service-front/src/features/dashboard/server/queries.ts` に `getDiveStats` を実装（RPC `get_dive_stats()` 呼び出し）（旧 T19 の一部）
+- [x] T012 [US1] `StatsCards`（統計カード × 4 を表示）を `service-front/src/features/dashboard/components/server/StatsCards/` に作成（旧 T20）
+- [x] T013 [P] [US1] `RecentDives`（最近 5 件、`listDives({ limit: 5 })` を再利用）を `service-front/src/features/dashboard/components/server/RecentDives/` に作成（旧 T23）
+- [x] T014 [US1] `TopDashboard`（Server Component、各セクションを組み立てる）を `service-front/src/features/dashboard/components/server/TopDashboard/` に作成（旧 T24）
+- [x] T015 [US1] `service-front/src/app/page.tsx` を書き換えて `TopDashboard` を描画（旧 T25）
 
 ### Tests for User Story 1
 
-- [ ] T016 [P] [US1] `StatsCards` テスト（0 件 / 通常 / 60 分未満 / 100 時間超 の表示）（旧 T33）
-- [ ] T017 [P] [US1] E2E: 未認証 `/` → `/login` リダイレクト（旧 T35）
+- [x] T016 [P] [US1] `StatsCards` テスト（0 件 / 通常 / 60 分未満 / 100 時間超 の表示）（旧 T33）
+- [x] T017 [P] [US1] E2E: 未認証 `/` → `/login` リダイレクト（旧 T35）
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -93,22 +93,22 @@ description: "Task list for 003-dashboard feature implementation"
 
 ### Implementation for User Story 2
 
-- [ ] T018 [P] [US2] `service-front/src/features/regulators/types.ts` 定義（`Regulator`、`RegulatorListItem` など）（旧 T10）
-- [ ] T019 [P] [US2] `service-front/src/features/regulators/schemas/regulator.schema.ts`（yup）（旧 T11）
-- [ ] T020 [US2] `service-front/src/features/regulators/server/queries.ts`（`listRegulators` / `getRegulator`）（旧 T12）
-- [ ] T021 [US2] `service-front/src/features/regulators/server/actions.ts`（`createRegulator` / `updateRegulator` / `deleteRegulator`。`recordOverhaul` は US4 = T035）（旧 T13 の一部）
-- [ ] T022 [US2] `RegulatorList`（Server Component、一覧）を `service-front/src/features/regulators/components/server/RegulatorList/` に作成（旧 T14）
-- [ ] T023 [US2] `RegulatorForm`（Client Component、新規・編集共通）を `service-front/src/features/regulators/components/client/RegulatorForm/` に作成（旧 T15）
-- [ ] T024 [US2] `DeleteRegulatorButton`（確認ダイアログ付き）を `service-front/src/features/regulators/components/client/DeleteRegulatorButton/` に作成（旧 T16）
-- [ ] T025 [US2] `service-front/src/app/(authenticated)/settings/equipment/page.tsx` を作成（`RegulatorList` を描画）（旧 T26）
-- [ ] T026 [P] [US2] `service-front/src/app/(authenticated)/settings/equipment/new/page.tsx`（旧 T27）
-- [ ] T027 [P] [US2] `service-front/src/app/(authenticated)/settings/equipment/[id]/edit/page.tsx`（旧 T28）
+- [x] T018 [P] [US2] `service-front/src/features/regulators/types.ts` 定義（`Regulator`、`RegulatorListItem` など）（旧 T10）
+- [x] T019 [P] [US2] `service-front/src/features/regulators/schemas/regulator.schema.ts`（yup）（旧 T11）
+- [x] T020 [US2] `service-front/src/features/regulators/server/queries.ts`（`listRegulators` / `getRegulator`）（旧 T12）
+- [x] T021 [US2] `service-front/src/features/regulators/server/actions.ts`（`createRegulator` / `updateRegulator` / `deleteRegulator`。`recordOverhaul` は US4 = T035）（旧 T13 の一部）
+- [x] T022 [US2] `RegulatorList`（Server Component、一覧）を `service-front/src/features/regulators/components/server/RegulatorList/` に作成（旧 T14）
+- [x] T023 [US2] `RegulatorForm`（Client Component、新規・編集共通）を `service-front/src/features/regulators/components/client/RegulatorForm/` に作成（旧 T15）
+- [x] T024 [US2] `DeleteRegulatorButton`（確認ダイアログ付き）を `service-front/src/features/regulators/components/client/DeleteRegulatorButton/` に作成（旧 T16）
+- [x] T025 [US2] `service-front/src/app/(authenticated)/settings/equipment/page.tsx` を作成（`RegulatorList` を描画）（旧 T26）
+- [x] T026 [P] [US2] `service-front/src/app/(authenticated)/settings/equipment/new/page.tsx`（旧 T27）
+- [x] T027 [P] [US2] `service-front/src/app/(authenticated)/settings/equipment/[id]/edit/page.tsx`（旧 T28）
 
 ### Tests for User Story 2
 
-- [ ] T028 [P] [US2] `regulator.schema.ts` 単体テスト（必須・最大長・未来日付・interval 範囲）（旧 T31）
-- [ ] T029 [P] [US2] `RegulatorForm` テスト（送信成功・バリデーションエラー）（旧 T32）
-- [ ] T030 [US2] 他ユーザーの `regulators.id` で 404 が返ることを確認（旧 T37）
+- [x] T028 [P] [US2] `regulator.schema.ts` 単体テスト（必須・最大長・未来日付・interval 範囲）（旧 T31）
+- [x] T029 [P] [US2] `RegulatorForm` テスト（送信成功・バリデーションエラー）（旧 T32）
+- [x] T030 [US2] 他ユーザーの `regulators.id` で 404 が返ることを確認（旧 T37）
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
@@ -122,14 +122,14 @@ description: "Task list for 003-dashboard feature implementation"
 
 ### Implementation for User Story 3
 
-- [ ] T031 [P] [US3] `service-front/src/features/dashboard/lib/overhaul.ts`（OH ステータス計算の純粋関数 `calcOverhaulStatus`）（旧 T18）
-- [ ] T032 [US3] `service-front/src/features/dashboard/server/queries.ts` に `getPrimaryRegulatorStatus` を実装（OH 以降のダイブ本数取得 + 純粋関数呼び出し）（旧 T19 の一部）
-- [ ] T033 [US3] `RegulatorPanel`（OH ステータス、未登録時の CTA、レベル別色分け）を `service-front/src/features/dashboard/components/server/RegulatorPanel/` に作成（旧 T21）
+- [x] T031 [P] [US3] `service-front/src/features/dashboard/lib/overhaul.ts`（OH ステータス計算の純粋関数 `calcOverhaulStatus`）（旧 T18）
+- [x] T032 [US3] `service-front/src/features/dashboard/server/queries.ts` に `getPrimaryRegulatorStatus` を実装（OH 以降のダイブ本数取得 + 純粋関数呼び出し）（旧 T19 の一部）
+- [x] T033 [US3] `RegulatorPanel`（OH ステータス、未登録時の CTA、レベル別色分け）を `service-front/src/features/dashboard/components/server/RegulatorPanel/` に作成（旧 T21）
 
 ### Tests for User Story 3
 
-- [ ] T034 [P] [US3] `overhaul.ts` 単体テスト（境界: 残日数 0 / 30 / 31、残本数 0 / 10 / 11）（旧 T30）
-- [ ] T035 [P] [US3] `RegulatorPanel` テスト（未登録 / 余裕 / 期限間近 / 期限切れ）（旧 T34）
+- [x] T034 [P] [US3] `overhaul.ts` 単体テスト（境界: 残日数 0 / 30 / 31、残本数 0 / 10 / 11）（旧 T30）
+- [x] T035 [P] [US3] `RegulatorPanel` テスト（未登録 / 余裕 / 期限間近 / 期限切れ）（旧 T34）
 
 **Checkpoint**: User Stories 1-3 should now be independently functional
 
@@ -143,12 +143,12 @@ description: "Task list for 003-dashboard feature implementation"
 
 ### Implementation for User Story 4
 
-- [ ] T036 [US4] `service-front/src/features/regulators/server/actions.ts` に `recordOverhaul(regulatorId)` を実装（`last_overhauled_on = 今日` + `revalidatePath('/')`）（旧 T13 の一部）
-- [ ] T037 [US4] `RecordOverhaulButton`（Client Component、確認ダイアログ + Server Action 呼び出し）を `service-front/src/features/dashboard/components/client/RecordOverhaulButton/` に作成（旧 T22）
+- [x] T036 [US4] `service-front/src/features/regulators/server/actions.ts` に `recordOverhaul(regulatorId)` を実装（`last_overhauled_on = 今日` + `revalidatePath('/')`）（旧 T13 の一部）
+- [x] T037 [US4] `RecordOverhaulButton`（Client Component、確認ダイアログ + Server Action 呼び出し）を `service-front/src/features/dashboard/components/client/RecordOverhaulButton/` に作成（旧 T22）
 
 ### Tests for User Story 4
 
-- [ ] T038 [US4] E2E: レギュレーター登録 → TOP に反映 → メンテ完了記録 → 残日数リセット（旧 T36）
+- [x] T038 [US4] E2E: レギュレーター登録 → TOP に反映 → メンテ完了記録 → 残日数リセット（旧 T36）
 
 **Checkpoint**: All user stories should now be independently functional
 
@@ -158,11 +158,11 @@ description: "Task list for 003-dashboard feature implementation"
 
 **Purpose**: 全ストーリー横断の仕上げ・ドキュメント整備
 
-- [ ] T039 [P] 各ページに `generatePageMetadata` で metadata を付与（旧 T29）
-- [ ] T040 [P] `specs/003-dashboard/screens/top.md` の TBD を確定値に書き換える（旧 T38）
-- [ ] T041 [P] `specs/003-dashboard/data-model.md` を新規作成（regulators テーブル。マイグレーション確定後）（旧 T39）
-- [ ] T042 [P] `docs/product.md` の機能仕様一覧を更新（003 を Dashboard に、PDF / 公開を 004 / 005 に）（旧 T40）
-- [ ] T043 `Header` / `Breadcrumbs` の「ホーム」リンク先を `/` に整合（旧 T41）
+- [x] T039 [P] 各ページに `generatePageMetadata` で metadata を付与（旧 T29）
+- [x] T040 [P] `specs/003-dashboard/screens/top.md` の TBD を確定値に書き換える（旧 T38）
+- [x] T041 [P] `specs/003-dashboard/data-model.md` を新規作成（regulators テーブル。マイグレーション確定後）（旧 T39）
+- [x] T042 [P] `docs/product.md` の機能仕様一覧を更新（003 を Dashboard に、PDF / 公開を 004 / 005 に）（旧 T40）
+- [x] T043 `Header` / `Breadcrumbs` の「ホーム」リンク先を `/` に整合（旧 T41）
 
 ---
 

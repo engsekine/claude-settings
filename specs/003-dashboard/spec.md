@@ -4,7 +4,7 @@
 
 **Created**: 2026-06-10
 
-**Status**: Ready for Implementation（仕様確定・実装未着手）
+**Status**: Implemented（2026-06-11）
 
 **Input**: 既存仕様書 docs/specs/features/003-dashboard/ からの移行
 
