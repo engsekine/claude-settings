@@ -10,7 +10,7 @@ describe('Header', () => {
         expect(siteNameLink).toHaveAttribute('href', '/');
     });
 
-    it('メインナビゲーションのリンク（ホーム, 概要, ダイビングログ）を表示する', () => {
+    it('メインナビゲーションのリンク（ホーム, ダイビングログ）を表示する', () => {
         render(<Header />);
 
         const nav = screen.getByRole('navigation', { name: 'メインナビゲーション' });
@@ -19,8 +19,8 @@ describe('Header', () => {
         const home = screen.getByRole('link', { name: 'ホーム' });
         expect(home).toHaveAttribute('href', '/');
 
-        const about = screen.getByRole('link', { name: '概要' });
-        expect(about).toHaveAttribute('href', '/about');
+        // 「概要」リンクは /about ページが存在しないデッドリンクだったため削除済み
+        expect(screen.queryByRole('link', { name: '概要' })).not.toBeInTheDocument();
 
         const dives = screen.getByRole('link', { name: 'ダイビングログ' });
         expect(dives).toHaveAttribute('href', '/dives');

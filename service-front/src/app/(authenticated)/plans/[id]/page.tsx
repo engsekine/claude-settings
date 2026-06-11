@@ -45,10 +45,9 @@ export default async function PlanPage({ params }: PlanPageProps) {
                             <span className="sr-only">予定日: </span>
                             {formatDate(plan.plannedOn)}
                         </span>
+                        {/* バッジは text-muted-foreground だと bg-muted 上でコントラスト AA 未達のため text-foreground を使う */}
                         {remaining < 0 && (
-                            <span className="rounded-md bg-muted px-2 py-0.5 text-muted-foreground text-xs">
-                                終了済み
-                            </span>
+                            <span className="rounded-md bg-muted px-2 py-0.5 text-foreground text-xs">終了済み</span>
                         )}
                         {remaining === 0 && (
                             <span className="rounded-md bg-primary/10 px-2 py-0.5 text-primary text-xs">今日</span>

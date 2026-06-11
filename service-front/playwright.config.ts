@@ -10,12 +10,15 @@ export default defineConfig({
     retries: process.env['CI'] ? 2 : 0,
     ...(process.env['CI'] ? { workers: 1 } : {}),
     reporter: process.env['CI'] ? [['github'], ['html', { open: 'never' }]] : 'html',
+    // CI では next dev のオンデマンドコンパイルで初回ナビゲーションが遅いため余裕を持たせる
+    ...(process.env['CI'] ? { timeout: 120_000 } : {}),
 
     use: {
         baseURL: BASE_URL,
         trace: 'on-first-retry',
         screenshot: 'only-on-failure',
         locale: 'ja-JP',
+        ...(process.env['CI'] ? { navigationTimeout: 60_000 } : {}),
     },
 
     projects: [
@@ -30,8 +33,10 @@ export default defineConfig({
         command: `NEXT_DIST_DIR=.next-playwright next dev -p ${PORT}`,
         url: BASE_URL,
         reuseExistingServer: !process.env['CI'],
-        stdout: 'ignore',
+        // CI（2 コアランナー）では初回コンパイルが遅く起動状況の確認も必要なため stdout を出す
+        stdout: process.env['CI'] ? 'pipe' : 'ignore',
         stderr: 'pipe',
-        timeout: 120_000,
+        // CI のコールドスタート（React Compiler 込みの初回コンパイル）は 120 秒を超えるため余裕を持たせる
+        timeout: process.env['CI'] ? 300_000 : 120_000,
     },
 });

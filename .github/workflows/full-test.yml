@@ -50,6 +50,10 @@ jobs:
     storybook-test:
         runs-on: ubuntu-latest
         timeout-minutes: 20
+        env:
+            # Supabase クライアントの生成に必要（story は実通信しないためダミーで良い。シークレットではない）
+            NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+            NEXT_PUBLIC_SUPABASE_ANON_KEY: storybook-dummy-anon-key
         steps:
             - uses: actions/checkout@v4
             - uses: actions/setup-node@v4

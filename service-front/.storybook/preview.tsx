@@ -5,6 +5,10 @@ import '../src/app/globals.css';
 
 const preview: Preview = {
     parameters: {
+        // App Router 前提のプロジェクトのため、next/navigation（useRouter 等）のモックを全 story で有効化
+        nextjs: {
+            appDirectory: true,
+        },
         controls: {
             matchers: {
                 color: /(background|color)$/i,

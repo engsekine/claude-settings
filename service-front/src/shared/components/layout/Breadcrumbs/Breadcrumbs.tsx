@@ -6,11 +6,13 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from '@repo/ui/components/breadcrumb';
+import type { Route } from 'next';
 import Link from 'next/link';
 
 import { SITE_NAME, SITE_URL } from '@/shared/constants/site';
 
 export interface BreadcrumbEntry {
+    /** 遷移先パス。動的セグメント（`/plans/${id}` 等）を含むため Route 型ではなく string で受ける */
     slug?: string;
     name: string;
 }
@@ -60,7 +62,7 @@ export const Breadcrumbs = ({ breadcrumbs }: BreadcrumbsProps) => {
                         <BreadcrumbSeparator key={`sep-${breadcrumb.name}`} />,
                         <BreadcrumbItem key={breadcrumb.name}>
                             {breadcrumb.slug !== undefined ? (
-                                <BreadcrumbLink render={<Link href={breadcrumb.slug} />}>
+                                <BreadcrumbLink render={<Link href={breadcrumb.slug as Route} />}>
                                     {breadcrumb.name}
                                 </BreadcrumbLink>
                             ) : (

@@ -94,8 +94,9 @@ const PlanCard = ({ plan, daysLabel }: PlanCardProps) => {
                         <span className="sr-only">予定日: </span>
                         {formatDate(plan.plannedOn)}
                     </span>
+                    {/* バッジは text-muted-foreground だと bg-muted 上でコントラスト 4.34:1 と AA 未達のため text-foreground を使う */}
                     {daysLabel === null ? (
-                        <span className="inline-block rounded-md bg-muted px-2 py-0.5 text-muted-foreground text-xs">
+                        <span className="inline-block rounded-md bg-muted px-2 py-0.5 text-foreground text-xs">
                             終了済み
                         </span>
                     ) : (

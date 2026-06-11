@@ -12,6 +12,7 @@
             "**/*.cts",
             "**/*.json",
             "!**/.next",
+            "!**/.next-playwright",
             "!**/node_modules",
             "!**/storybook-static",
             "!**/public/mockServiceWorker.js",
