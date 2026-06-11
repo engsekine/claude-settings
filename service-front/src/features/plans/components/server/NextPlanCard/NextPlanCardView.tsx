@@ -27,10 +27,10 @@ export const NextPlanCardView = ({ summary }: NextPlanCardViewProps) => {
     if (!summary) {
         return (
             <section
-                aria-labelledby="next-plan-heading"
+                aria-labelledby="next-plan-empty-heading"
                 className="flex flex-col items-start gap-3 rounded-lg border border-border bg-background p-4"
             >
-                <h2 id="next-plan-heading" className="font-semibold text-base text-foreground">
+                <h2 id="next-plan-empty-heading" className="font-semibold text-base text-foreground">
                     次の予定
                 </h2>
                 <p className="text-muted-foreground text-sm">次のダイビングを計画しよう</p>

@@ -150,9 +150,9 @@ describe('diveSchema', () => {
     });
 
     it('pressureEndBar が pressureStartBar より大きいと失敗する', async () => {
-        await expect(
-            diveSchema.validate({ ...validBase, pressureStartBar: 100, pressureEndBar: 150 }),
-        ).rejects.toThrow(/終了残圧は開始残圧以下/);
+        await expect(diveSchema.validate({ ...validBase, pressureStartBar: 100, pressureEndBar: 150 })).rejects.toThrow(
+            /終了残圧は開始残圧以下/,
+        );
     });
 
     it('pressureEndBar が pressureStartBar 以下であれば通過する', async () => {

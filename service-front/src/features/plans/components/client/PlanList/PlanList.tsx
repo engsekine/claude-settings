@@ -25,29 +25,6 @@ interface PlanCardProps {
     daysLabel: string | null;
 }
 
-const PlanCard = ({ plan, daysLabel }: PlanCardProps) => {
-    return (
-        <article className="rounded-lg border border-border bg-background p-4 transition-colors hover:bg-muted/50">
-            <Link href={`/plans/${plan.id}`} className="flex flex-col gap-2">
-                <div className="flex items-center justify-between gap-2">
-                    <span className="text-muted-foreground text-sm">
-                        <span className="sr-only">予定日: </span>
-                        {formatDate(plan.plannedOn)}
-                    </span>
-                    {daysLabel === null ? (
-                        <span className="inline-block rounded-md bg-muted px-2 py-0.5 text-muted-foreground text-xs">
-                            終了済み
-                        </span>
-                    ) : (
-                        <span className="font-medium text-primary text-sm">{daysLabel}</span>
-                    )}
-                </div>
-                <h3 className="font-semibold text-base text-foreground">{plan.location}</h3>
-            </Link>
-        </article>
-    );
-};
-
 export const PlanList = ({ plans, today }: PlanListProps) => {
     // FR-005: 予定日が今日以降を「これから」、過去を「終了済み」に区分して表示する
     const upcomingPlans = plans.filter((plan) => daysUntil(plan.plannedOn, today) >= 0);
@@ -100,5 +77,33 @@ export const PlanList = ({ plans, today }: PlanListProps) => {
                 </section>
             )}
         </div>
+    );
+};
+
+/**
+ * 予定カード。h3 はセクション見出し（h2）配下で使われる。
+ * 注: markuplint の heading-levels はファイル内の出現順で判定するため、
+ * h2 を含む PlanList より後に定義する。
+ */
+const PlanCard = ({ plan, daysLabel }: PlanCardProps) => {
+    return (
+        <article className="rounded-lg border border-border bg-background p-4 transition-colors hover:bg-muted/50">
+            <Link href={`/plans/${plan.id}`} className="flex flex-col gap-2">
+                <div className="flex items-center justify-between gap-2">
+                    <span className="text-muted-foreground text-sm">
+                        <span className="sr-only">予定日: </span>
+                        {formatDate(plan.plannedOn)}
+                    </span>
+                    {daysLabel === null ? (
+                        <span className="inline-block rounded-md bg-muted px-2 py-0.5 text-muted-foreground text-xs">
+                            終了済み
+                        </span>
+                    ) : (
+                        <span className="font-medium text-primary text-sm">{daysLabel}</span>
+                    )}
+                </div>
+                <h3 className="font-semibold text-base text-foreground">{plan.location}</h3>
+            </Link>
+        </article>
     );
 };

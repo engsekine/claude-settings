@@ -46,7 +46,6 @@ export const FormRadioGroup = ({
                             value={option.value}
                             defaultChecked={defaultValue !== undefined ? option.value === defaultValue : undefined}
                             required={required}
-                            aria-invalid={!!error}
                             {...radioProps}
                         />
                         {option.label}

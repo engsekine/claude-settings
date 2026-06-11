@@ -78,7 +78,10 @@ export const DiveDetail = ({ dive }: DiveDetailProps) => {
                         label="開始残圧(bar)"
                         value={dive.pressureStartBar === null ? null : `${dive.pressureStartBar}`}
                     />
-                    <Field label="終了残圧(bar)" value={dive.pressureEndBar === null ? null : `${dive.pressureEndBar}`} />
+                    <Field
+                        label="終了残圧(bar)"
+                        value={dive.pressureEndBar === null ? null : `${dive.pressureEndBar}`}
+                    />
                 </div>
 
                 <Field label="ダイブタイプ" value={dive.diveType} />

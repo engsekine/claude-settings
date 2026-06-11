@@ -35,10 +35,10 @@ export const RegulatorPanel = ({ status, recordButton }: RegulatorPanelProps) =>
     if (!status) {
         return (
             <section
-                aria-labelledby="regulator-panel-heading"
+                aria-labelledby="regulator-panel-empty-heading"
                 className="flex flex-col items-start gap-3 rounded-lg border border-border bg-background p-4"
             >
-                <h2 id="regulator-panel-heading" className="font-semibold text-base text-foreground">
+                <h2 id="regulator-panel-empty-heading" className="font-semibold text-base text-foreground">
                     OH ステータス
                 </h2>
                 <p className="text-muted-foreground text-sm">レギュレーターを登録すると OH 期限をお知らせします</p>

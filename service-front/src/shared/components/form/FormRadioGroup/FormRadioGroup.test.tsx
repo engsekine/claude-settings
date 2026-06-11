@@ -44,8 +44,9 @@ describe('FormRadioGroup', () => {
         );
 
         expect(screen.getByRole('group')).toHaveAttribute('aria-describedby', 'entryType-error');
+        // ARIA 1.2 で radio ロールへの aria-invalid は非推奨のため付与しない（エラーは fieldset の aria-describedby で紐付け）
         for (const radio of screen.getAllByRole('radio')) {
-            expect(radio).toHaveAttribute('aria-invalid', 'true');
+            expect(radio).not.toHaveAttribute('aria-invalid');
         }
 
         const alert = screen.getByRole('alert');

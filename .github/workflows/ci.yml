@@ -1,0 +1,70 @@
+# 軽量品質チェック（PR + main push）
+# 仕様: specs/005-github-actions-ci/（ジョブ名は branch protection の required checks 名として使われる）
+name: CI
+
+on:
+    pull_request:
+    push:
+        branches: [main]
+
+# 同一 ref の旧実行をキャンセル（FR-003）。main は完走させる
+concurrency:
+    group: ci-${{ github.ref }}
+    cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+    lint:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: npm
+            - run: npm ci
+            - run: npm run check --workspace service-front
+
+    markup-lint:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: npm
+            - run: npm ci
+            - run: npm run lint:markup --workspace service-front
+
+    type-check:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: npm
+            - run: npm ci
+            - run: npm run type-check --workspace service-front
+
+    unit-test:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: npm
+            - run: npm ci
+            # カバレッジ閾値（70%）の検証を含む（FR-004）
+            - run: npm run test:coverage --workspace service-front
+
+    db-lint:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: supabase/setup-cli@v1
+              with:
+                  version: latest
+            # lint はローカル DB への接続が必要。フルスタックではなく DB コンテナのみ起動する（FR-005）
+            - run: supabase db start
+            - run: supabase db lint

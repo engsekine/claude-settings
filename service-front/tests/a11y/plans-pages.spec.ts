@@ -7,9 +7,7 @@ const TEST_PASSWORD = 'password123';
 
 const expectNoViolations = async (page: Page) => {
     await page.waitForLoadState('networkidle');
-    const results = await new AxeBuilder({ page })
-        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-        .analyze();
+    const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
     expect(results.violations).toEqual([]);
 };
 
@@ -38,9 +36,6 @@ test('/plans 系 3 画面 - WCAG 2.1 AA 違反なし（要認証）', async ({ p
 
     // 後始末: 作成した予定を削除（持ち物は cascade で消える）
     await page.getByRole('button', { name: /削除/ }).first().click();
-    await page
-        .getByRole('dialog')
-        .getByRole('button', { name: /削除/ })
-        .click();
+    await page.getByRole('dialog').getByRole('button', { name: /削除/ }).click();
     await page.waitForURL(/\/plans$/);
 });

@@ -19,10 +19,7 @@ const parseTimeToMinutes = (value: string): number | null => {
  * - 同時刻（0 分）はスキーマ最小値（1 分）に満たないため null を返す
  * - 算出値がスキーマ最大値（1440 分）を超えるときは null を返す
  */
-export const calcBottomTimeMin = (
-    entry: string | null | undefined,
-    exit: string | null | undefined,
-): number | null => {
+export const calcBottomTimeMin = (entry: string | null | undefined, exit: string | null | undefined): number | null => {
     if (!entry || !exit) return null;
     const entryMin = parseTimeToMinutes(entry);
     const exitMin = parseTimeToMinutes(exit);
