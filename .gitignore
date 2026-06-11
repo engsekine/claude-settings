@@ -48,10 +48,14 @@ coverage/
 .steering/*
 !.steering/.gitkeep
 
+# spec-kit: 作業中フィーチャーのポインタ（個人の作業状態）
+.specify/feature.json
+
 # Lock files (keep package-lock.json for consistency)
 # yarn.lock
 
-.claude/settings.local.json
+# サブディレクトリで起動したセッションが生成するものも含めて ignore する
+**/.claude/settings.local.json
 
 # Playwright
 screenshots/*

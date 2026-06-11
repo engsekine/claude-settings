@@ -2,7 +2,8 @@
 # Claude Code のプロンプトをログに記録する
 
 INPUT=$(cat)
-LOG_DIR=".claude/logs"
+# セッションの起動場所に依存しないよう、プロジェクトルート基準で保存する
+LOG_DIR="${CLAUDE_PROJECT_DIR:-.}/.claude/logs"
 LOG_FILE="$LOG_DIR/conversation.log"
 mkdir -p "$LOG_DIR"
 # ログファイルが存在しなければ作成する

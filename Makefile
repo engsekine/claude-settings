@@ -14,7 +14,7 @@ CLAUDE_TARGETS := skills agents rules
         front-test-storybook front-test-e2e front-test-e2e-ui front-test-a11y front-test-all \
         front-storybook front-build-storybook front-ci-storybook \
         front-validate \
-        supabase-seed supabase-reset
+        supabase-seed supabase-reset supabase-migration-up
 
 ## グローバルの ~/.claude に対してシンボリックリンクを作成する
 link:
@@ -230,6 +230,7 @@ help:
 	@echo "  [supabase]"
 	@echo "  make supabase-seed          seed.sql.template を .env.local で展開して seed.sql を生成"
 	@echo "  make supabase-reset         seed.sql を生成してから supabase db reset を実行"
+	@echo "  make supabase-migration-up  未適用のマイグレーションをローカル DB に適用"
 
 ## supabase: seed.sql.template を envsubst で展開して seed.sql を生成
 ## supabase/.env.local から TEST_USER_* を読み込む
@@ -247,3 +248,7 @@ supabase-seed:
 ## supabase: seed.sql 生成 + db reset を一気に実行
 supabase-reset: supabase-seed
 	supabase db reset
+
+## supabase: 未適用のマイグレーションをローカル DB に適用する
+supabase-migration-up:
+	supabase migration up

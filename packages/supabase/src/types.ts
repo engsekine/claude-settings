@@ -34,6 +34,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      dive_plans: {
+        Row: {
+          created_at: string
+          id: string
+          location: string
+          notes: string | null
+          planned_on: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          location: string
+          notes?: string | null
+          planned_on: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          location?: string
+          notes?: string | null
+          planned_on?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dive_plans_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dives: {
         Row: {
           air_temp_c: number | null
@@ -41,7 +79,6 @@ export type Database = {
           bottom_time_min: number
           buddy_name: string | null
           certification_dive: boolean
-          country: string | null
           created_at: string
           current_condition: string | null
           dive_date: string
@@ -78,7 +115,6 @@ export type Database = {
           bottom_time_min: number
           buddy_name?: string | null
           certification_dive?: boolean
-          country?: string | null
           created_at?: string
           current_condition?: string | null
           dive_date: string
@@ -115,7 +151,6 @@ export type Database = {
           bottom_time_min?: number
           buddy_name?: string | null
           certification_dive?: boolean
-          country?: string | null
           created_at?: string
           current_condition?: string | null
           dive_date?: string
@@ -152,6 +187,44 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plan_packing_items: {
+        Row: {
+          created_at: string
+          id: string
+          is_checked: boolean
+          name: string
+          plan_id: string
+          position: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_checked?: boolean
+          name: string
+          plan_id: string
+          position?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_checked?: boolean
+          name?: string
+          plan_id?: string
+          position?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_packing_items_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "dive_plans"
             referencedColumns: ["id"]
           },
         ]

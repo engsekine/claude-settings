@@ -2,7 +2,8 @@
 # Claude Code のレスポンスをログに記録する
 
 INPUT=$(cat)
-LOG_DIR=".claude/logs"
+# セッションの起動場所に依存しないよう、プロジェクトルート基準で保存する
+LOG_DIR="${CLAUDE_PROJECT_DIR:-.}/.claude/logs"
 mkdir -p "$LOG_DIR"
 
 TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
