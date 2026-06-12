@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import { DeleteDiveButton } from '@/features/dives/components/client/DeleteDiveButton';
 import { TANK_TYPE_LABEL_MAP, type TankTypeValue } from '@/features/dives/constants';
+import { calcSacRate, formatSacRate, SAC_INPUT_FIELD_LABELS } from '@/features/dives/lib/sacRate';
 import type { Dive } from '@/features/dives/types';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
 
@@ -51,6 +52,7 @@ const FullField = ({ label, value }: { label: string; value: string | null | und
 
 export const DiveDetail = ({ dive }: DiveDetailProps) => {
     const tidePhase = getTidePhase(dive.diveDate);
+    const sacRate = calcSacRate(dive);
 
     return (
         <div className="flex flex-col gap-6">
@@ -145,6 +147,14 @@ export const DiveDetail = ({ dive }: DiveDetailProps) => {
                     <Field label="ウェイト(kg)" value={dive.weightKg} />
                     <Field label="スーツ" value={dive.suitType} />
                 </div>
+
+                {sacRate.status === 'ok' && <Field label="エア消費率" value={formatSacRate(sacRate.sacRateLpm)} />}
+                {sacRate.status === 'missing' && (
+                    <p className="text-muted-foreground text-sm">
+                        {sacRate.missingFields.map((field) => SAC_INPUT_FIELD_LABELS[field]).join('・')}
+                        を入力するとエア消費率が表示されます
+                    </p>
+                )}
 
                 <FullField label="装備メモ" value={dive.equipmentNotes} />
             </section>

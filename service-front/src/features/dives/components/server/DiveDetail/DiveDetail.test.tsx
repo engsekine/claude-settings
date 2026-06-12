@@ -69,6 +69,47 @@ describe('DiveDetail', () => {
         expect(screen.queryByText(/大潮|中潮|小潮|長潮|若潮/)).not.toBeInTheDocument();
     });
 
+    it('必要 5 項目が揃っているときはエア消費率を表示する', () => {
+        // 200→50 bar / 10 L / 平均水深 10 m / 50 分 → 15.0 L/分（specs/008 SC-002 の代表値）
+        render(
+            <DiveDetail
+                dive={{ ...baseDive, pressureEndBar: 50, tankVolumeL: 10, avgDepthM: 10, bottomTimeMin: 50 }}
+            />,
+        );
+        expect(screen.getByText('エア消費率')).toBeInTheDocument();
+        expect(screen.getByText('15.0 L/分')).toBeInTheDocument();
+    });
+
+    it('必要項目が不足しているときは不足項目の案内を表示する', () => {
+        // baseDive はタンク容量のみ null
+        render(<DiveDetail dive={baseDive} />);
+        expect(screen.getByText('タンク容量を入力するとエア消費率が表示されます')).toBeInTheDocument();
+    });
+
+    it('複数項目が不足しているときはまとめて案内する', () => {
+        render(<DiveDetail dive={{ ...baseDive, tankVolumeL: null, avgDepthM: null }} />);
+        expect(screen.getByText('タンク容量・平均水深を入力するとエア消費率が表示されます')).toBeInTheDocument();
+    });
+
+    it('開始残圧が終了残圧以下のときはエア消費率も案内も表示しない', () => {
+        // 開始 < 終了（防御的ケース。フォームバリデーションでは作成できない）
+        const { unmount } = render(
+            <DiveDetail
+                dive={{ ...baseDive, pressureStartBar: 80, pressureEndBar: 100, tankVolumeL: 10, avgDepthM: 10 }}
+            />,
+        );
+        expect(screen.queryByText(/エア消費率/)).not.toBeInTheDocument();
+        unmount();
+
+        // 開始 = 終了（消費量 0）
+        render(
+            <DiveDetail
+                dive={{ ...baseDive, pressureStartBar: 100, pressureEndBar: 100, tankVolumeL: 10, avgDepthM: 10 }}
+            />,
+        );
+        expect(screen.queryByText(/エア消費率/)).not.toBeInTheDocument();
+    });
+
     it('編集ページへのリンクを表示する', () => {
         render(<DiveDetail dive={baseDive} />);
         expect(screen.getByRole('link', { name: '編集' })).toHaveAttribute('href', '/dives/dive-1/edit');

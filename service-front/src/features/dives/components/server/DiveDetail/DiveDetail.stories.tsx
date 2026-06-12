@@ -62,3 +62,18 @@ export const SpringTide: Story = {
 export const CertificationDive: Story = {
     args: { dive: { ...baseDive, certificationDive: true } },
 };
+
+/** 必要 5 項目が揃いエア消費率（15.0 L/分）が表示されるケース */
+export const WithSacRate: Story = {
+    args: { dive: { ...baseDive, pressureEndBar: 50, tankVolumeL: 10, avgDepthM: 10, bottomTimeMin: 50 } },
+};
+
+/** 必要項目が不足し、不足項目の案内が表示されるケース（タンク容量・平均水深が未入力） */
+export const SacRateMissing: Story = {
+    args: { dive: { ...baseDive, tankVolumeL: null, avgDepthM: null } },
+};
+
+/** 開始残圧 = 終了残圧（消費量 0）で、エア消費率も案内も表示しないケース */
+export const SacRateHidden: Story = {
+    args: { dive: { ...baseDive, pressureStartBar: 100, pressureEndBar: 100, tankVolumeL: 10, avgDepthM: 10 } },
+};
