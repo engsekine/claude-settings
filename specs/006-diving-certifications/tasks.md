@@ -29,8 +29,8 @@ description: "Task list for diving certifications implementation"
 
 **Purpose**: `certifications` テーブルと周辺 DB オブジェクトの作成（[data-model.md](data-model.md) 参照）
 
-- [ ] T001 `supabase/migrations/<timestamp>_create_certifications.sql` を作成（テーブル・comment on・CHECK 制約・複合ユニーク `(user_id, agency, rank)`・インデックス `(user_id, acquired_on desc)`・RLS 4 ポリシー・`updated_at` トリガを 1 ファイルに含める）
-- [ ] T002 `make supabase-migration-up` で適用し、Supabase Studio でテーブル定義と RLS を確認
+- [X] T001 `supabase/migrations/<timestamp>_create_certifications.sql` を作成（テーブル・comment on・CHECK 制約・複合ユニーク `(user_id, agency, rank)`・インデックス `(user_id, acquired_on desc)`・RLS 4 ポリシー・`updated_at` トリガを 1 ファイルに含める）
+- [X] T002 `make supabase-migration-up` で適用し、Supabase Studio でテーブル定義と RLS を確認
 
 > T001 内のオブジェクトは強い依存関係があるため同一ファイル。並列不可。
 
@@ -42,11 +42,11 @@ description: "Task list for diving certifications implementation"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 [P] `service-front/src/features/certifications/types.ts` を定義（`Certification` 型・`Agency` ユニオン型）
-- [ ] T004 [P] `service-front/src/features/certifications/constants.ts` を定義（agency の値 → 表示ラベルのマッピング: padi → PADI など 6 値）
-- [ ] T005 `service-front/src/features/certifications/schemas/certification.schema.test.ts` を作成（必須 3 項目・rank 60 文字上限・未来日付拒否のテストを先に書く。この時点では fail する）
-- [ ] T006 `service-front/src/features/certifications/schemas/certification.schema.ts` を実装（yup。T005 のテストをグリーンにする）
-- [ ] T007 `service-front/src/features/certifications/index.ts` を作成（再 export 用バレル）
+- [X] T003 [P] `service-front/src/features/certifications/types.ts` を定義（`Certification` 型・`Agency` ユニオン型）
+- [X] T004 [P] `service-front/src/features/certifications/constants.ts` を定義（agency の値 → 表示ラベルのマッピング: padi → PADI など 6 値）
+- [X] T005 `service-front/src/features/certifications/schemas/certification.schema.test.ts` を作成（必須 3 項目・rank 60 文字上限・未来日付拒否のテストを先に書く。この時点では fail する）
+- [X] T006 `service-front/src/features/certifications/schemas/certification.schema.ts` を実装（yup。T005 のテストをグリーンにする）
+- [X] T007 `service-front/src/features/certifications/index.ts` を作成（再 export 用バレル）
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
@@ -60,16 +60,16 @@ description: "Task list for diving certifications implementation"
 
 ### Tests for User Story 1
 
-- [ ] T008 [US1] `service-front/src/features/certifications/server/actions.test.ts` を作成（createCertification: 正常系 / 生年月日以前の拒否 / 一意制約違反 23505 → 重複メッセージ変換。テストを先に書く）
+- [X] T008 [US1] `service-front/src/features/certifications/server/actions.test.ts` を作成（createCertification: 正常系 / 生年月日以前の拒否 / 一意制約違反 23505 → 重複メッセージ変換。テストを先に書く）
 
 ### Implementation for User Story 1
 
-- [ ] T009 [US1] `service-front/src/features/certifications/server/queries.ts` を実装(`getCertifications`: `acquired_on desc, created_at desc` 全件取得、`getCertificationById`)
-- [ ] T010 [US1] `service-front/src/features/certifications/server/actions.ts` に `createCertification` を実装（`user_id` は `auth.uid()` から強制セット、`user_details.birth_on` との比較検証、23505 捕捉。T008 をグリーンにする）
-- [ ] T011 [P] [US1] `service-front/src/features/certifications/components/client/CertificationForm/CertificationForm.tsx` を実装（RHF + yup、新規モード。label 関連付け・`aria-invalid`・エラー `role="alert"`）。作成直後に `/generate-with-tests` で test / story を生成
-- [ ] T012 [P] [US1] `service-front/src/features/certifications/components/server/CertificationList/CertificationList.tsx` を実装（Server Component。取得日降順の一覧 + 0 件時の未登録案内と登録導線）。作成直後に `/generate-with-tests` で test / story を生成
-- [ ] T013 [US1] `service-front/src/app/(authenticated)/settings/certifications/page.tsx` を作成（一覧ページ。`generatePageMetadata` 使用、`Header` / `Footer` を含める）
-- [ ] T014 [US1] `service-front/src/app/(authenticated)/settings/certifications/new/page.tsx` を作成（新規登録ページ）
+- [X] T009 [US1] `service-front/src/features/certifications/server/queries.ts` を実装(`getCertifications`: `acquired_on desc, created_at desc` 全件取得、`getCertificationById`)
+- [X] T010 [US1] `service-front/src/features/certifications/server/actions.ts` に `createCertification` を実装（`user_id` は `auth.uid()` から強制セット、`user_details.birth_on` との比較検証、23505 捕捉。T008 をグリーンにする）
+- [X] T011 [P] [US1] `service-front/src/features/certifications/components/client/CertificationForm/CertificationForm.tsx` を実装（RHF + yup、新規モード。label 関連付け・`aria-invalid`・エラー `role="alert"`）。作成直後に `/generate-with-tests` で test / story を生成
+- [X] T012 [P] [US1] `service-front/src/features/certifications/components/server/CertificationList/CertificationList.tsx` を実装（Server Component。取得日降順の一覧 + 0 件時の未登録案内と登録導線）。作成直後に `/generate-with-tests` で test / story を生成
+- [X] T013 [US1] `service-front/src/app/(authenticated)/settings/certifications/page.tsx` を作成（一覧ページ。`generatePageMetadata` 使用、`Header` / `Footer` を含める）
+- [X] T014 [US1] `service-front/src/app/(authenticated)/settings/certifications/new/page.tsx` を作成（新規登録ページ）
 
 **Checkpoint**: 登録 → 一覧表示が end-to-end で動作し、US1 単独でリリース可能
 
@@ -83,12 +83,12 @@ description: "Task list for diving certifications implementation"
 
 ### Tests for User Story 2
 
-- [ ] T015 [US2] `service-front/src/features/certifications/lib/heldPeriod.test.ts` を作成（年月差・月末またぎ切り捨て・当日 0ヶ月・表示フォーマットのテストを先に書く）
+- [X] T015 [US2] `service-front/src/features/certifications/lib/heldPeriod.test.ts` を作成（年月差・月末またぎ切り捨て・当日 0ヶ月・表示フォーマットのテストを先に書く）
 
 ### Implementation for User Story 2
 
-- [ ] T016 [US2] `service-front/src/features/certifications/lib/heldPeriod.ts` を実装（純粋関数。基準日を引数で受け取る。T015 をグリーンにする）
-- [ ] T017 [US2] `CertificationList.tsx` に保有期間表示を統合し、同階層の `CertificationList.test.tsx` / `CertificationList.stories.tsx` を同期更新
+- [X] T016 [US2] `service-front/src/features/certifications/lib/heldPeriod.ts` を実装（純粋関数。基準日を引数で受け取る。T015 をグリーンにする）
+- [X] T017 [US2] `CertificationList.tsx` に保有期間表示を統合し、同階層の `CertificationList.test.tsx` / `CertificationList.stories.tsx` を同期更新
 
 **Checkpoint**: 一覧の全資格に保有期間が表示される
 
@@ -102,15 +102,15 @@ description: "Task list for diving certifications implementation"
 
 ### Tests for User Story 3
 
-- [ ] T018 [US3] `service-front/src/features/certifications/server/actions.test.ts` に updateCertification / deleteCertification のテストを追記（先に書く）
+- [X] T018 [US3] `service-front/src/features/certifications/server/actions.test.ts` に updateCertification / deleteCertification のテストを追記（update 時の一意制約違反 23505 → 重複メッセージ変換を含む。先に書く）
 
 ### Implementation for User Story 3
 
-- [ ] T019 [US3] `service-front/src/features/certifications/server/actions.ts` に `updateCertification` / `deleteCertification` を実装（T018 をグリーンにする）
-- [ ] T020 [P] [US3] `service-front/src/features/certifications/components/client/DeleteCertificationButton/DeleteCertificationButton.tsx` を実装（確認ダイアログ付き）。作成直後に `/generate-with-tests` で test / story を生成
-- [ ] T021 [US3] `CertificationForm.tsx` を編集モード対応（初期値受け取り）に拡張し、同階層の test / story を同期更新
-- [ ] T022 [US3] `service-front/src/app/(authenticated)/settings/certifications/[id]/edit/page.tsx` を作成（編集ページ。対象が見つからない場合は notFound）
-- [ ] T023 [US3] `CertificationList.tsx` に編集導線と `DeleteCertificationButton` を統合し、test / story を同期更新
+- [X] T019 [US3] `service-front/src/features/certifications/server/actions.ts` に `updateCertification` / `deleteCertification` を実装（T018 をグリーンにする）
+- [X] T020 [P] [US3] `service-front/src/features/certifications/components/client/DeleteCertificationButton/DeleteCertificationButton.tsx` を実装（確認ダイアログ付き）。作成直後に `/generate-with-tests` で test / story を生成
+- [X] T021 [US3] `CertificationForm.tsx` を編集モード対応（初期値受け取り）に拡張し、同階層の test / story を同期更新
+- [X] T022 [US3] `service-front/src/app/(authenticated)/settings/certifications/[id]/edit/page.tsx` を作成（編集ページ。対象が見つからない場合は notFound）
+- [X] T023 [US3] `CertificationList.tsx` に編集導線と `DeleteCertificationButton` を統合し、test / story を同期更新
 
 **Checkpoint**: 全ユーザーストーリーが独立して動作する
 
@@ -118,10 +118,13 @@ description: "Task list for diving certifications implementation"
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T024 [P] `service-front/src/app/(authenticated)/settings/profile/page.tsx` から `/settings/certifications` への導線を追加（機材管理の導線パターンに合わせる）
-- [ ] T025 [P] Playwright a11y テストで一覧・新規・編集の 3 画面の axe-core 違反 0 件を確認（`make front-test-a11y`）
-- [ ] T026 [quickstart.md](quickstart.md) の手動検証シナリオ 1〜4 を実施
-- [ ] T027 `make front-validate` で型チェック・lint・テストの全チェックをグリーンにする
+- [X] T024 [P] `service-front/src/app/(authenticated)/settings/profile/page.tsx` から `/settings/certifications` への導線を追加（機材管理の導線パターンに合わせる。FR-013）
+- [X] T028 [P] ヘッダー（`AuthNav` のアカウントメニュー）・フッター（`Footer` の `FOOTER_LINKS`）・TOP ダッシュボード（`TopDashboard` ヒーロー）に `/settings/certifications` への導線を追加し、`AuthNav.test.tsx` / `Footer.test.tsx` を同期更新（実装後の追加要望。FR-013）
+- [X] T029 詳細項目の追加（実装後の追加要望 2026-06-12）: `diver_number` / `instructor_number` / `trained_by` / `acquired_location` カラム追加マイグレーション + `certification_tags` 子テーブル作成マイグレーション、`parseSpecialtyTags`（lib）、スキーマ・actions・queries のタグ対応、フォーム 5 項目追加、一覧の詳細・タグ表示、テスト・story 同期（FR-011 / FR-012）
+- [X] T030 ダイビングログとの紐づけ（実装後の追加要望 2026-06-12）: `dive_id` カラム追加マイグレーション（`on delete set null` + FK インデックス）、`features/dives` に `listDiveOptions` 追加、フォームに「取得ダイブ」セレクト（選択肢はページ層で合成して props 注入）、Server Action で自分のログかを RLS スコープ select で確認、一覧に `/dives/[id]` リンク表示、テスト・story 同期（FR-014）
+- [X] T025 [P] Playwright a11y テストで一覧・新規・編集の 3 画面の axe-core 違反 0 件を確認（`make front-test-a11y`）
+- [X] T026 [quickstart.md](quickstart.md) の手動検証シナリオ 1〜4 を実施
+- [X] T027 `make front-validate` で型チェック・lint・テストの全チェックをグリーンにする
 
 ---
 
@@ -138,7 +141,7 @@ Phase 4: US2 (T015-T017)  ※ T015 → T016 → T017
    │
 Phase 5: US3 (T018-T023)  ※ US2 と独立。US1 完了後なら US2 と並行着手可
    ↓
-Phase 6: Polish (T024-T027)
+Phase 6: Polish (T024-T030)  ※ T029 / T030 はフォーム・一覧を変更するため T025〜T027 より先に完了させる
 ```
 
 - US2 と US3 は互いに独立しており、US1 完了後に並行して進められる
@@ -155,8 +158,10 @@ Phase 3:  T011 CertificationForm ─┬─ 並列（T010 完了後）
 
 US1 完了後:  Phase 4 (US2) と Phase 5 (US3) を並行着手可（T017/T023 のみ直列）
 
-Phase 6:  T024 導線追加 ─┬─ 並列
-          T025 a11y テスト ─┘
+Phase 6:  T024 導線追加（プロフィール） ─┬─ 並列
+          T028 導線追加（ヘッダー / フッター / TOP） ─┤
+          T029 詳細項目追加 → T030 ダイブログ紐づけ ─┘  ※ 同一ファイルを触るため直列
+          T029 / T030 完了後: T025 a11y → T026 手動検証 → T027 front-validate
 ```
 
 ## Implementation Strategy

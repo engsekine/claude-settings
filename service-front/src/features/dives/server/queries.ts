@@ -100,3 +100,31 @@ export const getDive = async (id: string): Promise<Dive | null> => {
 
     return mapDive(data);
 };
+
+/** 他機能からの紐づけ選択用に最小限の項目だけ持つダイブの要約 */
+export interface DiveOption {
+    id: string;
+    /** ダイブ日（YYYY-MM-DD） */
+    diveDate: string;
+    location: string;
+}
+
+/**
+ * 自分の全 dives を選択肢用に日付降順で取得する（id / 日付 / ポイント名のみ）。
+ * 資格の「取得ダイブ」セレクトなど、他機能がページ層で合成して使う想定
+ */
+export const listDiveOptions = async (): Promise<DiveOption[]> => {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+        .from('dives')
+        .select('id, dive_date, location')
+        .order('dive_date', { ascending: false })
+        .order('created_at', { ascending: false });
+
+    if (error || !data) {
+        throw new Error(`[listDiveOptions] supabase error: ${error?.message ?? 'no data'}`);
+    }
+
+    return data.map((row) => ({ id: row.id, diveDate: row.dive_date, location: row.location }));
+};

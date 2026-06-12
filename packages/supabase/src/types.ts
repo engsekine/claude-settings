@@ -34,6 +34,89 @@ export type Database = {
   }
   public: {
     Tables: {
+      certification_tags: {
+        Row: {
+          certification_id: string
+          tag: string
+        }
+        Insert: {
+          certification_id: string
+          tag: string
+        }
+        Update: {
+          certification_id?: string
+          tag?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certification_tags_certification_id_fkey"
+            columns: ["certification_id"]
+            isOneToOne: false
+            referencedRelation: "certifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      certifications: {
+        Row: {
+          acquired_location: string | null
+          acquired_on: string
+          agency: string
+          created_at: string
+          dive_id: string | null
+          diver_number: string | null
+          id: string
+          instructor_number: string | null
+          rank: string
+          trained_by: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          acquired_location?: string | null
+          acquired_on: string
+          agency: string
+          created_at?: string
+          dive_id?: string | null
+          diver_number?: string | null
+          id?: string
+          instructor_number?: string | null
+          rank: string
+          trained_by?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          acquired_location?: string | null
+          acquired_on?: string
+          agency?: string
+          created_at?: string
+          dive_id?: string | null
+          diver_number?: string | null
+          id?: string
+          instructor_number?: string | null
+          rank?: string
+          trained_by?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certifications_dive_id_fkey"
+            columns: ["dive_id"]
+            isOneToOne: false
+            referencedRelation: "dives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dive_plans: {
         Row: {
           created_at: string

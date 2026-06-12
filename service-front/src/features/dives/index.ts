@@ -11,5 +11,5 @@ export { mapDiveToFormValues } from './lib/mappers';
 export type { DiveFormValues, DiveSearchValues } from './schemas/dive.schema';
 export { diveSchema, diveSearchSchema } from './schemas/dive.schema';
 export { createDive, deleteDive, updateDive } from './server/actions';
-export { getDive, getLatestDiveNumber, listDives } from './server/queries';
+export { type DiveOption, getDive, getLatestDiveNumber, listDiveOptions, listDives } from './server/queries';
 export type { Dive, DiveCursor, DiveListFilter, DiveListItem, DiveListPage } from './types';

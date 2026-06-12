@@ -15,6 +15,7 @@ describe('Footer', () => {
         const expectedLinks = [
             { label: 'ホーム', href: '/' },
             { label: 'ダイビングログ', href: '/dives' },
+            { label: '保有資格', href: '/settings/certifications' },
             { label: '利用規約', href: '/terms' },
             { label: 'プライバシーポリシー', href: '/privacy-policy' },
         ];

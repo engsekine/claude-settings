@@ -56,9 +56,12 @@ export const TopDashboard = async ({ recentDives, nextPlanSection, renderRecordB
                           ? '今日もダイビング日和！'
                           : `前回のダイブから ${hero.daysSinceLastDive} 日`}
                 </p>
-                <div>
+                <div className="flex items-center gap-2">
                     <Link href="/dives/new" className={buttonVariants({ variant: 'default' })}>
                         新しいログを記録
+                    </Link>
+                    <Link href="/settings/certifications" className={buttonVariants({ variant: 'outline' })}>
+                        保有資格を管理
                     </Link>
                 </div>
             </section>

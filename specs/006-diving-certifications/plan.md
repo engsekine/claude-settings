@@ -82,7 +82,9 @@ service-front/src/
     │       └── DeleteCertificationButton/      # 確認ダイアログ付き削除
     ├── lib/
     │   ├── heldPeriod.ts                       # 取得日 → 保有期間（純粋関数）
-    │   └── heldPeriod.test.ts
+    │   ├── heldPeriod.test.ts
+    │   ├── specialtyTags.ts                    # タグ入力文字列 → タグ配列（純粋関数）
+    │   └── specialtyTags.test.ts
     ├── schemas/
     │   ├── certification.schema.ts             # yup スキーマ
     │   └── certification.schema.test.ts
@@ -102,17 +104,21 @@ service-front/src/
 
 | Action | 入力 | 検証 | 出力 |
 |--------|------|------|------|
-| `createCertification` | `{ agency, rank, acquiredOn }` | yup スキーマ → 生年月日以降チェック → insert（23505 は重複エラーに変換） | 成功時 `/settings/certifications` へ revalidate + redirect |
+| `createCertification` | `{ agency, rank, acquiredOn, diverNumber, instructorNumber, trainedBy, acquiredLocation, specialtyTags, diveId }` | yup スキーマ → 生年月日以降チェック → `diveId` 指定時は自分のログとして見えるか確認 → insert（23505 は重複エラーに変換）→ タグを `certification_tags` へ insert | 成功時 `/settings/certifications` へ revalidate + redirect |
+| `updateCertification` | `{ id, agency, rank, acquiredOn, diverNumber, instructorNumber, trainedBy, acquiredLocation, specialtyTags, diveId }` | 同上 + RLS による所有者確認。タグは削除 + 再挿入で置き換える | 同上 |
+| `deleteCertification` | `{ id }` | RLS による所有者確認。タグは `on delete cascade` で同時に削除 | 成功時一覧を revalidate |
 
 生年月日チェックで `user_details` が取得できない場合は、チェックをスキップせず登録・更新を拒否してエラーを表示する（防御的挙動）。一覧クエリの並び順は `acquired_on desc, created_at desc`（同日取得の表示順を安定させる）。
-| `updateCertification` | `{ id, agency, rank, acquiredOn }` | 同上 + RLS による所有者確認 | 同上 |
-| `deleteCertification` | `{ id }` | RLS による所有者確認 | 成功時一覧を revalidate |
+
+スペシャリティタグはフォームではカンマ（, / 、）区切りのテキスト入力（`specialtyTags: string`）とし、`lib/specialtyTags.ts` の `parseSpecialtyTags` が trim・空要素除外・重複排除して配列化する。DB は 1NF を守るため子テーブル `certification_tags` で保持する（[data-model.md 6.5 節](data-model.md)）。
+
+取得ダイブ（`diveId`）のセレクト選択肢は、feature 間 import 禁止のためページ層（app）で `features/dives` の `listDiveOptions()` を呼び、`features/certifications` の `toDiveSelectOptions()` で「YYYY/MM/DD ポイント名」ラベルに変換して `CertificationForm` に props 注入する。一覧の取得ダイブ表示はクエリの join（`dive:dives(id, dive_date, location)`）で取得し、`/dives/[id]` へのリンクとして表示する。
 
 `user_id` はクライアントから受け取らず、Server Action 内で `auth.uid()` から設定する。
 
 ### 保有期間の計算仕様（`heldPeriod.ts`）
 
-- 入力: `acquiredOn: Date`、基準日 `today: Date`（テスト容易性のため引数で受け取る）
+- 入力: `acquiredOn: string`（YYYY-MM-DD）、基準日 `today: string`（YYYY-MM-DD、JST 基準の値。テスト容易性のため引数で受け取る。`shared/lib/date.ts` の `daysUntil` 等と同じ文字列ベースの規約に合わせ、タイムゾーン差の混入を防ぐ）
 - 出力: `{ years: number, months: number }`（月数切り捨て。最小 `{ years: 0, months: 0 }`）
 - 表示: 1 年以上は「○年○ヶ月」、1 年未満は「○ヶ月」、取得当日は「0ヶ月」
 

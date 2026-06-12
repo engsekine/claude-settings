@@ -1,0 +1,1 @@
+export { CertificationList } from './CertificationList';
