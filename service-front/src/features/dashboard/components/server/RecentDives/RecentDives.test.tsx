@@ -29,6 +29,17 @@ describe('RecentDives', () => {
             expect(screen.getByRole('link', { name: /石垣島・米原/ })).toHaveAttribute('href', '/dives/dive-abc');
         });
 
+        it('潜水日に対応する潮回りラベルを表示する', () => {
+            // 2000-01-07 は基準朔の翌日 = 大潮（specs/007 data-model.md 4 節の基準日付）
+            render(<RecentDives dives={[buildDive({ diveDate: '2000-01-07' })]} />);
+            expect(screen.getByText('大潮')).toBeInTheDocument();
+        });
+
+        it('日付が不正なときは潮回りラベルを表示しない', () => {
+            render(<RecentDives dives={[buildDive({ diveDate: 'invalid' })]} />);
+            expect(screen.queryByText(/大潮|中潮|小潮|長潮|若潮/)).not.toBeInTheDocument();
+        });
+
         it('「すべてのログを見る」リンクを表示する', () => {
             render(<RecentDives dives={[buildDive()]} />);
             expect(screen.getByRole('link', { name: 'すべてのログを見る' })).toHaveAttribute('href', '/dives');

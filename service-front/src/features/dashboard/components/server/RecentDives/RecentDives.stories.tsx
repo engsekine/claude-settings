@@ -31,3 +31,10 @@ export const Default: Story = {
 export const Empty: Story = {
     args: { dives: [] },
 };
+
+/** 新月直後の日付（2000-01-07）で「大潮」ラベルが付くケース */
+export const SpringTide: Story = {
+    args: {
+        dives: [{ id: 'dive-1', diveDate: '2000-01-07', location: '石垣島・米原', maxDepthM: 18.5, bottomTimeMin: 42 }],
+    },
+};

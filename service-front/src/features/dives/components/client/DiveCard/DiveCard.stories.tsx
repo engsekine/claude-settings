@@ -41,3 +41,8 @@ export const Minimal: Story = {
         },
     },
 };
+
+/** 新月直後の日付（2000-01-07）で「大潮」ラベルが付くケース */
+export const SpringTide: Story = {
+    args: { dive: { ...baseDive, diveDate: '2000-01-07' } },
+};

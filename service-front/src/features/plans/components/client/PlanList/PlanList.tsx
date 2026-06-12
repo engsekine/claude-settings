@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 import { daysUntil } from '@/features/plans/lib/days-until';
 import type { Plan } from '@/features/plans/types';
+import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
 
 interface PlanListProps {
     plans: Plan[];
@@ -86,14 +87,25 @@ export const PlanList = ({ plans, today }: PlanListProps) => {
  * h2 を含む PlanList より後に定義する。
  */
 const PlanCard = ({ plan, daysLabel }: PlanCardProps) => {
+    const tidePhase = getTidePhase(plan.plannedOn);
+
     return (
         <article className="rounded-lg border border-border bg-background p-4 transition-colors hover:bg-muted/50">
             <Link href={`/plans/${plan.id}`} className="flex flex-col gap-2">
                 <div className="flex items-center justify-between gap-2">
-                    <span className="text-muted-foreground text-sm">
-                        <span className="sr-only">予定日: </span>
-                        {formatDate(plan.plannedOn)}
-                    </span>
+                    <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground text-sm">
+                            <span className="sr-only">予定日: </span>
+                            {formatDate(plan.plannedOn)}
+                        </span>
+                        {/* バッジは text-muted-foreground だと bg-muted 上でコントラスト AA 未達のため text-foreground を使う */}
+                        {tidePhase !== null && (
+                            <span className="rounded-md bg-muted px-2 py-0.5 text-foreground text-xs">
+                                <span className="sr-only">潮回り: </span>
+                                {TIDE_PHASE_LABELS[tidePhase]}
+                            </span>
+                        )}
+                    </div>
                     {/* バッジは text-muted-foreground だと bg-muted 上でコントラスト 4.34:1 と AA 未達のため text-foreground を使う */}
                     {daysLabel === null ? (
                         <span className="inline-block rounded-md bg-muted px-2 py-0.5 text-foreground text-xs">

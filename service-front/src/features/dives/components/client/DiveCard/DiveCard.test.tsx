@@ -36,4 +36,15 @@ describe('DiveCard', () => {
         expect(screen.getByText('22.5m')).toBeInTheDocument();
         expect(screen.getByText('48分')).toBeInTheDocument();
     });
+
+    it('潜水日に対応する潮回りラベルを表示する', () => {
+        // 2000-01-07 は基準朔の翌日 = 大潮（data-model.md 4 節の基準日付）
+        render(<DiveCard dive={{ ...baseDive, diveDate: '2000-01-07' }} />);
+        expect(screen.getByText('大潮')).toBeInTheDocument();
+    });
+
+    it('日付が不正なときは潮回りラベルを表示しない', () => {
+        render(<DiveCard dive={{ ...baseDive, diveDate: 'invalid' }} />);
+        expect(screen.queryByText(/大潮|中潮|小潮|長潮|若潮/)).not.toBeInTheDocument();
+    });
 });

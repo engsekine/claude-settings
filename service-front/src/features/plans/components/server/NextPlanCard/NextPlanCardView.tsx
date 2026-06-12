@@ -2,6 +2,7 @@ import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
 
 import type { NextPlanSummary } from '@/features/plans/types';
+import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
 
 interface NextPlanCardViewProps {
     summary: NextPlanSummary | null;
@@ -41,6 +42,8 @@ export const NextPlanCardView = ({ summary }: NextPlanCardViewProps) => {
         );
     }
 
+    const tidePhase = getTidePhase(summary.plannedOn);
+
     return (
         <section
             aria-labelledby="next-plan-heading"
@@ -56,10 +59,19 @@ export const NextPlanCardView = ({ summary }: NextPlanCardViewProps) => {
                         {formatDaysUntil(summary.daysUntil)}
                     </span>
                 </div>
-                <p className="text-muted-foreground text-sm">
-                    <span className="sr-only">予定日: </span>
-                    {formatDate(summary.plannedOn)}
-                </p>
+                <div className="flex items-center gap-2">
+                    <p className="text-muted-foreground text-sm">
+                        <span className="sr-only">予定日: </span>
+                        {formatDate(summary.plannedOn)}
+                    </p>
+                    {/* バッジは text-muted-foreground だと bg-muted 上でコントラスト AA 未達のため text-foreground を使う */}
+                    {tidePhase !== null && (
+                        <span className="rounded-md bg-muted px-2 py-0.5 text-foreground text-xs">
+                            <span className="sr-only">潮回り: </span>
+                            {TIDE_PHASE_LABELS[tidePhase]}
+                        </span>
+                    )}
+                </div>
                 <p className="font-semibold text-foreground text-lg">{summary.location}</p>
                 <p className="text-muted-foreground text-sm">
                     <span className="sr-only">持ち物進捗: </span>

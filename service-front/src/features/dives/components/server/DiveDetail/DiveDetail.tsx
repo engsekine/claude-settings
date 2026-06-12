@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { DeleteDiveButton } from '@/features/dives/components/client/DeleteDiveButton';
 import { TANK_TYPE_LABEL_MAP, type TankTypeValue } from '@/features/dives/constants';
 import type { Dive } from '@/features/dives/types';
+import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
 
 interface DiveDetailProps {
     dive: Dive;
@@ -49,10 +50,21 @@ const FullField = ({ label, value }: { label: string; value: string | null | und
 };
 
 export const DiveDetail = ({ dive }: DiveDetailProps) => {
+    const tidePhase = getTidePhase(dive.diveDate);
+
     return (
         <div className="flex flex-col gap-6">
             <header className="flex flex-col gap-2">
-                <span className="text-muted-foreground text-sm">{formatDate(dive.diveDate)}</span>
+                <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground text-sm">{formatDate(dive.diveDate)}</span>
+                    {/* バッジは text-muted-foreground だと bg-muted 上でコントラスト AA 未達のため text-foreground を使う */}
+                    {tidePhase !== null && (
+                        <span className="rounded-md bg-muted px-2 py-0.5 text-foreground text-xs">
+                            <span className="sr-only">潮回り: </span>
+                            {TIDE_PHASE_LABELS[tidePhase]}
+                        </span>
+                    )}
+                </div>
                 <h1 className="flex items-baseline gap-2 font-semibold text-2xl">
                     {dive.location}
                     {dive.diveNumber !== null && (
