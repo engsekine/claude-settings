@@ -2,6 +2,7 @@ import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
+import { BlankDays } from '@/features/dashboard/components/server/BlankDays';
 import { RecentDives } from '@/features/dashboard/components/server/RecentDives';
 import { RegulatorPanel } from '@/features/dashboard/components/server/RegulatorPanel';
 import { StatsCards } from '@/features/dashboard/components/server/StatsCards';
@@ -49,13 +50,13 @@ export const TopDashboard = async ({ recentDives, nextPlanSection, renderRecordB
                 <h1 id="dashboard-hero" className="font-semibold text-2xl">
                     {hero.nickname ? `ようこそ、${hero.nickname}さん` : 'ようこそ'}
                 </h1>
-                <p className="text-muted-foreground text-sm">
-                    {hero.daysSinceLastDive === null
-                        ? 'まだダイブログがありません。最初の 1 本を記録しましょう'
-                        : hero.daysSinceLastDive === 0
-                          ? '今日もダイビング日和！'
-                          : `前回のダイブから ${hero.daysSinceLastDive} 日`}
-                </p>
+                {hero.blankDays === null ? (
+                    <p className="text-muted-foreground text-sm">
+                        まだダイブログがありません。最初の 1 本を記録しましょう
+                    </p>
+                ) : (
+                    <BlankDays blankDays={hero.blankDays} />
+                )}
                 <div className="flex items-center gap-2">
                     <Link href="/dives/new" className={buttonVariants({ variant: 'default' })}>
                         新しいログを記録

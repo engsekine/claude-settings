@@ -65,3 +65,27 @@ password123
 
   やるものが決まったら /speckit-specify <機能の説明>
   で仕様化から始められます。
+
+
+
+    完了後の片付けフロー
+
+  # 1. worktree
+  側の作業をコミット済みにしておく
+  git -C .claude/worktrees/007-blank-days add
+  -A
+  git -C .claude/worktrees/007-blank-days
+  commit -m "feat: ブランク日数の表示"
+
+  # 2. develop
+  に取り込む（メインリポジトリ側で実行）
+  git merge feature/008-blank-days
+  #    ※ PR 運用なら merge の代わりに push
+  して GitHub で PR を作成
+
+  # 3. worktree を外す
+  git worktree remove
+  .claude/worktrees/007-blank-days
+
+  # 4. 役目を終えたブランチを削除
+  git branch -d feature/008-blank-days

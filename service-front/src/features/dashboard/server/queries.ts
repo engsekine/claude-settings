@@ -1,8 +1,9 @@
 import 'server-only';
 
+import { calcBlankDays } from '@/features/dashboard/lib/blankDays';
 import { calcOverhaulStatus } from '@/features/dashboard/lib/overhaul';
 import type { DashboardHero, DiveStats, PrimaryRegulatorStatus } from '@/features/dashboard/types';
-import { daysUntil, todayInJst } from '@/shared/lib/date';
+import { todayInJst } from '@/shared/lib/date';
 import { toNumber } from '@/shared/lib/number';
 import { createClient } from '@/shared/lib/supabase/server';
 
@@ -68,7 +69,7 @@ export const getPrimaryRegulatorStatus = async (): Promise<PrimaryRegulatorStatu
     };
 };
 
-/** ヒーロー用データ（表示名 + 前回ダイブからの経過日数）を取得する（FR-002） */
+/** ヒーロー用データ（表示名 + ブランク日数）を取得する（FR-002） */
 export const getDashboardHero = async (): Promise<DashboardHero> => {
     const supabase = await createClient();
 
@@ -88,7 +89,6 @@ export const getDashboardHero = async (): Promise<DashboardHero> => {
 
     return {
         nickname: detailsResult.data?.nickname ?? null,
-        // 過去日なので daysUntil は負になる。経過日数として正に反転する
-        daysSinceLastDive: lastDiveOn === null ? null : -daysUntil(lastDiveOn, todayInJst()),
+        blankDays: calcBlankDays(lastDiveOn, todayInJst()),
     };
 };

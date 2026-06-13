@@ -12,8 +12,8 @@ export interface DiveStats {
 export interface DashboardHero {
     /** 表示名（user_details.nickname）。未設定は null */
     nickname: string | null;
-    /** 前回ダイブからの経過日数。ログ 0 件は null */
-    daysSinceLastDive: number | null;
+    /** ブランク日数（最後に潜ってからの経過日数・最小 0）。ログ 0 件は null */
+    blankDays: number | null;
 }
 
 /** メイン機材の OH ステータス（未登録は null を返す） */
