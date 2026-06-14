@@ -189,7 +189,6 @@ erDiagram
 - 機能仕様: [`spec.md`](spec.md) / 実装計画: [`plan.md`](plan.md)
 - 関連画面: [`screens/dive-list.md`](screens/dive-list.md) / [`screens/dive-detail.md`](screens/dive-detail.md) / [`screens/dive-new.md`](screens/dive-new.md) / [`screens/dive-edit.md`](screens/dive-edit.md)
 - 隣接テーブル: [`users`](../001-auth/data-model.md)
-- 移行元: `docs/specs/tables/dives.md`
 
 ## 10. 変更履歴
 

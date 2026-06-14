@@ -6,7 +6,7 @@
 
 **Status**: Implemented（2026-06-11）
 
-**Input**: 既存仕様書 docs/specs/features/003-dashboard/ からの移行
+**Input**: 既存仕様書からの移行
 
 ## 概要
 

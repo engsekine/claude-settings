@@ -6,7 +6,7 @@
 
 **Status**: In Progress
 
-**Input**: 既存仕様書 docs/specs/features/001-auth/ からの移行
+**Input**: 既存仕様書からの移行
 
 ## User Scenarios & Testing *(mandatory)*
 

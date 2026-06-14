@@ -1,8 +1,6 @@
 # TOP（ダッシュボード）
 
 > **ステータス: 確定** — 003-dashboard 設計時に主要 TBD は解消済み。詳細は [`../spec.md`](../spec.md) / [`../plan.md`](../plan.md) を参照。
->
-> **移行メモ**: 本ファイルは `docs/specs/screens/top.md` から spec-kit 形式の `specs/003-dashboard/screens/top.md` へ移行した補助ドキュメント。相対リンクは新しい配置から解決できるよう書き換えている。
 
 ## メタ情報
 

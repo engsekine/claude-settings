@@ -9,7 +9,7 @@ description: "Task list for 003-dashboard feature implementation"
 
 **Prerequisites**: plan.md, spec.md
 
-**Tests**: 元仕様（docs/specs/features/003-dashboard/tasks.md）でテストタスクが明示されているため、テストタスクを含む。
+**Tests**: 元仕様でテストタスクが明示されているため、テストタスクを含む。
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
@@ -19,7 +19,7 @@ description: "Task list for 003-dashboard feature implementation"
 - `@repo/supabase` 利用可能
 - Supabase ローカル環境が起動できる
 
-**トレーサビリティ**: 各タスク末尾の `（旧 T◯）` は docs/specs/features/003-dashboard/tasks.md の元タスク番号。
+**トレーサビリティ**: 各タスク末尾の `（旧 T◯）` は旧仕様の元タスク番号。
 
 ## Format: `[ID] [P?] [Story] Description`
 

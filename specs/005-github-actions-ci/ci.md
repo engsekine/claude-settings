@@ -1,13 +1,13 @@
 # CI（GitHub Actions）
 
-仕様: [specs/005-github-actions-ci/](../specs/005-github-actions-ci/spec.md)
+仕様: [specs/005-github-actions-ci/](spec.md)
 
 ## ワークフロー一覧
 
 | ワークフロー | トリガー | 内容 | 所要時間目安 |
 |---|---|---|---|
-| [`ci.yml`](../.github/workflows/ci.yml) | PR 作成・更新 / main push | 軽量チェック 5 ジョブ（並列） | 3〜8 分 |
-| [`full-test.yml`](../.github/workflows/full-test.yml) | main push のみ | E2E / a11y（Supabase 起動 + シード込み）+ Storybook テスト | 10〜20 分 |
+| [`ci.yml`](../../.github/workflows/ci.yml) | PR 作成・更新 / main push | 軽量チェック 5 ジョブ（並列） | 3〜8 分 |
+| [`full-test.yml`](../../.github/workflows/full-test.yml) | main push のみ | E2E / a11y（Supabase 起動 + シード込み）+ Storybook テスト | 10〜20 分 |
 
 ### ci.yml のジョブ（= required checks 名）
 

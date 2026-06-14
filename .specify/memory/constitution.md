@@ -6,7 +6,7 @@
 
 ### I. Spec-Driven Development（spec-kit が正）
 
-すべての機能は `specs/NNN-feature-name/` 配下の spec.md → plan.md → tasks.md の順で仕様を確定してから実装する。実装と仕様がズレた場合は、実装を真実として仕様書側を更新する。旧 `docs/specs/` は移行済みアーカイブであり、新規参照・更新は行わない。
+すべての機能は `specs/NNN-feature-name/` 配下の spec.md → plan.md → tasks.md の順で仕様を確定してから実装する。実装と仕様がズレた場合は、実装を真実として仕様書側を更新する。旧 `docs/specs/` は `specs/` へ移行完了し削除済み。
 
 ### II. Server Components First
 

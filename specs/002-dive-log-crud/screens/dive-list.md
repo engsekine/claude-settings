@@ -136,7 +136,6 @@ graph LR
 - テーブル定義: [`../data-model.md`](../data-model.md)
 - 実装: `service-front/src/app/(authenticated)/dives/page.tsx`
 - 関連画面: [`dive-detail.md`](dive-detail.md) / [`dive-new.md`](dive-new.md)
-- 移行元: `docs/specs/screens/dive-list.md`
 
 ## 10. 変更履歴
 
