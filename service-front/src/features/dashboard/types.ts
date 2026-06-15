@@ -33,3 +33,20 @@ export interface RecentDiveItem {
     maxDepthM: number;
     bottomTimeMin: number;
 }
+
+/** 年別本数（get_dive_yearly_counts RPC + 歯抜け年 0 埋め後） */
+export interface YearlyDiveCount {
+    year: number;
+    diveCount: number;
+}
+
+/** 月別統計（get_dive_monthly_stats RPC + 直近 12 ヶ月 0 埋め後） */
+export interface MonthlyDiveStat {
+    /** 'YYYY-MM' */
+    month: string;
+    diveCount: number;
+    /** 平均水温。記録なし月は null（0 と区別する） */
+    avgWaterTempC: number | null;
+    /** 月内最大深度。ダイブなし月は null */
+    maxDepthM: number | null;
+}
