@@ -72,10 +72,10 @@ password123
 
   # 1. worktree
   側の作業をコミット済みにしておく
-  git -C .claude/worktrees/007-blank-days add
-  -A
+  git -C .claude/worktrees/007-blank-days add -A
   git -C .claude/worktrees/007-blank-days
   commit -m "feat: ブランク日数の表示"
+  ※worktreeは同じブランチ上に別コミットを作るものであり、ブランチには表示されない`git log`でコミットが確認できる
 
   # 2. develop
   に取り込む（メインリポジトリ側で実行）

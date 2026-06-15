@@ -441,6 +441,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_dive_monthly_stats: {
+        Args: {
+          months_back?: number
+        }
+        Returns: {
+          month: string
+          dive_count: number
+          avg_water_temp_c: number | null
+          max_depth_m: number
+        }[]
+      }
       get_dive_stats: {
         Args: never
         Returns: {
@@ -448,6 +459,13 @@ export type Database = {
           total_bottom_time_min: number
           total_dives: number
           visited_locations: number
+        }[]
+      }
+      get_dive_yearly_counts: {
+        Args: never
+        Returns: {
+          year: number
+          dive_count: number
         }[]
       }
     }

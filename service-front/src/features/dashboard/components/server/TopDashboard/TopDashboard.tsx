@@ -3,11 +3,24 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { BlankDays } from '@/features/dashboard/components/server/BlankDays';
+import { DiveTrends } from '@/features/dashboard/components/server/DiveTrends';
 import { RecentDives } from '@/features/dashboard/components/server/RecentDives';
 import { RegulatorPanel } from '@/features/dashboard/components/server/RegulatorPanel';
 import { StatsCards } from '@/features/dashboard/components/server/StatsCards';
-import { getDashboardHero, getDiveStats, getPrimaryRegulatorStatus } from '@/features/dashboard/server/queries';
-import type { DiveStats, PrimaryRegulatorStatus, RecentDiveItem } from '@/features/dashboard/types';
+import {
+    getDashboardHero,
+    getDiveStats,
+    getMonthlyDiveStats,
+    getPrimaryRegulatorStatus,
+    getYearlyDiveCounts,
+} from '@/features/dashboard/server/queries';
+import type {
+    DiveStats,
+    MonthlyDiveStat,
+    PrimaryRegulatorStatus,
+    RecentDiveItem,
+    YearlyDiveCount,
+} from '@/features/dashboard/types';
 
 interface TopDashboardProps {
     /** 最近のダイブログ（dives 機能のデータはページ側で変換して渡す） */
@@ -32,6 +45,17 @@ export const TopDashboard = async ({ recentDives, nextPlanSection, renderRecordB
         stats = await getDiveStats();
     } catch (error) {
         console.error('[TopDashboard] stats error:', error);
+    }
+
+    // 推移の集計失敗時は DiveTrends 側のエラー表示に委ねる（null で渡す）
+    let yearlyCounts: YearlyDiveCount[] | null = null;
+    let monthlyStats: MonthlyDiveStat[] | null = null;
+    try {
+        [yearlyCounts, monthlyStats] = await Promise.all([getYearlyDiveCounts(), getMonthlyDiveStats()]);
+    } catch (error) {
+        console.error('[TopDashboard] trends error:', error);
+        yearlyCounts = null;
+        monthlyStats = null;
     }
 
     // 機材取得失敗時はパネルの代わりにエラー文言 + 設定導線を表示する
@@ -72,6 +96,13 @@ export const TopDashboard = async ({ recentDives, nextPlanSection, renderRecordB
                     累計統計
                 </h2>
                 <StatsCards stats={stats} />
+            </section>
+
+            <section aria-labelledby="dashboard-trends" className="flex flex-col gap-3">
+                <h2 id="dashboard-trends" className="font-semibold text-lg">
+                    統計の推移
+                </h2>
+                <DiveTrends yearlyCounts={yearlyCounts} monthlyStats={monthlyStats} />
             </section>
 
             <section aria-labelledby="dashboard-regulator" className="flex flex-col gap-3">
