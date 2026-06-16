@@ -3,15 +3,27 @@ import 'server-only';
 import { type Certification, type CertificationDive, mapCertification } from '@/features/certifications/types';
 import { createClient } from '@/shared/lib/supabase/server';
 
-/** 一覧・1 件取得で共通の select 句（タグ + 取得ダイブを join） */
-const CERTIFICATION_SELECT = '*, certification_tags(tag), dive:dives(id, dive_date, location)';
+/** 一覧・1 件取得で共通の select 句（タグ + 取得ダイブ + そのダイブサイトを join） */
+const CERTIFICATION_SELECT =
+    '*, certification_tags(tag), dive:dives(id, dive_date, location, dive_site:dive_sites(name, area))';
 
 /** 子テーブル certification_tags の行をタグ名の昇順の配列に変換する */
 const toSortedTags = (tagRows: { tag: string }[]): string[] => tagRows.map((row) => row.tag).sort();
 
-/** join した dives 行を表示用サマリーに変換する */
-const toDive = (dive: { id: string; dive_date: string; location: string } | null): CertificationDive | null =>
-    dive ? { id: dive.id, diveDate: dive.dive_date, location: dive.location } : null;
+/** join した dives 行を表示用サマリーに変換する。サイト参照ダイブは location が null のため名称をマスタから解決する */
+const toDive = (
+    dive: {
+        id: string;
+        dive_date: string;
+        location: string | null;
+        dive_site: { name: string; area: string | null } | null;
+    } | null,
+): CertificationDive | null => {
+    if (!dive) return null;
+    const site = dive.dive_site;
+    const location = site ? (site.area ? `${site.area} / ${site.name}` : site.name) : (dive.location ?? '');
+    return { id: dive.id, diveDate: dive.dive_date, location };
+};
 
 /** 自分の保有資格一覧（取得日の新しい順、同日取得は登録日時の新しい順）（FR-006） */
 export const getCertifications = async (): Promise<Certification[]> => {

@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 
-import { DiveDetail, getDive } from '@/features/dives';
+import { diveLocationLabel, DiveDetail, getDive } from '@/features/dives';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
 import { generatePageMetadata } from '@/shared/config/metadata';
 
@@ -27,7 +27,7 @@ export default async function DivePage({ params }: DivePageProps) {
 
     return (
         <div className="flex flex-1 flex-col">
-            <Breadcrumbs breadcrumbs={[{ name: 'ダイビングログ', slug: '/dives' }, { name: dive.location }]} />
+            <Breadcrumbs breadcrumbs={[{ name: 'ダイビングログ', slug: '/dives' }, { name: diveLocationLabel(dive) }]} />
             <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
                 <DiveDetail dive={dive} />
             </div>

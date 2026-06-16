@@ -50,6 +50,7 @@ describe('mapDiveListItem', () => {
             diveNumber: 1,
             diveDate: '2026-06-01',
             location: '伊豆 / 大瀬崎',
+            diveSite: null,
             maxDepthM: 18.5,
             bottomTimeMin: 45,
             waterTempC: 22.5,
@@ -92,8 +93,9 @@ describe('fetchDiveListPage', () => {
 
         expect(builder.eq).toHaveBeenCalledWith('dive_number', 42);
         expect(builder.eq).toHaveBeenCalledWith('dive_date', '2026-06-01');
-        expect(builder.ilike).toHaveBeenCalledWith('location', '%伊豆%');
-        expect(builder.or).not.toHaveBeenCalled();
+        // ポイント名検索（FR-013）: サイト名 ilike でサイト ID を引き、location とサイト名を or で合流する
+        expect(builder.ilike).toHaveBeenCalledWith('name', '%伊豆%');
+        expect(builder.or).toHaveBeenCalledWith('location.ilike.*伊豆*');
     });
 
     it('cursor 指定時は (dive_date, id) の複合カーソル条件を付与する', async () => {

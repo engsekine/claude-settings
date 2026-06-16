@@ -3,20 +3,22 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@repo/ui/components/button';
 import { useRouter } from 'next/navigation';
-import { type KeyboardEvent, useEffect, useState, type WheelEvent } from 'react';
+import { type ChangeEvent, type KeyboardEvent, useEffect, useState, type WheelEvent } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { DIVE_TYPE_OPTIONS, GAS_TYPE_OPTIONS, TANK_TYPE_OPTIONS } from '@/features/dives/constants';
 import { useDiveFormSubmit } from '@/features/dives/hooks/useDiveFormSubmit';
 import { calcBottomTimeMin } from '@/features/dives/lib/calcBottomTime';
 import { type DiveFormValues, diveSchema } from '@/features/dives/schemas/dive.schema';
-import { FormField, FormSelect, FormTextarea } from '@/shared/components/form';
+import { FormField, type FormSelectOption, FormSelect, FormTextarea, SearchSelect } from '@/shared/components/form';
 import { todayInJst } from '@/shared/lib/date';
 
 interface DiveFormProps {
     /** 編集モードで指定。新規作成のときは undefined */
     diveId?: string;
     defaultValues?: Partial<DiveFormValues>;
+    /** ダイブサイト選択肢（マスタ）。ページ層で listDiveSites + siteLabel から組み立てて渡す */
+    siteOptions?: FormSelectOption[];
 }
 
 /** number 入力にホイールでフォーカスしたまま値が変わる事故を防ぐ */
@@ -38,6 +40,7 @@ const createDefaultValues = (overrides?: Partial<DiveFormValues>): DiveFormValue
     entryTime: null,
     exitTime: null,
     location: '',
+    diveSiteId: null,
     diveType: null,
     weather: null,
     airTempC: null,
@@ -64,7 +67,7 @@ const createDefaultValues = (overrides?: Partial<DiveFormValues>): DiveFormValue
     ...overrides,
 });
 
-export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
+export const DiveForm = ({ diveId, defaultValues, siteOptions = [] }: DiveFormProps) => {
     const router = useRouter();
     const isEdit = diveId !== undefined;
 
@@ -91,6 +94,7 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
 
     const entryTime = watch('entryTime');
     const exitTime = watch('exitTime');
+    const diveSiteId = watch('diveSiteId') ?? '';
 
     useEffect(() => {
         if (!isBottomTimeAutoCalc) return;
@@ -142,15 +146,44 @@ export const DiveForm = ({ diveId, defaultValues }: DiveFormProps) => {
                     />
                 </div>
 
-                <FormField
-                    id="location"
-                    label="ポイント名"
-                    required
-                    error={errors.location?.message}
-                    type="text"
-                    autoComplete="off"
-                    {...register('location')}
-                />
+                <fieldset className="flex flex-col gap-2">
+                    <legend className="font-medium text-sm">
+                        ポイント
+                        <span aria-hidden="true" className="ml-1 text-red-600">
+                            *
+                        </span>
+                        <span className="sr-only">必須</span>
+                    </legend>
+                    <p className="text-muted-foreground text-xs">
+                        登録済みのダイブサイトを検索して選ぶか、無ければ下の欄にポイント名を入力してください
+                    </p>
+                    <SearchSelect
+                        id="diveSiteId"
+                        label="ダイブサイト（マスタから選択）"
+                        options={siteOptions}
+                        value={diveSiteId}
+                        onChange={(value) => {
+                            setValue('diveSiteId', value === '' ? null : value, { shouldValidate: true });
+                            // サイト選択時は自由入力を空にして排他にする
+                            if (value) setValue('location', '', { shouldValidate: true });
+                        }}
+                        placeholder="ポイント名・エリアで検索"
+                        error={errors.diveSiteId?.message}
+                    />
+                    <FormField
+                        id="location"
+                        label="ポイント名（マスタに無い場合に直接入力）"
+                        error={errors.location?.message}
+                        type="text"
+                        autoComplete="off"
+                        {...register('location', {
+                            // 自由入力したらサイト選択を解除して排他にする
+                            onChange: (e: ChangeEvent<HTMLInputElement>) => {
+                                if (e.target.value) setValue('diveSiteId', null, { shouldValidate: true });
+                            },
+                        })}
+                    />
+                </fieldset>
 
                 <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                     <FormField

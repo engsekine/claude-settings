@@ -11,6 +11,7 @@ export const mapDiveToFormValues = (dive: Dive): Partial<DiveFormValues> => ({
     entryTime: dive.entryTime,
     exitTime: dive.exitTime,
     location: dive.location,
+    diveSiteId: dive.diveSiteId,
     diveType: dive.diveType,
     weather: dive.weather,
     airTempC: dive.airTempC,

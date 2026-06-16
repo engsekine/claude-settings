@@ -7,6 +7,7 @@ const baseDive: DiveListItem = {
     diveNumber: 42,
     diveDate: '2026-04-15',
     location: '伊豆 / 大瀬崎',
+    diveSite: null,
     maxDepthM: 22.5,
     bottomTimeMin: 48,
     waterTempC: 18.2,

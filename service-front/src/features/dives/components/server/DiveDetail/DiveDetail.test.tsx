@@ -18,6 +18,8 @@ const baseDive: Dive = {
     entryTime: '09:30:00',
     exitTime: '10:18:00',
     location: '伊豆 / 大瀬崎',
+    diveSiteId: null,
+    diveSite: null,
     diveType: 'ファンダイブ',
     weather: '晴れ',
     airTempC: 22,
@@ -51,6 +53,16 @@ describe('DiveDetail', () => {
     it('location を見出しとして表示する', () => {
         render(<DiveDetail dive={baseDive} />);
         expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('伊豆 / 大瀬崎');
+    });
+
+    it('サイト参照ログは見出しのサイト名をサイト詳細へのリンクにする', () => {
+        render(
+            <DiveDetail
+                dive={{ ...baseDive, location: null, diveSite: { id: 'site-9', name: '大瀬崎', area: '伊豆' } }}
+            />,
+        );
+        const link = screen.getByRole('link', { name: '伊豆 / 大瀬崎' });
+        expect(link).toHaveAttribute('href', '/dive-sites/site-9');
     });
 
     it('潜水日を YYYY/MM/DD 形式で表示する', () => {

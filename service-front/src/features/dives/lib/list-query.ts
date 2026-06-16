@@ -4,28 +4,29 @@ import type { Database } from '@repo/supabase';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { DIVE_PAGE_SIZE } from '@/features/dives/constants';
-import type { DiveCursor, DiveListFilter, DiveListItem, DiveListPage } from '@/features/dives/types';
+import type { DiveCursor, DiveListFilter, DiveListItem, DiveListPage, DiveSiteRef } from '@/features/dives/types';
 import { toNumber } from '@/shared/lib/number';
 
-/** 一覧表示で取得する列。`DiveListItem` と 1:1 で対応させる */
+/** 一覧表示で取得する列。`DiveListItem` と 1:1 で対応させる（表示名解決のため dive_site を結合） */
 export const DIVE_LIST_COLUMNS =
-    'id, dive_number, dive_date, location, max_depth_m, bottom_time_min, water_temp_c, visibility_m, certification_dive';
+    'id, dive_number, dive_date, location, dive_site_id, max_depth_m, bottom_time_min, water_temp_c, visibility_m, certification_dive, dive_site:dive_sites(id, name, area)';
 
 type DiveRow = Database['public']['Tables']['dives']['Row'];
 
-/** DIVE_LIST_COLUMNS で取得した行（生成型のサブセット） */
+/** DIVE_LIST_COLUMNS で取得した行（生成型のサブセット + 結合した dive_site） */
 type DiveListRow = Pick<
     DiveRow,
     | 'id'
     | 'dive_number'
     | 'dive_date'
     | 'location'
+    | 'dive_site_id'
     | 'max_depth_m'
     | 'bottom_time_min'
     | 'water_temp_c'
     | 'visibility_m'
     | 'certification_dive'
->;
+> & { dive_site: DiveSiteRef | null };
 
 /**
  * DB の snake_case 行を一覧表示用の camelCase に変換する。
@@ -36,6 +37,9 @@ export const mapDiveListItem = (row: DiveListRow): DiveListItem => ({
     diveNumber: row.dive_number,
     diveDate: row.dive_date,
     location: row.location,
+    diveSite: row.dive_site
+        ? { id: row.dive_site.id, name: row.dive_site.name, area: row.dive_site.area }
+        : null,
     maxDepthM: Number(row.max_depth_m),
     bottomTimeMin: row.bottom_time_min,
     waterTempC: toNumber(row.water_temp_c),
@@ -69,7 +73,18 @@ export const fetchDiveListPage = async (
 
     if (filter?.diveNumber !== undefined) query = query.eq('dive_number', filter.diveNumber);
     if (filter?.diveDate) query = query.eq('dive_date', filter.diveDate);
-    if (filter?.location) query = query.ilike('location', `%${filter.location}%`);
+    // ポイント名検索（FR-013）: 自由入力名（location）と参照サイト名の双方に一致させる。
+    // サイト参照ログは location が null のため、名前が一致するサイト ID を先に引いて OR で合流する。
+    if (filter?.location) {
+        const keyword = filter.location;
+        const { data: matchedSites } = await supabase.from('dive_sites').select('id').ilike('name', `%${keyword}%`);
+        const siteIds = (matchedSites ?? []).map((site) => site.id);
+        // or() は raw フィルタ文字列のため予約文字を除去し、ワイルドカードは * を使う
+        const safeKeyword = keyword.replace(/[,()*"]/g, '');
+        const orParts = [`location.ilike.*${safeKeyword}*`];
+        if (siteIds.length > 0) orParts.push(`dive_site_id.in.(${siteIds.join(',')})`);
+        query = query.or(orParts.join(','));
+    }
 
     if (cursor) {
         /** (dive_date, id) の降順タプル比較を or で表現 */
@@ -81,7 +96,7 @@ export const fetchDiveListPage = async (
         throw new Error(`dives の一覧取得に失敗しました: ${error?.message ?? 'no data'}`);
     }
 
-    const rows: DiveListRow[] = data;
+    const rows = data as unknown as DiveListRow[];
     const hasNext = rows.length > limit;
     const items = (hasNext ? rows.slice(0, limit) : rows).map(mapDiveListItem);
 

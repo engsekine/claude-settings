@@ -1,8 +1,10 @@
 import { buttonVariants } from '@repo/ui/components/button';
+import type { Route } from 'next';
 import Link from 'next/link';
 
 import { DeleteDiveButton } from '@/features/dives/components/client/DeleteDiveButton';
 import { TANK_TYPE_LABEL_MAP, type TankTypeValue } from '@/features/dives/constants';
+import { diveLocationLabel } from '@/features/dives/lib/diveLabel';
 import { calcSacRate, formatSacRate, SAC_INPUT_FIELD_LABELS } from '@/features/dives/lib/sacRate';
 import type { Dive } from '@/features/dives/types';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
@@ -68,7 +70,13 @@ export const DiveDetail = ({ dive }: DiveDetailProps) => {
                     )}
                 </div>
                 <h1 className="flex items-baseline gap-2 font-semibold text-2xl">
-                    {dive.location}
+                    {dive.diveSite ? (
+                        <Link href={`/dive-sites/${dive.diveSite.id}` as Route} className="text-primary underline">
+                            {diveLocationLabel(dive)}
+                        </Link>
+                    ) : (
+                        diveLocationLabel(dive)
+                    )}
                     {dive.diveNumber !== null && (
                         <span className="font-normal text-muted-foreground text-xl">#{dive.diveNumber}</span>
                     )}

@@ -14,13 +14,44 @@ const PG_UNIQUE_VIOLATION = '23505';
 const isDiveNumberDuplicate = (error: { code?: string; message?: string } | null): boolean =>
     error?.code === PG_UNIQUE_VIOLATION && (error.message?.includes('dives_user_id_dive_number_key') ?? false);
 
-/** DiveFormValues を DB の snake_case にマッピング */
+type DiveSupabaseClient = Awaited<ReturnType<typeof createClient>>;
+
+/**
+ * サイト参照と自由入力の排他・必須を再検証し、選択サイトの存在を確認する。
+ * 問題なければ null、あればエラーメッセージを返す（DB CHECK の前段でのユーザー向けエラー）。
+ */
+const validateDiveSite = async (supabase: DiveSupabaseClient, input: DiveFormValues): Promise<string | null> => {
+    const diveSiteId = input.diveSiteId ?? '';
+    const hasSite = diveSiteId !== '';
+    const hasLocation = input.location != null && input.location !== '';
+
+    if (hasSite && hasLocation) return 'ポイントは選択と手入力のどちらか一方にしてください';
+    if (!hasSite && !hasLocation) return 'ポイントを選択するか、ポイント名を入力してください';
+
+    if (hasSite) {
+        const { data, error } = await supabase.from('dive_sites').select('id').eq('id', diveSiteId).maybeSingle();
+        if (error) {
+            console.error('[validateDiveSite] supabase error:', error);
+            return '選択したダイブサイトの確認に失敗しました。時間をおいて再度お試しください';
+        }
+        if (!data) return '選択したダイブサイトが見つかりません。再度選択してください';
+    }
+
+    return null;
+};
+
+/** サイト参照を使うか（マスタ選択あり） */
+const usesDiveSite = (input: DiveFormValues): boolean => input.diveSiteId != null && input.diveSiteId !== '';
+
+/** DiveFormValues を DB の snake_case にマッピング（サイト参照と location は排他） */
 const toDbRow = (input: DiveFormValues) => ({
     dive_number: input.diveNumber,
     dive_date: input.diveDate,
     entry_time: input.entryTime,
     exit_time: input.exitTime,
-    location: input.location,
+    // 排他: サイト参照時は location を null、自由入力時は dive_site_id を null
+    location: usesDiveSite(input) ? null : input.location,
+    dive_site_id: usesDiveSite(input) ? input.diveSiteId : null,
     dive_type: input.diveType,
     weather: input.weather,
     air_temp_c: input.airTempC,
@@ -54,6 +85,9 @@ export const createDive = async (input: DiveFormValues): Promise<ActionResult<{ 
     } = await supabase.auth.getUser();
     if (!user) return actionFailure('ログインが必要です');
 
+    const siteError = await validateDiveSite(supabase, input);
+    if (siteError) return actionFailure(siteError);
+
     const { data, error } = await supabase
         .from('dives')
         .insert({ ...toDbRow(input), user_id: user.id })
@@ -79,6 +113,9 @@ export const updateDive = async (id: string, input: DiveFormValues): Promise<Act
         data: { user },
     } = await supabase.auth.getUser();
     if (!user) return actionFailure('ログインが必要です');
+
+    const siteError = await validateDiveSite(supabase, input);
+    if (siteError) return actionFailure(siteError);
 
     const { error } = await supabase.from('dives').update(toDbRow(input)).eq('id', id);
 

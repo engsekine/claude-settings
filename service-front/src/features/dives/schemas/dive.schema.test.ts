@@ -18,8 +18,20 @@ describe('diveSchema', () => {
         });
     });
 
-    it('location が空だと失敗する', async () => {
-        await expect(diveSchema.validate({ ...validBase, location: '' })).rejects.toThrow(/ポイント名/);
+    it('location が空でサイトも未選択だと失敗する', async () => {
+        await expect(diveSchema.validate({ ...validBase, location: '' })).rejects.toThrow(/ポイントを選択/);
+    });
+
+    it('diveSiteId だけ指定すれば location が空でも通過する（マスタ参照）', async () => {
+        await expect(
+            diveSchema.validate({ ...validBase, location: '', diveSiteId: 'site-1' }),
+        ).resolves.toMatchObject({ diveSiteId: 'site-1', location: null });
+    });
+
+    it('diveSiteId と location を両方指定すると失敗する（排他）', async () => {
+        await expect(
+            diveSchema.validate({ ...validBase, location: '伊豆 / 大瀬崎', diveSiteId: 'site-1' }),
+        ).rejects.toThrow(/どちらか一方/);
     });
 
     it('maxDepthM が 0 以下だと失敗する', async () => {

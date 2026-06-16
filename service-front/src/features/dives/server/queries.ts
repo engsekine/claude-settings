@@ -3,18 +3,25 @@ import 'server-only';
 import type { Database } from '@repo/supabase';
 
 import type { TankTypeValue } from '@/features/dives/constants';
+import { diveLocationLabel } from '@/features/dives/lib/diveLabel';
 import { fetchDiveListPage } from '@/features/dives/lib/list-query';
-import type { Dive, DiveCursor, DiveListFilter, DiveListPage } from '@/features/dives/types';
+import type { Dive, DiveCursor, DiveListFilter, DiveListPage, DiveSiteRef } from '@/features/dives/types';
 import { toNumber } from '@/shared/lib/number';
 import { createClient } from '@/shared/lib/supabase/server';
 
 type DiveRow = Database['public']['Tables']['dives']['Row'];
 
+/** dive_sites を to-one 結合した行（`dive_site:dive_sites(...)`） */
+type DiveRowWithSite = DiveRow & { dive_site: DiveSiteRef | null };
+
+/** dives に結合するダイブサイトの select 句（表示名解決用） */
+const DIVE_SITE_JOIN = 'dive_site:dive_sites(id, name, area)';
+
 /**
  * DB の snake_case 行をドメイン型 Dive に変換する。
  * numeric カラムは Supabase 経由で string になることがあるため数値へ正規化する。
  */
-const mapDive = (row: DiveRow): Dive => ({
+const mapDive = (row: DiveRowWithSite): Dive => ({
     id: row.id,
     userId: row.user_id,
     diveNumber: row.dive_number,
@@ -22,6 +29,10 @@ const mapDive = (row: DiveRow): Dive => ({
     entryTime: row.entry_time,
     exitTime: row.exit_time,
     location: row.location,
+    diveSiteId: row.dive_site_id,
+    diveSite: row.dive_site
+        ? { id: row.dive_site.id, name: row.dive_site.name, area: row.dive_site.area }
+        : null,
     diveType: row.dive_type,
     weather: row.weather,
     airTempC: toNumber(row.air_temp_c),
@@ -93,12 +104,16 @@ export const getLatestDiveNumber = async (): Promise<number | null> => {
 export const getDive = async (id: string): Promise<Dive | null> => {
     const supabase = await createClient();
 
-    const { data, error } = await supabase.from('dives').select('*').eq('id', id).maybeSingle();
+    const { data, error } = await supabase
+        .from('dives')
+        .select(`*, ${DIVE_SITE_JOIN}`)
+        .eq('id', id)
+        .maybeSingle();
 
     if (error) throw new Error(`dive の取得に失敗しました: ${error.message}`);
     if (!data) return null;
 
-    return mapDive(data);
+    return mapDive(data as unknown as DiveRowWithSite);
 };
 
 /** 他機能からの紐づけ選択用に最小限の項目だけ持つダイブの要約 */
@@ -118,7 +133,7 @@ export const listDiveOptions = async (): Promise<DiveOption[]> => {
 
     const { data, error } = await supabase
         .from('dives')
-        .select('id, dive_date, location')
+        .select(`id, dive_date, location, ${DIVE_SITE_JOIN}`)
         .order('dive_date', { ascending: false })
         .order('created_at', { ascending: false });
 
@@ -126,5 +141,10 @@ export const listDiveOptions = async (): Promise<DiveOption[]> => {
         throw new Error(`[listDiveOptions] supabase error: ${error?.message ?? 'no data'}`);
     }
 
-    return data.map((row) => ({ id: row.id, diveDate: row.dive_date, location: row.location }));
+    // サイト参照ログは location が null のため、表示名はマスタから解決する
+    return (data as unknown as Array<{ id: string; dive_date: string } & DiveRowWithSite>).map((row) => ({
+        id: row.id,
+        diveDate: row.dive_date,
+        location: diveLocationLabel({ location: row.location, diveSite: row.dive_site }),
+    }));
 };

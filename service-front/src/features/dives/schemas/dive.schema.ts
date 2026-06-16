@@ -42,12 +42,29 @@ export const diveSchema = yup.object({
         .required('潜水日を入力してください'),
     entryTime: optionalTime,
     exitTime: optionalTime,
+    // ダイブサイト（マスタ）参照。未選択は null。location との排他は下のテストで担保
+    diveSiteId: yup
+        .string()
+        .transform((v) => (v === '' ? null : v))
+        .nullable()
+        .test('not-both', 'ポイントは選択と手入力のどちらか一方にしてください', function (value) {
+            const location = (this.parent as { location?: string | null }).location;
+            return !(value && location);
+        })
+        .default(null),
+    // 自由入力のポイント名。サイト未選択時のみ必須（マスタ参照と排他・同居）
     location: yup
         .string()
         .trim()
-        .min(1, 'ポイント名を入力してください')
         .max(120, 'ポイント名は120文字以内で入力してください')
-        .required('ポイント名を入力してください'),
+        .transform((v) => (v === '' ? null : v))
+        .nullable()
+        .test('site-or-location', 'ポイントを選択するか、ポイント名を入力してください', function (value) {
+            const diveSiteId = (this.parent as { diveSiteId?: string | null }).diveSiteId;
+            if (diveSiteId) return true;
+            return value != null && value !== '';
+        })
+        .default(null),
     diveType: yup
         .string()
         .trim()

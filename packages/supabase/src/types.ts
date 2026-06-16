@@ -155,6 +155,36 @@ export type Database = {
           },
         ]
       }
+      dive_sites: {
+        Row: {
+          area: string | null
+          country: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          area?: string | null
+          country?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          area?: string | null
+          country?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       dives: {
         Row: {
           air_temp_c: number | null
@@ -166,6 +196,7 @@ export type Database = {
           current_condition: string | null
           dive_date: string
           dive_number: number | null
+          dive_site_id: string | null
           dive_type: string | null
           entry_time: string | null
           equipment_notes: string | null
@@ -174,7 +205,7 @@ export type Database = {
           id: string
           instructor_name: string | null
           is_public: boolean
-          location: string
+          location: string | null
           max_depth_m: number
           notes: string | null
           o2_percent: number | null
@@ -202,6 +233,7 @@ export type Database = {
           current_condition?: string | null
           dive_date: string
           dive_number?: number | null
+          dive_site_id?: string | null
           dive_type?: string | null
           entry_time?: string | null
           equipment_notes?: string | null
@@ -210,7 +242,7 @@ export type Database = {
           id?: string
           instructor_name?: string | null
           is_public?: boolean
-          location: string
+          location: string | null
           max_depth_m: number
           notes?: string | null
           o2_percent?: number | null
@@ -238,6 +270,7 @@ export type Database = {
           current_condition?: string | null
           dive_date?: string
           dive_number?: number | null
+          dive_site_id?: string | null
           dive_type?: string | null
           entry_time?: string | null
           equipment_notes?: string | null
@@ -246,7 +279,7 @@ export type Database = {
           id?: string
           instructor_name?: string | null
           is_public?: boolean
-          location?: string
+          location?: string | null
           max_depth_m?: number
           notes?: string | null
           o2_percent?: number | null
@@ -265,6 +298,13 @@ export type Database = {
           weight_kg?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "dives_dive_site_id_fkey"
+            columns: ["dive_site_id"]
+            isOneToOne: false
+            referencedRelation: "dive_sites"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "dives_user_id_fkey"
             columns: ["user_id"]

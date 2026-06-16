@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 
+import { diveLocationLabel } from '@/features/dives/lib/diveLabel';
 import type { DiveListItem } from '@/features/dives/types';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
 
@@ -40,7 +41,7 @@ export const DiveCard = ({ dive }: DiveCardProps) => {
                         </span>
                     )}
                 </div>
-                <h2 className="font-semibold text-base text-foreground">{dive.location}</h2>
+                <h2 className="font-semibold text-base text-foreground">{diveLocationLabel(dive)}</h2>
                 <dl className="flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground text-sm">
                     <div className="flex items-center gap-1">
                         <dt className="font-medium">最大水深</dt>

@@ -1,5 +1,12 @@
 import type { TankTypeValue } from '@/features/dives/constants';
 
+/** ログに紐づくダイブサイト（マスタ）の最小参照 */
+export interface DiveSiteRef {
+    id: string;
+    name: string;
+    area: string | null;
+}
+
 /** ダイビングログのドメイン型。DB スキーマ（snake_case）はマッピング層で camelCase に変換する */
 export interface Dive {
     id: string;
@@ -11,7 +18,12 @@ export interface Dive {
     entryTime: string | null;
     /** HH:MM:SS */
     exitTime: string | null;
-    location: string;
+    /** 自由入力のポイント名。サイト参照時は null（表示名はマスタから取得） */
+    location: string | null;
+    /** ダイブサイト（マスタ）への参照。自由入力時は null */
+    diveSiteId: string | null;
+    /** 参照中ダイブサイトの要約（表示用）。自由入力時は null */
+    diveSite: DiveSiteRef | null;
     diveType: string | null;
     weather: string | null;
     airTempC: number | null;
@@ -50,6 +62,7 @@ export type DiveListItem = Pick<
     | 'diveNumber'
     | 'diveDate'
     | 'location'
+    | 'diveSite'
     | 'maxDepthM'
     | 'bottomTimeMin'
     | 'waterTempC'

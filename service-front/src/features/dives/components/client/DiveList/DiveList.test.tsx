@@ -50,6 +50,7 @@ describe('DiveList', () => {
                             diveNumber: 1,
                             diveDate: '2026-04-15',
                             location: '伊豆 / 大瀬崎',
+                            diveSite: null,
                             maxDepthM: 18,
                             bottomTimeMin: 40,
                             waterTempC: null,
