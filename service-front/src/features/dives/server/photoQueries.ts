@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { DIVE_PHOTOS_BUCKET } from '@/features/dives/lib/photoStorage';
-import { mapDivePhotoRow, toDivePhotoView } from '@/features/dives/lib/photoView';
+import { mapDivePhotoRow, toBrowserSignedUrl, toDivePhotoView } from '@/features/dives/lib/photoView';
 import type { DivePhotoView } from '@/features/dives/types';
 import { createClient } from '@/shared/lib/supabase/server';
 
@@ -36,9 +36,13 @@ export const getDivePhotos = async (diveId: string, altFallback: string): Promis
         throw new Error(`[getDivePhotos] signed url error: ${signError?.message ?? 'no data'}`);
     }
 
+    // サーバーは内部 URL で署名するため、ブラウザ表示用に公開 URL のホストへ差し替える
+    const publicBaseUrl = process.env['NEXT_PUBLIC_SUPABASE_URL'];
     const signedUrlByPath = new Map<string, string>();
     for (const item of signed) {
-        if (item.path && item.signedUrl) signedUrlByPath.set(item.path, item.signedUrl);
+        if (item.path && item.signedUrl) {
+            signedUrlByPath.set(item.path, toBrowserSignedUrl(item.signedUrl, publicBaseUrl));
+        }
     }
 
     return photos

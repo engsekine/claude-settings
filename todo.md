@@ -15,7 +15,6 @@ password123
 管理画面を追加したい
 
   中規模 — 新テーブル / Storage が必要
-  5. 写真添付 — Supabase Storage + RLS。ログアプリの体感価値を最も上げる定番機能で、既存の公開ページ（publicSlug）との相乗効果もあります
   6. 検索・フィルタ強化 —　期間・深度範囲・ダイブタイプ。現状は番号 / 日付 /　場所のみです
 
   大きめ — 差別化要素
@@ -31,25 +30,28 @@ password123
 
 
     完了後の片付けフロー
+# 0. メインリポジトリ（develop）で worktree
+  とブランチを同時作成
+  git worktree add .claude/worktrees/013-google-calendar -b worktree-013-google-calendar
 
-  # 1. worktree
-  側の作業をコミット済みにしておく
-  git -C .claude/worktrees/007-blank-days add -A
-  git -C .claude/worktrees/007-blank-days
-  commit -m "feat: ブランク日数の表示"
-  ※worktreeは同じブランチ上に別コミットを作るものであり、ブランチには表示されない`git log`でコミットが確認できる
+  # 1. worktree 側で作業 →
+  コミット（worktree-013…ブランチ上のコミットになる）
+  git -C .claude/worktrees/013-google-calendar
+  add -A
+  git -C .claude/worktrees/013-google-calendar
+  commit -m "feat: Googleカレンダー連携"
 
-  # 2. develop
-  に取り込む（メインリポジトリ側で実行）
-  git merge feature/008-blank-days
-  #    ※ PR 運用なら merge の代わりに push
-  して GitHub で PR を作成
+  # 2. develop に取り込む（メインリポジトリ側
+  = develop に居る状態で実行）
+  git merge worktree-013-google-calendar
+  #   PR 運用なら → git push -u origin
+  worktree-013-google-calendar して GitHub で
+  PR
 
-  # 3. worktree を外す
+  # 3. worktree を外す（未コミット変更が残ると
+  失敗。その場合のみ --force）
   git worktree remove
-  .claude/worktrees/007-blank-days
+  .claude/worktrees/013-google-calendar
 
-  # 4. 役目を終えたブランチを削除
-  git branch -d feature/008-blank-days
-
-  googleカレンダー連携とかも/speckit-plan
+  # 4. マージ済みブランチを削除（-d
+  はマージ済みのみ消せる安全版）

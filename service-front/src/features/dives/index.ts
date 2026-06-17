@@ -1,11 +1,12 @@
 export { DeleteDiveButton } from './components/client/DeleteDiveButton';
+export { DeleteDivePhotoButton } from './components/client/DeleteDivePhotoButton';
 export { DiveCard } from './components/client/DiveCard';
 export { DiveForm } from './components/client/DiveForm';
 export { DiveList } from './components/client/DiveList';
+export { DivePhotoGallery } from './components/client/DivePhotoGallery';
 export { DivePhotoUploader } from './components/client/DivePhotoUploader';
 export { DiveSearchBar } from './components/client/DiveSearchBar';
 export { DiveDetail } from './components/server/DiveDetail';
-export { DivePhotoGallery } from './components/server/DivePhotoGallery';
 export { DIVE_PAGE_SIZE } from './constants';
 export { useDiveFormSubmit } from './hooks/useDiveFormSubmit';
 export { useDives } from './hooks/useDives';

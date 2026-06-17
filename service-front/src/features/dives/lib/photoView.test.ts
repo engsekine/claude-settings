@@ -1,4 +1,4 @@
-import { buildPhotoAlt, mapDivePhotoRow, toDivePhotoView } from './photoView';
+import { buildPhotoAlt, mapDivePhotoRow, toBrowserSignedUrl, toDivePhotoView } from './photoView';
 
 const row = (over: Record<string, unknown> = {}) => ({
     id: 'p1',
@@ -39,6 +39,33 @@ describe('buildPhotoAlt', () => {
     it('空・空白のみならフォールバック', () => {
         expect(buildPhotoAlt('', '2026-06-16 のダイブ')).toBe('2026-06-16 のダイブ');
         expect(buildPhotoAlt('   ', 'fallback')).toBe('fallback');
+    });
+});
+
+describe('toBrowserSignedUrl', () => {
+    it('内部ホストを公開 URL のホストに差し替える（パス・トークンは保持）', () => {
+        const signed =
+            'http://host.docker.internal:54321/storage/v1/object/sign/dive-photos/u1/d1/thumb/p1.webp?token=abc.def.ghi';
+        const result = toBrowserSignedUrl(signed, 'http://127.0.0.1:54321');
+        expect(result).toBe(
+            'http://127.0.0.1:54321/storage/v1/object/sign/dive-photos/u1/d1/thumb/p1.webp?token=abc.def.ghi',
+        );
+    });
+
+    it('https の公開 URL にも対応する', () => {
+        const signed = 'http://host.docker.internal:54321/storage/v1/object/sign/x.webp?token=t';
+        expect(toBrowserSignedUrl(signed, 'https://proj.supabase.co')).toBe(
+            'https://proj.supabase.co/storage/v1/object/sign/x.webp?token=t',
+        );
+    });
+
+    it('publicBaseUrl 未設定なら元の URL を返す', () => {
+        const signed = 'http://host.docker.internal:54321/storage/v1/object/sign/x.webp?token=t';
+        expect(toBrowserSignedUrl(signed, undefined)).toBe(signed);
+    });
+
+    it('不正な URL は元の値を返す', () => {
+        expect(toBrowserSignedUrl('not-a-url', 'http://127.0.0.1:54321')).toBe('not-a-url');
     });
 });
 

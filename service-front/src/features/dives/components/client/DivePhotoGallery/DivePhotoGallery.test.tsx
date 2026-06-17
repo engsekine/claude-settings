@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 
 import type { DivePhotoView } from '@/features/dives/types';
 import { DivePhotoGallery } from './DivePhotoGallery';
@@ -29,14 +29,15 @@ describe('DivePhotoGallery', () => {
         expect(imgs.map((img) => img.getAttribute('alt'))).toEqual(['一枚目', '二枚目']);
     });
 
-    it('元画像へのリンクを持つ', () => {
-        render(<DivePhotoGallery photos={[view({ displayUrl: '/full.webp', alt: '海' })]} />);
-        expect(screen.getByRole('link')).toHaveAttribute('href', '/full.webp');
+    it('各サムネイルが拡大表示のトリガーボタンになっている', () => {
+        render(<DivePhotoGallery photos={[view({ alt: '海' })]} />);
+        expect(screen.getByRole('button', { name: '海 を拡大表示' })).toBeInTheDocument();
     });
 
-    it('キャプションがあれば表示する', () => {
-        render(<DivePhotoGallery photos={[view({ caption: '珊瑚と魚', alt: '海' })]} />);
-        expect(screen.getByText('珊瑚と魚')).toBeInTheDocument();
+    it('サムネイルをクリックすると拡大モーダルを開く', async () => {
+        render(<DivePhotoGallery photos={[view({ displayUrl: '/full.webp', alt: '海の写真' })]} />);
+        fireEvent.click(screen.getByRole('button', { name: '海の写真 を拡大表示' }));
+        expect(await screen.findByRole('dialog')).toBeInTheDocument();
     });
 
     it('0 枚なら何も描画しない', () => {

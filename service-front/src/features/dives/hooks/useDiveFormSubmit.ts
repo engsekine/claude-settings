@@ -6,6 +6,7 @@ import { useState, useTransition } from 'react';
 import { uploadDivePhotos } from '@/features/dives/lib/uploadDivePhotos';
 import type { DiveFormValues } from '@/features/dives/schemas/dive.schema';
 import { createDive, updateDive } from '@/features/dives/server/actions';
+import { deleteDivePhoto } from '@/features/dives/server/photoActions';
 import { createClient } from '@/shared/lib/supabase/browser';
 
 interface UseDiveFormSubmitResult {
@@ -13,10 +14,10 @@ interface UseDiveFormSubmitResult {
     serverError: string | null;
     /**
      * react-hook-form の handleSubmit に渡すサブミットハンドラ。
-     * 新規作成時に写真を同時添付する場合は photos に File[] を渡す
-     * （ログ保存 → dive_id 確定 → その配下へアップロードの順で処理する）。
+     * - 新規作成時: photos に File[] を渡すと、ログ保存 → dive_id 確定 → アップロードの順で同時添付する。
+     * - 編集時: photoIdsToDelete に削除予定の写真 ID を渡すと、更新成功後にまとめて削除する（保存時削除）。
      */
-    submit: (values: DiveFormValues, photos?: File[]) => void;
+    submit: (values: DiveFormValues, photos?: File[], photoIdsToDelete?: string[]) => void;
 }
 
 /**
@@ -31,7 +32,7 @@ export const useDiveFormSubmit = (diveId?: string): UseDiveFormSubmitResult => {
 
     const isEdit = diveId !== undefined;
 
-    const submit = (values: DiveFormValues, photos?: File[]): void => {
+    const submit = (values: DiveFormValues, photos?: File[], photoIdsToDelete?: string[]): void => {
         setServerError(null);
         startTransition(async () => {
             if (isEdit) {
@@ -39,6 +40,11 @@ export const useDiveFormSubmit = (diveId?: string): UseDiveFormSubmitResult => {
                 if (!result.success) {
                     setServerError(result.error);
                     return;
+                }
+                // 保存時に「削除予定」とマークされた写真をまとめて削除する（FR-013）。
+                // 部分失敗はログ更新を巻き戻さない（FR-015）。
+                if (photoIdsToDelete && photoIdsToDelete.length > 0) {
+                    await Promise.all(photoIdsToDelete.map((photoId) => deleteDivePhoto(photoId)));
                 }
                 router.push(`/dives/${diveId}`);
                 router.refresh();

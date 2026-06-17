@@ -3,8 +3,8 @@ import type { Route } from 'next';
 import Link from 'next/link';
 
 import { DeleteDiveButton } from '@/features/dives/components/client/DeleteDiveButton';
+import { DivePhotoGallery } from '@/features/dives/components/client/DivePhotoGallery';
 import { DivePhotoUploader } from '@/features/dives/components/client/DivePhotoUploader';
-import { DivePhotoGallery } from '@/features/dives/components/server/DivePhotoGallery';
 import { TANK_TYPE_LABEL_MAP, type TankTypeValue } from '@/features/dives/constants';
 import { diveLocationLabel } from '@/features/dives/lib/diveLabel';
 import { calcSacRate, formatSacRate, SAC_INPUT_FIELD_LABELS } from '@/features/dives/lib/sacRate';
@@ -93,18 +93,6 @@ export const DiveDetail = ({ dive, photos = [], canManage = false }: DiveDetailP
                     </span>
                 )}
             </header>
-
-            {(photos.length > 0 || canManage) && (
-                <section aria-labelledby="dive-detail-photos" className="flex flex-col gap-4">
-                    <h2 id="dive-detail-photos" className="font-semibold text-lg">
-                        写真
-                    </h2>
-                    <DivePhotoGallery photos={photos} />
-                    {canManage && (
-                        <DivePhotoUploader diveId={dive.id} userId={dive.userId} existingCount={photos.length} />
-                    )}
-                </section>
-            )}
 
             <section aria-labelledby="dive-detail-basic" className="flex flex-col gap-4">
                 <h2 id="dive-detail-basic" className="font-semibold text-lg">
@@ -197,6 +185,18 @@ export const DiveDetail = ({ dive, photos = [], canManage = false }: DiveDetailP
 
                 <FullField label="メモ・印象" value={dive.notes} />
             </section>
+
+            {(photos.length > 0 || canManage) && (
+                <section aria-labelledby="dive-detail-photos" className="flex flex-col gap-4">
+                    <h2 id="dive-detail-photos" className="font-semibold text-lg">
+                        写真
+                    </h2>
+                    <DivePhotoGallery photos={photos} canManage={canManage} />
+                    {canManage && (
+                        <DivePhotoUploader diveId={dive.id} userId={dive.userId} existingCount={photos.length} />
+                    )}
+                </section>
+            )}
 
             <div className="flex items-center justify-end gap-2 border-border border-t pt-6">
                 <Link href={`/dives/${dive.id}/edit`} className={buttonVariants({ variant: 'outline' })}>

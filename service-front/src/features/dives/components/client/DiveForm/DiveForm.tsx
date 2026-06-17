@@ -2,6 +2,8 @@
 
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@repo/ui/components/button';
+import { XIcon } from 'lucide-react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { type ChangeEvent, type KeyboardEvent, useEffect, useState, type WheelEvent } from 'react';
 import { useForm } from 'react-hook-form';
@@ -11,7 +13,9 @@ import { useDiveFormSubmit } from '@/features/dives/hooks/useDiveFormSubmit';
 import { calcBottomTimeMin } from '@/features/dives/lib/calcBottomTime';
 import { type PhotoFileMeta, photoValidationMessage, validateNewPhotos } from '@/features/dives/lib/photoValidation';
 import { type DiveFormValues, diveSchema } from '@/features/dives/schemas/dive.schema';
-import { FormField, type FormSelectOption, FormSelect, FormTextarea, SearchSelect } from '@/shared/components/form';
+import type { DivePhotoView } from '@/features/dives/types';
+import { FormField, FormSelect, type FormSelectOption, FormTextarea, SearchSelect } from '@/shared/components/form';
+import { PhotoThumbnail } from '@/shared/components/media/PhotoThumbnail';
 import { todayInJst } from '@/shared/lib/date';
 
 interface DiveFormProps {
@@ -20,6 +24,8 @@ interface DiveFormProps {
     defaultValues?: Partial<DiveFormValues>;
     /** ダイブサイト選択肢（マスタ）。ページ層で listDiveSites + siteLabel から組み立てて渡す */
     siteOptions?: FormSelectOption[];
+    /** 編集モードで表示する既存の添付写真。✕ でマークし、保存時にまとめて削除する */
+    existingPhotos?: DivePhotoView[];
 }
 
 /** number 入力にホイールでフォーカスしたまま値が変わる事故を防ぐ */
@@ -68,7 +74,7 @@ const createDefaultValues = (overrides?: Partial<DiveFormValues>): DiveFormValue
     ...overrides,
 });
 
-export const DiveForm = ({ diveId, defaultValues, siteOptions = [] }: DiveFormProps) => {
+export const DiveForm = ({ diveId, defaultValues, siteOptions = [], existingPhotos = [] }: DiveFormProps) => {
     const router = useRouter();
     const isEdit = diveId !== undefined;
 
@@ -87,22 +93,43 @@ export const DiveForm = ({ diveId, defaultValues, siteOptions = [] }: DiveFormPr
 
     // 新規作成時のみ、写真を選択しておきログ保存後にまとめて添付する（FR-001 AC2）
     const [stagedPhotos, setStagedPhotos] = useState<File[]>([]);
+    const [previewUrls, setPreviewUrls] = useState<string[]>([]);
     const [photoErrors, setPhotoErrors] = useState<string[]>([]);
 
-    const handlePhotosChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handlePhotosChange = (event: ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(event.target.files ?? []);
         const metas: PhotoFileMeta[] = files.map((file) => ({ name: file.name, size: file.size, type: file.type }));
         const validationErrors = validateNewPhotos(0, metas);
         if (validationErrors.length > 0) {
             setPhotoErrors(validationErrors.map(photoValidationMessage));
             setStagedPhotos([]);
+            setPreviewUrls([]);
             return;
         }
         setPhotoErrors([]);
         setStagedPhotos(files);
+        // 選択直後にプレビューを表示する（FR-001 補助）。object URL は下の effect で解放する
+        setPreviewUrls(files.map((file) => URL.createObjectURL(file)));
     };
 
-    const onSubmit = handleSubmit((values) => submit(values, isEdit ? undefined : stagedPhotos));
+    // 選択写真のプレビュー用 object URL は不要になったら解放する（メモリリーク防止）
+    useEffect(() => {
+        return () => {
+            for (const url of previewUrls) URL.revokeObjectURL(url);
+        };
+    }, [previewUrls]);
+
+    // 編集モード: 既存写真の「削除予定」マーク。保存時にまとめて削除する（FR-013）
+    const [photoIdsToDelete, setPhotoIdsToDelete] = useState<string[]>([]);
+    const togglePhotoDeletion = (photoId: string) => {
+        setPhotoIdsToDelete((current) =>
+            current.includes(photoId) ? current.filter((id) => id !== photoId) : [...current, photoId],
+        );
+    };
+
+    const onSubmit = handleSubmit((values) =>
+        submit(values, isEdit ? undefined : stagedPhotos, isEdit ? photoIdsToDelete : undefined),
+    );
 
     /**
      * 編集モードで既存値が渡されている場合は手動扱いで初期化する。
@@ -479,6 +506,43 @@ export const DiveForm = ({ diveId, defaultValues, siteOptions = [] }: DiveFormPr
                 <FormTextarea id="notes" label="メモ・印象" rows={4} {...register('notes')} />
             </section>
 
+            {isEdit && existingPhotos.length > 0 && (
+                <section aria-labelledby="dive-form-existing-photos" className="flex flex-col gap-3">
+                    <h2 id="dive-form-existing-photos" className="font-semibold text-lg">
+                        写真
+                    </h2>
+                    <p className="text-muted-foreground text-sm">
+                        ✕ を押した写真は保存時に削除されます。もう一度押すと取り消せます。
+                    </p>
+                    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        {existingPhotos.map((photo) => {
+                            const isMarked = photoIdsToDelete.includes(photo.id);
+                            return (
+                                <li key={photo.id} className="relative">
+                                    <div className={isMarked ? 'opacity-40 grayscale' : undefined}>
+                                        <PhotoThumbnail src={photo.thumbUrl} alt={photo.alt} unoptimized />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => togglePhotoDeletion(photo.id)}
+                                        aria-pressed={isMarked}
+                                        aria-label={isMarked ? `${photo.alt} の削除を取り消す` : `${photo.alt} を削除`}
+                                        className="absolute top-1 right-1 inline-flex size-7 items-center justify-center rounded-full bg-foreground/70 text-background hover:bg-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+                                    >
+                                        <XIcon className="size-4" aria-hidden="true" />
+                                    </button>
+                                    {isMarked && (
+                                        <span className="absolute bottom-1 left-1 rounded bg-destructive px-1.5 py-0.5 text-destructive-foreground text-xs">
+                                            削除予定
+                                        </span>
+                                    )}
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </section>
+            )}
+
             {!isEdit && (
                 <section aria-labelledby="dive-form-photos" className="flex flex-col gap-3">
                     <h2 id="dive-form-photos" className="font-semibold text-lg">
@@ -495,6 +559,25 @@ export const DiveForm = ({ diveId, defaultValues, siteOptions = [] }: DiveFormPr
                         onChange={handlePhotosChange}
                         className="text-sm"
                     />
+                    {previewUrls.length > 0 && (
+                        <ul className="flex flex-wrap gap-2">
+                            {previewUrls.map((url, index) => (
+                                <li
+                                    key={url}
+                                    className="relative h-24 w-24 overflow-hidden rounded-md border border-border"
+                                >
+                                    <Image
+                                        src={url}
+                                        alt={`選択した写真 ${index + 1}`}
+                                        fill
+                                        sizes="96px"
+                                        unoptimized
+                                        className="object-cover"
+                                    />
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                     {stagedPhotos.length > 0 && (
                         <p className="text-muted-foreground text-sm">
                             {stagedPhotos.length} 枚を選択中（保存時に添付）
