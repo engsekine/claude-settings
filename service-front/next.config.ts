@@ -10,6 +10,9 @@ const supabaseOrigin = supabaseUrl ? new URL(supabaseUrl).origin : '';
 const supabaseWsOrigin = supabaseOrigin.replace(/^http/, 'ws');
 const connectSrc = ["'self'", supabaseOrigin, supabaseWsOrigin].filter(Boolean).join(' ');
 
+// Supabase Storage の署名 URL を next/image で表示するためホストを許可する（012-photo-attachments）
+const supabaseHostname = supabaseUrl ? new URL(supabaseUrl).hostname : '';
+
 const nextConfig = {
     // Playwright の webServer（ホスト側）と Docker の dev サーバーが同じ .next を
     // 共有してキャッシュが破損する事故を防ぐため、ビルドディレクトリを上書き可能にする
@@ -21,13 +24,16 @@ const nextConfig = {
     },
     images: {
         formats: ['image/avif', 'image/webp'],
-        // 外部画像を使う場合はdomainsを追加
-        // remotePatterns: [
-        //   {
-        //     protocol: 'https',
-        //     hostname: 'example.com',
-        //   },
-        // ],
+        // Supabase Storage（署名 URL）のホストのみ許可する。URL は環境ごとに変わるため導出する
+        remotePatterns: supabaseHostname
+            ? [
+                  {
+                      protocol: supabaseOrigin.startsWith('https') ? 'https' : 'http',
+                      hostname: supabaseHostname,
+                      pathname: '/storage/v1/object/**',
+                  },
+              ]
+            : [],
     },
 
     // セキュリティヘッダー

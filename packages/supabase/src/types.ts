@@ -155,6 +155,66 @@ export type Database = {
           },
         ]
       }
+      dive_photos: {
+        Row: {
+          caption: string
+          created_at: string
+          display_path: string
+          dive_id: string
+          height: number | null
+          id: string
+          is_cover: boolean
+          sort_order: number
+          thumb_path: string
+          updated_at: string
+          user_id: string
+          width: number | null
+        }
+        Insert: {
+          caption?: string
+          created_at?: string
+          display_path: string
+          dive_id: string
+          height?: number | null
+          id?: string
+          is_cover?: boolean
+          sort_order?: number
+          thumb_path: string
+          updated_at?: string
+          user_id: string
+          width?: number | null
+        }
+        Update: {
+          caption?: string
+          created_at?: string
+          display_path?: string
+          dive_id?: string
+          height?: number | null
+          id?: string
+          is_cover?: boolean
+          sort_order?: number
+          thumb_path?: string
+          updated_at?: string
+          user_id?: string
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dive_photos_dive_id_fkey"
+            columns: ["dive_id"]
+            isOneToOne: false
+            referencedRelation: "dives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dive_photos_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dives: {
         Row: {
           air_temp_c: number | null

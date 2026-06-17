@@ -77,3 +77,36 @@ export interface DiveListPage {
     /** 次のページがあるときのカーソル。無いとき null */
     nextCursor: DiveCursor | null;
 }
+
+/** dive_photos の 1 行（snake_case から camelCase へ変換後）。012-photo-attachments */
+export interface DivePhoto {
+    id: string;
+    diveId: string;
+    /** 表示用 WebP の Storage パス（{user_id}/{dive_id}/display/{id}.webp） */
+    displayPath: string;
+    /** サムネイル WebP の Storage パス（.../thumb/{id}.webp） */
+    thumbPath: string;
+    /** 任意のキャプション。空文字は未設定 */
+    caption: string;
+    /** 表示順（昇順） */
+    sortOrder: number;
+    /** 代表写真フラグ。ログ内で高々 1 件 */
+    isCover: boolean;
+    width: number | null;
+    height: number | null;
+}
+
+/** 表示用（署名 URL を解決済み）。ギャラリー / サムネイルに渡す */
+export interface DivePhotoView {
+    id: string;
+    /** 表示用画像の署名 URL */
+    displayUrl: string;
+    /** サムネイルの署名 URL */
+    thumbUrl: string;
+    caption: string;
+    isCover: boolean;
+    width: number | null;
+    height: number | null;
+    /** alt 用の代替テキスト（caption 優先、無ければログ情報由来） */
+    alt: string;
+}
