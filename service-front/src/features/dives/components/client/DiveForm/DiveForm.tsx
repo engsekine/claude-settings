@@ -9,6 +9,7 @@ import { useForm } from 'react-hook-form';
 import { DIVE_TYPE_OPTIONS, GAS_TYPE_OPTIONS, TANK_TYPE_OPTIONS } from '@/features/dives/constants';
 import { useDiveFormSubmit } from '@/features/dives/hooks/useDiveFormSubmit';
 import { calcBottomTimeMin } from '@/features/dives/lib/calcBottomTime';
+import { type PhotoFileMeta, photoValidationMessage, validateNewPhotos } from '@/features/dives/lib/photoValidation';
 import { type DiveFormValues, diveSchema } from '@/features/dives/schemas/dive.schema';
 import { FormField, type FormSelectOption, FormSelect, FormTextarea, SearchSelect } from '@/shared/components/form';
 import { todayInJst } from '@/shared/lib/date';
@@ -84,7 +85,24 @@ export const DiveForm = ({ diveId, defaultValues, siteOptions = [] }: DiveFormPr
         defaultValues: createDefaultValues(defaultValues),
     });
 
-    const onSubmit = handleSubmit(submit);
+    // 新規作成時のみ、写真を選択しておきログ保存後にまとめて添付する（FR-001 AC2）
+    const [stagedPhotos, setStagedPhotos] = useState<File[]>([]);
+    const [photoErrors, setPhotoErrors] = useState<string[]>([]);
+
+    const handlePhotosChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(event.target.files ?? []);
+        const metas: PhotoFileMeta[] = files.map((file) => ({ name: file.name, size: file.size, type: file.type }));
+        const validationErrors = validateNewPhotos(0, metas);
+        if (validationErrors.length > 0) {
+            setPhotoErrors(validationErrors.map(photoValidationMessage));
+            setStagedPhotos([]);
+            return;
+        }
+        setPhotoErrors([]);
+        setStagedPhotos(files);
+    };
+
+    const onSubmit = handleSubmit((values) => submit(values, isEdit ? undefined : stagedPhotos));
 
     /**
      * 編集モードで既存値が渡されている場合は手動扱いで初期化する。
@@ -460,6 +478,37 @@ export const DiveForm = ({ diveId, defaultValues, siteOptions = [] }: DiveFormPr
 
                 <FormTextarea id="notes" label="メモ・印象" rows={4} {...register('notes')} />
             </section>
+
+            {!isEdit && (
+                <section aria-labelledby="dive-form-photos" className="flex flex-col gap-3">
+                    <h2 id="dive-form-photos" className="font-semibold text-lg">
+                        写真
+                    </h2>
+                    <label htmlFor="dive-form-photo-input" className="text-sm">
+                        写真を選択（任意・最大 10 枚）
+                    </label>
+                    <input
+                        id="dive-form-photo-input"
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
+                        multiple
+                        onChange={handlePhotosChange}
+                        className="text-sm"
+                    />
+                    {stagedPhotos.length > 0 && (
+                        <p className="text-muted-foreground text-sm">
+                            {stagedPhotos.length} 枚を選択中（保存時に添付）
+                        </p>
+                    )}
+                    {photoErrors.length > 0 && (
+                        <ul role="alert" className="flex flex-col gap-1 text-destructive text-sm">
+                            {photoErrors.map((message) => (
+                                <li key={message}>{message}</li>
+                            ))}
+                        </ul>
+                    )}
+                </section>
+            )}
 
             {serverError && (
                 <div role="alert" className="text-red-600 text-sm">

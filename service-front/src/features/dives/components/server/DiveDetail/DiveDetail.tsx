@@ -3,14 +3,20 @@ import type { Route } from 'next';
 import Link from 'next/link';
 
 import { DeleteDiveButton } from '@/features/dives/components/client/DeleteDiveButton';
+import { DivePhotoUploader } from '@/features/dives/components/client/DivePhotoUploader';
+import { DivePhotoGallery } from '@/features/dives/components/server/DivePhotoGallery';
 import { TANK_TYPE_LABEL_MAP, type TankTypeValue } from '@/features/dives/constants';
 import { diveLocationLabel } from '@/features/dives/lib/diveLabel';
 import { calcSacRate, formatSacRate, SAC_INPUT_FIELD_LABELS } from '@/features/dives/lib/sacRate';
-import type { Dive } from '@/features/dives/types';
+import type { Dive, DivePhotoView } from '@/features/dives/types';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
 
 interface DiveDetailProps {
     dive: Dive;
+    /** 添付写真（表示順・署名 URL 解決済み）。既定は空 */
+    photos?: DivePhotoView[];
+    /** 本人として写真を管理（追加）できるか。公開ページなどでは false */
+    canManage?: boolean;
 }
 
 const EMPTY_PLACEHOLDER = '—';
@@ -52,7 +58,7 @@ const FullField = ({ label, value }: { label: string; value: string | null | und
     );
 };
 
-export const DiveDetail = ({ dive }: DiveDetailProps) => {
+export const DiveDetail = ({ dive, photos = [], canManage = false }: DiveDetailProps) => {
     const tidePhase = getTidePhase(dive.diveDate);
     const sacRate = calcSacRate(dive);
 
@@ -87,6 +93,18 @@ export const DiveDetail = ({ dive }: DiveDetailProps) => {
                     </span>
                 )}
             </header>
+
+            {(photos.length > 0 || canManage) && (
+                <section aria-labelledby="dive-detail-photos" className="flex flex-col gap-4">
+                    <h2 id="dive-detail-photos" className="font-semibold text-lg">
+                        写真
+                    </h2>
+                    <DivePhotoGallery photos={photos} />
+                    {canManage && (
+                        <DivePhotoUploader diveId={dive.id} userId={dive.userId} existingCount={photos.length} />
+                    )}
+                </section>
+            )}
 
             <section aria-labelledby="dive-detail-basic" className="flex flex-col gap-4">
                 <h2 id="dive-detail-basic" className="font-semibold text-lg">
