@@ -31,12 +31,15 @@ const createMockClient = (result: QueryResult) => {
         order: vi.fn(),
         limit: vi.fn(),
         eq: vi.fn(),
+        gte: vi.fn(),
+        lte: vi.fn(),
+        not: vi.fn(),
         ilike: vi.fn(),
         or: vi.fn(),
         // biome-ignore lint/suspicious/noThenProperty: Supabase クエリビルダーは thenable のため、モックでも then を実装する必要がある
         then: (resolve: (value: QueryResult) => void) => resolve(result),
     };
-    for (const method of ['select', 'order', 'limit', 'eq', 'ilike', 'or'] as const) {
+    for (const method of ['select', 'order', 'limit', 'eq', 'gte', 'lte', 'not', 'ilike', 'or'] as const) {
         builder[method].mockReturnValue(builder);
     }
     const from = vi.fn(() => builder);
@@ -84,18 +87,70 @@ describe('fetchDiveListPage', () => {
         expect(page.nextCursor).toBeNull();
     });
 
-    it('filter の各条件をクエリに反映する', async () => {
+    it('番号・ポイント名フィルタをクエリに反映する', async () => {
         const { client, builder } = createMockClient({ data: [], error: null });
 
         await fetchDiveListPage(client, {
-            filter: { diveNumber: 42, diveDate: '2026-06-01', location: '伊豆' },
+            filter: { diveNumber: 42, location: '伊豆' },
         });
 
         expect(builder.eq).toHaveBeenCalledWith('dive_number', 42);
-        expect(builder.eq).toHaveBeenCalledWith('dive_date', '2026-06-01');
         // ポイント名検索（FR-013）: サイト名 ilike でサイト ID を引き、location とサイト名を or で合流する
         expect(builder.ilike).toHaveBeenCalledWith('name', '%伊豆%');
         expect(builder.or).toHaveBeenCalledWith('location.ilike.*伊豆*');
+    });
+
+    it('期間フィルタを gte / lte で反映する（FR-001）', async () => {
+        const { client, builder } = createMockClient({ data: [], error: null });
+
+        await fetchDiveListPage(client, { filter: { dateFrom: '2025-07-01', dateTo: '2025-08-31' } });
+
+        expect(builder.gte).toHaveBeenCalledWith('dive_date', '2025-07-01');
+        expect(builder.lte).toHaveBeenCalledWith('dive_date', '2025-08-31');
+    });
+
+    it('期間の片側のみ指定は開いた範囲になる', async () => {
+        const { client, builder } = createMockClient({ data: [], error: null });
+
+        await fetchDiveListPage(client, { filter: { dateFrom: '2025-07-01' } });
+
+        expect(builder.gte).toHaveBeenCalledWith('dive_date', '2025-07-01');
+        expect(builder.lte).not.toHaveBeenCalledWith('dive_date', expect.anything());
+    });
+
+    it('深度範囲を gte / lte で反映し、未記録（null）を除外する（FR-002 / Q1）', async () => {
+        const { client, builder } = createMockClient({ data: [], error: null });
+
+        await fetchDiveListPage(client, { filter: { depthMin: 18, depthMax: 40 } });
+
+        expect(builder.gte).toHaveBeenCalledWith('max_depth_m', 18);
+        expect(builder.lte).toHaveBeenCalledWith('max_depth_m', 40);
+        expect(builder.not).toHaveBeenCalledWith('max_depth_m', 'is', null);
+    });
+
+    it('深度は片側のみ指定でも未記録（null）を除外する', async () => {
+        const { client, builder } = createMockClient({ data: [], error: null });
+
+        await fetchDiveListPage(client, { filter: { depthMin: 30 } });
+
+        expect(builder.gte).toHaveBeenCalledWith('max_depth_m', 30);
+        expect(builder.not).toHaveBeenCalledWith('max_depth_m', 'is', null);
+    });
+
+    it('深度未指定のときは null 除外しない', async () => {
+        const { client, builder } = createMockClient({ data: [], error: null });
+
+        await fetchDiveListPage(client, { filter: { location: '伊豆' } });
+
+        expect(builder.not).not.toHaveBeenCalled();
+    });
+
+    it('ダイブタイプを eq で反映する（FR-003）', async () => {
+        const { client, builder } = createMockClient({ data: [], error: null });
+
+        await fetchDiveListPage(client, { filter: { diveType: 'boat' } });
+
+        expect(builder.eq).toHaveBeenCalledWith('dive_type', 'boat');
     });
 
     it('cursor 指定時は (dive_date, id) の複合カーソル条件を付与する', async () => {

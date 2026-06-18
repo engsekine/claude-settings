@@ -2,6 +2,7 @@ import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
 
 import { DiveList, listDives } from '@/features/dives';
+import { parseDiveFilter, recordToSearchParams } from '@/features/dives/lib/search-params';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
 import { generatePageMetadata } from '@/shared/config/metadata';
 
@@ -14,8 +15,13 @@ export const metadata = generatePageMetadata(
     { noIndex: true },
 );
 
-export default async function DivesPage() {
-    const initialPage = await listDives();
+interface DivesPageProps {
+    searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export default async function DivesPage({ searchParams }: DivesPageProps) {
+    const filter = parseDiveFilter(recordToSearchParams(await searchParams));
+    const initialPage = await listDives({ filter });
 
     return (
         <div className="flex flex-1 flex-col">
@@ -27,7 +33,7 @@ export default async function DivesPage() {
                         新規作成
                     </Link>
                 </div>
-                <DiveList initialPage={initialPage} />
+                <DiveList initialPage={initialPage} initialFilter={filter} />
             </div>
         </div>
     );

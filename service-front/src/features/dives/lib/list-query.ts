@@ -72,7 +72,16 @@ export const fetchDiveListPage = async (
         .limit(limit + 1);
 
     if (filter?.diveNumber !== undefined) query = query.eq('dive_number', filter.diveNumber);
-    if (filter?.diveDate) query = query.eq('dive_date', filter.diveDate);
+    if (filter?.diveType) query = query.eq('dive_type', filter.diveType);
+    // 期間（潜水日）: 両端を含む範囲。片側のみは開いた範囲（FR-001）
+    if (filter?.dateFrom) query = query.gte('dive_date', filter.dateFrom);
+    if (filter?.dateTo) query = query.lte('dive_date', filter.dateTo);
+    // 深度範囲（最大水深）: 下限・上限のいずれか指定時は未記録（null）を除外する（FR-002）
+    if (filter?.depthMin !== undefined || filter?.depthMax !== undefined) {
+        query = query.not('max_depth_m', 'is', null);
+    }
+    if (filter?.depthMin !== undefined) query = query.gte('max_depth_m', filter.depthMin);
+    if (filter?.depthMax !== undefined) query = query.lte('max_depth_m', filter.depthMax);
     // ポイント名検索（FR-013）: 自由入力名（location）と参照サイト名の双方に一致させる。
     // サイト参照ログは location が null のため、名前が一致するサイト ID を先に引いて OR で合流する。
     if (filter?.location) {

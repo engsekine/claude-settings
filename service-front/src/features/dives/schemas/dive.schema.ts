@@ -1,10 +1,11 @@
 import * as yup from 'yup';
 
-import { TANK_TYPE_OPTIONS } from '@/features/dives/constants';
+import { DIVE_TYPE_OPTIONS, TANK_TYPE_OPTIONS } from '@/features/dives/constants';
 import { todayInJst } from '@/shared/lib/date';
 import { optionalNumber } from '@/shared/schemas/transforms';
 
 const TANK_TYPE_VALUES = TANK_TYPE_OPTIONS.map((option) => option.value);
+const DIVE_TYPE_VALUE_SET = new Set<string>(DIVE_TYPE_OPTIONS.map((option) => option.value));
 
 /**
  * YYYY-MM-DD の日付文字列が 1900-01-01 〜 日本時間の当日の範囲内かチェック。
@@ -245,6 +246,24 @@ export const diveSchema = yup.object({
 
 export type DiveFormValues = yup.InferType<typeof diveSchema>;
 
+/** 検索の任意日付（YYYY-MM-DD・空は null）。形式のみ検証する */
+const optionalSearchDate = yup
+    .string()
+    .transform((v) => (v === '' || v == null ? null : v))
+    .nullable()
+    .matches(/^\d{4}-\d{2}-\d{2}$/, { message: '正しい日付を入力してください', excludeEmptyString: true })
+    .default(null);
+
+/** 検索の任意深度（0〜300・空は null） */
+const optionalSearchDepth = yup
+    .number()
+    .transform(optionalNumber)
+    .nullable()
+    .min(0, '深度は0以上で入力してください')
+    .max(300, '深度は300以下で入力してください')
+    .typeError('深度は数値で入力してください')
+    .default(null);
+
 /** 検索バー用の軽量スキーマ */
 export const diveSearchSchema = yup.object({
     diveNumber: yup
@@ -256,11 +275,26 @@ export const diveSearchSchema = yup.object({
         .max(9999, 'ダイブ番号は9999以下で入力してください')
         .typeError('ダイブ番号は数値で入力してください')
         .default(null),
-    diveDate: yup
+    // 期間（FR-001）: 開始日・終了日。終了日は開始日以降（片側のみ可）
+    dateFrom: optionalSearchDate,
+    dateTo: optionalSearchDate.test('date-range', '終了日は開始日以降の日付を指定してください', function (value) {
+        const { dateFrom } = this.parent as { dateFrom?: string | null };
+        if (!value || !dateFrom) return true;
+        return value >= dateFrom;
+    }),
+    // 深度範囲（FR-002）: 下限・上限。上限は下限以上（片側のみ可）
+    depthMin: optionalSearchDepth,
+    depthMax: optionalSearchDepth.test('depth-range', '深度の上限は下限以上で入力してください', function (value) {
+        const { depthMin } = this.parent as { depthMin?: number | null };
+        if (value == null || depthMin == null) return true;
+        return value >= depthMin;
+    }),
+    // ダイブタイプ（FR-003）: 既存の選択肢のみ
+    diveType: yup
         .string()
         .transform((v) => (v === '' || v == null ? null : v))
         .nullable()
-        .matches(/^\d{4}-\d{2}-\d{2}$/, { message: '正しい日付を入力してください', excludeEmptyString: true })
+        .test('valid-dive-type', 'ダイブタイプの値が不正です', (value) => value == null || DIVE_TYPE_VALUE_SET.has(value))
         .default(null),
     location: yup
         .string()

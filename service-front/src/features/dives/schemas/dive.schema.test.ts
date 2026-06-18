@@ -205,13 +205,13 @@ describe('diveSearchSchema', () => {
     it('全て空でも通過する', async () => {
         await expect(diveSearchSchema.validate({})).resolves.toEqual({
             diveNumber: null,
-            diveDate: null,
+            dateFrom: null,
+            dateTo: null,
+            depthMin: null,
+            depthMax: null,
+            diveType: null,
             location: null,
         });
-    });
-
-    it('不正な diveDate は失敗する', async () => {
-        await expect(diveSearchSchema.validate({ diveDate: '2026/01/01' })).rejects.toThrow(/正しい日付/);
     });
 
     it('diveNumber は数値に変換される', async () => {
@@ -229,5 +229,61 @@ describe('diveSearchSchema', () => {
 
         const result2 = await diveSearchSchema.validate({ location: '伊豆' });
         expect(result2.location).toBe('伊豆');
+    });
+
+    // --- US1: 期間（FR-001 / FR-006） ---
+    it('不正な dateFrom / dateTo は失敗する', async () => {
+        await expect(diveSearchSchema.validate({ dateFrom: '2026/01/01' })).rejects.toThrow(/正しい日付/);
+        await expect(diveSearchSchema.validate({ dateTo: 'invalid' })).rejects.toThrow(/正しい日付/);
+    });
+
+    it('期間は開始日のみ・終了日のみでも通過する（片側 = 開いた範囲）', async () => {
+        await expect(diveSearchSchema.validate({ dateFrom: '2025-07-01' })).resolves.toMatchObject({
+            dateFrom: '2025-07-01',
+            dateTo: null,
+        });
+        await expect(diveSearchSchema.validate({ dateTo: '2025-08-31' })).resolves.toMatchObject({
+            dateFrom: null,
+            dateTo: '2025-08-31',
+        });
+    });
+
+    it('終了日が開始日より前だと失敗する', async () => {
+        await expect(diveSearchSchema.validate({ dateFrom: '2025-08-31', dateTo: '2025-07-01' })).rejects.toThrow(
+            /終了日は開始日以降/,
+        );
+    });
+
+    it('終了日 = 開始日は通過する（両端含む）', async () => {
+        await expect(diveSearchSchema.validate({ dateFrom: '2025-07-01', dateTo: '2025-07-01' })).resolves.toMatchObject(
+            { dateFrom: '2025-07-01', dateTo: '2025-07-01' },
+        );
+    });
+
+    // --- US2: 深度（FR-002 / FR-006） ---
+    it('深度は片側のみでも通過する', async () => {
+        await expect(diveSearchSchema.validate({ depthMin: 18 })).resolves.toMatchObject({ depthMin: 18, depthMax: null });
+    });
+
+    it('深度の上限が下限より小さいと失敗する', async () => {
+        await expect(diveSearchSchema.validate({ depthMin: 40, depthMax: 18 })).rejects.toThrow(/上限は下限以上/);
+    });
+
+    it('深度が範囲外（負 / 300 超）だと失敗する', async () => {
+        await expect(diveSearchSchema.validate({ depthMin: -1 })).rejects.toThrow(/0以上/);
+        await expect(diveSearchSchema.validate({ depthMax: 301 })).rejects.toThrow(/300以下/);
+    });
+
+    // --- US3: ダイブタイプ（FR-003） ---
+    it('DIVE_TYPE_OPTIONS の値は通過する', async () => {
+        await expect(diveSearchSchema.validate({ diveType: 'boat' })).resolves.toMatchObject({ diveType: 'boat' });
+    });
+
+    it('列挙外の diveType は失敗する', async () => {
+        await expect(diveSearchSchema.validate({ diveType: 'unknown' })).rejects.toThrow(/不正/);
+    });
+
+    it('空の diveType は null になる', async () => {
+        await expect(diveSearchSchema.validate({ diveType: '' })).resolves.toMatchObject({ diveType: null });
     });
 });

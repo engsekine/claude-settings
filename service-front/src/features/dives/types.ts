@@ -70,11 +70,19 @@ export type DiveListItem = Pick<
     | 'certificationDive'
 >;
 
-/** 一覧検索の入力 */
+/** 一覧検索の入力。すべて任意で、指定された条件は AND で組み合わさる */
 export interface DiveListFilter {
     diveNumber?: number;
-    /** ISO 8601 date string (YYYY-MM-DD) */
-    diveDate?: string;
+    /** 期間の開始日（含む）。ISO 8601 date string (YYYY-MM-DD) */
+    dateFrom?: string;
+    /** 期間の終了日（含む）。ISO 8601 date string (YYYY-MM-DD) */
+    dateTo?: string;
+    /** 最大水深の下限（m・含む） */
+    depthMin?: number;
+    /** 最大水深の上限（m・含む） */
+    depthMax?: number;
+    /** ダイブタイプ（DIVE_TYPE_OPTIONS の value） */
+    diveType?: string;
     location?: string;
 }
 
