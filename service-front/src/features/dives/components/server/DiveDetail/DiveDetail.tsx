@@ -199,6 +199,13 @@ export const DiveDetail = ({ dive, photos = [], canManage = false }: DiveDetailP
             )}
 
             <div className="flex items-center justify-end gap-2 border-border border-t pt-6">
+                <a
+                    href={`/dives/export?format=pdf&ids=${dive.id}`}
+                    download
+                    className={buttonVariants({ variant: 'outline' })}
+                >
+                    PDF出力
+                </a>
                 <Link href={`/dives/${dive.id}/edit`} className={buttonVariants({ variant: 'outline' })}>
                     編集
                 </Link>

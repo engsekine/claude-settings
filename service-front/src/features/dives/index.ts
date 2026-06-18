@@ -6,6 +6,7 @@ export { DiveList } from './components/client/DiveList';
 export { DivePhotoGallery } from './components/client/DivePhotoGallery';
 export { DivePhotoUploader } from './components/client/DivePhotoUploader';
 export { DiveSearchBar } from './components/client/DiveSearchBar';
+export { ExportMenu } from './components/client/ExportMenu';
 export { DiveDetail } from './components/server/DiveDetail';
 export { DIVE_PAGE_SIZE } from './constants';
 export { useDiveFormSubmit } from './hooks/useDiveFormSubmit';

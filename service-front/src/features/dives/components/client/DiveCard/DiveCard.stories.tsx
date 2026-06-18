@@ -46,3 +46,13 @@ export const Minimal: Story = {
 export const SpringTide: Story = {
     args: { dive: { ...baseDive, diveDate: '2000-01-07' } },
 };
+
+/** エクスポート選択モード。リンクではなくチェックボックスのラベルになり、本文クリックで選択トグルする */
+export const Selectable: Story = {
+    args: { dive: baseDive, selectable: true },
+};
+
+/** 選択済みのエクスポート選択モード */
+export const SelectableSelected: Story = {
+    args: { dive: baseDive, selectable: true, selected: true },
+};

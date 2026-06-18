@@ -31,6 +31,7 @@
         "validate": "npm run type-check && npm run check && npm run lint:markup && npm run test"
     },
     "dependencies": {
+        "@react-pdf/renderer": "^4.5.1",
         "@repo/supabase": "*",
         "@repo/ui": "*",
         "@tanstack/react-query": "^5.62.0",

@@ -55,6 +55,14 @@ describe('DiveDetail', () => {
         expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('伊豆 / 大瀬崎');
     });
 
+    it('単一ログの PDF 出力リンクを表示する', () => {
+        render(<DiveDetail dive={baseDive} />);
+        expect(screen.getByRole('link', { name: 'PDF出力' })).toHaveAttribute(
+            'href',
+            '/dives/export?format=pdf&ids=dive-1',
+        );
+    });
+
     it('サイト参照ログは見出しのサイト名をサイト詳細へのリンクにする', () => {
         render(
             <DiveDetail

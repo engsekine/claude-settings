@@ -23,21 +23,31 @@ COPY packages/supabase/package.json ./packages/supabase/
 
 # npm の optional dependencies バグ（https://github.com/npm/cli/issues/4828）の対処:
 # Mac (darwin-arm64) で生成した package-lock.json には Linux 向けプラットフォーム固有
-# バイナリ（lightningcss-linux-*-musl, @next/swc-linux-*-musl 等）が記録されないため、
-# Alpine コンテナで npm ci しても native bin が入らず実行時にロード失敗する。
+# バイナリ（lightningcss-linux-*-musl, @next/swc-linux-*-musl, @img/sharp-* 等）が
+# 記録されないため、Alpine コンテナで npm ci しても native bin が入らず実行時にロード失敗する。
 # 対象アーキテクチャ向けの musl バイナリを明示的に追加インストールしてこれを補う。
+#
+# sharp（next の画像最適化・ログエクスポートのサムネイル生成で使用）はバイナリ版の
+# 不一致を実行時に検証するため、バージョンを固定する:
+#   - @img/sharp-linuxmusl-<arch>         : service-front/package.json の sharp と同じ 0.34.5
+#   - @img/sharp-libvips-linuxmusl-<arch> : sharp 0.34.5 が要求する 1.2.4（latest 1.3.0 では不一致になる）
+# package.json の sharp を更新したら、下記の固定バージョンも必ず追従させること。
 RUN npm ci && \
     cd service-front && \
     if [ "$TARGETARCH" = "arm64" ]; then \
         npm install --no-save --ignore-scripts \
             lightningcss-linux-arm64-musl \
             @next/swc-linux-arm64-musl \
-            @tailwindcss/oxide-linux-arm64-musl; \
+            @tailwindcss/oxide-linux-arm64-musl \
+            @img/sharp-linuxmusl-arm64@0.34.5 \
+            @img/sharp-libvips-linuxmusl-arm64@1.2.4; \
     else \
         npm install --no-save --ignore-scripts \
             lightningcss-linux-x64-musl \
             @next/swc-linux-x64-musl \
-            @tailwindcss/oxide-linux-x64-musl; \
+            @tailwindcss/oxide-linux-x64-musl \
+            @img/sharp-linuxmusl-x64@0.34.5 \
+            @img/sharp-libvips-linuxmusl-x64@1.2.4; \
     fi
 
 # ========================================
