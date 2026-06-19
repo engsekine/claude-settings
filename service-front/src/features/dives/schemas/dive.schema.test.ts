@@ -199,6 +199,43 @@ describe('diveSchema', () => {
         const result = await diveSchema.validate(validBase);
         expect(result.certificationDive).toBe(false);
     });
+
+    it('装備メモが 1000 文字を超えると失敗する', async () => {
+        await expect(
+            diveSchema.validate({ ...validBase, equipmentNotes: 'あ'.repeat(1001) }),
+        ).rejects.toThrow(/装備メモは1000文字以内/);
+    });
+
+    it('装備メモが 1000 文字ちょうどなら通過する', async () => {
+        const result = await diveSchema.validate({ ...validBase, equipmentNotes: 'あ'.repeat(1000) });
+        expect(result.equipmentNotes).toHaveLength(1000);
+    });
+
+    it('メモ・印象が 2000 文字を超えると失敗する', async () => {
+        await expect(diveSchema.validate({ ...validBase, notes: 'あ'.repeat(2001) })).rejects.toThrow(
+            /メモ・印象は2000文字以内/,
+        );
+    });
+
+    it('メモ・印象が 2000 文字ちょうどなら通過する', async () => {
+        const result = await diveSchema.validate({ ...validBase, notes: 'あ'.repeat(2000) });
+        expect(result.notes).toHaveLength(2000);
+    });
+
+    it('短いテキスト項目は上限超過でそれぞれのメッセージを返す', async () => {
+        await expect(diveSchema.validate({ ...validBase, diveType: 'あ'.repeat(41) })).rejects.toThrow(
+            /ダイブタイプは40文字以内/,
+        );
+        await expect(diveSchema.validate({ ...validBase, weather: 'あ'.repeat(61) })).rejects.toThrow(
+            /天候は60文字以内/,
+        );
+        await expect(diveSchema.validate({ ...validBase, buddyName: 'あ'.repeat(101) })).rejects.toThrow(
+            /バディ名は100文字以内/,
+        );
+        await expect(diveSchema.validate({ ...validBase, instructorName: 'あ'.repeat(101) })).rejects.toThrow(
+            /インストラクター名は100文字以内/,
+        );
+    });
 });
 
 describe('diveSearchSchema', () => {

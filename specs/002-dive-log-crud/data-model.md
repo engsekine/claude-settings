@@ -35,19 +35,19 @@ Phase 2 で「公開機能」を実装する予定があり、`is_public` / `pub
 
 | カラム | 型 | NULL | デフォルト | 説明 |
 |-------|----|------|----------|------|
-| `location` | `text` | NO | — | ポイント名（必須） |
-| `dive_type` | `text` | YES | — | ボート / ビーチ / ドリフト など |
+| `location` | `text` | NO | — | ポイント名（必須）。120 文字以内 |
+| `dive_type` | `text` | YES | — | ボート / ビーチ / ドリフト など。40 文字以内 |
 
 ### コンディション
 
 | カラム | 型 | NULL | デフォルト | 説明 |
 |-------|----|------|----------|------|
-| `weather` | `text` | YES | — | 天気 |
+| `weather` | `text` | YES | — | 天気。60 文字以内 |
 | `air_temp_c` | `numeric(4, 1)` | YES | — | 気温（℃） |
 | `water_temp_c` | `numeric(4, 1)` | YES | — | 水温（℃） |
 | `visibility_m` | `numeric(4, 1)` | YES | — | 透明度（m） |
-| `wave` | `text` | YES | — | 波・うねり |
-| `current_condition` | `text` | YES | — | 流れの状況。予約語 `current` を避けて `current_condition` |
+| `wave` | `text` | YES | — | 波・うねり。60 文字以内 |
+| `current_condition` | `text` | YES | — | 流れの状況。予約語 `current` を避けて `current_condition`。60 文字以内 |
 
 ### 潜水データ
 
@@ -63,22 +63,22 @@ Phase 2 で「公開機能」を実装する予定があり、`is_public` / `pub
 |-------|----|------|----------|------|
 | `tank_type` | `text` | YES | — | `aluminum`（アルミ） / `steel`（スチール）。CHECK 制約で限定 |
 | `tank_volume_l` | `numeric(4, 1)` | YES | — | タンク容量（L） |
-| `gas_type` | `text` | YES | — | Air / Nitrox など |
+| `gas_type` | `text` | YES | — | Air / Nitrox など。40 文字以内 |
 | `o2_percent` | `numeric(4, 1)` | YES | — | 酸素濃度（%、Nitrox 用） |
 | `pressure_start_bar` | `integer` | YES | — | 開始残圧（bar） |
 | `pressure_end_bar` | `integer` | YES | — | 終了残圧（bar） |
 | `weight_kg` | `numeric(4, 1)` | YES | — | ウェイト（kg） |
 | `suit_type` | `text` | YES | — | 任意フリーテキスト（例: `ウェット 5mm` / `ドライ`）。アプリは 40 文字以内で受理 |
-| `equipment_notes` | `text` | YES | — | 装備メモ |
+| `equipment_notes` | `text` | YES | — | 装備メモ。1000 文字以内 |
 
 ### メンバー・メモ
 
 | カラム | 型 | NULL | デフォルト | 説明 |
 |-------|----|------|----------|------|
-| `buddy_name` | `text` | YES | — | バディ名 |
-| `instructor_name` | `text` | YES | — | インストラクター名 |
+| `buddy_name` | `text` | YES | — | バディ名。100 文字以内 |
+| `instructor_name` | `text` | YES | — | インストラクター名。100 文字以内 |
 | `certification_dive` | `boolean` | NO | `false` | 講習ダイブか |
-| `notes` | `text` | YES | — | メモ・印象 |
+| `notes` | `text` | YES | — | メモ・印象。2000 文字以内 |
 
 ### 公開（Phase 2 用）
 
@@ -131,6 +131,19 @@ Phase 2 で「公開機能」を実装する予定があり、`is_public` / `pub
 | `dives_pressure_start_bar_check` | `pressure_start_bar is null or pressure_start_bar >= 0` |
 | `dives_pressure_end_bar_check` | `pressure_end_bar is null or pressure_end_bar >= 0` |
 | `dives_weight_kg_check` | `weight_kg is null or weight_kg >= 0` |
+| `dives_location_len_check` | `location is null or char_length(location) <= 120` |
+| `dives_dive_type_len_check` | `dive_type is null or char_length(dive_type) <= 40` |
+| `dives_weather_len_check` | `weather is null or char_length(weather) <= 60` |
+| `dives_wave_len_check` | `wave is null or char_length(wave) <= 60` |
+| `dives_current_condition_len_check` | `current_condition is null or char_length(current_condition) <= 60` |
+| `dives_gas_type_len_check` | `gas_type is null or char_length(gas_type) <= 40` |
+| `dives_suit_type_len_check` | `suit_type is null or char_length(suit_type) <= 40` |
+| `dives_equipment_notes_len_check` | `equipment_notes is null or char_length(equipment_notes) <= 1000` |
+| `dives_buddy_name_len_check` | `buddy_name is null or char_length(buddy_name) <= 100` |
+| `dives_instructor_name_len_check` | `instructor_name is null or char_length(instructor_name) <= 100` |
+| `dives_notes_len_check` | `notes is null or char_length(notes) <= 2000` |
+
+> 自由入力テキストの長さ CHECK はアプリ層（`dive.schema.ts` の `.max`）と同値で二重に表現する（`20260619100000_add_dives_text_length_checks.sql`）。
 
 ## 4. インデックス
 

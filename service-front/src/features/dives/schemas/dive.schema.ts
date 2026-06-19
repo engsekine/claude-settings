@@ -69,14 +69,14 @@ export const diveSchema = yup.object({
     diveType: yup
         .string()
         .trim()
-        .max(40)
+        .max(40, 'ダイブタイプは40文字以内で入力してください')
         .transform((v) => (v === '' ? null : v))
         .nullable()
         .default(null),
     weather: yup
         .string()
         .trim()
-        .max(60)
+        .max(60, '天候は60文字以内で入力してください')
         .transform((v) => (v === '' ? null : v))
         .nullable()
         .default(null),
@@ -107,14 +107,14 @@ export const diveSchema = yup.object({
     wave: yup
         .string()
         .trim()
-        .max(60)
+        .max(60, '波の状況は60文字以内で入力してください')
         .transform((v) => (v === '' ? null : v))
         .nullable()
         .default(null),
     currentCondition: yup
         .string()
         .trim()
-        .max(60)
+        .max(60, '流れの状況は60文字以内で入力してください')
         .transform((v) => (v === '' ? null : v))
         .nullable()
         .default(null),
@@ -162,7 +162,7 @@ export const diveSchema = yup.object({
     gasType: yup
         .string()
         .trim()
-        .max(40)
+        .max(40, 'ガス種別は40文字以内で入力してください')
         .transform((v) => (v === '' ? null : v))
         .nullable()
         .default('air'),
@@ -209,28 +209,28 @@ export const diveSchema = yup.object({
     suitType: yup
         .string()
         .trim()
-        .max(40)
+        .max(40, 'スーツ種別は40文字以内で入力してください')
         .transform((v) => (v === '' ? null : v))
         .nullable()
         .default(null),
     equipmentNotes: yup
         .string()
         .trim()
-        .max(1000)
+        .max(1000, '装備メモは1000文字以内で入力してください')
         .transform((v) => (v === '' ? null : v))
         .nullable()
         .default(null),
     buddyName: yup
         .string()
         .trim()
-        .max(100)
+        .max(100, 'バディ名は100文字以内で入力してください')
         .transform((v) => (v === '' ? null : v))
         .nullable()
         .default(null),
     instructorName: yup
         .string()
         .trim()
-        .max(100)
+        .max(100, 'インストラクター名は100文字以内で入力してください')
         .transform((v) => (v === '' ? null : v))
         .nullable()
         .default(null),
@@ -238,7 +238,7 @@ export const diveSchema = yup.object({
     notes: yup
         .string()
         .trim()
-        .max(2000)
+        .max(2000, 'メモ・印象は2000文字以内で入力してください')
         .transform((v) => (v === '' ? null : v))
         .nullable()
         .default(null),
