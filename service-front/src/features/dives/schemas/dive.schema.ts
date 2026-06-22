@@ -294,7 +294,11 @@ export const diveSearchSchema = yup.object({
         .string()
         .transform((v) => (v === '' || v == null ? null : v))
         .nullable()
-        .test('valid-dive-type', 'ダイブタイプの値が不正です', (value) => value == null || DIVE_TYPE_VALUE_SET.has(value))
+        .test(
+            'valid-dive-type',
+            'ダイブタイプの値が不正です',
+            (value) => value == null || DIVE_TYPE_VALUE_SET.has(value),
+        )
         .default(null),
     location: yup
         .string()

@@ -82,7 +82,10 @@ export const DiveCard = ({ dive, selectable = false, selected = false, onToggleS
             {/* 選択（エクスポート）モード中は遷移を無効化し、カード全体をチェックボックスのラベルにする。
                 これによりリンクと同じ範囲のクリックで選択トグルでき、誤遷移を防ぐ。 */}
             {selectable ? (
-                <label className="flex flex-1 items-start gap-3 cursor-pointer">
+                // label はフロー要素（h2/dl 等）を含められないため div で構成する。
+                // キーボード操作は aria-label 付きチェックボックスが担い、
+                // コンテンツ部のクリックはマウス向けの選択トグル補助とする。
+                <div className="flex flex-1 items-start gap-3">
                     <input
                         type="checkbox"
                         checked={selected}
@@ -90,8 +93,15 @@ export const DiveCard = ({ dive, selectable = false, selected = false, onToggleS
                         aria-label={`エクスポート対象として選択: ${formatDate(dive.diveDate)} ${diveLocationLabel(dive)}`}
                         className="mt-1 size-4 shrink-0"
                     />
-                    <div className="flex flex-1 flex-col gap-2">{content}</div>
-                </label>
+                    {/* biome-ignore lint/a11y/useKeyWithClickEvents: 操作の主体は上のチェックボックス。ここはマウス補助 */}
+                    {/* biome-ignore lint/a11y/noStaticElementInteractions: 操作の主体は上のチェックボックス。div は冗長なマウス補助 */}
+                    <div
+                        className="flex flex-1 cursor-pointer flex-col gap-2"
+                        onClick={() => onToggleSelect?.(dive.id)}
+                    >
+                        {content}
+                    </div>
+                </div>
             ) : (
                 <Link href={`/dives/${dive.id}`} className="flex flex-1 flex-col gap-2">
                     {content}

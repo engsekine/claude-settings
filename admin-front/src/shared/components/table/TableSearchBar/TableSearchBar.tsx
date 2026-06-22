@@ -29,6 +29,7 @@ export const TableSearchBar = ({ placeholder = 'キーワード検索' }: TableS
     };
 
     return (
+        // biome-ignore lint/a11y/useSemanticElements: <search> 要素は対応が限定的。form + role="search" のランドマークを使う
         <form role="search" onSubmit={onSubmit} className="flex gap-2">
             <Input
                 type="search"

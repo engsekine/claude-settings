@@ -2,7 +2,7 @@ import { type AuditLogRow, listAuditLogs } from '@/features/audit-log';
 import { type Column, DataTable } from '@/shared/components/table/DataTable';
 import { Pagination } from '@/shared/components/table/Pagination';
 import { generatePageMetadata } from '@/shared/config/metadata';
-import { DEFAULT_PER_PAGE, type RawSearchParams, firstParam, parsePage } from '@/shared/lib/resource/params';
+import { DEFAULT_PER_PAGE, firstParam, parsePage, type RawSearchParams } from '@/shared/lib/resource/params';
 
 export const metadata = generatePageMetadata({
     slug: '/audit-logs',

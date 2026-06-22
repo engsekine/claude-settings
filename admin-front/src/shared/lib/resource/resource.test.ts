@@ -67,7 +67,6 @@ const createQueryMock = (result: { data: unknown[]; count: number }) => {
 describe('listResource', () => {
     it('page/perPage から range を計算し、件数を返す', async () => {
         const { supabase, calls } = createQueryMock({ data: [{ id: 'a' }], count: 42 });
-        // biome-ignore lint/suspicious/noExplicitAny: テスト用モック
         const result = await listResource(supabase as any, 'dive_sites', 'id', {
             page: 3,
             perPage: DEFAULT_PER_PAGE,
@@ -78,7 +77,6 @@ describe('listResource', () => {
 
     it('hasDeletedAt かつ includeDeleted=false なら deleted_at is null を適用', async () => {
         const { supabase, builder } = createQueryMock({ data: [], count: 0 });
-        // biome-ignore lint/suspicious/noExplicitAny: テスト用モック
         await listResource(supabase as any, 'dives', 'id', {
             page: 1,
             perPage: 20,
@@ -89,7 +87,6 @@ describe('listResource', () => {
 
     it('検索語があれば searchColumns で or(ilike) を適用', async () => {
         const { supabase, builder } = createQueryMock({ data: [], count: 0 });
-        // biome-ignore lint/suspicious/noExplicitAny: テスト用モック
         await listResource(supabase as any, 'dive_sites', 'id,name', {
             page: 1,
             perPage: 20,
@@ -101,7 +98,6 @@ describe('listResource', () => {
 
     it('検索語の PostgREST 特殊文字（,()%_）を除去してフィルタ構文の破壊を防ぐ', async () => {
         const { supabase, builder } = createQueryMock({ data: [], count: 0 });
-        // biome-ignore lint/suspicious/noExplicitAny: テスト用モック
         await listResource(supabase as any, 'dive_sites', 'id,name', {
             page: 1,
             perPage: 20,
@@ -114,7 +110,6 @@ describe('listResource', () => {
 
     it('並び替えは許可リストにあるカラムのみ適用する', async () => {
         const { supabase, builder } = createQueryMock({ data: [], count: 0 });
-        // biome-ignore lint/suspicious/noExplicitAny: テスト用モック
         await listResource(supabase as any, 'dive_sites', 'id', {
             page: 1,
             perPage: 20,
@@ -126,7 +121,6 @@ describe('listResource', () => {
 
     it('0 件でも rows=[] / total=0 を返す（FR-009）', async () => {
         const { supabase } = createQueryMock({ data: [], count: 0 });
-        // biome-ignore lint/suspicious/noExplicitAny: テスト用モック
         const result = await listResource(supabase as any, 'dives', 'id', { page: 1, perPage: 20 });
         expect(result.rows).toEqual([]);
         expect(result.total).toBe(0);

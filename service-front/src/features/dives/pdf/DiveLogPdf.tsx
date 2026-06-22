@@ -77,9 +77,9 @@ const DiveEntry = ({ entry }: { entry: DivePdfEntry }) => (
         {entry.thumbnails.length > 0 ? (
             <View style={styles.thumbs}>
                 {entry.thumbnails.map((bytes, index) => (
-                    // サムネイルは位置のみで識別される（安定 ID を持たない）ため index キーを許容する
-                    // biome-ignore lint/suspicious/noArrayIndexKey: 並び替え・増減しない静的な PDF 描画
                     <Image
+                        // サムネイルは位置のみで識別され安定 ID を持たない。並び替え・増減しない静的 PDF のため index を許容
+                        // biome-ignore lint/suspicious/noArrayIndexKey: 静的な PDF 描画で並び替え・増減しない
                         key={`${entry.dive.id}-thumb-${index}`}
                         style={styles.thumb}
                         src={{ data: Buffer.from(bytes), format: 'png' }}

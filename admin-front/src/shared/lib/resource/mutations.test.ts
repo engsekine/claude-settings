@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { mapMutationError } from './errors';
-import { OptimisticLockError, ReferencedError, hardDeleteRow, updateRow } from './mutations';
+import { hardDeleteRow, OptimisticLockError, ReferencedError, updateRow } from './mutations';
 
 describe('updateRow（楽観ロック）', () => {
     it('UPDATE が 0 件（updated_at 不一致）なら OptimisticLockError を投げる（FR-022 / TOCTOU 回避）', async () => {
@@ -14,14 +14,15 @@ describe('updateRow（楽観ロック）', () => {
             from: vi.fn(() => ({
                 select: vi.fn(() => ({
                     eq: vi.fn(() => ({
-                        maybeSingle: vi.fn().mockResolvedValue({ data: { id: 'id1', updated_at: 'NOW-A' }, error: null }),
+                        maybeSingle: vi
+                            .fn()
+                            .mockResolvedValue({ data: { id: 'id1', updated_at: 'NOW-A' }, error: null }),
                     })),
                 })),
                 update: vi.fn(() => updateChain),
             })),
         };
         await expect(
-            // biome-ignore lint/suspicious/noExplicitAny: テスト用モック
             updateRow(supabase as any, 'dive_sites', 'id1', { name: 'x' }, 'NOW-B', 'actor1'),
         ).rejects.toBeInstanceOf(OptimisticLockError);
     });
@@ -30,10 +31,9 @@ describe('updateRow（楽観ロック）', () => {
 describe('hardDeleteRow（参照整合性）', () => {
     it('参照件数 > 0 なら ReferencedError を投げ、削除しない（FR-014）', async () => {
         const supabase = { from: vi.fn() };
-        await expect(
-            // biome-ignore lint/suspicious/noExplicitAny: テスト用モック
-            hardDeleteRow(supabase as any, 'dive_sites', 'id1', 'actor1', 3),
-        ).rejects.toBeInstanceOf(ReferencedError);
+        await expect(hardDeleteRow(supabase as any, 'dive_sites', 'id1', 'actor1', 3)).rejects.toBeInstanceOf(
+            ReferencedError,
+        );
         expect(supabase.from).not.toHaveBeenCalled();
     });
 });

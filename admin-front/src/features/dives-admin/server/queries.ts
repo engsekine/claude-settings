@@ -8,10 +8,7 @@ import { createClient } from '@/shared/lib/supabase/server';
 type DiveFullRow = Database['public']['Tables']['dives']['Row'];
 
 /** 一覧表示に使うダイブログの主要項目 */
-export type DiveListRow = Pick<
-    DiveFullRow,
-    'id' | 'user_id' | 'dive_date' | 'location' | 'max_depth_m' | 'created_at'
->;
+export type DiveListRow = Pick<DiveFullRow, 'id' | 'user_id' | 'dive_date' | 'location' | 'max_depth_m' | 'created_at'>;
 
 export const DIVE_SEARCH_COLUMNS = ['location', 'buddy_name'] as const;
 export const DIVE_SORTABLE_COLUMNS = ['dive_date', 'created_at', 'max_depth_m'] as const;

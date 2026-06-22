@@ -18,7 +18,6 @@ import { addDivePhoto, deleteDivePhoto } from './photoActions';
 
 /** select/eq/order/limit を連結でき、await でも maybeSingle/single でも同じ結果を返す簡易チェーン */
 const chain = (result: unknown) => {
-    // biome-ignore lint/suspicious/noExplicitAny: テスト用の簡易チェーン
     const c: any = {};
     for (const m of ['select', 'eq', 'order', 'limit', 'insert', 'delete', 'update']) {
         c[m] = vi.fn(() => c);
@@ -27,7 +26,6 @@ const chain = (result: unknown) => {
     c.single = vi.fn(async () => result);
     // count クエリ（.eq を await）用に thenable にする。テスト専用の意図的な then
     // biome-ignore lint/suspicious/noThenProperty: テスト用の thenable チェーン
-    // biome-ignore lint/suspicious/noExplicitAny: テスト用の簡易チェーン
     c.then = (resolve: any) => resolve(result);
     return c;
 };

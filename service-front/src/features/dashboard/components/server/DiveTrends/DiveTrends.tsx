@@ -133,6 +133,7 @@ export const DiveTrends = ({ yearlyCounts, monthlyStats }: DiveTrendsProps) => {
                 </TrendChartCard>
             ) : (
                 <section className="flex flex-col gap-3 rounded-lg border border-border bg-background p-4">
+                    {/* TopDashboard の h2「統計の推移」配下のため h3 が正しい階層（誤検知は .markuplintrc で抑止） */}
                     <h3 className="font-semibold text-base text-foreground">月別平均水温（直近 12 ヶ月）</h3>
                     <p className="text-muted-foreground text-sm">水温を記録すると傾向が表示されます。</p>
                 </section>

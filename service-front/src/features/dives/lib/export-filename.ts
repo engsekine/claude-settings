@@ -41,7 +41,6 @@ export const buildExportFilename = ({ format, date, single }: ExportFilenameInpu
  * 日本語ファイル名でも各ブラウザで文字化けせず保存できるようにする。
  */
 export const contentDisposition = (filename: string): string => {
-    // biome-ignore lint/suspicious/noControlCharactersInRegex: ASCII 範囲外（制御文字含む）を _ に置換する意図
     const ascii = filename.replace(/[^\x20-\x7E]/g, '_').replace(/"/g, '');
     const encoded = encodeURIComponent(filename);
     return `attachment; filename="${ascii}"; filename*=UTF-8''${encoded}`;

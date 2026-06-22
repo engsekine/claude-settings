@@ -82,11 +82,13 @@ export const DivePhotoUploader = ({ diveId, userId, existingCount }: DivePhotoUp
                 {status}
             </p>
             {errors.length > 0 && (
-                <ul role="alert" className="flex flex-col gap-1 text-destructive text-sm">
-                    {errors.map((message) => (
-                        <li key={message}>{message}</li>
-                    ))}
-                </ul>
+                <div role="alert">
+                    <ul className="flex flex-col gap-1 text-destructive text-sm">
+                        {errors.map((message) => (
+                            <li key={message}>{message}</li>
+                        ))}
+                    </ul>
+                </div>
             )}
         </div>
     );

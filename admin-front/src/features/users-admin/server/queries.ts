@@ -8,10 +8,7 @@ import { createClient } from '@/shared/lib/supabase/server';
 type UserDetailRow = Database['public']['Tables']['user_details']['Row'];
 
 /** 一覧表示に使うユーザーの主要項目（user_details 起点。1 ユーザー 1 行） */
-export type UserListRow = Pick<
-    UserDetailRow,
-    'user_id' | 'nickname' | 'last_name' | 'first_name' | 'created_at'
->;
+export type UserListRow = Pick<UserDetailRow, 'user_id' | 'nickname' | 'last_name' | 'first_name' | 'created_at'>;
 
 /** 詳細表示に使うプロフィール項目（個人情報の過剰露出を避け必要分のみ / FR-017） */
 export type UserDetailRowView = Pick<

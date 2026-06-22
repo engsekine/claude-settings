@@ -46,9 +46,7 @@ export const SearchSelect = ({
 
     // 入力中はクエリで絞り込み、閉じているときは選択ラベルを表示する
     const keyword = query.trim().toLowerCase();
-    const filtered = keyword
-        ? options.filter((option) => option.label.toLowerCase().includes(keyword))
-        : options;
+    const filtered = keyword ? options.filter((option) => option.label.toLowerCase().includes(keyword)) : options;
 
     const open = () => {
         setIsOpen(true);
@@ -149,7 +147,7 @@ export const SearchSelect = ({
                         type="button"
                         onClick={clear}
                         aria-label="選択を解除"
-                        className="-translate-y-1/2 absolute top-1/2 right-2 text-muted-foreground text-sm hover:text-foreground"
+                        className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground text-sm hover:text-foreground"
                     >
                         ×
                     </button>
@@ -158,18 +156,23 @@ export const SearchSelect = ({
                 {isOpen && (
                     <ul
                         id={listboxId}
+                        // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: WAI-ARIA combobox の listbox。ul=listbox は正しいパターン
                         role="listbox"
                         aria-label={label}
                         className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-border bg-background py-1 shadow-lg"
                     >
                         {filtered.length === 0 ? (
+                            // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: WAI-ARIA listbox の option。li=option は正しいパターン
+                            // biome-ignore lint/a11y/useFocusableInteractive: フォーカスは入力欄に保持し option は aria-activedescendant 相当で選択する
                             <li role="option" aria-selected="false" className="px-3 py-2 text-muted-foreground text-sm">
                                 {emptyMessage}
                             </li>
                         ) : (
                             filtered.map((option, index) => (
+                                // biome-ignore lint/a11y/useFocusableInteractive: フォーカスは入力欄に保持し option は activeIndex で選択する
                                 <li
                                     key={option.value}
+                                    // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: WAI-ARIA listbox の option。li=option は正しいパターン
                                     role="option"
                                     aria-selected={option.value === value}
                                     className={`cursor-pointer px-3 py-2 text-sm ${

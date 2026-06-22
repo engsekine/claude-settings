@@ -23,9 +23,10 @@ describe('diveSchema', () => {
     });
 
     it('diveSiteId だけ指定すれば location が空でも通過する（マスタ参照）', async () => {
-        await expect(
-            diveSchema.validate({ ...validBase, location: '', diveSiteId: 'site-1' }),
-        ).resolves.toMatchObject({ diveSiteId: 'site-1', location: null });
+        await expect(diveSchema.validate({ ...validBase, location: '', diveSiteId: 'site-1' })).resolves.toMatchObject({
+            diveSiteId: 'site-1',
+            location: null,
+        });
     });
 
     it('diveSiteId と location を両方指定すると失敗する（排他）', async () => {
@@ -201,9 +202,9 @@ describe('diveSchema', () => {
     });
 
     it('装備メモが 1000 文字を超えると失敗する', async () => {
-        await expect(
-            diveSchema.validate({ ...validBase, equipmentNotes: 'あ'.repeat(1001) }),
-        ).rejects.toThrow(/装備メモは1000文字以内/);
+        await expect(diveSchema.validate({ ...validBase, equipmentNotes: 'あ'.repeat(1001) })).rejects.toThrow(
+            /装備メモは1000文字以内/,
+        );
     });
 
     it('装備メモが 1000 文字ちょうどなら通過する', async () => {
@@ -292,14 +293,17 @@ describe('diveSearchSchema', () => {
     });
 
     it('終了日 = 開始日は通過する（両端含む）', async () => {
-        await expect(diveSearchSchema.validate({ dateFrom: '2025-07-01', dateTo: '2025-07-01' })).resolves.toMatchObject(
-            { dateFrom: '2025-07-01', dateTo: '2025-07-01' },
-        );
+        await expect(
+            diveSearchSchema.validate({ dateFrom: '2025-07-01', dateTo: '2025-07-01' }),
+        ).resolves.toMatchObject({ dateFrom: '2025-07-01', dateTo: '2025-07-01' });
     });
 
     // --- US2: 深度（FR-002 / FR-006） ---
     it('深度は片側のみでも通過する', async () => {
-        await expect(diveSearchSchema.validate({ depthMin: 18 })).resolves.toMatchObject({ depthMin: 18, depthMax: null });
+        await expect(diveSearchSchema.validate({ depthMin: 18 })).resolves.toMatchObject({
+            depthMin: 18,
+            depthMax: null,
+        });
     });
 
     it('深度の上限が下限より小さいと失敗する', async () => {

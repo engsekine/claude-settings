@@ -1,13 +1,19 @@
-import Link from 'next/link';
-
 import { buttonVariants } from '@repo/ui/components/button';
+import Link from 'next/link';
 
 import { type DiveSiteListRow, DiveSiteRowActions, listDiveSites } from '@/features/dive-sites-admin';
 import { type Column, DataTable } from '@/shared/components/table/DataTable';
 import { Pagination } from '@/shared/components/table/Pagination';
 import { TableSearchBar } from '@/shared/components/table/TableSearchBar';
 import { generatePageMetadata } from '@/shared/config/metadata';
-import { DEFAULT_PER_PAGE, type RawSearchParams, firstParam, parsePage, parseSearch, parseSort } from '@/shared/lib/resource/params';
+import {
+    DEFAULT_PER_PAGE,
+    firstParam,
+    parsePage,
+    parseSearch,
+    parseSort,
+    type RawSearchParams,
+} from '@/shared/lib/resource/params';
 
 export const metadata = generatePageMetadata({
     slug: '/dive-sites',

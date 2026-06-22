@@ -2,9 +2,9 @@ import { diveLocationLabel } from './diveLabel';
 
 describe('diveLocationLabel', () => {
     it('サイト参照があれば「エリア / 名称」を返す', () => {
-        expect(
-            diveLocationLabel({ location: null, diveSite: { id: '1', name: '大瀬崎', area: '伊豆' } }),
-        ).toBe('伊豆 / 大瀬崎');
+        expect(diveLocationLabel({ location: null, diveSite: { id: '1', name: '大瀬崎', area: '伊豆' } })).toBe(
+            '伊豆 / 大瀬崎',
+        );
     });
 
     it('サイト参照でエリアが null なら名称のみ', () => {

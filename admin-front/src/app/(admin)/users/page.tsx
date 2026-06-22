@@ -1,11 +1,18 @@
 import Link from 'next/link';
 
-import { type UserListRow, listUsers } from '@/features/users-admin';
+import { listUsers, type UserListRow } from '@/features/users-admin';
 import { type Column, DataTable } from '@/shared/components/table/DataTable';
 import { Pagination } from '@/shared/components/table/Pagination';
 import { TableSearchBar } from '@/shared/components/table/TableSearchBar';
 import { generatePageMetadata } from '@/shared/config/metadata';
-import { DEFAULT_PER_PAGE, type RawSearchParams, firstParam, parsePage, parseSearch, parseSort } from '@/shared/lib/resource/params';
+import {
+    DEFAULT_PER_PAGE,
+    firstParam,
+    parsePage,
+    parseSearch,
+    parseSort,
+    type RawSearchParams,
+} from '@/shared/lib/resource/params';
 
 export const metadata = generatePageMetadata({
     slug: '/users',

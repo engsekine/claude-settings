@@ -70,6 +70,14 @@ export const LineChart = ({ items, description, unit = '' }: LineChartProps) => 
     const segments = splitIntoSegments(points).filter((segment) => segment.length >= 2);
     const visiblePoints = points.filter((point): point is ChartPoint => point !== null);
 
+    // 欠測（null）で分断された各線分を、1 本の path の複数サブパス（M…L…）として描画する。
+    // 線分ごとに polyline を map で出力すると markuplint(react-spec) が
+    // permitted-contents を誤検知するため、d を 1 本にまとめる。
+    // 各線分の先頭が M（move-to）になり線が途切れるので、欠測の分断表現は保たれる。
+    const linePath = segments
+        .map((segment) => segment.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x},${point.y}`).join(' '))
+        .join(' ');
+
     return (
         <svg role="img" aria-label={description} viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`} className="h-auto w-full">
             <line
@@ -80,16 +88,7 @@ export const LineChart = ({ items, description, unit = '' }: LineChartProps) => 
                 className="stroke-border"
                 strokeWidth="1"
             />
-            {segments.map((segment) => (
-                <polyline
-                    data-line
-                    key={`segment-${segment.at(0)?.index ?? 0}`}
-                    points={segment.map((point) => `${point.x},${point.y}`).join(' ')}
-                    fill="none"
-                    className="stroke-primary"
-                    strokeWidth="2"
-                />
-            ))}
+            <path data-line d={linePath} fill="none" className="stroke-primary" strokeWidth="2" />
             {visiblePoints.map((point) => (
                 <g key={`point-${point.index}`}>
                     <circle data-point cx={point.x} cy={point.y} r={POINT_RADIUS} className="fill-primary" />

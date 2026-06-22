@@ -1,5 +1,5 @@
-import { ADMIN_AUTH_COOKIE_NAME } from '@repo/supabase/constants';
 import { createClient as createBaseClient } from '@repo/supabase/browser';
+import { ADMIN_AUTH_COOKIE_NAME } from '@repo/supabase/constants';
 
 /**
  * 管理画面（Client Component）用の Supabase クライアント。

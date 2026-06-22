@@ -584,11 +584,13 @@ export const DiveForm = ({ diveId, defaultValues, siteOptions = [], existingPhot
                         </p>
                     )}
                     {photoErrors.length > 0 && (
-                        <ul role="alert" className="flex flex-col gap-1 text-destructive text-sm">
-                            {photoErrors.map((message) => (
-                                <li key={message}>{message}</li>
-                            ))}
-                        </ul>
+                        <div role="alert">
+                            <ul className="flex flex-col gap-1 text-destructive text-sm">
+                                {photoErrors.map((message) => (
+                                    <li key={message}>{message}</li>
+                                ))}
+                            </ul>
+                        </div>
                     )}
                 </section>
             )}

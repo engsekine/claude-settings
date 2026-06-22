@@ -2,8 +2,8 @@
 
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@repo/ui/components/button';
-import { useState } from 'react';
 import type { KeyboardEvent, WheelEvent } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { DIVE_TYPE_OPTIONS } from '@/features/dives/constants';

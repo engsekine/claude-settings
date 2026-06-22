@@ -1,4 +1,4 @@
-import { KpiCard, getDashboardKpis } from '@/features/dashboard';
+import { getDashboardKpis, KpiCard } from '@/features/dashboard';
 import { generatePageMetadata } from '@/shared/config/metadata';
 
 export const metadata = generatePageMetadata({

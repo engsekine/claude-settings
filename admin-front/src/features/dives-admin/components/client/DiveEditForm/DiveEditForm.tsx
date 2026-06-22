@@ -44,7 +44,14 @@ export const DiveEditForm = ({ diveId, expectedUpdatedAt, defaultValues }: DiveE
 
     return (
         <form onSubmit={onSubmit} className="flex max-w-xl flex-col gap-4" noValidate>
-            <FormField id="dive_date" label="潜水日" type="date" required error={errors.dive_date?.message} {...register('dive_date')} />
+            <FormField
+                id="dive_date"
+                label="潜水日"
+                type="date"
+                required
+                error={errors.dive_date?.message}
+                {...register('dive_date')}
+            />
             <FormField
                 id="max_depth_m"
                 label="最大水深(m)"

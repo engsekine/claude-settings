@@ -2,6 +2,12 @@ import { render, screen } from '@testing-library/react';
 
 import { LineChart } from './LineChart';
 
+/** data-line path の d に含まれるサブパス（M=move-to）の数 = 線分の本数 */
+const countLineSegments = (container: HTMLElement): number => {
+    const d = container.querySelector('path[data-line]')?.getAttribute('d') ?? '';
+    return d.match(/M/g)?.length ?? 0;
+};
+
 describe('LineChart', () => {
     it('role="img" と aria-label で SVG を公開する', () => {
         render(
@@ -31,8 +37,8 @@ describe('LineChart', () => {
                 unit="℃"
             />,
         );
-        // null を挟んで 2 本の線分に分かれる
-        expect(container.querySelectorAll('polyline[data-line]')).toHaveLength(2);
+        // null を挟んで 2 本の線分（サブパス）に分かれる
+        expect(countLineSegments(container)).toBe(2);
         // データ点は非 null の 4 つだけ
         expect(container.querySelectorAll('circle[data-point]')).toHaveLength(4);
         expect(container.innerHTML).not.toContain('NaN');
@@ -40,7 +46,7 @@ describe('LineChart', () => {
 
     it('単一点でも破綻しない（線なし・点のみ）', () => {
         const { container } = render(<LineChart items={[{ label: '6月', value: 28.0 }]} description="深度" unit="m" />);
-        expect(container.querySelectorAll('polyline[data-line]')).toHaveLength(0);
+        expect(countLineSegments(container)).toBe(0);
         expect(container.querySelectorAll('circle[data-point]')).toHaveLength(1);
         expect(container.innerHTML).not.toContain('NaN');
     });
@@ -56,7 +62,7 @@ describe('LineChart', () => {
                 unit="℃"
             />,
         );
-        expect(container.querySelectorAll('polyline[data-line]')).toHaveLength(0);
+        expect(countLineSegments(container)).toBe(0);
         expect(container.querySelectorAll('circle[data-point]')).toHaveLength(0);
         expect(container.innerHTML).not.toContain('NaN');
     });

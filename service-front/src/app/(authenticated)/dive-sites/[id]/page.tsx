@@ -30,9 +30,7 @@ export default async function DiveSitePage({ params }: DiveSitePageProps) {
 
     return (
         <div className="flex flex-1 flex-col">
-            <Breadcrumbs
-                breadcrumbs={[{ name: 'ダイビングログ', slug: '/dives' }, { name: siteLabel(site) }]}
-            />
+            <Breadcrumbs breadcrumbs={[{ name: 'ダイビングログ', slug: '/dives' }, { name: siteLabel(site) }]} />
             <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
                 <DiveSiteDetail site={site} stats={stats} />
             </div>

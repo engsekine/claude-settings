@@ -7,13 +7,6 @@ interface DiveSiteDetailProps {
     stats: SiteStats;
 }
 
-const Stat = ({ label, value }: { label: string; value: string }) => (
-    <div className="flex flex-col gap-1 rounded-lg border border-border bg-background p-4">
-        <dt className="font-medium text-muted-foreground text-sm">{label}</dt>
-        <dd className="font-semibold text-foreground text-xl">{value}</dd>
-    </div>
-);
-
 /**
  * ダイブサイト詳細。サイト情報と、本人のログから算出した実績
  * （潜水本数・平均透明度・よく潜る時期）を表示する。0 件・データ不足の空状態に配慮する。
@@ -40,12 +33,20 @@ export const DiveSiteDetail = ({ site, stats }: DiveSiteDetailProps) => {
                     <p className="text-muted-foreground text-sm">まだこのサイトのダイブログがありません</p>
                 ) : (
                     <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                        <Stat label="潜水本数" value={`${stats.diveCount}本`} />
-                        <Stat
-                            label="平均透明度"
-                            value={stats.avgVisibilityM === null ? '—' : `${stats.avgVisibilityM}m`}
-                        />
-                        <Stat label="よく潜る時期" value={bestSeason} />
+                        <div className="flex flex-col gap-1 rounded-lg border border-border bg-background p-4">
+                            <dt className="font-medium text-muted-foreground text-sm">潜水本数</dt>
+                            <dd className="font-semibold text-foreground text-xl">{`${stats.diveCount}本`}</dd>
+                        </div>
+                        <div className="flex flex-col gap-1 rounded-lg border border-border bg-background p-4">
+                            <dt className="font-medium text-muted-foreground text-sm">平均透明度</dt>
+                            <dd className="font-semibold text-foreground text-xl">
+                                {stats.avgVisibilityM === null ? '—' : `${stats.avgVisibilityM}m`}
+                            </dd>
+                        </div>
+                        <div className="flex flex-col gap-1 rounded-lg border border-border bg-background p-4">
+                            <dt className="font-medium text-muted-foreground text-sm">よく潜る時期</dt>
+                            <dd className="font-semibold text-foreground text-xl">{bestSeason}</dd>
+                        </div>
                     </dl>
                 )}
             </section>

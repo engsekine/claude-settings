@@ -15,7 +15,12 @@ export interface TableEditorConfig {
 }
 
 export const ALLOWED_TABLES = {
-    user_details: { label: 'ユーザー詳細', searchColumns: ['nickname', 'last_name', 'first_name'], sortableColumns: ['created_at'], hasDeletedAt: false },
+    user_details: {
+        label: 'ユーザー詳細',
+        searchColumns: ['nickname', 'last_name', 'first_name'],
+        sortableColumns: ['created_at'],
+        hasDeletedAt: false,
+    },
     certifications: { label: '資格', searchColumns: [], sortableColumns: ['created_at'], hasDeletedAt: false },
     certification_tags: { label: '資格タグ', searchColumns: [], sortableColumns: [], hasDeletedAt: false },
     dive_plans: { label: 'ダイブプラン', searchColumns: [], sortableColumns: ['created_at'], hasDeletedAt: false },
@@ -26,5 +31,4 @@ export const ALLOWED_TABLES = {
 export type AllowedTable = keyof typeof ALLOWED_TABLES;
 
 /** 許可リストに含まれるテーブルかを型ガードで判定する */
-export const isAllowedTable = (name: string): name is AllowedTable =>
-    Object.hasOwn(ALLOWED_TABLES, name);
+export const isAllowedTable = (name: string): name is AllowedTable => Object.hasOwn(ALLOWED_TABLES, name);

@@ -27,6 +27,8 @@ interface TrendChartCardProps {
 export const TrendChartCard = ({ title, table, children }: TrendChartCardProps) => {
     return (
         <section className="flex flex-col gap-3 rounded-lg border border-border bg-background p-4">
+            {/* TopDashboard の h2「統計の推移」配下に置かれるため h3 が正しい階層。
+                markuplint のコンポーネント単独解析による見出しスキップ誤検知は .markuplintrc で抑止 */}
             <h3 className="font-semibold text-base text-foreground">{title}</h3>
             {children}
             <details className="text-sm">

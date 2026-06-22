@@ -53,8 +53,19 @@ export const DiveSiteForm = ({ mode, siteId, expectedUpdatedAt, defaultValues }:
         <form onSubmit={onSubmit} className="flex max-w-xl flex-col gap-4" noValidate>
             <FormField id="name" label="名称" required error={errors.name?.message} {...register('name')} />
             <FormField id="area" label="エリア" error={errors.area?.message} {...register('area')} />
-            <FormField id="country" label="国コード" required error={errors.country?.message} {...register('country')} />
-            <FormTextarea id="description" label="説明" error={errors.description?.message} {...register('description')} />
+            <FormField
+                id="country"
+                label="国コード"
+                required
+                error={errors.country?.message}
+                {...register('country')}
+            />
+            <FormTextarea
+                id="description"
+                label="説明"
+                error={errors.description?.message}
+                {...register('description')}
+            />
 
             {errors.root && (
                 <div role="alert" className="text-red-600 text-sm">

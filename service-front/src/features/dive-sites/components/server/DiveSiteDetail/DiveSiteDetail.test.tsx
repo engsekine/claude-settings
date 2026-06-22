@@ -29,7 +29,12 @@ describe('DiveSiteDetail', () => {
     });
 
     it('ログ 0 件のときは実績の代わりに案内を表示する', () => {
-        render(<DiveSiteDetail site={site} stats={buildStats({ diveCount: 0, avgVisibilityM: null, bestSeasonMonths: [] })} />);
+        render(
+            <DiveSiteDetail
+                site={site}
+                stats={buildStats({ diveCount: 0, avgVisibilityM: null, bestSeasonMonths: [] })}
+            />,
+        );
         expect(screen.getByText('まだこのサイトのダイブログがありません')).toBeInTheDocument();
         expect(screen.queryByText(/本$/)).not.toBeInTheDocument();
     });
