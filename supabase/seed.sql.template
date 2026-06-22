@@ -105,6 +105,65 @@ insert into auth.identities (
 );
 
 -- ========================================
+-- 開発用の管理者（admin-front 用 / local development 専用）
+--   email   : admin@example.com
+--   password: admin-password
+-- 同一 auth.users を共有するため on_auth_user_created トリガが
+-- public.users / public.user_details も自動挿入する（meta を埋める）。
+-- そのうえで public.admin_users に superadmin として登録する。
+-- 本番では使用しない。
+-- ========================================
+delete from auth.users where email = 'admin@example.com';
+
+insert into auth.users (
+    instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+    raw_app_meta_data, raw_user_meta_data,
+    confirmation_token, email_change, email_change_token_new, recovery_token,
+    created_at, updated_at
+) values (
+    '00000000-0000-0000-0000-000000000000',
+    '000000ad-0000-0000-0000-000000000001',
+    'authenticated',
+    'authenticated',
+    'admin@example.com',
+    crypt('admin-password', gen_salt('bf')),
+    now(),
+    '{"provider": "email", "providers": ["email"]}'::jsonb,
+    jsonb_build_object(
+        'last_name', '運営',
+        'first_name', '管理者',
+        'last_name_romaji', 'Unei',
+        'first_name_romaji', 'Kanrisha',
+        'nickname', 'admin',
+        'birth_on', '1990-01-01',
+        'gender', 'unanswered'
+    ),
+    '', '', '', '',
+    now(), now()
+);
+
+insert into auth.identities (
+    id, user_id, identity_data, provider, provider_id,
+    last_sign_in_at, created_at, updated_at
+) values (
+    gen_random_uuid(),
+    '000000ad-0000-0000-0000-000000000001',
+    jsonb_build_object(
+        'sub', '000000ad-0000-0000-0000-000000000001',
+        'email', 'admin@example.com',
+        'email_verified', true,
+        'phone_verified', false
+    ),
+    'email',
+    '000000ad-0000-0000-0000-000000000001',
+    now(), now(), now()
+);
+
+-- 管理者として登録（superadmin）
+insert into public.admin_users (id, display_name, role)
+values ('000000ad-0000-0000-0000-000000000001', '運営管理者', 'superadmin');
+
+-- ========================================
 -- サンプルダイビングログ
 -- dive_type / gas_type / tank_type の値は features/dives/constants.ts の value と一致させる
 -- ========================================

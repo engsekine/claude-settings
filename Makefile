@@ -14,6 +14,9 @@ CLAUDE_TARGETS := skills agents rules
         front-test-storybook front-test-e2e front-test-e2e-ui front-test-a11y front-test-all \
         front-storybook front-build-storybook front-ci-storybook \
         front-validate \
+        admin-cert admin-clean-cert \
+        admin-dev admin-dev-https admin-build admin-start \
+        admin-type-check admin-test admin-validate \
         supabase-seed supabase-reset supabase-migration-up
 
 ## グローバルの ~/.claude に対してシンボリックリンクを作成する
@@ -179,6 +182,37 @@ front-build-storybook:
 front-ci-storybook:
 	$(MAKE) -C service-front ci-storybook
 
+## admin-front (運営管理画面 / ポート 3001)
+## 実体は admin-front/Makefile に定義し、ここからは委譲する（service-front と同じ構造）。
+## service-front と異なり Docker を使わず npm で直接起動する。
+## 同一 Supabase を共有するため、事前に `make supabase-reset`（管理者 seed 投入）が必要。
+admin-cert:
+	$(MAKE) -C admin-front cert
+
+admin-clean-cert:
+	$(MAKE) -C admin-front clean-cert
+
+admin-dev:
+	$(MAKE) -C admin-front dev
+
+admin-dev-https:
+	$(MAKE) -C admin-front dev-https
+
+admin-build:
+	$(MAKE) -C admin-front build
+
+admin-start:
+	$(MAKE) -C admin-front start
+
+admin-type-check:
+	$(MAKE) -C admin-front type-check
+
+admin-test:
+	$(MAKE) -C admin-front test
+
+admin-validate:
+	$(MAKE) -C admin-front validate
+
 help:
 	@echo "Usage:"
 	@echo ""
@@ -226,6 +260,18 @@ help:
 	@echo "  make front-storybook        Storybook開発サーバー起動（http://localhost:6006）"
 	@echo "  make front-build-storybook  Storybook を静的ビルド"
 	@echo "  make front-ci-storybook     Storybook build + テスト (CI 用)"
+	@echo ""
+	@echo "  [admin-front: 運営管理画面 / ポート 3001]"
+	@echo "  ※ 事前に make supabase-reset（管理者 seed 投入）が必要"
+	@echo "  make admin-dev              開発サーバー起動（HTTP  / http://localhost:3001）"
+	@echo "  make admin-dev-https        開発サーバー起動（HTTPS / https://localhost:3001）"
+	@echo "  make admin-cert             SSL証明書を生成（admin-front/certificates/）"
+	@echo "  make admin-clean-cert       SSL証明書を削除"
+	@echo "  make admin-build            プロダクションビルド"
+	@echo "  make admin-start            本番サーバー起動"
+	@echo "  make admin-type-check       TypeScript 型チェック"
+	@echo "  make admin-test             単体テスト"
+	@echo "  make admin-validate         型チェック + Biome + テスト"
 	@echo ""
 	@echo "  [supabase]"
 	@echo "  make supabase-seed          seed.sql.template を .env.local で展開して seed.sql を生成"

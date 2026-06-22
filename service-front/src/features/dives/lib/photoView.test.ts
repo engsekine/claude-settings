@@ -13,6 +13,7 @@ const row = (over: Record<string, unknown> = {}) => ({
     height: 1536,
     created_at: '2026-06-16T00:00:00Z',
     updated_at: '2026-06-16T00:00:00Z',
+    deleted_at: null,
     ...over,
 });
 

@@ -11,3 +11,14 @@
  * これを防ぐため、全クライアントで同一の Cookie 名を明示する。
  */
 export const AUTH_COOKIE_NAME = 'sb-divelog-auth-token';
+
+/**
+ * 管理画面（admin-front）専用の認証セッション Cookie 名。
+ *
+ * admin-front は service-front と同一 Supabase プロジェクトを共有するが、
+ * 同一ホスト（localhost）ではポートを越えて Cookie が共有されるため、
+ * 既定の Cookie 名のままだと利用者セッションが admin-front に流れ込む。
+ * これを防ぎセッションを完全分離するため、admin-front では本 Cookie 名を
+ * クライアント生成時に明示的に注入する（FR-005）。
+ */
+export const ADMIN_AUTH_COOKIE_NAME = 'sb-divelog-admin-auth-token';

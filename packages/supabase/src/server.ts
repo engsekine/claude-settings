@@ -12,7 +12,7 @@ import type { Database } from './types';
  * （`http://host.docker.internal:54321` 等）を `SUPABASE_INTERNAL_URL` に設定し、
  * サーバー側ではそちらを優先する。
  */
-export const createClient = async () => {
+export const createClient = async (cookieName: string = AUTH_COOKIE_NAME) => {
     const cookieStore = await cookies();
 
     const url = process.env['SUPABASE_INTERNAL_URL'] ?? process.env['NEXT_PUBLIC_SUPABASE_URL'];
@@ -26,7 +26,7 @@ export const createClient = async () => {
     }
 
     return createServerClient<Database>(url, anonKey, {
-        cookieOptions: { name: AUTH_COOKIE_NAME },
+        cookieOptions: { name: cookieName },
         cookies: {
             getAll: () => cookieStore.getAll(),
             setAll: (cookiesToSet: { name: string; value: string; options: Record<string, unknown> }[]) => {

@@ -3,8 +3,13 @@ import { createBrowserClient } from '@supabase/ssr';
 import { AUTH_COOKIE_NAME } from './constants';
 import type { Database } from './types';
 
-/** ブラウザ（Client Component）用の Supabase クライアント */
-export const createClient = () => {
+/**
+ * ブラウザ（Client Component）用の Supabase クライアント
+ *
+ * @param cookieName 認証セッション Cookie 名。既定は利用者向け（service-front）の
+ *   `AUTH_COOKIE_NAME`。admin-front は `ADMIN_AUTH_COOKIE_NAME` を渡してセッションを分離する。
+ */
+export const createClient = (cookieName: string = AUTH_COOKIE_NAME) => {
     const url = process.env['NEXT_PUBLIC_SUPABASE_URL'];
     const anonKey = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'];
 
@@ -16,6 +21,6 @@ export const createClient = () => {
     }
 
     return createBrowserClient<Database>(url, anonKey, {
-        cookieOptions: { name: AUTH_COOKIE_NAME },
+        cookieOptions: { name: cookieName },
     });
 };
