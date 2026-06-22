@@ -1,12 +1,22 @@
 import { buttonVariants } from '@repo/ui/components/button';
+import type { Route } from 'next';
 import Link from 'next/link';
 
 import { DeleteDiveButton } from '@/features/dives/components/client/DeleteDiveButton';
+import { DivePhotoGallery } from '@/features/dives/components/client/DivePhotoGallery';
+import { DivePhotoUploader } from '@/features/dives/components/client/DivePhotoUploader';
 import { TANK_TYPE_LABEL_MAP, type TankTypeValue } from '@/features/dives/constants';
-import type { Dive } from '@/features/dives/types';
+import { diveLocationLabel } from '@/features/dives/lib/diveLabel';
+import { calcSacRate, formatSacRate, SAC_INPUT_FIELD_LABELS } from '@/features/dives/lib/sacRate';
+import type { Dive, DivePhotoView } from '@/features/dives/types';
+import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
 
 interface DiveDetailProps {
     dive: Dive;
+    /** 添付写真（表示順・署名 URL 解決済み）。既定は空 */
+    photos?: DivePhotoView[];
+    /** 本人として写真を管理（追加）できるか。公開ページなどでは false */
+    canManage?: boolean;
 }
 
 const EMPTY_PLACEHOLDER = '—';
@@ -48,13 +58,31 @@ const FullField = ({ label, value }: { label: string; value: string | null | und
     );
 };
 
-export const DiveDetail = ({ dive }: DiveDetailProps) => {
+export const DiveDetail = ({ dive, photos = [], canManage = false }: DiveDetailProps) => {
+    const tidePhase = getTidePhase(dive.diveDate);
+    const sacRate = calcSacRate(dive);
+
     return (
         <div className="flex flex-col gap-6">
             <header className="flex flex-col gap-2">
-                <span className="text-muted-foreground text-sm">{formatDate(dive.diveDate)}</span>
+                <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground text-sm">{formatDate(dive.diveDate)}</span>
+                    {/* バッジは text-muted-foreground だと bg-muted 上でコントラスト AA 未達のため text-foreground を使う */}
+                    {tidePhase !== null && (
+                        <span className="rounded-md bg-muted px-2 py-0.5 text-foreground text-xs">
+                            <span className="sr-only">潮回り: </span>
+                            {TIDE_PHASE_LABELS[tidePhase]}
+                        </span>
+                    )}
+                </div>
                 <h1 className="flex items-baseline gap-2 font-semibold text-2xl">
-                    {dive.location}
+                    {dive.diveSite ? (
+                        <Link href={`/dive-sites/${dive.diveSite.id}` as Route} className="text-primary underline">
+                            {diveLocationLabel(dive)}
+                        </Link>
+                    ) : (
+                        diveLocationLabel(dive)
+                    )}
                     {dive.diveNumber !== null && (
                         <span className="font-normal text-muted-foreground text-xl">#{dive.diveNumber}</span>
                     )}
@@ -134,6 +162,14 @@ export const DiveDetail = ({ dive }: DiveDetailProps) => {
                     <Field label="スーツ" value={dive.suitType} />
                 </div>
 
+                {sacRate.status === 'ok' && <Field label="エア消費率" value={formatSacRate(sacRate.sacRateLpm)} />}
+                {sacRate.status === 'missing' && (
+                    <p className="text-muted-foreground text-sm">
+                        {sacRate.missingFields.map((field) => SAC_INPUT_FIELD_LABELS[field]).join('・')}
+                        を入力するとエア消費率が表示されます
+                    </p>
+                )}
+
                 <FullField label="装備メモ" value={dive.equipmentNotes} />
             </section>
 
@@ -150,7 +186,26 @@ export const DiveDetail = ({ dive }: DiveDetailProps) => {
                 <FullField label="メモ・印象" value={dive.notes} />
             </section>
 
+            {(photos.length > 0 || canManage) && (
+                <section aria-labelledby="dive-detail-photos" className="flex flex-col gap-4">
+                    <h2 id="dive-detail-photos" className="font-semibold text-lg">
+                        写真
+                    </h2>
+                    <DivePhotoGallery photos={photos} canManage={canManage} />
+                    {canManage && (
+                        <DivePhotoUploader diveId={dive.id} userId={dive.userId} existingCount={photos.length} />
+                    )}
+                </section>
+            )}
+
             <div className="flex items-center justify-end gap-2 border-border border-t pt-6">
+                <a
+                    href={`/dives/export?format=pdf&ids=${dive.id}`}
+                    download
+                    className={buttonVariants({ variant: 'outline' })}
+                >
+                    PDF出力
+                </a>
                 <Link href={`/dives/${dive.id}/edit`} className={buttonVariants({ variant: 'outline' })}>
                     編集
                 </Link>

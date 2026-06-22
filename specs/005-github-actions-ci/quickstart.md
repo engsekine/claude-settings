@@ -49,7 +49,7 @@ npx supabase db lint
 
 ### 5. branch protection（手動設定）
 
-`docs/ci.md` の手順に従い required checks を設定 → 壊れた PR のマージボタンが無効化されることを確認
+`specs/005-github-actions-ci/ci.md` の手順に従い required checks を設定 → 壊れた PR のマージボタンが無効化されることを確認
 
 ## 期待結果サマリー
 

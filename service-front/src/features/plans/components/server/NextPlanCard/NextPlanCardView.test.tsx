@@ -31,6 +31,12 @@ describe('NextPlanCardView', () => {
             expect(screen.getByRole('link')).toHaveAttribute('href', '/plans/plan-1');
         });
 
+        it('予定日に対応する潮回りラベルを表示する', () => {
+            // 2026-06-20 は新月の数日後（旧暦 5 日相当）= 中潮
+            render(<NextPlanCardView summary={baseSummary} />);
+            expect(screen.getByText('中潮')).toBeInTheDocument();
+        });
+
         it('daysUntil が正のときは「あとN日」を表示する', () => {
             render(<NextPlanCardView summary={baseSummary} />);
             expect(screen.getByText('あと9日')).toBeInTheDocument();

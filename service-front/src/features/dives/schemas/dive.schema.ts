@@ -1,10 +1,11 @@
 import * as yup from 'yup';
 
-import { TANK_TYPE_OPTIONS } from '@/features/dives/constants';
+import { DIVE_TYPE_OPTIONS, TANK_TYPE_OPTIONS } from '@/features/dives/constants';
 import { todayInJst } from '@/shared/lib/date';
 import { optionalNumber } from '@/shared/schemas/transforms';
 
 const TANK_TYPE_VALUES = TANK_TYPE_OPTIONS.map((option) => option.value);
+const DIVE_TYPE_VALUE_SET = new Set<string>(DIVE_TYPE_OPTIONS.map((option) => option.value));
 
 /**
  * YYYY-MM-DD の日付文字列が 1900-01-01 〜 日本時間の当日の範囲内かチェック。
@@ -42,23 +43,40 @@ export const diveSchema = yup.object({
         .required('潜水日を入力してください'),
     entryTime: optionalTime,
     exitTime: optionalTime,
+    // ダイブサイト（マスタ）参照。未選択は null。location との排他は下のテストで担保
+    diveSiteId: yup
+        .string()
+        .transform((v) => (v === '' ? null : v))
+        .nullable()
+        .test('not-both', 'ポイントは選択と手入力のどちらか一方にしてください', function (value) {
+            const location = (this.parent as { location?: string | null }).location;
+            return !(value && location);
+        })
+        .default(null),
+    // 自由入力のポイント名。サイト未選択時のみ必須（マスタ参照と排他・同居）
     location: yup
         .string()
         .trim()
-        .min(1, 'ポイント名を入力してください')
         .max(120, 'ポイント名は120文字以内で入力してください')
-        .required('ポイント名を入力してください'),
+        .transform((v) => (v === '' ? null : v))
+        .nullable()
+        .test('site-or-location', 'ポイントを選択するか、ポイント名を入力してください', function (value) {
+            const diveSiteId = (this.parent as { diveSiteId?: string | null }).diveSiteId;
+            if (diveSiteId) return true;
+            return value != null && value !== '';
+        })
+        .default(null),
     diveType: yup
         .string()
         .trim()
-        .max(40)
+        .max(40, 'ダイブタイプは40文字以内で入力してください')
         .transform((v) => (v === '' ? null : v))
         .nullable()
         .default(null),
     weather: yup
         .string()
         .trim()
-        .max(60)
+        .max(60, '天候は60文字以内で入力してください')
         .transform((v) => (v === '' ? null : v))
         .nullable()
         .default(null),
@@ -89,14 +107,14 @@ export const diveSchema = yup.object({
     wave: yup
         .string()
         .trim()
-        .max(60)
+        .max(60, '波の状況は60文字以内で入力してください')
         .transform((v) => (v === '' ? null : v))
         .nullable()
         .default(null),
     currentCondition: yup
         .string()
         .trim()
-        .max(60)
+        .max(60, '流れの状況は60文字以内で入力してください')
         .transform((v) => (v === '' ? null : v))
         .nullable()
         .default(null),
@@ -144,7 +162,7 @@ export const diveSchema = yup.object({
     gasType: yup
         .string()
         .trim()
-        .max(40)
+        .max(40, 'ガス種別は40文字以内で入力してください')
         .transform((v) => (v === '' ? null : v))
         .nullable()
         .default('air'),
@@ -191,28 +209,28 @@ export const diveSchema = yup.object({
     suitType: yup
         .string()
         .trim()
-        .max(40)
+        .max(40, 'スーツ種別は40文字以内で入力してください')
         .transform((v) => (v === '' ? null : v))
         .nullable()
         .default(null),
     equipmentNotes: yup
         .string()
         .trim()
-        .max(1000)
+        .max(1000, '装備メモは1000文字以内で入力してください')
         .transform((v) => (v === '' ? null : v))
         .nullable()
         .default(null),
     buddyName: yup
         .string()
         .trim()
-        .max(100)
+        .max(100, 'バディ名は100文字以内で入力してください')
         .transform((v) => (v === '' ? null : v))
         .nullable()
         .default(null),
     instructorName: yup
         .string()
         .trim()
-        .max(100)
+        .max(100, 'インストラクター名は100文字以内で入力してください')
         .transform((v) => (v === '' ? null : v))
         .nullable()
         .default(null),
@@ -220,13 +238,31 @@ export const diveSchema = yup.object({
     notes: yup
         .string()
         .trim()
-        .max(2000)
+        .max(2000, 'メモ・印象は2000文字以内で入力してください')
         .transform((v) => (v === '' ? null : v))
         .nullable()
         .default(null),
 });
 
 export type DiveFormValues = yup.InferType<typeof diveSchema>;
+
+/** 検索の任意日付（YYYY-MM-DD・空は null）。形式のみ検証する */
+const optionalSearchDate = yup
+    .string()
+    .transform((v) => (v === '' || v == null ? null : v))
+    .nullable()
+    .matches(/^\d{4}-\d{2}-\d{2}$/, { message: '正しい日付を入力してください', excludeEmptyString: true })
+    .default(null);
+
+/** 検索の任意深度（0〜300・空は null） */
+const optionalSearchDepth = yup
+    .number()
+    .transform(optionalNumber)
+    .nullable()
+    .min(0, '深度は0以上で入力してください')
+    .max(300, '深度は300以下で入力してください')
+    .typeError('深度は数値で入力してください')
+    .default(null);
 
 /** 検索バー用の軽量スキーマ */
 export const diveSearchSchema = yup.object({
@@ -239,11 +275,30 @@ export const diveSearchSchema = yup.object({
         .max(9999, 'ダイブ番号は9999以下で入力してください')
         .typeError('ダイブ番号は数値で入力してください')
         .default(null),
-    diveDate: yup
+    // 期間（FR-001）: 開始日・終了日。終了日は開始日以降（片側のみ可）
+    dateFrom: optionalSearchDate,
+    dateTo: optionalSearchDate.test('date-range', '終了日は開始日以降の日付を指定してください', function (value) {
+        const { dateFrom } = this.parent as { dateFrom?: string | null };
+        if (!value || !dateFrom) return true;
+        return value >= dateFrom;
+    }),
+    // 深度範囲（FR-002）: 下限・上限。上限は下限以上（片側のみ可）
+    depthMin: optionalSearchDepth,
+    depthMax: optionalSearchDepth.test('depth-range', '深度の上限は下限以上で入力してください', function (value) {
+        const { depthMin } = this.parent as { depthMin?: number | null };
+        if (value == null || depthMin == null) return true;
+        return value >= depthMin;
+    }),
+    // ダイブタイプ（FR-003）: 既存の選択肢のみ
+    diveType: yup
         .string()
         .transform((v) => (v === '' || v == null ? null : v))
         .nullable()
-        .matches(/^\d{4}-\d{2}-\d{2}$/, { message: '正しい日付を入力してください', excludeEmptyString: true })
+        .test(
+            'valid-dive-type',
+            'ダイブタイプの値が不正です',
+            (value) => value == null || DIVE_TYPE_VALUE_SET.has(value),
+        )
         .default(null),
     location: yup
         .string()

@@ -1,5 +1,5 @@
 import { RecordOverhaulButton, TopDashboard } from '@/features/dashboard';
-import { listDives } from '@/features/dives';
+import { diveLocationLabel, listDives } from '@/features/dives';
 import { NextPlanCard } from '@/features/plans';
 import { recordOverhaul } from '@/features/regulators';
 import { generatePageMetadata } from '@/shared/config/metadata';
@@ -23,7 +23,7 @@ export default async function Home() {
     const recentDives = recentPage.items.map((dive) => ({
         id: dive.id,
         diveDate: dive.diveDate,
-        location: dive.location,
+        location: diveLocationLabel(dive),
         maxDepthM: dive.maxDepthM,
         bottomTimeMin: dive.bottomTimeMin,
     }));

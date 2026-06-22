@@ -34,6 +34,217 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_logs: {
+        Row: {
+          action: string
+          actor_id: string
+          changes: Json | null
+          created_at: string
+          id: string
+          target_id: string
+          target_table: string
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          changes?: Json | null
+          created_at?: string
+          id?: string
+          target_id: string
+          target_table: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          changes?: Json | null
+          created_at?: string
+          id?: string
+          target_id?: string
+          target_table?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_audit_logs_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_users: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          display_name: string
+          id: string
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          display_name: string
+          id: string
+          role?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          display_name?: string
+          id?: string
+          role?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      certification_tags: {
+        Row: {
+          certification_id: string
+          tag: string
+        }
+        Insert: {
+          certification_id: string
+          tag: string
+        }
+        Update: {
+          certification_id?: string
+          tag?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certification_tags_certification_id_fkey"
+            columns: ["certification_id"]
+            isOneToOne: false
+            referencedRelation: "certifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      certifications: {
+        Row: {
+          acquired_location: string | null
+          acquired_on: string
+          agency: string
+          created_at: string
+          dive_id: string | null
+          diver_number: string | null
+          id: string
+          instructor_number: string | null
+          rank: string
+          trained_by: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          acquired_location?: string | null
+          acquired_on: string
+          agency: string
+          created_at?: string
+          dive_id?: string | null
+          diver_number?: string | null
+          id?: string
+          instructor_number?: string | null
+          rank: string
+          trained_by?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          acquired_location?: string | null
+          acquired_on?: string
+          agency?: string
+          created_at?: string
+          dive_id?: string | null
+          diver_number?: string | null
+          id?: string
+          instructor_number?: string | null
+          rank?: string
+          trained_by?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certifications_dive_id_fkey"
+            columns: ["dive_id"]
+            isOneToOne: false
+            referencedRelation: "dives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dive_photos: {
+        Row: {
+          caption: string
+          created_at: string
+          deleted_at: string | null
+          display_path: string
+          dive_id: string
+          height: number | null
+          id: string
+          is_cover: boolean
+          sort_order: number
+          thumb_path: string
+          updated_at: string
+          user_id: string
+          width: number | null
+        }
+        Insert: {
+          caption?: string
+          created_at?: string
+          deleted_at?: string | null
+          display_path: string
+          dive_id: string
+          height?: number | null
+          id?: string
+          is_cover?: boolean
+          sort_order?: number
+          thumb_path: string
+          updated_at?: string
+          user_id: string
+          width?: number | null
+        }
+        Update: {
+          caption?: string
+          created_at?: string
+          deleted_at?: string | null
+          display_path?: string
+          dive_id?: string
+          height?: number | null
+          id?: string
+          is_cover?: boolean
+          sort_order?: number
+          thumb_path?: string
+          updated_at?: string
+          user_id?: string
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dive_photos_dive_id_fkey"
+            columns: ["dive_id"]
+            isOneToOne: false
+            referencedRelation: "dives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dive_photos_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dive_plans: {
         Row: {
           created_at: string
@@ -72,6 +283,39 @@ export type Database = {
           },
         ]
       }
+      dive_sites: {
+        Row: {
+          area: string | null
+          country: string
+          created_at: string
+          deleted_at: string | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          area?: string | null
+          country?: string
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          area?: string | null
+          country?: string
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       dives: {
         Row: {
           air_temp_c: number | null
@@ -81,8 +325,10 @@ export type Database = {
           certification_dive: boolean
           created_at: string
           current_condition: string | null
+          deleted_at: string | null
           dive_date: string
           dive_number: number | null
+          dive_site_id: string | null
           dive_type: string | null
           entry_time: string | null
           equipment_notes: string | null
@@ -91,7 +337,7 @@ export type Database = {
           id: string
           instructor_name: string | null
           is_public: boolean
-          location: string
+          location: string | null
           max_depth_m: number
           notes: string | null
           o2_percent: number | null
@@ -117,8 +363,10 @@ export type Database = {
           certification_dive?: boolean
           created_at?: string
           current_condition?: string | null
+          deleted_at?: string | null
           dive_date: string
           dive_number?: number | null
+          dive_site_id?: string | null
           dive_type?: string | null
           entry_time?: string | null
           equipment_notes?: string | null
@@ -127,7 +375,7 @@ export type Database = {
           id?: string
           instructor_name?: string | null
           is_public?: boolean
-          location: string
+          location?: string | null
           max_depth_m: number
           notes?: string | null
           o2_percent?: number | null
@@ -153,8 +401,10 @@ export type Database = {
           certification_dive?: boolean
           created_at?: string
           current_condition?: string | null
+          deleted_at?: string | null
           dive_date?: string
           dive_number?: number | null
+          dive_site_id?: string | null
           dive_type?: string | null
           entry_time?: string | null
           equipment_notes?: string | null
@@ -163,7 +413,7 @@ export type Database = {
           id?: string
           instructor_name?: string | null
           is_public?: boolean
-          location?: string
+          location?: string | null
           max_depth_m?: number
           notes?: string | null
           o2_percent?: number | null
@@ -182,6 +432,13 @@ export type Database = {
           weight_kg?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "dives_dive_site_id_fkey"
+            columns: ["dive_site_id"]
+            isOneToOne: false
+            referencedRelation: "dive_sites"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "dives_user_id_fkey"
             columns: ["user_id"]
@@ -358,6 +615,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_dive_monthly_stats: {
+        Args: { months_back?: number }
+        Returns: {
+          avg_water_temp_c: number
+          dive_count: number
+          max_depth_m: number
+          month: string
+        }[]
+      }
       get_dive_stats: {
         Args: never
         Returns: {
@@ -367,6 +633,16 @@ export type Database = {
           visited_locations: number
         }[]
       }
+      get_dive_yearly_counts: {
+        Args: never
+        Returns: {
+          dive_count: number
+          year: number
+        }[]
+      }
+      is_admin: { Args: never; Returns: boolean }
+      is_public_dive_photo: { Args: { object_name: string }; Returns: boolean }
+      is_superadmin: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

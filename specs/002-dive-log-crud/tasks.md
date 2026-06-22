@@ -13,7 +13,7 @@ description: "Task list for dive log CRUD implementation"
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
-> **移行ノート**: 旧 `docs/specs/features/002-dive-log-crud/tasks.md`（T1〜T25）からの変換。各タスクに旧 ID を併記。実装はコミット「ダイビングログ完成」時点で完了済みだが、移行元のチェックボックスは未更新（全件未チェック）のため、その状態をそのまま保持している。
+> **移行ノート**: 旧仕様（T1〜T25）からの変換。各タスクに旧 ID を併記。実装はコミット「ダイビングログ完成」時点で完了済みだが、移行元のチェックボックスは未更新（全件未チェック）のため、その状態をそのまま保持している。
 
 ## Format: `[ID] [P?] [Story] Description`
 

@@ -1,10 +1,21 @@
 import 'server-only';
 
+import { calcBlankDays } from '@/features/dashboard/lib/blankDays';
 import { calcOverhaulStatus } from '@/features/dashboard/lib/overhaul';
-import type { DashboardHero, DiveStats, PrimaryRegulatorStatus } from '@/features/dashboard/types';
-import { daysUntil, todayInJst } from '@/shared/lib/date';
+import { fillMonthlyGaps, fillYearlyGaps } from '@/features/dashboard/lib/trends';
+import type {
+    DashboardHero,
+    DiveStats,
+    MonthlyDiveStat,
+    PrimaryRegulatorStatus,
+    YearlyDiveCount,
+} from '@/features/dashboard/types';
+import { todayInJst } from '@/shared/lib/date';
 import { toNumber } from '@/shared/lib/number';
 import { createClient } from '@/shared/lib/supabase/server';
+
+/** 月別推移の対象期間（直近 12 ヶ月 — spec Assumptions） */
+const MONTHLY_TREND_MONTHS = 12;
 
 /** 累計統計を DB 側集計（RPC get_dive_stats）で取得する（FR-003） */
 export const getDiveStats = async (): Promise<DiveStats> => {
@@ -22,6 +33,54 @@ export const getDiveStats = async (): Promise<DiveStats> => {
         maxDepthM: toNumber(data.max_depth_m) ?? 0,
         visitedLocations: Number(data.visited_locations),
     };
+};
+
+/**
+ * 年別の本数推移を DB 側集計（RPC get_dive_yearly_counts）で取得する（FR-001）。
+ * 歯抜け年は 0 本で補完済み。ログ 0 件は []（空状態の判定値 — research.md R-006）。
+ */
+export const getYearlyDiveCounts = async (): Promise<YearlyDiveCount[]> => {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase.rpc('get_dive_yearly_counts');
+
+    if (error || !data) {
+        throw new Error(`[getYearlyDiveCounts] supabase error: ${error?.message ?? 'no data'}`);
+    }
+
+    return fillYearlyGaps(
+        data.map((row) => ({
+            year: Number(row.year),
+            diveCount: Number(row.dive_count),
+        })),
+    );
+};
+
+/**
+ * 直近 12 ヶ月の月別統計（本数 / 平均水温 / 最大深度）を取得する（FR-002 / FR-004 / FR-005）。
+ * データのない月は 0 本・null で補完し、ログの有無に関わらず常に 12 要素を返す。
+ */
+export const getMonthlyDiveStats = async (): Promise<MonthlyDiveStat[]> => {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase.rpc('get_dive_monthly_stats', { months_back: MONTHLY_TREND_MONTHS });
+
+    if (error || !data) {
+        throw new Error(`[getMonthlyDiveStats] supabase error: ${error?.message ?? 'no data'}`);
+    }
+
+    const baseMonth = todayInJst().slice(0, 7);
+
+    return fillMonthlyGaps(
+        data.map((row) => ({
+            month: row.month,
+            diveCount: Number(row.dive_count),
+            avgWaterTempC: toNumber(row.avg_water_temp_c),
+            maxDepthM: toNumber(row.max_depth_m),
+        })),
+        baseMonth,
+        MONTHLY_TREND_MONTHS,
+    );
 };
 
 /**
@@ -68,7 +127,7 @@ export const getPrimaryRegulatorStatus = async (): Promise<PrimaryRegulatorStatu
     };
 };
 
-/** ヒーロー用データ（表示名 + 前回ダイブからの経過日数）を取得する（FR-002） */
+/** ヒーロー用データ（表示名 + ブランク日数）を取得する（FR-002） */
 export const getDashboardHero = async (): Promise<DashboardHero> => {
     const supabase = await createClient();
 
@@ -88,7 +147,6 @@ export const getDashboardHero = async (): Promise<DashboardHero> => {
 
     return {
         nickname: detailsResult.data?.nickname ?? null,
-        // 過去日なので daysUntil は負になる。経過日数として正に反転する
-        daysSinceLastDive: lastDiveOn === null ? null : -daysUntil(lastDiveOn, todayInJst()),
+        blankDays: calcBlankDays(lastDiveOn, todayInJst()),
     };
 };

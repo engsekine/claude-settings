@@ -168,7 +168,6 @@ graph LR
 - テーブル定義: [`../data-model.md`](../data-model.md)
 - 実装: `service-front/src/app/(authenticated)/dives/new/page.tsx` / `service-front/src/features/dives/components/client/DiveForm/DiveForm.tsx`
 - 関連画面: [`dive-list.md`](dive-list.md) / [`dive-edit.md`](dive-edit.md)
-- 移行元: `docs/specs/screens/dive-new.md`
 
 ## 10. 変更履歴
 

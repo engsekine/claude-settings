@@ -28,7 +28,7 @@ describe('SignupForm', () => {
             '身長(cm)',
             '体重(kg)',
             'メールアドレス',
-            'パスワード（6文字以上）',
+            'パスワード（12文字以上・英大文字小文字と数字を含む）',
             'パスワード（確認）',
         ];
 
@@ -52,8 +52,8 @@ describe('SignupForm', () => {
         await user.type(screen.getByLabelText('ニックネーム'), 'たろちゃん');
         await user.type(screen.getByLabelText('生年月日'), '1990-01-01');
         await user.type(screen.getByLabelText('メールアドレス'), 'user@example.com');
-        await user.type(screen.getByLabelText('パスワード（6文字以上）'), 'password123');
-        await user.type(screen.getByLabelText('パスワード（確認）'), 'password123');
+        await user.type(screen.getByLabelText('パスワード（12文字以上・英大文字小文字と数字を含む）'), 'Password1234');
+        await user.type(screen.getByLabelText('パスワード（確認）'), 'Password1234');
         await user.click(screen.getByRole('button', { name: '新規登録' }));
 
         expect(await screen.findByText('確認メールを送信しました')).toBeInTheDocument();
@@ -74,8 +74,8 @@ describe('SignupForm', () => {
         await user.type(screen.getByLabelText('身長(cm)'), '170');
         await user.type(screen.getByLabelText('体重(kg)'), '60.5');
         await user.type(screen.getByLabelText('メールアドレス'), 'user@example.com');
-        await user.type(screen.getByLabelText('パスワード（6文字以上）'), 'password123');
-        await user.type(screen.getByLabelText('パスワード（確認）'), 'password123');
+        await user.type(screen.getByLabelText('パスワード（12文字以上・英大文字小文字と数字を含む）'), 'Password1234');
+        await user.type(screen.getByLabelText('パスワード（確認）'), 'Password1234');
         await user.click(screen.getByRole('button', { name: '新規登録' }));
 
         await screen.findByText('確認メールを送信しました');
@@ -94,8 +94,8 @@ describe('SignupForm', () => {
         await user.type(screen.getByLabelText('ニックネーム'), 'taro');
         await user.type(screen.getByLabelText('生年月日'), '1990-01-01');
         await user.type(screen.getByLabelText('メールアドレス'), 'existing@example.com');
-        await user.type(screen.getByLabelText('パスワード（6文字以上）'), 'password123');
-        await user.type(screen.getByLabelText('パスワード（確認）'), 'password123');
+        await user.type(screen.getByLabelText('パスワード（12文字以上・英大文字小文字と数字を含む）'), 'Password1234');
+        await user.type(screen.getByLabelText('パスワード（確認）'), 'Password1234');
         await user.click(screen.getByRole('button', { name: '新規登録' }));
 
         expect(await screen.findByText('このメールアドレスは既に登録されています')).toBeInTheDocument();

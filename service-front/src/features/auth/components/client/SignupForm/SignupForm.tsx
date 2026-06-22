@@ -191,7 +191,7 @@ export const SignupForm = () => {
 
             <FormField
                 id="password"
-                label="パスワード（6文字以上）"
+                label="パスワード（12文字以上・英大文字小文字と数字を含む）"
                 type="password"
                 autoComplete="new-password"
                 aria-required="true"

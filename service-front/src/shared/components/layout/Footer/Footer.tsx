@@ -6,6 +6,7 @@ import { COPYRIGHT_HOLDER, SITE_NAME } from '@/shared/constants/site';
 const FOOTER_LINKS = [
     { href: '/', label: 'ホーム' },
     { href: '/dives', label: 'ダイビングログ' },
+    { href: '/settings/certifications', label: '保有資格' },
     { href: '/terms', label: '利用規約' },
     { href: '/privacy-policy', label: 'プライバシーポリシー' },
 ] as const;

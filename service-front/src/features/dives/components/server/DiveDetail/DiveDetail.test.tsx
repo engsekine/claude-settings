@@ -1,0 +1,142 @@
+import { render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
+
+import type { Dive } from '@/features/dives/types';
+
+import { DiveDetail } from './DiveDetail';
+
+// 削除ボタンは Server Action に依存するためモックする（確認ダイアログの挙動は DeleteDiveButton 側でテスト済み）
+vi.mock('@/features/dives/components/client/DeleteDiveButton', () => ({
+    DeleteDiveButton: () => <button type="button">削除</button>,
+}));
+
+const baseDive: Dive = {
+    id: 'dive-1',
+    userId: 'user-1',
+    diveNumber: 42,
+    diveDate: '2026-04-15',
+    entryTime: '09:30:00',
+    exitTime: '10:18:00',
+    location: '伊豆 / 大瀬崎',
+    diveSiteId: null,
+    diveSite: null,
+    diveType: 'ファンダイブ',
+    weather: '晴れ',
+    airTempC: 22,
+    waterTempC: 18.2,
+    visibilityM: 12,
+    wave: '穏やか',
+    currentCondition: '弱い',
+    maxDepthM: 22.5,
+    avgDepthM: 14.8,
+    bottomTimeMin: 48,
+    tankType: null,
+    tankVolumeL: null,
+    gasType: null,
+    o2Percent: null,
+    pressureStartBar: 200,
+    pressureEndBar: 60,
+    weightKg: 5,
+    suitType: 'ウェット 5mm',
+    equipmentNotes: null,
+    buddyName: null,
+    instructorName: null,
+    certificationDive: false,
+    notes: null,
+    isPublic: false,
+    publicSlug: null,
+    createdAt: '2026-04-15T12:00:00Z',
+    updatedAt: '2026-04-15T12:00:00Z',
+};
+
+describe('DiveDetail', () => {
+    it('location を見出しとして表示する', () => {
+        render(<DiveDetail dive={baseDive} />);
+        expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('伊豆 / 大瀬崎');
+    });
+
+    it('単一ログの PDF 出力リンクを表示する', () => {
+        render(<DiveDetail dive={baseDive} />);
+        expect(screen.getByRole('link', { name: 'PDF出力' })).toHaveAttribute(
+            'href',
+            '/dives/export?format=pdf&ids=dive-1',
+        );
+    });
+
+    it('サイト参照ログは見出しのサイト名をサイト詳細へのリンクにする', () => {
+        render(
+            <DiveDetail
+                dive={{ ...baseDive, location: null, diveSite: { id: 'site-9', name: '大瀬崎', area: '伊豆' } }}
+            />,
+        );
+        const link = screen.getByRole('link', { name: '伊豆 / 大瀬崎' });
+        expect(link).toHaveAttribute('href', '/dive-sites/site-9');
+    });
+
+    it('潜水日を YYYY/MM/DD 形式で表示する', () => {
+        render(<DiveDetail dive={baseDive} />);
+        expect(screen.getByText('2026/04/15')).toBeInTheDocument();
+    });
+
+    it('潜水日に対応する潮回りラベルを表示する', () => {
+        // 2000-01-07 は基準朔の翌日 = 大潮（data-model.md 4 節の基準日付）
+        render(<DiveDetail dive={{ ...baseDive, diveDate: '2000-01-07' }} />);
+        expect(screen.getByText('大潮')).toBeInTheDocument();
+    });
+
+    it('日付が不正なときは潮回りラベルを表示しない', () => {
+        render(<DiveDetail dive={{ ...baseDive, diveDate: 'invalid' }} />);
+        expect(screen.queryByText(/大潮|中潮|小潮|長潮|若潮/)).not.toBeInTheDocument();
+    });
+
+    it('必要 5 項目が揃っているときはエア消費率を表示する', () => {
+        // 200→50 bar / 10 L / 平均水深 10 m / 50 分 → 15.0 L/分（specs/008 SC-002 の代表値）
+        render(
+            <DiveDetail
+                dive={{ ...baseDive, pressureEndBar: 50, tankVolumeL: 10, avgDepthM: 10, bottomTimeMin: 50 }}
+            />,
+        );
+        expect(screen.getByText('エア消費率')).toBeInTheDocument();
+        expect(screen.getByText('15.0 L/分')).toBeInTheDocument();
+    });
+
+    it('必要項目が不足しているときは不足項目の案内を表示する', () => {
+        // baseDive はタンク容量のみ null
+        render(<DiveDetail dive={baseDive} />);
+        expect(screen.getByText('タンク容量を入力するとエア消費率が表示されます')).toBeInTheDocument();
+    });
+
+    it('複数項目が不足しているときはまとめて案内する', () => {
+        render(<DiveDetail dive={{ ...baseDive, tankVolumeL: null, avgDepthM: null }} />);
+        expect(screen.getByText('タンク容量・平均水深を入力するとエア消費率が表示されます')).toBeInTheDocument();
+    });
+
+    it('開始残圧が終了残圧以下のときはエア消費率も案内も表示しない', () => {
+        // 開始 < 終了（防御的ケース。フォームバリデーションでは作成できない）
+        const { unmount } = render(
+            <DiveDetail
+                dive={{ ...baseDive, pressureStartBar: 80, pressureEndBar: 100, tankVolumeL: 10, avgDepthM: 10 }}
+            />,
+        );
+        expect(screen.queryByText(/エア消費率/)).not.toBeInTheDocument();
+        unmount();
+
+        // 開始 = 終了（消費量 0）
+        render(
+            <DiveDetail
+                dive={{ ...baseDive, pressureStartBar: 100, pressureEndBar: 100, tankVolumeL: 10, avgDepthM: 10 }}
+            />,
+        );
+        expect(screen.queryByText(/エア消費率/)).not.toBeInTheDocument();
+    });
+
+    it('編集ページへのリンクを表示する', () => {
+        render(<DiveDetail dive={baseDive} />);
+        expect(screen.getByRole('link', { name: '編集' })).toHaveAttribute('href', '/dives/dive-1/edit');
+    });
+
+    it('講習ダイブのときはバッジを表示する', () => {
+        render(<DiveDetail dive={{ ...baseDive, certificationDive: true }} />);
+        expect(screen.getByText('講習ダイブ')).toBeInTheDocument();
+    });
+});

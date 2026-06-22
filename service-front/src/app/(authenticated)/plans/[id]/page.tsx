@@ -6,6 +6,7 @@ import { DeletePlanButton, daysUntil, getPlan, PackingList } from '@/features/pl
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
 import { generatePageMetadata } from '@/shared/config/metadata';
 import { todayInJst } from '@/shared/lib/date';
+import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
 
 interface PlanPageProps {
     params: Promise<{ id: string }>;
@@ -34,6 +35,7 @@ export default async function PlanPage({ params }: PlanPageProps) {
     if (!plan) notFound();
 
     const remaining = daysUntil(plan.plannedOn, todayInJst());
+    const tidePhase = getTidePhase(plan.plannedOn);
 
     return (
         <div className="flex flex-1 flex-col">
@@ -41,14 +43,21 @@ export default async function PlanPage({ params }: PlanPageProps) {
             <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
                 <article className="flex flex-col gap-3 rounded-lg border border-border bg-background p-4">
                     <div className="flex items-center justify-between gap-2">
-                        <span className="text-muted-foreground text-sm">
-                            <span className="sr-only">予定日: </span>
-                            {formatDate(plan.plannedOn)}
-                        </span>
-                        {remaining < 0 && (
-                            <span className="rounded-md bg-muted px-2 py-0.5 text-muted-foreground text-xs">
-                                終了済み
+                        <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground text-sm">
+                                <span className="sr-only">予定日: </span>
+                                {formatDate(plan.plannedOn)}
                             </span>
+                            {tidePhase !== null && (
+                                <span className="rounded-md bg-muted px-2 py-0.5 text-foreground text-xs">
+                                    <span className="sr-only">潮回り: </span>
+                                    {TIDE_PHASE_LABELS[tidePhase]}
+                                </span>
+                            )}
+                        </div>
+                        {/* バッジは text-muted-foreground だと bg-muted 上でコントラスト AA 未達のため text-foreground を使う */}
+                        {remaining < 0 && (
+                            <span className="rounded-md bg-muted px-2 py-0.5 text-foreground text-xs">終了済み</span>
                         )}
                         {remaining === 0 && (
                             <span className="rounded-md bg-primary/10 px-2 py-0.5 text-primary text-xs">今日</span>

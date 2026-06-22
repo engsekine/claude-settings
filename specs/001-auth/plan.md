@@ -4,7 +4,7 @@
 
 **Input**: Feature specification from `/specs/001-auth/spec.md`
 
-**Note**: 既存仕様書 `docs/specs/features/001-auth/design.md` からの移行ドキュメント。
+**Note**: 既存仕様書からの移行ドキュメント。
 
 ## Summary
 

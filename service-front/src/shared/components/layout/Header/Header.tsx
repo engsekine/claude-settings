@@ -28,14 +28,6 @@ export const Header = ({ actions }: HeaderProps) => {
                             </li>
                             <li>
                                 <Link
-                                    href="/about"
-                                    className="text-muted-foreground text-sm transition-colors hover:text-foreground"
-                                >
-                                    概要
-                                </Link>
-                            </li>
-                            <li>
-                                <Link
                                     href="/dives"
                                     className="text-muted-foreground text-sm transition-colors hover:text-foreground"
                                 >

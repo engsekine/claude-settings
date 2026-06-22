@@ -19,7 +19,7 @@ user-invocable: true
   - `specs/<NNN>-<name>/tasks.md` — タスク分解
   - `specs/<NNN>-<name>/data-model.md` — テーブル仕様（カラム / 制約 / RLS / トリガー）
   - `specs/<NNN>-<name>/screens/<name>.md` — 画面仕様（補助ドキュメント）
-- 旧 `docs/specs/` はアーカイブのため同期対象外
+- 旧 `docs/specs/` は `specs/` へ移行完了し削除済み（同期対象は `specs/` のみ）
 - 仕様書は **実装に合わせて更新する**（実装が真実）。逆方向（仕様書通りに実装を直す）は本スキルの対象外
 
 ## 手順

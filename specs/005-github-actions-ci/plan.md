@@ -113,7 +113,7 @@ E2E も CI ランナー内の Supabase ローカルスタックで完結する�
 
 ### branch protection（Assumption の手動設定）
 
-`docs/ci.md` に以下の手順を記載する: Settings → Branches → main に required status checks（`lint` / `markup-lint` / `type-check` / `unit-test` / `db-lint`）を設定。リポジトリ設定は GitHub UI での手動作業（API 権限・課金プランに依存するため自動化しない）。
+`specs/005-github-actions-ci/ci.md` に以下の手順を記載する: Settings → Branches → main に required status checks（`lint` / `markup-lint` / `type-check` / `unit-test` / `db-lint`）を設定。リポジトリ設定は GitHub UI での手動作業（API 権限・課金プランに依存するため自動化しない）。
 
 ### ローカルとの一致（SC-003）
 

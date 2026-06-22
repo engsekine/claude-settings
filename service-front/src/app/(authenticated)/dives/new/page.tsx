@@ -1,3 +1,4 @@
+import { listDiveSites, siteLabel } from '@/features/dive-sites';
 import { DiveForm, getLatestDiveNumber } from '@/features/dives';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
 import { generatePageMetadata } from '@/shared/config/metadata';
@@ -12,15 +13,16 @@ export const metadata = generatePageMetadata(
 );
 
 export default async function NewDivePage() {
-    const latestDiveNumber = await getLatestDiveNumber();
+    const [latestDiveNumber, sites] = await Promise.all([getLatestDiveNumber(), listDiveSites()]);
     const nextDiveNumber = (latestDiveNumber ?? 0) + 1;
+    const siteOptions = sites.map((site) => ({ value: site.id, label: siteLabel(site) }));
 
     return (
         <div className="flex flex-1 flex-col">
             <Breadcrumbs breadcrumbs={[{ name: 'ダイビングログ', slug: '/dives' }, { name: '新規作成' }]} />
             <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
                 <h1 className="font-semibold text-2xl">新規ダイビングログ</h1>
-                <DiveForm defaultValues={{ diveNumber: nextDiveNumber }} />
+                <DiveForm defaultValues={{ diveNumber: nextDiveNumber }} siteOptions={siteOptions} />
             </div>
         </div>
     );

@@ -4,8 +4,14 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { AUTH_COOKIE_NAME } from './constants';
 import type { Database } from './types';
 
-/** Middleware 用の Supabase クライアント（セッション更新） */
-export const updateSession = async (request: NextRequest) => {
+/**
+ * Middleware 用の Supabase クライアント（セッション更新）
+ *
+ * @param request NextRequest
+ * @param cookieName 認証セッション Cookie 名。既定は `AUTH_COOKIE_NAME`。
+ *   admin-front は `ADMIN_AUTH_COOKIE_NAME` を渡してセッションを分離する。
+ */
+export const updateSession = async (request: NextRequest, cookieName: string = AUTH_COOKIE_NAME) => {
     let supabaseResponse = NextResponse.next({ request });
 
     const url = process.env['SUPABASE_INTERNAL_URL'] ?? process.env['NEXT_PUBLIC_SUPABASE_URL'];
@@ -19,7 +25,7 @@ export const updateSession = async (request: NextRequest) => {
     }
 
     const supabase = createServerClient<Database>(url, anonKey, {
-        cookieOptions: { name: AUTH_COOKIE_NAME },
+        cookieOptions: { name: cookieName },
         cookies: {
             getAll: () => request.cookies.getAll(),
             setAll: (cookiesToSet: { name: string; value: string; options: Record<string, unknown> }[]) => {

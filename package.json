@@ -5,5 +5,18 @@
         "packages/*",
         "service-front",
         "admin-front"
-    ]
+    ],
+    "optionalDependencies": {
+        "@biomejs/cli-darwin-arm64": "2.4.16",
+        "@biomejs/cli-darwin-x64": "2.4.16",
+        "@biomejs/cli-linux-x64": "2.4.16",
+        "@esbuild/linux-x64": "0.27.7",
+        "@img/sharp-linux-x64": "0.34.5",
+        "@img/sharp-libvips-linux-x64": "1.2.4",
+        "@oxc-parser/binding-linux-x64-gnu": "0.127.0",
+        "@oxc-resolver/binding-linux-x64-gnu": "11.20.0",
+        "@rolldown/binding-linux-x64-gnu": "1.0.3",
+        "@tailwindcss/oxide-linux-x64-gnu": "4.3.0",
+        "lightningcss-linux-x64-gnu": "1.32.0"
+    }
 }

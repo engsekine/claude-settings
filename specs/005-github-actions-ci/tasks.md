@@ -75,7 +75,7 @@
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [x] T011 [P] `docs/ci.md` を作成: ワークフロー 2 本の概要表（トリガー / ジョブ / 所要時間目安）、branch protection（Settings → Branches → main → required status checks に `lint` / `markup-lint` / `type-check` / `unit-test` / `db-lint` を設定）の手順、失敗時の調査方法（ログ / playwright-report artifact）
+- [x] T011 [P] `specs/005-github-actions-ci/ci.md` を作成: ワークフロー 2 本の概要表（トリガー / ジョブ / 所要時間目安）、branch protection（Settings → Branches → main → required status checks に `lint` / `markup-lint` / `type-check` / `unit-test` / `db-lint` を設定）の手順、失敗時の調査方法（ログ / playwright-report artifact）
 - [ ] T012 [P] 仕様書との同期確認: plan.md「ジョブ構成」のジョブ名と実 YAML の `jobs.<id>` が一致していること、quickstart.md の全シナリオが完了していることを確認し、`specs/005-github-actions-ci/spec.md` の Status を Implemented に更新。branch protection の実設定（GitHub UI での手動作業）をユーザーに案内
 
 ---

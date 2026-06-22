@@ -4,7 +4,7 @@
 
 **Prerequisites**: plan.md, spec.md, data-model.md
 
-**Tests**: 元仕様（docs/specs/features/001-auth/tasks.md）でテストタスクが明示されているため含める。
+**Tests**: 元仕様でテストタスクが明示されているため含める。
 
 **Organization**: ユーザーストーリー（spec.md の US1〜US4）ごとにフェーズを分割。チェック状態は元仕様の進捗を保持している（旧タスク番号を括弧で併記）。
 
@@ -163,4 +163,4 @@
 
 - [P] タスク = 別ファイル・依存なし
 - 各ユーザーストーリーは独立して完了・検証できること
-- チェック状態は移行元 `docs/specs/features/001-auth/tasks.md` の進捗を反映している
+- チェック状態は移行元仕様の進捗を反映している

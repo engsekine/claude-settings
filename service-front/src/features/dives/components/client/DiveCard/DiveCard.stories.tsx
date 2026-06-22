@@ -41,3 +41,18 @@ export const Minimal: Story = {
         },
     },
 };
+
+/** 新月直後の日付（2000-01-07）で「大潮」ラベルが付くケース */
+export const SpringTide: Story = {
+    args: { dive: { ...baseDive, diveDate: '2000-01-07' } },
+};
+
+/** エクスポート選択モード。リンクではなくチェックボックスのラベルになり、本文クリックで選択トグルする */
+export const Selectable: Story = {
+    args: { dive: baseDive, selectable: true },
+};
+
+/** 選択済みのエクスポート選択モード */
+export const SelectableSelected: Story = {
+    args: { dive: baseDive, selectable: true, selected: true },
+};

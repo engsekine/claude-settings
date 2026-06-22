@@ -15,8 +15,15 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
-export const WithInitialFilter: Story = {
+export const WithBasicFilter: Story = {
     args: {
-        initialFilter: { diveNumber: 12, diveDate: '2026-01-01', location: '伊豆' },
+        initialFilter: { diveNumber: 12, location: '伊豆' },
+    },
+};
+
+export const WithAdvancedFilter: Story = {
+    args: {
+        // 詳細フィルタがあると詳細条件パネルが初期展開される
+        initialFilter: { dateFrom: '2025-07-01', dateTo: '2025-08-31', depthMin: 18, depthMax: 40, diveType: 'boat' },
     },
 };

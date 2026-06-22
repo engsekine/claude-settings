@@ -124,4 +124,31 @@ describe('DiveForm', () => {
 
         expect(await screen.findByText('失敗しました')).toBeInTheDocument();
     });
+
+    it('編集モードでは既存写真に ✕ を表示し、押すと削除予定にマークする', async () => {
+        const user = userEvent.setup();
+        render(
+            <DiveForm
+                diveId="d1"
+                existingPhotos={[
+                    {
+                        id: 'p1',
+                        displayUrl: '/display-p1.webp',
+                        thumbUrl: '/thumb-p1.webp',
+                        caption: '',
+                        isCover: true,
+                        width: 800,
+                        height: 600,
+                        alt: '海の写真',
+                    },
+                ]}
+            />,
+        );
+
+        await user.click(screen.getByRole('button', { name: '海の写真 を削除' }));
+
+        const toggled = screen.getByRole('button', { name: '海の写真 の削除を取り消す' });
+        expect(toggled).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.getByText('削除予定')).toBeInTheDocument();
+    });
 });

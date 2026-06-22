@@ -12,8 +12,8 @@ export interface DiveStats {
 export interface DashboardHero {
     /** 表示名（user_details.nickname）。未設定は null */
     nickname: string | null;
-    /** 前回ダイブからの経過日数。ログ 0 件は null */
-    daysSinceLastDive: number | null;
+    /** ブランク日数（最後に潜ってからの経過日数・最小 0）。ログ 0 件は null */
+    blankDays: number | null;
 }
 
 /** メイン機材の OH ステータス（未登録は null を返す） */
@@ -32,4 +32,21 @@ export interface RecentDiveItem {
     location: string;
     maxDepthM: number;
     bottomTimeMin: number;
+}
+
+/** 年別本数（get_dive_yearly_counts RPC + 歯抜け年 0 埋め後） */
+export interface YearlyDiveCount {
+    year: number;
+    diveCount: number;
+}
+
+/** 月別統計（get_dive_monthly_stats RPC + 直近 12 ヶ月 0 埋め後） */
+export interface MonthlyDiveStat {
+    /** 'YYYY-MM' */
+    month: string;
+    diveCount: number;
+    /** 平均水温。記録なし月は null（0 と区別する） */
+    avgWaterTempC: number | null;
+    /** 月内最大深度。ダイブなし月は null */
+    maxDepthM: number | null;
 }

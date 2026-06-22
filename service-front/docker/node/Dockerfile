@@ -23,21 +23,45 @@ COPY packages/supabase/package.json ./packages/supabase/
 
 # npm の optional dependencies バグ（https://github.com/npm/cli/issues/4828）の対処:
 # Mac (darwin-arm64) で生成した package-lock.json には Linux 向けプラットフォーム固有
-# バイナリ（lightningcss-linux-*-musl, @next/swc-linux-*-musl 等）が記録されないため、
-# Alpine コンテナで npm ci しても native bin が入らず実行時にロード失敗する。
+# バイナリ（lightningcss-linux-*-musl, @next/swc-linux-*-musl, @img/sharp-* 等）が
+# 記録されないため、Alpine コンテナで npm ci しても native bin が入らず実行時にロード失敗する。
 # 対象アーキテクチャ向けの musl バイナリを明示的に追加インストールしてこれを補う。
+#
+# sharp（next の画像最適化・ログエクスポートのサムネイル生成で使用）はバイナリ版の
+# 不一致を実行時に検証するため、バージョンを固定する:
+#   - @img/sharp-linuxmusl-<arch>         : service-front/package.json の sharp と同じ 0.34.5
+#   - @img/sharp-libvips-linuxmusl-<arch> : sharp 0.34.5 が要求する 1.2.4（latest 1.3.0 では不一致になる）
+# package.json の sharp を更新したら、下記の固定バージョンも必ず追従させること。
+#
+# oxc-parser / oxc-resolver / rolldown（Storybook 9 が内部で使うパーサ・リゾルバ・バンドラ）も
+# 同様に musl バイナリが lock に乗らないため binding を明示追加する。これらは版が密結合で実行時に
+# バージョン不一致を検証するため、optionalDependencies と同じバージョンに固定する。
+# パッケージを更新したら下記の固定バージョン（package-lock.json の linux-arm64-musl 記載値）も
+# 必ず追従させること。lock 内で linux-*-musl binding を持つ全パッケージを列挙しておく方針。
 RUN npm ci && \
     cd service-front && \
     if [ "$TARGETARCH" = "arm64" ]; then \
         npm install --no-save --ignore-scripts \
             lightningcss-linux-arm64-musl \
             @next/swc-linux-arm64-musl \
-            @tailwindcss/oxide-linux-arm64-musl; \
+            @tailwindcss/oxide-linux-arm64-musl \
+            @oxc-parser/binding-linux-arm64-musl@0.127.0 \
+            @oxc-resolver/binding-linux-arm64-musl@11.20.0 \
+            @rolldown/binding-linux-arm64-musl@1.0.3 \
+            @biomejs/cli-linux-arm64-musl@2.4.16 \
+            @img/sharp-linuxmusl-arm64@0.34.5 \
+            @img/sharp-libvips-linuxmusl-arm64@1.2.4; \
     else \
         npm install --no-save --ignore-scripts \
             lightningcss-linux-x64-musl \
             @next/swc-linux-x64-musl \
-            @tailwindcss/oxide-linux-x64-musl; \
+            @tailwindcss/oxide-linux-x64-musl \
+            @oxc-parser/binding-linux-x64-musl@0.127.0 \
+            @oxc-resolver/binding-linux-x64-musl@11.20.0 \
+            @rolldown/binding-linux-x64-musl@1.0.3 \
+            @biomejs/cli-linux-x64-musl@2.4.16 \
+            @img/sharp-linuxmusl-x64@0.34.5 \
+            @img/sharp-libvips-linuxmusl-x64@1.2.4; \
     fi
 
 # ========================================

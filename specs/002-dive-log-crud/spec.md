@@ -6,7 +6,7 @@
 
 **Status**: Implemented
 
-**Input**: 既存仕様書 docs/specs/features/002-dive-log-crud/ からの移行
+**Input**: 既存仕様書からの移行
 
 ## 概要
 
@@ -170,4 +170,3 @@
   - 詳細: [screens/dive-detail.md](screens/dive-detail.md)
   - 新規作成: [screens/dive-new.md](screens/dive-new.md)
   - 編集: [screens/dive-edit.md](screens/dive-edit.md)
-- 移行元仕様書: `docs/specs/features/002-dive-log-crud/`（requirements.md / design.md / tasks.md）

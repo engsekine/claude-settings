@@ -4,7 +4,7 @@
 
 **Input**: Feature specification from `/specs/002-dive-log-crud/spec.md`
 
-**Note**: 既存仕様書 `docs/specs/features/002-dive-log-crud/design.md` からの移行。
+**Note**: 既存仕様書からの移行。
 
 ## Summary
 

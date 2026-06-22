@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { getProfile, ProfileEditForm } from '@/features/account';
@@ -36,6 +37,17 @@ export default async function ProfileEditPage() {
                         weightKg: profile.weightKg,
                     }}
                 />
+                <section
+                    aria-labelledby="related-settings-heading"
+                    className="flex flex-col gap-2 border-border border-t pt-6"
+                >
+                    <h2 id="related-settings-heading" className="font-semibold text-lg">
+                        その他の設定
+                    </h2>
+                    <Link href="/settings/certifications" className="text-primary text-sm underline">
+                        保有資格を管理する
+                    </Link>
+                </section>
             </div>
         </div>
     );

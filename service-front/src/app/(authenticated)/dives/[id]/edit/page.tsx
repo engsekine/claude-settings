@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
-import { DiveForm, getDive, mapDiveToFormValues } from '@/features/dives';
+import { listDiveSites, siteLabel } from '@/features/dive-sites';
+import { DiveForm, diveLocationLabel, getDive, getDivePhotos, mapDiveToFormValues } from '@/features/dives';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
 import { generatePageMetadata } from '@/shared/config/metadata';
 
@@ -21,23 +22,25 @@ export const generateMetadata = async ({ params }: EditDivePageProps) => {
 
 export default async function EditDivePage({ params }: EditDivePageProps) {
     const { id } = await params;
-    const dive = await getDive(id);
+    const [dive, sites] = await Promise.all([getDive(id), listDiveSites()]);
     if (!dive) notFound();
 
+    const photos = await getDivePhotos(id, `${dive.diveDate} ${diveLocationLabel(dive)} の写真`);
     const defaultValues = mapDiveToFormValues(dive);
+    const siteOptions = sites.map((site) => ({ value: site.id, label: siteLabel(site) }));
 
     return (
         <div className="flex flex-1 flex-col">
             <Breadcrumbs
                 breadcrumbs={[
                     { name: 'ダイビングログ', slug: '/dives' },
-                    { name: dive.location, slug: `/dives/${id}` },
+                    { name: diveLocationLabel(dive), slug: `/dives/${id}` },
                     { name: '編集' },
                 ]}
             />
             <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
                 <h1 className="font-semibold text-2xl">ダイビングログ編集</h1>
-                <DiveForm diveId={id} defaultValues={defaultValues} />
+                <DiveForm diveId={id} defaultValues={defaultValues} siteOptions={siteOptions} existingPhotos={photos} />
             </div>
         </div>
     );

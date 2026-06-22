@@ -105,6 +105,65 @@ insert into auth.identities (
 );
 
 -- ========================================
+-- 開発用の管理者（admin-front 用 / local development 専用）
+--   email   : admin@example.com
+--   password: admin-password
+-- 同一 auth.users を共有するため on_auth_user_created トリガが
+-- public.users / public.user_details も自動挿入する（meta を埋める）。
+-- そのうえで public.admin_users に superadmin として登録する。
+-- 本番では使用しない。
+-- ========================================
+delete from auth.users where email = 'admin@example.com';
+
+insert into auth.users (
+    instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+    raw_app_meta_data, raw_user_meta_data,
+    confirmation_token, email_change, email_change_token_new, recovery_token,
+    created_at, updated_at
+) values (
+    '00000000-0000-0000-0000-000000000000',
+    '000000ad-0000-0000-0000-000000000001',
+    'authenticated',
+    'authenticated',
+    'admin@example.com',
+    crypt('admin-password', gen_salt('bf')),
+    now(),
+    '{"provider": "email", "providers": ["email"]}'::jsonb,
+    jsonb_build_object(
+        'last_name', '運営',
+        'first_name', '管理者',
+        'last_name_romaji', 'Unei',
+        'first_name_romaji', 'Kanrisha',
+        'nickname', 'admin',
+        'birth_on', '1990-01-01',
+        'gender', 'unanswered'
+    ),
+    '', '', '', '',
+    now(), now()
+);
+
+insert into auth.identities (
+    id, user_id, identity_data, provider, provider_id,
+    last_sign_in_at, created_at, updated_at
+) values (
+    gen_random_uuid(),
+    '000000ad-0000-0000-0000-000000000001',
+    jsonb_build_object(
+        'sub', '000000ad-0000-0000-0000-000000000001',
+        'email', 'admin@example.com',
+        'email_verified', true,
+        'phone_verified', false
+    ),
+    'email',
+    '000000ad-0000-0000-0000-000000000001',
+    now(), now(), now()
+);
+
+-- 管理者として登録（superadmin）
+insert into public.admin_users (id, display_name, role)
+values ('000000ad-0000-0000-0000-000000000001', '運営管理者', 'superadmin');
+
+-- ========================================
 -- サンプルダイビングログ
 -- dive_type / gas_type / tank_type の値は features/dives/constants.ts の value と一致させる
 -- ========================================
@@ -162,3 +221,212 @@ insert into public.dives (
         200, 100, 6.0, 'ウェット 5mm',
         null, '佐藤インストラクター', true, 'AOW 講習 1 本目。'
     );
+
+-- 追加のダイビングログ（統計画面を豊かにするためのサンプル）
+-- dive_number は既存（1〜4）と重複しない 5〜7 を使用
+insert into public.dives (
+    user_id, dive_number, dive_date, entry_time, exit_time,
+    location, dive_type, weather,
+    air_temp_c, water_temp_c, visibility_m, wave, current_condition,
+    max_depth_m, avg_depth_m, bottom_time_min,
+    tank_type, tank_volume_l, gas_type, o2_percent,
+    pressure_start_bar, pressure_end_bar, weight_kg, suit_type,
+    buddy_name, instructor_name, certification_dive, notes
+) values
+    (
+        '${TEST_USER_ID}', 5, '2026-06-07', '10:00', '10:48',
+        '千葉 / 波左間', 'boat', '晴れ',
+        24.0, 21.0, 8.0, '中', '中',
+        26.0, 19.0, 48,
+        'steel', 12.0, 'air', null,
+        210, 60, 5.0, 'ウェット 5mm',
+        '鈴木一郎', null, false, 'マンボウ狙い。コブダイに遭遇。'
+    ),
+    (
+        '${TEST_USER_ID}', 6, '2026-06-08', '13:30', '14:25',
+        '千葉 / 伊戸', 'boat', '曇り',
+        23.0, 20.5, 6.0, '中', '弱',
+        18.0, 12.0, 55,
+        'steel', 12.0, 'nitrox', 32.0,
+        200, 70, 5.0, 'ウェット 5mm',
+        '鈴木一郎', null, false, 'シャークスクランブル。ドチザメ多数。'
+    ),
+    (
+        '${TEST_USER_ID}', 7, '2026-06-14', '09:30', '10:20',
+        '伊豆 / 大瀬崎', 'deep', '晴れ',
+        25.0, 22.0, 14.0, 'なし', '弱',
+        32.0, 24.0, 42,
+        'aluminum', 11.0, 'nitrox', 32.0,
+        220, 80, 4.5, 'ウェット 5mm',
+        null, null, false, '先端ディープ。トガリモエビ確認。'
+    );
+
+-- ========================================
+-- サンプルレギュレーター
+-- メイン機材は 1 ユーザー 1 件（部分ユニーク制約 regulators_user_id_is_primary_key）
+-- last_overhauled_on は current_date 以前であること
+-- ========================================
+insert into public.regulators (
+    user_id, brand, model, purchased_on,
+    last_overhauled_on, overhaul_interval_months, overhaul_interval_dives,
+    is_primary, notes
+) values
+    (
+        '${TEST_USER_ID}', 'SCUBAPRO', 'MK25 EVO / S620Ti', '2023-03-01',
+        '2025-11-10', 12, 100,
+        true, 'メイン機材。次回 OH 目安は前回から 1 年。'
+    ),
+    (
+        '${TEST_USER_ID}', 'AQUALUNG', 'Legend', '2020-06-15',
+        '2024-09-20', 24, 100,
+        false, '予備機材。'
+    );
+
+-- ========================================
+-- サンプル資格（ライセンス）
+-- agency は 'padi' / 'naui' / 'ssi' / 'bsac' / 'cmas' / 'other' のみ（DB CHECK と同期）
+-- AOW は既存の講習ダイブ（certification_dive=true）にサブクエリで紐づける
+-- ========================================
+insert into public.certifications (
+    id, user_id, dive_id, agency, rank, acquired_on,
+    diver_number, instructor_number, trained_by, acquired_location
+) values
+    (
+        '22222222-2222-2222-2222-222222222221', '${TEST_USER_ID}', null,
+        'padi', 'Open Water Diver', '2025-08-10',
+        'OW-2025-0001', null, '伊豆ダイビングスクール', '静岡 / 伊豆'
+    ),
+    (
+        '22222222-2222-2222-2222-222222222222', '${TEST_USER_ID}',
+        (select id from public.dives where user_id = '${TEST_USER_ID}' and certification_dive = true order by dive_date limit 1),
+        'padi', 'Advanced Open Water Diver', '2025-12-20',
+        'AOW-2025-0042', 'INS-1234', '佐藤インストラクター', '沖縄 / 真栄田岬'
+    );
+
+-- AOW に付与するスペシャリティタグ
+insert into public.certification_tags (certification_id, tag) values
+    ('22222222-2222-2222-2222-222222222222', 'ディープ'),
+    ('22222222-2222-2222-2222-222222222222', 'ナビゲーション');
+
+-- ========================================
+-- サンプルダイブ予定
+-- planned_on は未来日（TOP「次の予定」カードに表示される）
+-- ========================================
+insert into public.dive_plans (id, user_id, planned_on, location, notes) values
+    (
+        '33333333-3333-3333-3333-333333333331', '${TEST_USER_ID}',
+        '2026-07-12', '伊豆 / 田子', '夏の遠征。ボートダイブ予定。'
+    ),
+    (
+        '33333333-3333-3333-3333-333333333332', '${TEST_USER_ID}',
+        '2026-08-20', '和歌山 / 串本', 'テーブルサンゴ狙い。'
+    );
+
+-- 予定ごとのデフォルト持ち物（lib/default-packing-items.ts と同一・同順）
+-- position は 0 起算で row_number 採番。1 件目は一部チェック済みにしておく
+insert into public.plan_packing_items (plan_id, name, position, is_checked)
+select
+    '33333333-3333-3333-3333-333333333331',
+    name,
+    (row_number() over ())::int - 1,
+    name in ('マスク', 'フィン', 'ログブック')
+from unnest(array[
+    'マスク', 'シュノーケル', 'フィン', 'ブーツ', 'ウェットスーツ', 'レギュレーター',
+    'BCD', 'ダイブコンピューター', 'ログブック', 'Cカード', 'タオル', '日焼け止め'
+]) as name;
+
+insert into public.plan_packing_items (plan_id, name, position, is_checked)
+select
+    '33333333-3333-3333-3333-333333333332',
+    name,
+    (row_number() over ())::int - 1,
+    false
+from unnest(array[
+    'マスク', 'シュノーケル', 'フィン', 'ブーツ', 'ウェットスーツ', 'レギュレーター',
+    'BCD', 'ダイブコンピューター', 'ログブック', 'Cカード', 'タオル', '日焼け止め'
+]) as name;
+
+-- ========================================
+-- ダイブサイト（ポイント）マスタ 初期データ（011-dive-sites-master）
+-- 全ユーザー共有。冪等のため name 一意制約で on conflict do nothing
+-- ========================================
+insert into public.dive_sites (name, area, country)
+values
+    -- 西伊豆
+    ('大瀬崎', '西伊豆', 'JP'),
+    ('井田', '西伊豆', 'JP'),
+    ('田子', '西伊豆', 'JP'),
+    ('黄金崎', '西伊豆', 'JP'),
+    ('雲見', '西伊豆', 'JP'),
+    ('浮島', '西伊豆', 'JP'),
+    ('安良里', '西伊豆', 'JP'),
+    -- 東伊豆
+    ('富戸', '東伊豆', 'JP'),
+    ('伊豆海洋公園', '東伊豆', 'JP'),
+    ('八幡野', '東伊豆', 'JP'),
+    ('北川', '東伊豆', 'JP'),
+    ('赤沢', '東伊豆', 'JP'),
+    ('熱海ビーチ', '東伊豆', 'JP'),
+    ('初島', '東伊豆', 'JP'),
+    -- 南伊豆
+    ('神子元島', '南伊豆', 'JP'),
+    ('ヒリゾ浜', '南伊豆', 'JP'),
+    ('中木', '南伊豆', 'JP'),
+    -- 沼津・内浦
+    ('内浦', '沼津', 'JP'),
+    ('江の浦', '沼津', 'JP'),
+    -- 伊豆諸島
+    ('伊豆大島', '伊豆諸島', 'JP'),
+    ('式根島', '伊豆諸島', 'JP'),
+    ('神津島', '伊豆諸島', 'JP'),
+    ('三宅島', '伊豆諸島', 'JP'),
+    ('八丈島', '伊豆諸島', 'JP'),
+    ('御蔵島', '伊豆諸島', 'JP'),
+    -- 房総・神奈川
+    ('伊戸', '房総', 'JP'),
+    ('波左間', '房総', 'JP'),
+    ('勝浦', '房総', 'JP'),
+    ('館山', '房総', 'JP'),
+    ('葉山', '神奈川', 'JP'),
+    ('福浦', '神奈川', 'JP'),
+    -- 紀伊半島
+    ('串本', '和歌山', 'JP'),
+    ('白浜', '和歌山', 'JP'),
+    ('すさみ', '和歌山', 'JP'),
+    -- 四国・九州
+    ('柏島', '高知', 'JP'),
+    ('米水津', '大分', 'JP'),
+    ('蒲江', '大分', 'JP'),
+    -- 日本海
+    ('越前', '福井', 'JP'),
+    ('音海', '福井', 'JP'),
+    ('隠岐', '島根', 'JP'),
+    -- 沖縄本島
+    ('青の洞窟（真栄田岬）', '沖縄本島', 'JP'),
+    ('万座', '沖縄本島', 'JP'),
+    ('砂辺', '沖縄本島', 'JP'),
+    ('残波岬', '沖縄本島', 'JP'),
+    ('恩納村', '沖縄本島', 'JP'),
+    -- 慶良間
+    ('慶良間諸島', '慶良間', 'JP'),
+    ('渡嘉敷島', '慶良間', 'JP'),
+    ('座間味島', '慶良間', 'JP'),
+    -- 宮古
+    ('宮古島', '宮古', 'JP'),
+    ('下地島', '宮古', 'JP'),
+    ('伊良部島', '宮古', 'JP'),
+    -- 八重山
+    ('石垣島', '八重山', 'JP'),
+    ('川平石崎（マンタスクランブル）', '八重山', 'JP'),
+    ('西表島', '八重山', 'JP'),
+    ('与那国島', '八重山', 'JP'),
+    ('黒島', '八重山', 'JP'),
+    -- 奄美・離島
+    ('奄美大島', '奄美', 'JP'),
+    ('屋久島', '鹿児島', 'JP'),
+    ('父島', '小笠原', 'JP'),
+    ('母島', '小笠原', 'JP'),
+    -- 北海道
+    ('積丹', '北海道', 'JP'),
+    ('知床（羅臼）', '北海道', 'JP')
+on conflict (name) do nothing;

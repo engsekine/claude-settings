@@ -2,7 +2,7 @@
 
 **Feature**: [spec.md](spec.md) | **Plan**: [plan.md](plan.md)
 
-001-auth が扱うテーブル `public.users` / `public.user_details` の定義。移行元: `docs/specs/tables/users.md` / `docs/specs/tables/user_details.md`。
+001-auth が扱うテーブル `public.users` / `public.user_details` の定義。
 
 ## ER（全体）
 
@@ -110,7 +110,7 @@ erDiagram
 ### 9. 関連リソース
 
 - マイグレーション: `supabase/migrations/20260509100821_create_users.sql`
-- 関連機能: [specs/001-auth/](spec.md)（移行元: `docs/specs/features/001-auth/`）
+- 関連機能: [specs/001-auth/](spec.md)
 - 隣接テーブル: 本ファイルの [`public.user_details`](#publicuser_details) / [`dives`](../002-dive-log-crud/data-model.md)
 
 ### 10. 変更履歴
@@ -247,7 +247,7 @@ erDiagram
 - マイグレーション: `supabase/migrations/20260514120000_create_user_details.sql`
 - 型: `service-front/src/features/auth/types.ts`
 - スキーマ: `service-front/src/features/auth/schemas/signup.schema.ts`
-- 関連機能: [specs/001-auth/](spec.md)（移行元: `docs/specs/features/001-auth/`）
+- 関連機能: [specs/001-auth/](spec.md)
 - 隣接テーブル: 本ファイルの [`public.users`](#publicusers)
 
 ### 10. 変更履歴

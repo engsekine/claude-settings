@@ -23,7 +23,9 @@ jobs:
             - run: npm ci
             - uses: supabase/setup-cli@v1
               with:
-                  version: latest
+                  # version: latest は実行のたびに GitHub API で最新リリースを解決するため、
+                  # 未認証のレート制限に達して失敗する。バージョンを固定して API 解決を回避する。
+                  version: 2.107.0
             - name: Supabase ローカルスタックを起動
               run: supabase start
             - name: マイグレーション + シード投入（テストユーザー作成）
@@ -50,6 +52,10 @@ jobs:
     storybook-test:
         runs-on: ubuntu-latest
         timeout-minutes: 20
+        env:
+            # Supabase クライアントの生成に必要（story は実通信しないためダミーで良い。シークレットではない）
+            NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+            NEXT_PUBLIC_SUPABASE_ANON_KEY: storybook-dummy-anon-key
         steps:
             - uses: actions/checkout@v4
             - uses: actions/setup-node@v4

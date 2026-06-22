@@ -81,7 +81,7 @@ describe('AuthNav', () => {
         expect(signupLink).toHaveAttribute('href', '/signup');
     });
 
-    it('ログイン済み状態でアイコンボタンを押すとシート内に会員情報リンクとログアウトボタンを表示する', async () => {
+    it('ログイン済み状態でアイコンボタンを押すとシート内に会員情報・保有資格リンクとログアウトボタンを表示する', async () => {
         const user = buildUser({ email: 'user@example.com' });
         mockStoreState.user = user;
 
@@ -92,6 +92,9 @@ describe('AuthNav', () => {
 
         const profileLink = await screen.findByRole('link', { name: /会員情報/ });
         expect(profileLink).toHaveAttribute('href', '/settings/profile');
+
+        const certificationsLink = screen.getByRole('link', { name: /保有資格/ });
+        expect(certificationsLink).toHaveAttribute('href', '/settings/certifications');
 
         expect(screen.getByRole('button', { name: /ログアウト/ })).toBeInTheDocument();
         expect(screen.getByText('user@example.com')).toBeInTheDocument();

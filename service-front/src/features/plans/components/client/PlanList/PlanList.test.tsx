@@ -47,6 +47,13 @@ describe('PlanList', () => {
         expect(screen.queryByText(/あと\d+日/)).not.toBeInTheDocument();
     });
 
+    it('予定日に対応する潮回りラベルを表示する', () => {
+        // 2026-06-15 は新月直前（旧暦 30 日相当）= 大潮
+        render(<PlanList plans={[upcomingPlan]} today={TODAY} />);
+
+        expect(screen.getByText('大潮')).toBeInTheDocument();
+    });
+
     it('予定日を YYYY/MM/DD 形式で表示し詳細へのリンクを持つ', () => {
         render(<PlanList plans={[upcomingPlan]} today={TODAY} />);
 

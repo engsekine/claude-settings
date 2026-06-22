@@ -73,4 +73,5 @@ examples/*/out/
 examples/*/.turbo/
 examples/*/package-lock.json
 examples/*/yarn.lock
-examples/*/pnpm-lock.yaml
+examples/*/pnpm-lock.yaml.claude/worktrees/
+.claude/worktrees/
