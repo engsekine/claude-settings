@@ -10,11 +10,26 @@ export const metadata = generatePageMetadata(
     { noIndex: true },
 );
 
-export default function LoginPage() {
+/** コールバックの error クエリ → ユーザー向けメッセージ（016-google-login） */
+const ERROR_MESSAGES: Record<string, string> = {
+    oauth_cancelled: 'Google ログインがキャンセルされました。もう一度お試しください。',
+    auth_callback_failed: 'ログインに失敗しました。時間をおいて再度お試しください。',
+    email_not_verified: 'メールアドレスの確認が完了していません。確認のうえ再度お試しください。',
+};
+
+interface LoginPageProps {
+    searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+    const { error } = await searchParams;
+    const errorKey = Array.isArray(error) ? error[0] : error;
+    const initialError = errorKey ? ERROR_MESSAGES[errorKey] : undefined;
+
     return (
         <div className="mx-auto flex w-full max-w-sm flex-col gap-6 px-4 py-12">
             <h1 className="font-semibold text-2xl">ログイン</h1>
-            <LoginForm />
+            <LoginForm initialError={initialError} />
         </div>
     );
 }

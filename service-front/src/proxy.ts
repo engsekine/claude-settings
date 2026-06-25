@@ -2,8 +2,11 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import { updateSession } from '@/shared/lib/supabase/middleware';
 
-/** 認証必須のパス（プレフィックス一致）。TOP（`/`）はプレフィックスだと全パスに一致するため完全一致で別判定 */
-const APP_ROUTE_PREFIXES = ['/dives', '/dive-sites', '/plans', '/settings'];
+/**
+ * 認証必須のパス（プレフィックス一致）。TOP（`/`）はプレフィックスだと全パスに一致するため完全一致で別判定。
+ * `/profile-completion` は認証必須だが補完未完了でも到達できるよう AUTH_ROUTES には入れない（016-google-login）。
+ */
+const APP_ROUTE_PREFIXES = ['/dives', '/dive-sites', '/plans', '/settings', '/profile-completion'];
 
 /** 未認証ユーザー向けのパス（認証済みなら /dives へ飛ばす） */
 const AUTH_ROUTES = ['/login', '/signup', '/reset-password'];

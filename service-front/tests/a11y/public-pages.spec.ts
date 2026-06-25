@@ -7,8 +7,8 @@ import { expect, test } from '@playwright/test';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = join(__dirname, '..', '..', 'src', 'app');
 
-/** 認証必須の route group は別ファイルで扱うのでここでは対象外 */
-const EXCLUDED_GROUPS = new Set(['(authenticated)']);
+/** 認証必須の route group は別ファイルで扱うのでここでは対象外（(onboarding) も認証必須） */
+const EXCLUDED_GROUPS = new Set(['(authenticated)', '(onboarding)']);
 
 /**
  * `src/app/` 配下を再帰スキャンし、route group `()` を除いた URL に変換する。
