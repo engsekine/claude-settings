@@ -6,6 +6,7 @@ const signUp = vi.fn();
 
 vi.mock('@/features/auth/server/actions', () => ({
     signUp: (...args: unknown[]) => signUp(...args),
+    signInWithGoogle: vi.fn(),
 }));
 
 import { SignupForm } from './SignupForm';

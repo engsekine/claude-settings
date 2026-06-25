@@ -2,35 +2,37 @@
 
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@repo/ui/components/button';
-import Link from 'next/link';
-import { useState, useTransition } from 'react';
+import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { GoogleAuthButton } from '@/features/auth/components/client/GoogleAuthButton';
-import { type SignupFormValues, signupSchema } from '@/features/auth/schemas/signup.schema';
-import { signUp } from '@/features/auth/server/actions';
+import {
+    type ProfileCompletionFormValues,
+    profileCompletionSchema,
+} from '@/features/auth/schemas/profile-completion.schema';
+import { completeProfile } from '@/features/auth/server/actions';
 import { FormField, FormRadioGroup } from '@/shared/components/form';
 import { DEFAULT_GENDER, GENDER_OPTIONS } from '@/shared/constants/gender';
 
-export const SignupForm = () => {
+/**
+ * Google ログイン初回ユーザーのプロフィール補完フォーム（016-google-login）。
+ * 成功時は completeProfile 内で /dives へ redirect されるため、戻り値は失敗時のみ受け取る。
+ */
+export const ProfileCompletionForm = () => {
     const [isPending, startTransition] = useTransition();
-    const [sentTo, setSentTo] = useState<string | null>(null);
 
     const {
         register,
         handleSubmit,
         setError,
         formState: { errors },
-    } = useForm<SignupFormValues>({
-        resolver: yupResolver(signupSchema),
+    } = useForm<ProfileCompletionFormValues>({
+        resolver: yupResolver(profileCompletionSchema),
         defaultValues: { gender: DEFAULT_GENDER },
     });
 
     const onSubmit = handleSubmit((values) => {
         startTransition(async () => {
-            const result = await signUp({
-                email: values.email,
-                password: values.password,
+            const result = await completeProfile({
                 lastName: values.lastName,
                 firstName: values.firstName,
                 lastNameRomaji: values.lastNameRomaji,
@@ -43,32 +45,9 @@ export const SignupForm = () => {
             });
             if (!result.success) {
                 setError('root', { message: result.error });
-                return;
-            }
-            if (result.needsEmailConfirmation) {
-                setSentTo(values.email);
             }
         });
     });
-
-    if (sentTo !== null) {
-        return (
-            <div className="flex flex-col gap-4" role="status" aria-live="polite">
-                <h2 className="font-semibold text-lg">確認メールを送信しました</h2>
-                <p className="text-muted-foreground text-sm">
-                    <span className="font-medium text-foreground">{sentTo}</span> 宛に確認メールを送信しました。
-                    <br />
-                    メール内のリンクをクリックして登録を完了してください。
-                </p>
-                <p className="text-muted-foreground text-sm">
-                    メールが届かない場合は、迷惑メールフォルダもご確認ください。
-                </p>
-                <Link href="/login" className="text-muted-foreground text-sm underline hover:text-foreground">
-                    ログイン画面に戻る
-                </Link>
-            </div>
-        );
-    }
 
     return (
         <form
@@ -180,36 +159,6 @@ export const SignupForm = () => {
                 />
             </div>
 
-            <FormField
-                id="email"
-                label="メールアドレス"
-                type="email"
-                autoComplete="email"
-                aria-required="true"
-                error={errors.email?.message}
-                {...register('email')}
-            />
-
-            <FormField
-                id="password"
-                label="パスワード（12文字以上・英大文字小文字と数字を含む）"
-                type="password"
-                autoComplete="new-password"
-                aria-required="true"
-                error={errors.password?.message}
-                {...register('password')}
-            />
-
-            <FormField
-                id="passwordConfirm"
-                label="パスワード（確認）"
-                type="password"
-                autoComplete="new-password"
-                aria-required="true"
-                error={errors.passwordConfirm?.message}
-                {...register('passwordConfirm')}
-            />
-
             {errors.root && (
                 <div role="alert" className="text-red-600 text-sm">
                     {errors.root.message}
@@ -217,20 +166,8 @@ export const SignupForm = () => {
             )}
 
             <Button type="submit" disabled={isPending} aria-busy={isPending}>
-                {isPending ? '登録中...' : '新規登録'}
+                {isPending ? '保存中...' : '登録して始める'}
             </Button>
-
-            <div className="flex items-center gap-3 text-muted-foreground text-xs">
-                <span className="h-px flex-1 bg-border" />
-                または
-                <span className="h-px flex-1 bg-border" />
-            </div>
-
-            <GoogleAuthButton label="Google で続行" />
-
-            <Link href="/login" className="text-muted-foreground text-sm underline hover:text-foreground">
-                ログインはこちら
-            </Link>
         </form>
     );
 };

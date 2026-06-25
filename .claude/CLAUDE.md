@@ -219,5 +219,5 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at specs/015-admin-panel/plan.md
+at specs/016-google-login/plan.md
 <!-- SPECKIT END -->
