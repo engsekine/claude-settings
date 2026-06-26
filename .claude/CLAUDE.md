@@ -160,12 +160,13 @@
 | `/speckit-implement` | spec-kit: tasks.md に従って実装する |
 | `/speckit-clarify` / `/speckit-analyze` / `/speckit-checklist` | spec-kit: 仕様の明確化・整合性分析・チェックリスト生成 |
 
+## アーキテクチャ（service-front / admin-front 共通）
+
+両プロジェクトとも `arch/feature-based.md` に基づく **Feature-based + shared/ アーキテクチャ**に従う（`app/` → `features/` → `shared/` の依存方向、機能単位の分割、横断リソースは `shared/` へ）。コードを生成・移動するときは `arch/` 配下のドキュメントを必ず参照すること。
+
+フォルダ・ファイルの配置粒度は [rules/folder-structure.md](rules/folder-structure.md)（両プロジェクト共通）を参照する。
+
 ## service-front プロジェクト
-
-### アーキテクチャ
-
-設計の詳細は `arch/feature-based.md` に基づく Feature-based アーキテクチャに従う。
-コードを生成するときは `arch/` 配下のドキュメントを参照すること。
 
 ### 技術スタック
 
