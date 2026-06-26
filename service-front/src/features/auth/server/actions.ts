@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation';
 
 import type { Gender } from '@/shared/constants/gender';
+import { CURRENT_TERMS_VERSION } from '@/shared/constants/terms';
 import { createClient } from '@/shared/lib/supabase/server';
 import { type ActionResult, actionFailure, actionSuccess } from '@/shared/types/action-result';
 
@@ -28,6 +29,8 @@ export interface CompleteProfileInput {
     heightCm: number | null;
     /** 体重（kg）。任意入力 */
     weightKg: number | null;
+    /** 利用規約への同意（018）。true 必須 */
+    agreedToTerms: boolean;
 }
 
 export interface SignUpInput {
@@ -45,6 +48,8 @@ export interface SignUpInput {
     heightCm: number | null;
     /** 体重（kg）。任意入力 */
     weightKg: number | null;
+    /** 利用規約への同意（018）。true 必須 */
+    agreedToTerms: boolean;
 }
 
 export const signIn = async (email: string, password: string): Promise<ActionResult> => {
@@ -60,6 +65,11 @@ export const signIn = async (email: string, password: string): Promise<ActionRes
 };
 
 export const signUp = async (input: SignUpInput): Promise<ActionResult<SignUpPayload>> => {
+    /** クライアントの無効化に依存せず、サーバー側でも未同意を拒否する（018 / FR-008） */
+    if (input.agreedToTerms !== true) {
+        return actionFailure('利用規約に同意してください');
+    }
+
     const supabase = await createClient();
 
     const siteUrl = process.env['NEXT_PUBLIC_SITE_URL'] ?? 'https://localhost:3000';
@@ -83,6 +93,8 @@ export const signUp = async (input: SignUpInput): Promise<ActionResult<SignUpPay
                 gender: input.gender,
                 height_cm: input.heightCm,
                 weight_kg: input.weightKg,
+                /** handle_new_user トリガーが user_details.terms_version に記録する（018） */
+                terms_version: CURRENT_TERMS_VERSION,
             },
         },
     });
@@ -178,6 +190,11 @@ const toBrowserReachableAuthorizeUrl = (authorizeUrl: string): string => {
  * 補完済みユーザーの再送（一意制約違反）は冪等に /dives へ流す。
  */
 export const completeProfile = async (input: CompleteProfileInput): Promise<ActionResult> => {
+    /** クライアントの無効化に依存せず、サーバー側でも未同意を拒否する（018 / FR-008） */
+    if (input.agreedToTerms !== true) {
+        return actionFailure('利用規約に同意してください');
+    }
+
     const supabase = await createClient();
 
     const {

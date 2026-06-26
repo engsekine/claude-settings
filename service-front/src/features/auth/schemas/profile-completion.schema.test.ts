@@ -12,6 +12,7 @@ const validInput = {
     gender: 'male',
     heightCm: '',
     weightKg: '',
+    agreedToTerms: true,
 };
 
 describe('profileCompletionSchema', () => {
@@ -36,5 +37,9 @@ describe('profileCompletionSchema', () => {
 
     it('性別が 3 値以外だと拒否する', () => {
         expect(() => profileCompletionSchema.validateSync({ ...validInput, gender: 'other' })).toThrow();
+    });
+
+    it('利用規約に同意していない（false）と拒否する（018）', () => {
+        expect(() => profileCompletionSchema.validateSync({ ...validInput, agreedToTerms: false })).toThrow();
     });
 });

@@ -550,6 +550,8 @@ export type Database = {
           last_name: string
           last_name_romaji: string
           nickname: string
+          terms_agreed_at: string | null
+          terms_version: string | null
           updated_at: string
           user_id: string
           weight_kg: number | null
@@ -564,6 +566,8 @@ export type Database = {
           last_name: string
           last_name_romaji: string
           nickname: string
+          terms_agreed_at?: string | null
+          terms_version?: string | null
           updated_at?: string
           user_id: string
           weight_kg?: number | null
@@ -578,6 +582,8 @@ export type Database = {
           last_name?: string
           last_name_romaji?: string
           nickname?: string
+          terms_agreed_at?: string | null
+          terms_version?: string | null
           updated_at?: string
           user_id?: string
           weight_kg?: number | null

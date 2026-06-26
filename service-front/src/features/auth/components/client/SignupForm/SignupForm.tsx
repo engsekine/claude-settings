@@ -7,6 +7,7 @@ import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { GoogleAuthButton } from '@/features/auth/components/client/GoogleAuthButton';
+import { TermsAgreementField } from '@/features/auth/components/client/TermsAgreementField';
 import { type SignupFormValues, signupSchema } from '@/features/auth/schemas/signup.schema';
 import { signUp } from '@/features/auth/server/actions';
 import { FormField, FormRadioGroup } from '@/shared/components/form';
@@ -40,6 +41,7 @@ export const SignupForm = () => {
                 gender: values.gender,
                 heightCm: values.heightCm,
                 weightKg: values.weightKg,
+                agreedToTerms: values.agreedToTerms,
             });
             if (!result.success) {
                 setError('root', { message: result.error });
@@ -208,6 +210,12 @@ export const SignupForm = () => {
                 aria-required="true"
                 error={errors.passwordConfirm?.message}
                 {...register('passwordConfirm')}
+            />
+
+            <TermsAgreementField
+                id="agreedToTerms"
+                error={errors.agreedToTerms?.message}
+                {...register('agreedToTerms')}
             />
 
             {errors.root && (

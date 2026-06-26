@@ -1,14 +1,17 @@
 import * as yup from 'yup';
 
+import { agreedToTermsField } from '@/shared/schemas/fields';
 import { userProfileFields } from '@/shared/schemas/user-profile';
 
 /**
  * Google ログイン初回時のプロフィール補完フォーム（016-google-login）。
  * メール / パスワードは持たないため、共有の userProfileFields のみで構成する。
  * バリデーション基準は 001-auth のサインアップ・account のプロフィール編集と同一。
+ * 新規登録時の利用規約同意（018）も必須とする。
  */
 export const profileCompletionSchema = yup.object({
     ...userProfileFields,
+    agreedToTerms: agreedToTermsField,
 });
 
 export type ProfileCompletionFormValues = yup.InferType<typeof profileCompletionSchema>;

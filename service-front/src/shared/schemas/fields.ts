@@ -5,6 +5,15 @@ import * as yup from 'yup';
  * バリデーションメッセージの表記ゆれを防ぐため、必ずここから import する。
  */
 
+/**
+ * 利用規約への同意（018-terms-agreement）。新規登録フォームで使う。
+ * 未チェック（false）はバリデーションエラーとし、登録させない。
+ */
+export const agreedToTermsField = yup
+    .boolean()
+    .oneOf([true], '利用規約に同意してください')
+    .required('利用規約に同意してください');
+
 export const emailField = yup
     .string()
     .email('正しいメールアドレスを入力してください')
