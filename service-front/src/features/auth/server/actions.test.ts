@@ -14,7 +14,9 @@ vi.mock('@/shared/lib/supabase/server', () => ({
     createClient: (...args: unknown[]) => createClient(...args),
 }));
 
-import { type CompleteProfileInput, completeProfile, signInWithGoogle } from './actions';
+import { CURRENT_TERMS_VERSION } from '@/shared/constants/terms';
+
+import { type CompleteProfileInput, completeProfile, type SignUpInput, signInWithGoogle, signUp } from './actions';
 
 interface MockOptions {
     /** signInWithOAuth の戻り */
@@ -35,15 +37,34 @@ const buildSupabaseMock = (options: MockOptions = {}) => {
     const signInWithOAuth = vi.fn().mockResolvedValue(oauth);
     const getUser = vi.fn().mockResolvedValue({ data: { user } });
     const insert = vi.fn().mockResolvedValue({ error: insertError });
+    const supabaseSignUp = vi
+        .fn()
+        .mockResolvedValue({ data: { user: { id: 'user-1', identities: [{ id: 'i1' }] } }, error: null });
 
     return {
         client: {
-            auth: { signInWithOAuth, getUser },
+            auth: { signInWithOAuth, getUser, signUp: supabaseSignUp },
             from: vi.fn().mockReturnValue({ insert }),
         },
         signInWithOAuth,
         insert,
+        supabaseSignUp,
     };
+};
+
+const signUpInput: SignUpInput = {
+    email: 'user@example.com',
+    password: 'Password1234',
+    lastName: '山田',
+    firstName: '太郎',
+    lastNameRomaji: 'Yamada',
+    firstNameRomaji: 'Taro',
+    nickname: 'たろちゃん',
+    birthOn: '1990-01-01',
+    gender: 'male',
+    heightCm: null,
+    weightKg: null,
+    agreedToTerms: true,
 };
 
 const profileInput: CompleteProfileInput = {
@@ -56,6 +77,7 @@ const profileInput: CompleteProfileInput = {
     gender: 'male',
     heightCm: null,
     weightKg: null,
+    agreedToTerms: true,
 };
 
 beforeEach(() => {
@@ -144,5 +166,36 @@ describe('completeProfile', () => {
         const result = await completeProfile(profileInput);
 
         expect(result.success).toBe(false);
+    });
+
+    it('利用規約未同意なら Supabase に到達せず失敗を返す（018 / FR-008）', async () => {
+        const result = await completeProfile({ ...profileInput, agreedToTerms: false });
+
+        expect(result.success).toBe(false);
+        expect(createClient).not.toHaveBeenCalled();
+    });
+});
+
+describe('signUp - 利用規約同意（018）', () => {
+    it('未同意なら Supabase に到達せず失敗を返す（FR-008）', async () => {
+        const result = await signUp({ ...signUpInput, agreedToTerms: false });
+
+        expect(result.success).toBe(false);
+        expect(createClient).not.toHaveBeenCalled();
+    });
+
+    it('同意済みなら options.data に terms_version を含めて signUp する', async () => {
+        const mock = buildSupabaseMock();
+        createClient.mockResolvedValue(mock.client);
+
+        await signUp(signUpInput);
+
+        expect(mock.supabaseSignUp).toHaveBeenCalledWith(
+            expect.objectContaining({
+                options: expect.objectContaining({
+                    data: expect.objectContaining({ terms_version: CURRENT_TERMS_VERSION }),
+                }),
+            }),
+        );
     });
 });

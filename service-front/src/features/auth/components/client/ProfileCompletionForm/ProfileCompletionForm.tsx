@@ -4,7 +4,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@repo/ui/components/button';
 import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
-
+import { TermsAgreementField } from '@/features/auth/components/client/TermsAgreementField';
 import {
     type ProfileCompletionFormValues,
     profileCompletionSchema,
@@ -42,6 +42,7 @@ export const ProfileCompletionForm = () => {
                 gender: values.gender,
                 heightCm: values.heightCm,
                 weightKg: values.weightKg,
+                agreedToTerms: values.agreedToTerms,
             });
             if (!result.success) {
                 setError('root', { message: result.error });
@@ -158,6 +159,12 @@ export const ProfileCompletionForm = () => {
                     {...register('weightKg')}
                 />
             </div>
+
+            <TermsAgreementField
+                id="agreedToTerms"
+                error={errors.agreedToTerms?.message}
+                {...register('agreedToTerms')}
+            />
 
             {errors.root && (
                 <div role="alert" className="text-red-600 text-sm">

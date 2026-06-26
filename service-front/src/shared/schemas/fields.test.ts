@@ -1,6 +1,6 @@
 import * as yup from 'yup';
 
-import { emailField, passwordConfirmField, passwordField } from './fields';
+import { agreedToTermsField, emailField, passwordConfirmField, passwordField } from './fields';
 
 /** passwordConfirmField は yup.ref('password') を参照するためオブジェクトスキーマで検証する */
 const passwordPairSchema = yup.object({
@@ -80,5 +80,19 @@ describe('passwordConfirmField', () => {
         await expect(passwordPairSchema.validate({ password: 'Password1234' })).rejects.toThrow(
             '確認用パスワードを入力してください',
         );
+    });
+});
+
+describe('agreedToTermsField', () => {
+    it('true を受け付ける', () => {
+        expect(agreedToTermsField.validateSync(true)).toBe(true);
+    });
+
+    it('false を拒否する', () => {
+        expect(() => agreedToTermsField.validateSync(false)).toThrow('利用規約に同意してください');
+    });
+
+    it('未指定（undefined）を拒否する', () => {
+        expect(() => agreedToTermsField.validateSync(undefined)).toThrow('利用規約に同意してください');
     });
 });
