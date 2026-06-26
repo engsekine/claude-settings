@@ -1,6 +1,13 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, type Page, test } from '@playwright/test';
 
+import { presetConsent } from './_helpers';
+
+/** a11y スイープでバナーが重ならないよう同意済み Cookie をプリセット（017-cookie-consent） */
+test.beforeEach(async ({ context }) => {
+    await presetConsent(context);
+});
+
 /** supabase/seed.sql のローカル開発専用テストユーザー */
 const TEST_EMAIL = 'test@example.com';
 const TEST_PASSWORD = 'password123';

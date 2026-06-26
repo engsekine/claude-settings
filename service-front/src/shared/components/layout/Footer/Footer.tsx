@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { CookieSettingsButton } from '@/features/consent';
 import { COPYRIGHT_HOLDER, SITE_NAME } from '@/shared/constants/site';
 
 const FOOTER_LINKS = [
@@ -29,6 +30,9 @@ export const Footer = () => {
                                 </Link>
                             </li>
                         ))}
+                        <li>
+                            <CookieSettingsButton />
+                        </li>
                     </ul>
                 </nav>
                 <p className="mt-4 text-center text-muted-foreground text-sm">

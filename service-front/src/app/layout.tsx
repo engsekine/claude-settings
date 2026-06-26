@@ -1,6 +1,8 @@
 import { Geist, Geist_Mono } from 'next/font/google';
+import { cookies } from 'next/headers';
 
 import { AuthNav } from '@/features/auth';
+import { COOKIE_CONSENT_NAME, CookieConsentBanner, getCookieConsentServer } from '@/features/consent';
 import { Footer } from '@/shared/components/layout/Footer';
 import { Header } from '@/shared/components/layout/Header';
 import { SITE_METADATA } from '@/shared/config/metadata';
@@ -31,6 +33,10 @@ export default async function RootLayout({
         data: { user },
     } = await supabase.auth.getUser();
 
+    // 同意状態はサーバーで判定し、未選択のときだけバナーを描画してちらつきを防ぐ（FR-011）
+    const cookieStore = await cookies();
+    const consent = getCookieConsentServer(cookieStore.get(COOKIE_CONSENT_NAME)?.value);
+
     return (
         <html lang="ja" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
             <body className="flex min-h-full flex-col">
@@ -38,6 +44,7 @@ export default async function RootLayout({
                     <Header actions={<AuthNav initialUser={user} />} />
                     <main className="flex flex-1 justify-center bg-background">{children}</main>
                     <Footer />
+                    <CookieConsentBanner initialConsent={consent} />
                 </Providers>
             </body>
         </html>
