@@ -26,6 +26,12 @@ describe('Footer', () => {
         }
     });
 
+    it('「Cookie 設定」ボタンを表示する', () => {
+        render(<Footer />);
+
+        expect(screen.getByRole('button', { name: 'Cookie 設定' })).toBeInTheDocument();
+    });
+
     it('現在年の著作権表記を表示する', () => {
         render(<Footer />);
 
