@@ -26,45 +26,14 @@
 2. 計画を立ててから実装する
 3. テストを書いてから実装コードを変更する
 
-## コンポーネント作成時のフォルダ構成
+## フォルダ構成（コンポーネント / lib ユーティリティ）
 
-新しい React コンポーネントを作成するときは **必ず専用フォルダに配置**し、以下の構造に揃える。
+コンポーネントと `shared/lib` ユーティリティのフォルダ構成は **service-front / admin-front 共通**の規約として [rules/folder-structure.md](rules/folder-structure.md) に定義する。新規作成・移動の際は必ず参照すること。
 
-```
-<対象パス>/<ComponentName>/
-├── <ComponentName>.tsx          ← コンポーネント本体
-├── <ComponentName>.test.tsx     ← Vitest 単体テスト
-├── <ComponentName>.stories.tsx  ← Storybook story
-└── index.ts                     ← 再 export 専用
-                                   例: export { ComponentName } from './ComponentName';
-```
-
-### 配置のルール
-
-| 対象 | 配置例 |
-|---|---|
-| 汎用コンポーネント | `src/shared/components/<group>/<ComponentName>/...` |
-| 機能固有コンポーネント | `src/features/<feature>/components/<ComponentName>/...` |
-| Client コンポーネント | `src/features/<feature>/components/client/<ComponentName>/...` |
-| Server コンポーネント | `src/features/<feature>/components/server/<ComponentName>/...` |
-
-### import パスの方針
-
-- **外部からは index.ts 経由で import**: `import { Foo } from '@/shared/components/Foo'`（中の `Foo/Foo.tsx` を直接指さない）
-- **コンポーネント内部の sibling 参照は親ディレクトリ経由**: `import { Bar } from '../Bar'`（`./Bar` ではなく `../Bar` で隣のフォルダの index.ts を解決）
-- **types / hooks / stores 等の上位参照**: フォルダ階層分の `..` を正確に。例えば `Foo/Foo.tsx` から `../../../types` で `features/<feature>/types/` に届く
-
-### 既存コンポーネントの配置例
-
-| パス | 構造 |
-|---|---|
-| `src/shared/components/layout/Header/` | Header.tsx + Header.test.tsx + Header.stories.tsx + index.ts |
-| `src/shared/components/layout/Breadcrumbs/` | 同上 |
-| `src/shared/components/layout/Footer/` | 同上 |
-| `src/shared/components/form/FormField/` | 同上 |
-| `src/features/dives/components/client/DiveSearchBar/` | 同上 |
-
-新規作成・移動の際はこれらを参照モデルとする。
+要点:
+- コンポーネント・lib ユーティリティとも **専用フォルダ**に配置し、フォルダ内に本体・テスト・`index.ts`（再 export）を並べる
+- 外部からは `index.ts` 経由で import し、フォルダ内の中身を直接指さない
+- `*.stories.tsx` は Storybook 採用プロジェクト（service-front）のみの任意ファイル
 
 ## テスト生成ルール
 
@@ -158,6 +127,7 @@
 
 | ファイル | 内容 |
 |---------|------|
+| `rules/folder-structure.md` | フォルダ構成規約（コンポーネント / lib ユーティリティ・両プロジェクト共通） |
 | `rules/react.md` | React コーディング規約 |
 | `rules/typescript.md` | TypeScript コーディング規約 |
 | `rules/html.md` | HTML コーディング規約 |
@@ -219,5 +189,5 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at specs/017-cookie-consent/plan.md
+at specs/018-terms-agreement/plan.md
 <!-- SPECKIT END -->
