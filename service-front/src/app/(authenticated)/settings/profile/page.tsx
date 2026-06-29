@@ -35,6 +35,8 @@ export default async function ProfileEditPage() {
                         gender: profile.gender,
                         heightCm: profile.heightCm,
                         weightKg: profile.weightKg,
+                        diverType: profile.diverType,
+                        diverNumber: profile.diverNumber,
                     }}
                 />
                 <section

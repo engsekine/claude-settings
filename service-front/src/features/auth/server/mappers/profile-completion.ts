@@ -25,4 +25,7 @@ export const toUserDetailsInsert = (userId: string, input: CompleteProfileInput)
     weight_kg: input.weightKg,
     terms_version: CURRENT_TERMS_VERSION,
     terms_agreed_at: new Date().toISOString(),
+    // ダイバー種別/番号（019）。番号は instructor のときのみ保持（CHECK ③整合）
+    diver_type: input.diverType,
+    diver_number: input.diverType === 'instructor' ? (input.diverNumber ?? null) : null,
 });

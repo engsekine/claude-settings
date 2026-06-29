@@ -1,5 +1,6 @@
 import * as yup from 'yup';
 
+import { requiredDiverFields } from '@/shared/schemas/diver';
 import { agreedToTermsField } from '@/shared/schemas/fields';
 import { userProfileFields } from '@/shared/schemas/user-profile';
 
@@ -11,6 +12,7 @@ import { userProfileFields } from '@/shared/schemas/user-profile';
  */
 export const profileCompletionSchema = yup.object({
     ...userProfileFields,
+    ...requiredDiverFields,
     agreedToTerms: agreedToTermsField,
 });
 

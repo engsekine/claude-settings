@@ -58,6 +58,7 @@ describe('ProfileCompletionForm', () => {
         await user.type(screen.getByLabelText('名（ローマ字）'), 'Taro');
         await user.type(screen.getByLabelText('ニックネーム'), 'たろちゃん');
         await user.type(screen.getByLabelText('生年月日'), '1990-01-01');
+        await user.click(screen.getByRole('radio', { name: '一般ダイバー' }));
         await agreeToTerms(user);
         await user.click(screen.getByRole('button', { name: '登録して始める' }));
 

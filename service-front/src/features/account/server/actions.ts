@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 
+import type { DiverType } from '@/shared/constants/diver-type';
 import type { Gender } from '@/shared/constants/gender';
 import { createClient } from '@/shared/lib/supabase/server';
 import { type ActionResult, actionFailure, actionSuccess } from '@/shared/types/action-result';
@@ -21,6 +22,10 @@ export interface UpdateProfileInput {
     heightCm: number | null;
     /** 体重（kg）。任意入力 */
     weightKg: number | null;
+    /** ダイバー種別（019）。編集では任意（未選択=null 可） */
+    diverType: DiverType | null;
+    /** ダイバー番号（019）。インストラクターのみ・任意 */
+    diverNumber: string | null;
 }
 
 export interface ProfileData {
@@ -37,6 +42,10 @@ export interface ProfileData {
     heightCm: number | null;
     /** 体重（kg）。未登録時は null */
     weightKg: number | null;
+    /** ダイバー種別（019）。未設定は null */
+    diverType: DiverType | null;
+    /** ダイバー番号（019）。未設定は null */
+    diverNumber: string | null;
 }
 
 export const getProfile = async (): Promise<ProfileData | null> => {
@@ -50,7 +59,7 @@ export const getProfile = async (): Promise<ProfileData | null> => {
     const { data, error } = await supabase
         .from('user_details')
         .select(
-            'last_name, first_name, last_name_romaji, first_name_romaji, nickname, birth_on, gender, height_cm, weight_kg',
+            'last_name, first_name, last_name_romaji, first_name_romaji, nickname, birth_on, gender, height_cm, weight_kg, diver_type, diver_number',
         )
         .eq('user_id', user.id)
         .single();

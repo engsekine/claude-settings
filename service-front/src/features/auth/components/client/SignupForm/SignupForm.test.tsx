@@ -49,8 +49,22 @@ describe('SignupForm', () => {
         }
 
         expect(screen.getByRole('group', { name: '性別' })).toBeInTheDocument();
+        expect(screen.getByRole('group', { name: 'ダイバー種別' })).toBeInTheDocument();
         expect(screen.getByRole('checkbox', { name: /利用規約に同意する/ })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: '新規登録' })).toBeInTheDocument();
+    });
+
+    it('ダイバー種別でインストラクターを選ぶとダイバー番号欄が現れ、一般ダイバーで消える（019）', async () => {
+        const user = userEvent.setup();
+        render(<SignupForm />);
+
+        expect(screen.queryByLabelText('ダイバー番号')).not.toBeInTheDocument();
+
+        await user.click(screen.getByRole('radio', { name: 'インストラクター' }));
+        expect(await screen.findByLabelText('ダイバー番号')).toBeInTheDocument();
+
+        await user.click(screen.getByRole('radio', { name: '一般ダイバー' }));
+        expect(screen.queryByLabelText('ダイバー番号')).not.toBeInTheDocument();
     });
 
     it('利用規約に同意しないまま送信すると signUp は呼ばれずエラーが表示される（018）', async () => {
@@ -87,6 +101,7 @@ describe('SignupForm', () => {
         await user.type(screen.getByLabelText('メールアドレス'), 'user@example.com');
         await user.type(screen.getByLabelText('パスワード（12文字以上・英大文字小文字と数字を含む）'), 'Password1234');
         await user.type(screen.getByLabelText('パスワード（確認）'), 'Password1234');
+        await user.click(screen.getByRole('radio', { name: '一般ダイバー' }));
         await agreeToTerms(user);
         await user.click(screen.getByRole('button', { name: '新規登録' }));
 
@@ -110,6 +125,7 @@ describe('SignupForm', () => {
         await user.type(screen.getByLabelText('メールアドレス'), 'user@example.com');
         await user.type(screen.getByLabelText('パスワード（12文字以上・英大文字小文字と数字を含む）'), 'Password1234');
         await user.type(screen.getByLabelText('パスワード（確認）'), 'Password1234');
+        await user.click(screen.getByRole('radio', { name: '一般ダイバー' }));
         await agreeToTerms(user);
         await user.click(screen.getByRole('button', { name: '新規登録' }));
 
@@ -131,6 +147,7 @@ describe('SignupForm', () => {
         await user.type(screen.getByLabelText('メールアドレス'), 'existing@example.com');
         await user.type(screen.getByLabelText('パスワード（12文字以上・英大文字小文字と数字を含む）'), 'Password1234');
         await user.type(screen.getByLabelText('パスワード（確認）'), 'Password1234');
+        await user.click(screen.getByRole('radio', { name: '一般ダイバー' }));
         await agreeToTerms(user);
         await user.click(screen.getByRole('button', { name: '新規登録' }));
 

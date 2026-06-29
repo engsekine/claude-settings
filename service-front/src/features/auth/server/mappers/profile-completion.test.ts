@@ -16,6 +16,8 @@ const input: CompleteProfileInput = {
     heightCm: 170.5,
     weightKg: 65,
     agreedToTerms: true,
+    diverType: 'instructor',
+    diverNumber: 'PADI-12345',
 };
 
 describe('toUserDetailsInsert', () => {
@@ -40,6 +42,18 @@ describe('toUserDetailsInsert', () => {
         const result = toUserDetailsInsert('user-1', input);
         expect(result.terms_version).toBe(CURRENT_TERMS_VERSION);
         expect(typeof result.terms_agreed_at).toBe('string');
+    });
+
+    it('ダイバー種別を保存し、インストラクターのときは番号も保存する（019）', () => {
+        const result = toUserDetailsInsert('user-1', input);
+        expect(result.diver_type).toBe('instructor');
+        expect(result.diver_number).toBe('PADI-12345');
+    });
+
+    it('一般ダイバーのときは番号を null にする（019 / CHECK 整合）', () => {
+        const result = toUserDetailsInsert('user-1', { ...input, diverType: 'general', diverNumber: 'X999' });
+        expect(result.diver_type).toBe('general');
+        expect(result.diver_number).toBeNull();
     });
 
     it('身長・体重が null の場合もそのまま null を保持する', () => {

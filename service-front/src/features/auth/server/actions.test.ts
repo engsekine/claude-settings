@@ -65,6 +65,8 @@ const signUpInput: SignUpInput = {
     heightCm: null,
     weightKg: null,
     agreedToTerms: true,
+    diverType: 'general',
+    diverNumber: null,
 };
 
 const profileInput: CompleteProfileInput = {
@@ -78,6 +80,8 @@ const profileInput: CompleteProfileInput = {
     heightCm: null,
     weightKg: null,
     agreedToTerms: true,
+    diverType: 'general',
+    diverNumber: null,
 };
 
 beforeEach(() => {

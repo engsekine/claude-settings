@@ -1,5 +1,6 @@
 import type { Database } from '@repo/supabase';
 
+import type { DiverType } from '@/shared/constants/diver-type';
 import type { Gender } from '@/shared/constants/gender';
 
 import type { ProfileData, UpdateProfileInput } from '../actions';
@@ -19,6 +20,8 @@ export type ProfileRow = Pick<
     | 'gender'
     | 'height_cm'
     | 'weight_kg'
+    | 'diver_type'
+    | 'diver_number'
 >;
 
 /** DB Row → ドメイン型（camelCase）への変換 */
@@ -33,6 +36,8 @@ export const toProfile = (row: ProfileRow, email: string): ProfileData => ({
     gender: row.gender as Gender,
     heightCm: row.height_cm === null ? null : Number(row.height_cm),
     weightKg: row.weight_kg === null ? null : Number(row.weight_kg),
+    diverType: row.diver_type as DiverType | null,
+    diverNumber: row.diver_number,
 });
 
 /** ドメイン型 → DB Update ペイロード（snake_case）への変換 */
@@ -46,4 +51,7 @@ export const toUserDetailsUpdate = (input: UpdateProfileInput): UserDetailsUpdat
     gender: input.gender,
     height_cm: input.heightCm,
     weight_kg: input.weightKg,
+    // ダイバー種別/番号（019）。番号は instructor のときのみ保持（一般/未選択は null＝CHECK ③整合）
+    diver_type: input.diverType,
+    diver_number: input.diverType === 'instructor' ? (input.diverNumber ?? null) : null,
 });

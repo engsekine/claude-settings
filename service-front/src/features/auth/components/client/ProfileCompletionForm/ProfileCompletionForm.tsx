@@ -11,6 +11,7 @@ import {
 } from '@/features/auth/schemas/profile-completion.schema';
 import { completeProfile } from '@/features/auth/server/actions';
 import { FormField, FormRadioGroup } from '@/shared/components/form';
+import { DIVER_TYPE_OPTIONS } from '@/shared/constants/diver-type';
 import { DEFAULT_GENDER, GENDER_OPTIONS } from '@/shared/constants/gender';
 
 /**
@@ -23,12 +24,15 @@ export const ProfileCompletionForm = () => {
     const {
         register,
         handleSubmit,
+        watch,
         setError,
         formState: { errors },
     } = useForm<ProfileCompletionFormValues>({
         resolver: yupResolver(profileCompletionSchema),
         defaultValues: { gender: DEFAULT_GENDER },
     });
+
+    const isInstructor = watch('diverType') === 'instructor';
 
     const onSubmit = handleSubmit((values) => {
         startTransition(async () => {
@@ -43,6 +47,8 @@ export const ProfileCompletionForm = () => {
                 heightCm: values.heightCm,
                 weightKg: values.weightKg,
                 agreedToTerms: values.agreedToTerms,
+                diverType: values.diverType,
+                diverNumber: values.diverNumber ?? null,
             });
             if (!result.success) {
                 setError('root', { message: result.error });
@@ -131,6 +137,25 @@ export const ProfileCompletionForm = () => {
                 error={errors.gender?.message}
                 {...register('gender')}
             />
+
+            <FormRadioGroup
+                legend="ダイバー種別"
+                options={DIVER_TYPE_OPTIONS}
+                aria-required="true"
+                error={errors.diverType?.message}
+                {...register('diverType')}
+            />
+
+            {isInstructor && (
+                <FormField
+                    id="diverNumber"
+                    label="ダイバー番号"
+                    type="text"
+                    autoComplete="off"
+                    error={errors.diverNumber?.message}
+                    {...register('diverNumber')}
+                />
+            )}
 
             <div className="grid grid-cols-2 gap-3">
                 <FormField
