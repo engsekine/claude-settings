@@ -10,6 +10,7 @@ const FOOTER_LINKS = [
     { href: '/settings/certifications', label: '保有資格' },
     { href: '/terms', label: '利用規約' },
     { href: '/privacy-policy', label: 'プライバシーポリシー' },
+    { href: '/contact', label: 'お問い合わせ' },
 ] as const;
 
 export const Footer = () => {

@@ -18,6 +18,7 @@ describe('Footer', () => {
             { label: '保有資格', href: '/settings/certifications' },
             { label: '利用規約', href: '/terms' },
             { label: 'プライバシーポリシー', href: '/privacy-policy' },
+            { label: 'お問い合わせ', href: '/contact' },
         ];
 
         for (const { label, href } of expectedLinks) {
