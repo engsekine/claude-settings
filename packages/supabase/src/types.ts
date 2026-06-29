@@ -543,6 +543,8 @@ export type Database = {
         Row: {
           birth_on: string
           created_at: string
+          diver_number: string | null
+          diver_type: string | null
           first_name: string
           first_name_romaji: string
           gender: string
@@ -559,6 +561,8 @@ export type Database = {
         Insert: {
           birth_on: string
           created_at?: string
+          diver_number?: string | null
+          diver_type?: string | null
           first_name: string
           first_name_romaji: string
           gender?: string
@@ -575,6 +579,8 @@ export type Database = {
         Update: {
           birth_on?: string
           created_at?: string
+          diver_number?: string | null
+          diver_type?: string | null
           first_name?: string
           first_name_romaji?: string
           gender?: string

@@ -13,6 +13,7 @@ const validInput = {
     heightCm: '',
     weightKg: '',
     agreedToTerms: true,
+    diverType: 'general',
 };
 
 describe('profileCompletionSchema', () => {

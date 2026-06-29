@@ -9,6 +9,7 @@ import { useForm } from 'react-hook-form';
 import { type ProfileFormValues, profileSchema } from '@/features/account/schemas/profile.schema';
 import { updateProfile } from '@/features/account/server/actions';
 import { FormField, FormRadioGroup } from '@/shared/components/form';
+import { DIVER_TYPE_OPTIONS } from '@/shared/constants/diver-type';
 import { GENDER_OPTIONS } from '@/shared/constants/gender';
 
 interface ProfileEditFormProps {
@@ -23,6 +24,7 @@ export const ProfileEditForm = ({ email, defaultValues }: ProfileEditFormProps) 
     const {
         register,
         handleSubmit,
+        watch,
         setError,
         formState: { errors, isDirty },
     } = useForm<ProfileFormValues>({
@@ -30,10 +32,16 @@ export const ProfileEditForm = ({ email, defaultValues }: ProfileEditFormProps) 
         defaultValues,
     });
 
+    const isInstructor = watch('diverType') === 'instructor';
+
     const onSubmit = handleSubmit((values) => {
         setSuccessMessage(null);
         startTransition(async () => {
-            const result = await updateProfile(values);
+            const result = await updateProfile({
+                ...values,
+                diverType: values.diverType ?? null,
+                diverNumber: values.diverNumber ?? null,
+            });
             if (!result.success) {
                 setError('root', { message: result.error });
                 return;
@@ -122,10 +130,29 @@ export const ProfileEditForm = ({ email, defaultValues }: ProfileEditFormProps) 
             <FormRadioGroup
                 legend="性別"
                 options={GENDER_OPTIONS}
+                required
                 aria-required="true"
                 error={errors.gender?.message}
                 {...register('gender')}
             />
+
+            <FormRadioGroup
+                legend="ダイバー種別"
+                options={DIVER_TYPE_OPTIONS}
+                error={errors.diverType?.message}
+                {...register('diverType')}
+            />
+
+            {isInstructor && (
+                <FormField
+                    id="diverNumber"
+                    label="ダイバー番号"
+                    type="text"
+                    autoComplete="off"
+                    error={errors.diverNumber?.message}
+                    {...register('diverNumber')}
+                />
+            )}
 
             <div className="grid grid-cols-2 gap-3">
                 <FormField

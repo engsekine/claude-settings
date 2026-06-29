@@ -11,6 +11,7 @@ import { TermsAgreementField } from '@/features/auth/components/client/TermsAgre
 import { type SignupFormValues, signupSchema } from '@/features/auth/schemas/signup.schema';
 import { signUp } from '@/features/auth/server/actions';
 import { FormField, FormRadioGroup } from '@/shared/components/form';
+import { DIVER_TYPE_OPTIONS } from '@/shared/constants/diver-type';
 import { DEFAULT_GENDER, GENDER_OPTIONS } from '@/shared/constants/gender';
 
 export const SignupForm = () => {
@@ -20,12 +21,15 @@ export const SignupForm = () => {
     const {
         register,
         handleSubmit,
+        watch,
         setError,
         formState: { errors },
     } = useForm<SignupFormValues>({
         resolver: yupResolver(signupSchema),
         defaultValues: { gender: DEFAULT_GENDER },
     });
+
+    const isInstructor = watch('diverType') === 'instructor';
 
     const onSubmit = handleSubmit((values) => {
         startTransition(async () => {
@@ -42,6 +46,8 @@ export const SignupForm = () => {
                 heightCm: values.heightCm,
                 weightKg: values.weightKg,
                 agreedToTerms: values.agreedToTerms,
+                diverType: values.diverType,
+                diverNumber: values.diverNumber ?? null,
             });
             if (!result.success) {
                 setError('root', { message: result.error });
@@ -149,10 +155,31 @@ export const SignupForm = () => {
             <FormRadioGroup
                 legend="性別"
                 options={GENDER_OPTIONS}
+                required
                 aria-required="true"
                 error={errors.gender?.message}
                 {...register('gender')}
             />
+
+            <FormRadioGroup
+                legend="ダイバー種別"
+                options={DIVER_TYPE_OPTIONS}
+                required
+                aria-required="true"
+                error={errors.diverType?.message}
+                {...register('diverType')}
+            />
+
+            {isInstructor && (
+                <FormField
+                    id="diverNumber"
+                    label="ダイバー番号"
+                    type="text"
+                    autoComplete="off"
+                    error={errors.diverNumber?.message}
+                    {...register('diverNumber')}
+                />
+            )}
 
             <div className="grid grid-cols-2 gap-3">
                 <FormField

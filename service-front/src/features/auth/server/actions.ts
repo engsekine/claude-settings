@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 
+import type { DiverType } from '@/shared/constants/diver-type';
 import type { Gender } from '@/shared/constants/gender';
 import { CURRENT_TERMS_VERSION } from '@/shared/constants/terms';
 import { createClient } from '@/shared/lib/supabase/server';
@@ -31,6 +32,10 @@ export interface CompleteProfileInput {
     weightKg: number | null;
     /** 利用規約への同意（018）。true 必須 */
     agreedToTerms: boolean;
+    /** ダイバー種別（019）。登録時必須 */
+    diverType: DiverType;
+    /** ダイバー番号（019）。インストラクターのみ・任意 */
+    diverNumber: string | null;
 }
 
 export interface SignUpInput {
@@ -50,6 +55,10 @@ export interface SignUpInput {
     weightKg: number | null;
     /** 利用規約への同意（018）。true 必須 */
     agreedToTerms: boolean;
+    /** ダイバー種別（019）。登録時必須 */
+    diverType: DiverType;
+    /** ダイバー番号（019）。インストラクターのみ・任意 */
+    diverNumber: string | null;
 }
 
 export const signIn = async (email: string, password: string): Promise<ActionResult> => {
@@ -95,6 +104,9 @@ export const signUp = async (input: SignUpInput): Promise<ActionResult<SignUpPay
                 weight_kg: input.weightKg,
                 /** handle_new_user トリガーが user_details.terms_version に記録する（018） */
                 terms_version: CURRENT_TERMS_VERSION,
+                /** ダイバー種別/番号（019）。番号は instructor のときのみトリガーが保存する */
+                diver_type: input.diverType,
+                diver_number: input.diverType === 'instructor' ? input.diverNumber : null,
             },
         },
     });

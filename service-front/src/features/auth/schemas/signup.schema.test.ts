@@ -16,6 +16,7 @@ const validInput = {
     password: 'Password1234',
     passwordConfirm: 'Password1234',
     agreedToTerms: true,
+    diverType: 'general',
 };
 
 describe('signupSchema - agreedToTerms（018）', () => {

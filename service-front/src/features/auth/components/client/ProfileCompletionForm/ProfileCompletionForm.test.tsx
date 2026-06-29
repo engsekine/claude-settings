@@ -31,7 +31,7 @@ describe('ProfileCompletionForm', () => {
         expect(screen.getByLabelText('名（ローマ字）')).toBeInTheDocument();
         expect(screen.getByLabelText('ニックネーム')).toBeInTheDocument();
         expect(screen.getByLabelText('生年月日')).toBeInTheDocument();
-        expect(screen.getByRole('group', { name: '性別' })).toBeInTheDocument();
+        expect(screen.getByRole('group', { name: /性別/ })).toBeInTheDocument();
         expect(screen.getByRole('checkbox', { name: /利用規約に同意する/ })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: '登録して始める' })).toBeInTheDocument();
     });
@@ -58,6 +58,7 @@ describe('ProfileCompletionForm', () => {
         await user.type(screen.getByLabelText('名（ローマ字）'), 'Taro');
         await user.type(screen.getByLabelText('ニックネーム'), 'たろちゃん');
         await user.type(screen.getByLabelText('生年月日'), '1990-01-01');
+        await user.click(screen.getByRole('radio', { name: '一般ダイバー' }));
         await agreeToTerms(user);
         await user.click(screen.getByRole('button', { name: '登録して始める' }));
 

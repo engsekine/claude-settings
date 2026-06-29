@@ -10,6 +10,8 @@ const baseRow: ProfileRow = {
     gender: 'male',
     height_cm: 170.5,
     weight_kg: 65.2,
+    diver_type: 'instructor',
+    diver_number: 'PADI-1',
 };
 
 describe('toProfile', () => {
@@ -25,6 +27,8 @@ describe('toProfile', () => {
             gender: 'male',
             heightCm: 170.5,
             weightKg: 65.2,
+            diverType: 'instructor',
+            diverNumber: 'PADI-1',
         });
     });
 
@@ -58,6 +62,8 @@ describe('toUserDetailsUpdate', () => {
                 gender: 'female',
                 heightCm: 160,
                 weightKg: 50,
+                diverType: 'general',
+                diverNumber: null,
             }),
         ).toEqual({
             last_name: '佐藤',
@@ -69,6 +75,8 @@ describe('toUserDetailsUpdate', () => {
             gender: 'female',
             height_cm: 160,
             weight_kg: 50,
+            diver_type: 'general',
+            diver_number: null,
         });
     });
 
@@ -83,9 +91,30 @@ describe('toUserDetailsUpdate', () => {
             gender: 'unanswered',
             heightCm: null,
             weightKg: null,
+            diverType: null,
+            diverNumber: null,
         });
 
         expect(result.height_cm).toBeNull();
         expect(result.weight_kg).toBeNull();
+    });
+
+    it('一般ダイバーに変更時はダイバー番号を null にする（019 / FR-009）', () => {
+        const result = toUserDetailsUpdate({
+            lastName: '佐藤',
+            firstName: '花子',
+            lastNameRomaji: 'Sato',
+            firstNameRomaji: 'Hanako',
+            nickname: 'はな',
+            birthOn: '1995-05-05',
+            gender: 'female',
+            heightCm: null,
+            weightKg: null,
+            diverType: 'general',
+            diverNumber: 'OLD-123',
+        });
+
+        expect(result.diver_type).toBe('general');
+        expect(result.diver_number).toBeNull();
     });
 });
