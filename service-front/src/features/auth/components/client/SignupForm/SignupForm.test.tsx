@@ -48,8 +48,8 @@ describe('SignupForm', () => {
             expect(screen.getByLabelText(label)).toBeInTheDocument();
         }
 
-        expect(screen.getByRole('group', { name: '性別' })).toBeInTheDocument();
-        expect(screen.getByRole('group', { name: 'ダイバー種別' })).toBeInTheDocument();
+        expect(screen.getByRole('group', { name: /性別/ })).toBeInTheDocument();
+        expect(screen.getByRole('group', { name: /ダイバー種別/ })).toBeInTheDocument();
         expect(screen.getByRole('checkbox', { name: /利用規約に同意する/ })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: '新規登録' })).toBeInTheDocument();
     });

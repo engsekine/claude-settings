@@ -130,6 +130,7 @@ export const ProfileEditForm = ({ email, defaultValues }: ProfileEditFormProps) 
             <FormRadioGroup
                 legend="性別"
                 options={GENDER_OPTIONS}
+                required
                 aria-required="true"
                 error={errors.gender?.message}
                 {...register('gender')}

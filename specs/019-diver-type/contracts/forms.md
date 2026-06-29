@@ -29,7 +29,7 @@ export const optionalDiverFields = { diverType, diverNumber }; // 編集: diverT
 | フィールド | requiredDiverFields（登録） | optionalDiverFields（編集） |
 |------------|---------------------------|----------------------------|
 | `diverType` | `mixed<DiverType>().oneOf([...DIVER_TYPE_VALUES]).required('ダイバー種別を選択してください')` | `mixed<DiverType>().oneOf([...DIVER_TYPE_VALUES]).nullable().optional()`（未選択可） |
-| `diverNumber` | （両者共通 `diverNumberField`）`string().trim().transform(''→null).max(50,'ダイバー番号は50文字以内で入力してください').nullable()` ＋ `.when('diverType', { is:'instructor', then: s => s, otherwise: s => s.strip() })` | 同左 |
+| `diverNumber` | （両者共通 `diverNumberField`）`string().trim().nullable().transform(''→null).max(50,'ダイバー番号は50文字以内で入力してください')` ＋ `.when('diverType', ([diverType], s) => diverType==='instructor' ? s : s.strip())` | 同左 |
 
 **契約条件**:
 - `diverType==='instructor'` 以外では `diverNumber` を送信値から除外（`strip`）。UI で隠すだけでなくスキーマでも破棄（DB CHECK ③と整合）

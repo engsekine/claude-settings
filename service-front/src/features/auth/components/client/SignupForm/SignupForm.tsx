@@ -155,6 +155,7 @@ export const SignupForm = () => {
             <FormRadioGroup
                 legend="性別"
                 options={GENDER_OPTIONS}
+                required
                 aria-required="true"
                 error={errors.gender?.message}
                 {...register('gender')}
@@ -163,6 +164,7 @@ export const SignupForm = () => {
             <FormRadioGroup
                 legend="ダイバー種別"
                 options={DIVER_TYPE_OPTIONS}
+                required
                 aria-required="true"
                 error={errors.diverType?.message}
                 {...register('diverType')}

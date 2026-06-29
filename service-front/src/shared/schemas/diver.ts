@@ -10,14 +10,11 @@ import { DIVER_TYPE_VALUES, type DiverType } from '@/shared/constants/diver-type
 const diverNumberField = yup
     .string()
     .trim()
+    .nullable()
     .transform((value) => (value === '' ? null : value))
     .max(50, 'ダイバー番号は50文字以内で入力してください')
-    .nullable()
-    .when('diverType', {
-        is: 'instructor',
-        then: (schema) => schema,
-        otherwise: (schema) => schema.strip(),
-    });
+    // 種別がインストラクターのときだけ番号を保持し、それ以外は出力から除外（strip）する
+    .when('diverType', ([diverType], schema) => (diverType === 'instructor' ? schema : schema.strip()));
 
 const TYPE_MESSAGE = 'ダイバー種別を選択してください';
 

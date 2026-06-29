@@ -133,6 +133,7 @@ export const ProfileCompletionForm = () => {
             <FormRadioGroup
                 legend="性別"
                 options={GENDER_OPTIONS}
+                required
                 aria-required="true"
                 error={errors.gender?.message}
                 {...register('gender')}
@@ -141,6 +142,7 @@ export const ProfileCompletionForm = () => {
             <FormRadioGroup
                 legend="ダイバー種別"
                 options={DIVER_TYPE_OPTIONS}
+                required
                 aria-required="true"
                 error={errors.diverType?.message}
                 {...register('diverType')}
