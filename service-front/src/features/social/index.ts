@@ -1,5 +1,5 @@
+export { removeBuddyTagOfSelf } from './server/actions';
 export type {
-    DiveBuddy,
     FollowListKind,
     FollowState,
     FollowUser,

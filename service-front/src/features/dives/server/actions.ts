@@ -75,7 +75,89 @@ const toDbRow = (input: DiveFormValues) => ({
     instructor_name: input.instructorName,
     certification_dive: input.certificationDive,
     notes: input.notes,
+    is_public: input.isPublic,
 });
+
+/** フォームのバディ入力を、DB 同期用に正規化する（自己タグ除外・重複除去・空要素除外） */
+const normalizeBuddies = (
+    buddies: DiveFormValues['buddies'],
+    ownerId: string,
+): { registeredUserIds: string[]; freetextNames: string[] } => {
+    const registered = new Set<string>();
+    const freetext = new Set<string>();
+    for (const buddy of buddies ?? []) {
+        const userId = buddy.userId?.trim();
+        const name = buddy.name?.trim();
+        // 登録ユーザー指定（自分自身は除外＝DB トリガの前段でユーザー向けに弾く）
+        if (userId && userId !== ownerId) {
+            registered.add(userId);
+            continue;
+        }
+        if (!userId && name) freetext.add(name);
+    }
+    return { registeredUserIds: [...registered], freetextNames: [...freetext] };
+};
+
+/**
+ * dive_log_buddies を入力内容に差分同期する（spec 021 FR-001〜003 / contracts/buddy-actions）。
+ * - 追加: 既存に無い登録ユーザー / フリーテキストを INSERT
+ * - 削除: 入力から消えた行を DELETE（本人除去済み行は RLS により対象外＝再タグ付けブロック維持）
+ * dive 本体は保存済み前提。バディ同期の失敗はログのみ（本体保存は巻き戻さない）。
+ */
+const syncDiveBuddies = async (
+    supabase: DiveSupabaseClient,
+    diveId: string,
+    ownerId: string,
+    buddies: DiveFormValues['buddies'],
+): Promise<void> => {
+    const { registeredUserIds, freetextNames } = normalizeBuddies(buddies, ownerId);
+
+    const { data: existing, error: fetchError } = await supabase
+        .from('dive_log_buddies')
+        .select('id, buddy_user_id, buddy_name')
+        .eq('dive_id', diveId)
+        .eq('removed_by_buddy', false);
+    if (fetchError) {
+        console.error('[syncDiveBuddies] fetch error:', fetchError);
+        return;
+    }
+
+    const existingUserIds = new Set(
+        (existing ?? []).map((r) => r.buddy_user_id).filter((v): v is string => v !== null),
+    );
+    const existingNames = new Set((existing ?? []).map((r) => r.buddy_name).filter((v): v is string => v !== null));
+
+    const desiredUserIds = new Set(registeredUserIds);
+    const desiredNames = new Set(freetextNames);
+
+    // 削除対象: 既存のうち入力に無いもの
+    const toDeleteIds = (existing ?? [])
+        .filter((r) =>
+            r.buddy_user_id
+                ? !desiredUserIds.has(r.buddy_user_id)
+                : !(r.buddy_name && desiredNames.has(r.buddy_name)),
+        )
+        .map((r) => r.id);
+
+    // 追加対象: 入力のうち既存に無いもの
+    const toInsert = [
+        ...registeredUserIds
+            .filter((id) => !existingUserIds.has(id))
+            .map((id) => ({ dive_id: diveId, buddy_user_id: id, buddy_name: null })),
+        ...freetextNames
+            .filter((name) => !existingNames.has(name))
+            .map((name) => ({ dive_id: diveId, buddy_user_id: null, buddy_name: name })),
+    ];
+
+    if (toDeleteIds.length > 0) {
+        const { error } = await supabase.from('dive_log_buddies').delete().in('id', toDeleteIds);
+        if (error) console.error('[syncDiveBuddies] delete error:', error);
+    }
+    if (toInsert.length > 0) {
+        const { error } = await supabase.from('dive_log_buddies').insert(toInsert);
+        if (error) console.error('[syncDiveBuddies] insert error:', error);
+    }
+};
 
 export const createDive = async (input: DiveFormValues): Promise<ActionResult<{ id: string }>> => {
     const supabase = await createClient();
@@ -102,6 +184,8 @@ export const createDive = async (input: DiveFormValues): Promise<ActionResult<{ 
         return actionFailure('ログの作成に失敗しました。時間をおいて再度お試しください');
     }
 
+    await syncDiveBuddies(supabase, data.id, user.id, input.buddies);
+
     revalidatePath('/dives');
     return actionSuccess({ id: data.id });
 };
@@ -126,6 +210,8 @@ export const updateDive = async (id: string, input: DiveFormValues): Promise<Act
         console.error('[updateDive] supabase error:', error);
         return actionFailure('ログの更新に失敗しました。時間をおいて再度お試しください');
     }
+
+    await syncDiveBuddies(supabase, id, user.id, input.buddies);
 
     revalidatePath('/dives');
     revalidatePath(`/dives/${id}`);

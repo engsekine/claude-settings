@@ -1,4 +1,4 @@
-import type { DiveBuddy } from '@/features/social';
+import type { DiveBuddy } from '@/features/dives/types';
 
 /**
  * dive_log_buddies の 1 行（クエリで nickname を解決済み）を表す入力。

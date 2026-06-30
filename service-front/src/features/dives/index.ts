@@ -18,5 +18,21 @@ export { diveSchema, diveSearchSchema } from './schemas/dive.schema';
 export { createDive, deleteDive, updateDive } from './server/actions';
 export { addDivePhoto, deleteDivePhoto } from './server/photoActions';
 export { getDivePhotos } from './server/photoQueries';
-export { type DiveOption, getDive, getLatestDiveNumber, listDiveOptions, listDives } from './server/queries';
-export type { Dive, DiveCursor, DiveListFilter, DiveListItem, DiveListPage, DivePhoto, DivePhotoView } from './types';
+export {
+    type DiveOption,
+    getDive,
+    getDiveBuddies,
+    getLatestDiveNumber,
+    listDiveOptions,
+    listDives,
+} from './server/queries';
+export type {
+    Dive,
+    DiveBuddy,
+    DiveCursor,
+    DiveListFilter,
+    DiveListItem,
+    DiveListPage,
+    DivePhoto,
+    DivePhotoView,
+} from './types';

@@ -3,18 +3,6 @@
  * DB スキーマ（snake_case）はマッピング層で camelCase に変換する。
  */
 
-/** ダイブログの同行バディ（登録ユーザー or フリーテキスト） */
-export interface DiveBuddy {
-    /** dive_log_buddies.id */
-    id: string;
-    /** 登録ユーザーのバディの場合の users.id。フリーテキストの場合は null */
-    userId: string | null;
-    /** 表示名（登録ユーザーは nickname、フリーテキストはそのテキスト） */
-    name: string;
-    /** 登録ユーザー由来か（true なら userId からプロフィールへ遷移可能） */
-    isRegistered: boolean;
-}
-
 /** あるユーザーに対するフォロー状態と件数 */
 export interface FollowState {
     /** 閲覧者が対象ユーザーをフォロー中か */
