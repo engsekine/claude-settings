@@ -84,6 +84,10 @@ export interface DiveListFilter {
     /** ダイブタイプ（DIVE_TYPE_OPTIONS の value） */
     diveType?: string;
     location?: string;
+    /** バディ（登録ユーザー）の user_id で絞り込み（spec 021 FR-022） */
+    buddyUserId?: string;
+    /** バディ名（フリーテキスト）の部分一致で絞り込み（spec 021 FR-022） */
+    buddyName?: string;
 }
 
 /** キーセットページネーションのカーソル */

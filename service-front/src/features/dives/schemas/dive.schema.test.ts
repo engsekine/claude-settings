@@ -249,6 +249,7 @@ describe('diveSearchSchema', () => {
             depthMax: null,
             diveType: null,
             location: null,
+            buddyName: null,
         });
     });
 

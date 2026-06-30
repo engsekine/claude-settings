@@ -335,6 +335,14 @@ export const diveSearchSchema = yup.object({
         .transform((v) => (v === '' ? null : v))
         .nullable()
         .default(null),
+    // バディ名（フリーテキスト・部分一致）での絞り込み（spec 021 FR-022）
+    buddyName: yup
+        .string()
+        .trim()
+        .max(100, 'バディ名は100文字以内で入力してください')
+        .transform((v) => (v === '' ? null : v))
+        .nullable()
+        .default(null),
 });
 
 export type DiveSearchValues = yup.InferType<typeof diveSearchSchema>;

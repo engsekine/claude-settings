@@ -52,6 +52,7 @@ interface DiveFilterQuery<Q> {
     lte: (column: string, value: string | number) => Q;
     not: (column: string, operator: string, value: null) => Q;
     or: (filters: string) => Q;
+    in: (column: string, values: readonly string[]) => Q;
 }
 
 /**
@@ -92,6 +93,31 @@ export const applyDiveListFilter = async <Q extends DiveFilterQuery<Q>>(
         const orParts = [`location.ilike.*${safeKeyword}*`];
         if (siteIds.length > 0) orParts.push(`dive_site_id.in.(${siteIds.join(',')})`);
         next = next.or(orParts.join(','));
+    }
+    // バディ絞り込み（spec 021 FR-022/023）: dive_log_buddies から該当 dive_id を引き、in で限定する。
+    // 本人除去済み（removed_by_buddy=true）はヒットさせない。空集合なら 0 件に絞る。
+    if (filter.buddyUserId) {
+        const { data } = await supabase
+            .from('dive_log_buddies')
+            .select('dive_id')
+            .eq('buddy_user_id', filter.buddyUserId)
+            .eq('removed_by_buddy', false);
+        next = next.in(
+            'id',
+            (data ?? []).map((row) => row.dive_id),
+        );
+    }
+    if (filter.buddyName) {
+        const safeBuddy = filter.buddyName.replace(/[,()*"%_]/g, '');
+        const { data } = await supabase
+            .from('dive_log_buddies')
+            .select('dive_id')
+            .eq('removed_by_buddy', false)
+            .ilike('buddy_name', `%${safeBuddy}%`);
+        next = next.in(
+            'id',
+            (data ?? []).map((row) => row.dive_id),
+        );
     }
     return { query: next };
 };

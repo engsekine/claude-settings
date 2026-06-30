@@ -157,14 +157,14 @@ description: "Task list for バディ・フォロー・タイムライン（ソ�
 
 ### Tests for User Story 5 ⚠️
 
-- [ ] T045 [P] [US5] `parseDiveFilter`/`filterToSearchParams` の buddy/buddy_name パーステストを `service-front/src/features/dives/lib/search-params.test.ts` に追加
-- [ ] T046 [P] [US5] `list-query` のバディ絞り込みテストを `service-front/src/features/dives/lib/list-query.test.ts` に追加
+- [X] T045 [P] [US5] `parseDiveFilter`/`filterToSearchParams` の buddy/buddy_name パーステストを `service-front/src/features/dives/lib/search-params.test.ts` に追加
+- [X] T046 [P] [US5] `list-query` のバディ絞り込みテストを `service-front/src/features/dives/lib/list-query.test.ts` に追加
 
 ### Implementation for User Story 5
 
-- [ ] T047 [US5] `service-front/src/features/dives/lib/search-params.ts` に `buddy`(uuid)/`buddy_name`(≤100) を追加（parse/toParams/`FILTER_KEYS`/`isSameFilter` 更新）（contracts/search-params.md）
-- [ ] T048 [US5] `service-front/src/features/dives/lib/list-query.ts` にバディ絞り込みを追加（`dive_id in (select … from dive_log_buddies where … removed_by_buddy=false)`）
-- [ ] T049 [US5] `DiveSearchBar`（`service-front/src/features/dives/components/client/DiveSearchBar/`）にバディ条件 UI を追加し、テスト・story を同期更新
+- [X] T047 [US5] `service-front/src/features/dives/lib/search-params.ts` に `buddy`(uuid)/`buddy_name`(≤100) を追加（parse/toParams/`FILTER_KEYS`/`isSameFilter` 更新）（contracts/search-params.md）
+- [X] T048 [US5] `service-front/src/features/dives/lib/list-query.ts` にバディ絞り込みを追加（`dive_id in (select … from dive_log_buddies where … removed_by_buddy=false)`）
+- [X] T049 [US5] `DiveSearchBar`（`service-front/src/features/dives/components/client/DiveSearchBar/`）にバディ条件 UI を追加し、テスト・story を同期更新
 
 **Checkpoint**: 全ユーザーストーリーが独立して機能
 

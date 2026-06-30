@@ -19,7 +19,7 @@ interface DiveSearchBarProps {
 /** 詳細条件パネルに入るフィルタ（常時表示の番号・ポイント名を除く） */
 const countAdvancedFilters = (filter: DiveListFilter | undefined): number => {
     if (!filter) return 0;
-    const keys: (keyof DiveListFilter)[] = ['dateFrom', 'dateTo', 'depthMin', 'depthMax', 'diveType'];
+    const keys: (keyof DiveListFilter)[] = ['dateFrom', 'dateTo', 'depthMin', 'depthMax', 'diveType', 'buddyName'];
     return keys.filter((key) => filter[key] !== undefined).length;
 };
 
@@ -58,6 +58,7 @@ export const DiveSearchBar = ({ initialFilter, onSubmit: onSubmitFilter }: DiveS
             depthMax: initialFilter?.depthMax ?? null,
             diveType: initialFilter?.diveType ?? null,
             location: initialFilter?.location ?? null,
+            buddyName: initialFilter?.buddyName ?? null,
         },
     });
 
@@ -70,6 +71,7 @@ export const DiveSearchBar = ({ initialFilter, onSubmit: onSubmitFilter }: DiveS
         if (values.depthMax != null) filter.depthMax = values.depthMax;
         if (values.diveType) filter.diveType = values.diveType;
         if (values.location) filter.location = values.location;
+        if (values.buddyName) filter.buddyName = values.buddyName;
         onSubmitFilter(filter);
     });
 
@@ -82,6 +84,7 @@ export const DiveSearchBar = ({ initialFilter, onSubmit: onSubmitFilter }: DiveS
             depthMax: null,
             diveType: null,
             location: null,
+            buddyName: null,
         });
         onSubmitFilter({});
     };
@@ -208,6 +211,16 @@ export const DiveSearchBar = ({ initialFilter, onSubmit: onSubmitFilter }: DiveS
                             ))}
                         </select>
                     </div>
+
+                    {/* バディ名（spec 021 FR-022）: フリーテキスト名の部分一致 */}
+                    <FormField
+                        id="dive-search-buddy-name"
+                        label="バディ名（部分一致）"
+                        error={errors.buddyName?.message}
+                        type="text"
+                        autoComplete="off"
+                        {...register('buddyName')}
+                    />
                 </div>
 
                 <div className="flex items-center gap-2">
