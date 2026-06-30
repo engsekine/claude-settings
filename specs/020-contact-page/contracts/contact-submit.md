@@ -32,6 +32,8 @@ submitInquiry(input: ContactFormValues): Promise<ActionResult>
 
 `service-front/src/features/contact/server/email.ts`。Resend（HTTP API）。env: `RESEND_API_KEY` / `CONTACT_MAIL_FROM` / `CONTACT_NOTIFY_TO`。`resend.emails.send` の戻り値 `error` が非 null なら throw する。
 
+本文は `features/contact/emails/InquiryNotificationEmail.tsx` / `InquiryAutoReplyEmail.tsx`（`@react-email/components` で構成した JSX テンプレート）を `@react-email/render` の `render()` で HTML（`html`）とプレーンテキスト（`text`・`{ plainText: true }`）に変換して渡す。
+
 | メール | 宛先 | 主な内容 |
 |---|---|---|
 | 運営者通知（FR-021） | `CONTACT_NOTIFY_TO` | 氏名・メール・種別（ラベル）・本文。Reply-To = 送信者メール |

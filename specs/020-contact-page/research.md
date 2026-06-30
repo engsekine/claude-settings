@@ -70,6 +70,7 @@ Phase 0。spec.md / clarifications の決定を実装方式へ落とし込み、
 
 - **Decision**: 送信成立時に **運営者通知 + 送信者への自動返信の 2 通**を **Resend（HTTP API）** で送る。env（`RESEND_API_KEY`/`CONTACT_MAIL_FROM`/`CONTACT_NOTIFY_TO`）から構成。**厳密通知**: 失敗時は受付完了としない。
   - 送信基盤は当初 SMTP（nodemailer）案だったが、Vercel のサーバーレスでは生 SMTP（ポート25 ブロック・587/465 も不安定）より **HTTP API の方が確実**なため Resend に変更。`resend.emails.send` の戻り値 `error` を検査し、非 null なら throw する（SDK は既定で throw しない）。
+  - メール本文は **react-email（`@react-email/components`）の JSX テンプレート**（`features/contact/emails/InquiryNotificationEmail.tsx` / `InquiryAutoReplyEmail.tsx`）として定義し、**`@react-email/render` の `render()`** で HTML 文字列とプレーンテキスト（`{ plainText: true }`）に変換して `resend.emails.send` の `html` / `text` に渡す。本文ロジック（JSX）と送信ロジック（`email.ts`）を分離してテンプレート単体でテストする。メール HTML はクライアント制約上インラインスタイルが前提（Web の Tailwind 規約の例外）。
   - 実行順序: **(1) `submit_inquiry` で保存（レート制限・重複ガードがここで作用） → (2) 2 通送信 → (3) 送信失敗なら `discard_recent_inquiry(id)` で保存行を取り消し失敗を返す**。
 - **Rationale**:
   - 保存を先に行うことで、レート制限・重複・ハニーポット（スパム）を**メール送信前に**遮断でき、bot による通知メール大量送信を防げる。
