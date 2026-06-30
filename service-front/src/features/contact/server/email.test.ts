@@ -9,6 +9,11 @@ vi.mock('resend', () => ({
     },
 }));
 
+// react-email のレンダリングはテンプレート側テストで検証する。ここでは送信オーケストレーションに集中する
+vi.mock('@react-email/render', () => ({
+    render: vi.fn().mockResolvedValue('<html>rendered</html>'),
+}));
+
 import { sendInquiryNotifications } from './email';
 
 const values: ContactFormValues = {
@@ -44,6 +49,9 @@ describe('sendInquiryNotifications', () => {
         const opsMail = send.mock.calls.find((call) => call[0].to === 'ops@example.com')?.[0];
         expect(opsMail.replyTo).toBe('taro@example.com');
         expect(opsMail.subject).toContain('ご質問');
+        // 本文は react-email を HTML / テキストにレンダリングして渡す
+        expect(opsMail.html).toBe('<html>rendered</html>');
+        expect(opsMail.text).toBe('<html>rendered</html>');
     });
 
     it('RESEND_API_KEY 未設定なら送信せず throw する', async () => {
@@ -63,9 +71,10 @@ describe('sendInquiryNotifications', () => {
     });
 
     it('自動返信（2通目）がエラーを返したら throw する（厳密通知）', async () => {
-        send
-            .mockResolvedValueOnce({ data: { id: 'mail-id' }, error: null })
-            .mockResolvedValueOnce({ data: null, error: { message: 'recipient rejected' } });
+        send.mockResolvedValueOnce({ data: { id: 'mail-id' }, error: null }).mockResolvedValueOnce({
+            data: null,
+            error: { message: 'recipient rejected' },
+        });
         await expect(sendInquiryNotifications(values)).rejects.toThrow('自動返信メールの送信に失敗');
     });
 });

@@ -31,6 +31,8 @@
         "validate": "npm run type-check && npm run check && npm run lint:markup && npm run test"
     },
     "dependencies": {
+        "@react-email/components": "^1.0.12",
+        "@react-email/render": "^2.0.9",
         "@react-pdf/renderer": "^4.5.1",
         "@repo/supabase": "*",
         "@repo/ui": "*",
