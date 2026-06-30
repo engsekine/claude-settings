@@ -68,9 +68,9 @@ description: "Task list for バディ・フォロー・タイムライン（ソ�
 - [X] T014 [US1] `service-front/src/features/dives/server/queries.ts` に dive のバディ取得（詳細・編集用、`removed_by_buddy=false`）を追加
 - [X] T015 [US1] `service-front/src/features/dives/server/actions.ts` の Dive 保存にバディ差分同期を実装（追加=INSERT/削除=DELETE、自己・重複・本人除去済み再タグを拒否）（contracts/buddy-actions.md）
 - [X] T016 [US1] `removeBuddyTagOfSelf(buddyTagId)` Server Action を `service-front/src/features/social/server/actions.ts` に実装（本人除去 FR-024a、RLS "buddy can opt out own tag"）
-- [ ] T017 [P] [US1] `DiveBuddyField` クライアントコンポーネントを作成（`service-front/src/features/dives/components/client/DiveBuddyField/`：登録ユーザー選択 + フリーテキスト 0..n 行）→ 作成後 `/generate-with-tests` 実行
-- [ ] T018 [US1] `service-front/src/features/dives/components/server/DiveDetail/DiveDetail.tsx` にバディ一覧表示を追加（登録は `/users/[id]` リンク・freetext は素テキスト）。**既存の単一 `dives.buddy_name`（レガシー）も同一バディ欄に併存表示する**こと。`DiveDetail.test.tsx`/`.stories.tsx` を同期更新
-- [ ] T019 [US1] DiveForm（`service-front/src/features/dives/components/client/DiveForm/`）に `DiveBuddyField` を組み込み、`useDiveFormSubmit` で buddies を送信
+- [X] T017 [P] [US1] `DiveBuddyField` クライアントコンポーネントを作成（`service-front/src/features/dives/components/client/DiveBuddyField/`：登録ユーザー選択 + フリーテキスト 0..n 行）→ 作成後 `/generate-with-tests` 実行
+- [X] T018 [US1] `service-front/src/features/dives/components/server/DiveDetail/DiveDetail.tsx` にバディ一覧表示を追加（登録は `/users/[id]` リンク・freetext は素テキスト）。**既存の単一 `dives.buddy_name`（レガシー）も同一バディ欄に併存表示する**こと。`DiveDetail.test.tsx`/`.stories.tsx` を同期更新
+- [X] T019 [US1] DiveForm（`service-front/src/features/dives/components/client/DiveForm/`）に `DiveBuddyField` を組み込み、`useDiveFormSubmit` で buddies を送信
 
 **Checkpoint**: US1 単独で「誰と潜ったか」の記録・表示が機能する（MVP）
 

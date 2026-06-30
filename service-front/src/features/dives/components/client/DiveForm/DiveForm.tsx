@@ -18,6 +18,8 @@ import { FormField, FormSelect, type FormSelectOption, FormTextarea, SearchSelec
 import { PhotoThumbnail } from '@/shared/components/media/PhotoThumbnail';
 import { todayInJst } from '@/shared/lib/date';
 
+import { DiveBuddyField } from '../DiveBuddyField';
+
 interface DiveFormProps {
     /** 編集モードで指定。新規作成のときは undefined */
     diveId?: string;
@@ -142,6 +144,12 @@ export const DiveForm = ({ diveId, defaultValues, siteOptions = [], existingPhot
     const entryTime = watch('entryTime');
     const exitTime = watch('exitTime');
     const diveSiteId = watch('diveSiteId') ?? '';
+
+    // バディ配列のエラー（配列要素ごと or ルート）から最初の文言を取り出して表示する
+    const buddiesError = errors.buddies;
+    const buddyError = Array.isArray(buddiesError)
+        ? buddiesError.find((item) => item?.message)?.message
+        : buddiesError?.message;
 
     useEffect(() => {
         if (!isBottomTimeAutoCalc) return;
@@ -499,6 +507,12 @@ export const DiveForm = ({ diveId, defaultValues, siteOptions = [], existingPhot
                         {...register('instructorName')}
                     />
                 </div>
+
+                <DiveBuddyField
+                    value={watch('buddies') ?? []}
+                    onChange={(next) => setValue('buddies', next, { shouldValidate: true, shouldDirty: true })}
+                    error={buddyError}
+                />
 
                 <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" {...register('certificationDive')} />

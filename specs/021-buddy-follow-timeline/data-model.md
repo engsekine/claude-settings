@@ -247,6 +247,29 @@ comment on function public.get_public_dive(text) is '公開ログ 1 件を slug 
 
 > 返却列は共有ページに必要な最小限。バディ／写真など追加情報が必要になればタスクで列を拡張する。
 
+## 4b. ユーザー表示名の公開関数（`20260629100400_create_get_user_public_profiles_fn.sql`）
+
+`user_details` は本人のみ SELECT 可（PII: 生年月日・性別・身長体重を含む）。一方、ソーシャル表示（バディ一覧・プロフィール・タイムライン・フォロー一覧）では**他ユーザーの nickname のみ**が必要。そこで nickname だけを返す関数を用意し、PII を晒さずに表示名を解決する。
+
+```sql
+create or replace function public.get_user_public_profiles(p_ids uuid[])
+returns table (user_id uuid, nickname text)
+language sql
+security definer
+set search_path = ''
+stable
+as $$
+    select ud.user_id, ud.nickname
+    from public.user_details ud
+    where ud.user_id = any(p_ids);
+$$;
+
+revoke all on function public.get_user_public_profiles(uuid[]) from public;
+grant execute on function public.get_user_public_profiles(uuid[]) to authenticated;
+```
+
+> 実装時に判明したギャップ（US1 のバディ表示で他ユーザー nickname が RLS で読めない）への対応。US1/US3/US4 の表示名解決で共用する。registered なバディ/フォロー/タイムラインの nickname はすべてこの関数経由で取得する。
+
 ## 5. アプリ層の型・表示モデル（service-front）
 
 | 表示モデル | 由来 | 主フィールド |

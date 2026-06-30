@@ -761,6 +761,13 @@ export type Database = {
           year: number
         }[]
       }
+      get_user_public_profiles: {
+        Args: { p_ids: string[] }
+        Returns: {
+          nickname: string
+          user_id: string
+        }[]
+      }
       is_admin: { Args: never; Returns: boolean }
       is_public_dive_photo: { Args: { object_name: string }; Returns: boolean }
       is_superadmin: { Args: never; Returns: boolean }

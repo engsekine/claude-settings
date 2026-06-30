@@ -1,6 +1,13 @@
 import { notFound } from 'next/navigation';
 import { listDiveSites, siteLabel } from '@/features/dive-sites';
-import { DiveForm, diveLocationLabel, getDive, getDivePhotos, mapDiveToFormValues } from '@/features/dives';
+import {
+    DiveForm,
+    diveLocationLabel,
+    getDive,
+    getDiveBuddies,
+    getDivePhotos,
+    mapDiveToFormValues,
+} from '@/features/dives';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
 import { generatePageMetadata } from '@/shared/config/metadata';
 
@@ -25,8 +32,16 @@ export default async function EditDivePage({ params }: EditDivePageProps) {
     const [dive, sites] = await Promise.all([getDive(id), listDiveSites()]);
     if (!dive) notFound();
 
-    const photos = await getDivePhotos(id, `${dive.diveDate} ${diveLocationLabel(dive)} の写真`);
-    const defaultValues = mapDiveToFormValues(dive);
+    const [photos, buddies] = await Promise.all([
+        getDivePhotos(id, `${dive.diveDate} ${diveLocationLabel(dive)} の写真`),
+        getDiveBuddies(id),
+    ]);
+    // 既存バディをフォーム値へ（登録ユーザーは userId、フリーテキストは name）。
+    // 編集時に preload しないと保存時の差分同期で全削除されてしまうため必須。
+    const buddyValues = buddies.map((buddy) =>
+        buddy.isRegistered && buddy.userId ? { userId: buddy.userId } : { name: buddy.name },
+    );
+    const defaultValues = { ...mapDiveToFormValues(dive), buddies: buddyValues };
     const siteOptions = sites.map((site) => ({ value: site.id, label: siteLabel(site) }));
 
     return (
