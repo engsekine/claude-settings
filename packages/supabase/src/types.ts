@@ -448,6 +448,39 @@ export type Database = {
           },
         ]
       }
+      inquiries: {
+        Row: {
+          body: string
+          category: string
+          created_at: string
+          email: string
+          id: string
+          name: string
+          submitter_ip: unknown
+          submitter_user_id: string | null
+        }
+        Insert: {
+          body: string
+          category: string
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          submitter_ip?: unknown
+          submitter_user_id?: string | null
+        }
+        Update: {
+          body?: string
+          category?: string
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          submitter_ip?: unknown
+          submitter_user_id?: string | null
+        }
+        Relationships: []
+      }
       plan_packing_items: {
         Row: {
           created_at: string
@@ -627,6 +660,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      discard_recent_inquiry: { Args: { p_id: string }; Returns: undefined }
       get_dive_monthly_stats: {
         Args: { months_back?: number }
         Returns: {
@@ -655,6 +689,17 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean }
       is_public_dive_photo: { Args: { object_name: string }; Returns: boolean }
       is_superadmin: { Args: never; Returns: boolean }
+      submit_inquiry: {
+        Args: {
+          p_body: string
+          p_category: string
+          p_email: string
+          p_name: string
+          p_submitter_ip: unknown
+          p_submitter_user_id: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
