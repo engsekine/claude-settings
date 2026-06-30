@@ -38,10 +38,10 @@ description: "Task list for バディ・フォロー・タイムライン（ソ�
 
 **Purpose**: 全ストーリーが依存する DB スキーマ・RLS・型。⚠️ ここが完了するまで US 実装は開始不可
 
-- [X] T003 マイグレーション作成 `supabase/migrations/20260629100000_create_dive_log_buddies.sql`：中間テーブル + CHECK（排他・名前長）+ 部分ユニーク + index + 自己バディ防止トリガ `prevent_self_buddy` + RLS 4 ポリシー（data-model.md §1）
-- [X] T004 マイグレーション作成 `supabase/migrations/20260629100100_create_user_follows.sql`：自己参照フォロー関係 + PK + 自己フォロー CHECK + `idx_user_follows_followee_id` + RLS 3 ポリシー（data-model.md §2）
-- [X] T005 マイグレーション作成 `supabase/migrations/20260629100200_add_dives_public_read_policy.sql`：`authenticated` 公開読み取りポリシー + `idx_dives_public_user_date` 部分 index（data-model.md §3）
-- [X] T006 退会フォールバックトリガ `handle_buddy_user_deleted` を `20260629100000_create_dive_log_buddies.sql` に追加（`users` 削除時、当該ユーザーを指す `dive_log_buddies` 行の `buddy_user_id` を NULL にし、その時点の nickname を `buddy_name` へ退避して CHECK 整合を保つ。`set search_path=''`）（data-model.md §1 注記）
+- [X] T003 マイグレーション作成 `supabase/migrations/20260630100000_create_dive_log_buddies.sql`：中間テーブル + CHECK（排他・名前長）+ 部分ユニーク + index + 自己バディ防止トリガ `prevent_self_buddy` + RLS 4 ポリシー（data-model.md §1）
+- [X] T004 マイグレーション作成 `supabase/migrations/20260630100100_create_user_follows.sql`：自己参照フォロー関係 + PK + 自己フォロー CHECK + `idx_user_follows_followee_id` + RLS 3 ポリシー（data-model.md §2）
+- [X] T005 マイグレーション作成 `supabase/migrations/20260630100200_add_dives_public_read_policy.sql`：`authenticated` 公開読み取りポリシー + `idx_dives_public_user_date` 部分 index（data-model.md §3）
+- [X] T006 退会フォールバックトリガ `handle_buddy_user_deleted` を `20260630100000_create_dive_log_buddies.sql` に追加（`users` 削除時、当該ユーザーを指す `dive_log_buddies` 行の `buddy_user_id` を NULL にし、その時点の nickname を `buddy_name` へ退避して CHECK 整合を保つ。`set search_path=''`）（data-model.md §1 注記）
 - [X] T007 [P] `@repo/supabase` の Database 型を再生成し、新テーブル（`dive_log_buddies` / `user_follows`）を型に反映（`packages/supabase`）
 - [X] T008 [P] `service-front/src/features/social/types.ts` に共有表示モデル型を定義（`DiveBuddy` / `FollowState` / `TimelineItem` / `PublicProfile` / カーソル型）（data-model.md §5）
 
@@ -84,16 +84,16 @@ description: "Task list for バディ・フォロー・タイムライン（ソ�
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T020 [P] [US2] `setDiveVisibility` の権限・slug 生成・非公開化ロジックの単体テスト（`service-front/src/features/dives/server/` 配下）
+- [X] T020 [P] [US2] `setDiveVisibility` の権限・slug 生成・非公開化ロジックの単体テスト（`service-front/src/features/dives/server/` 配下）
 - [ ] T021 [P] [US2] `get_public_dive` の公開条件テスト（`is_public=false`/未知 slug は 0 行）を DB テスト or クエリテストで追加
 
 ### Implementation for User Story 2
 
-- [ ] T022 [US2] マイグレーション作成 `supabase/migrations/20260629100300_create_get_public_dive_fn.sql`（SECURITY DEFINER・`set search_path=''`・anon/authenticated に grant）（data-model.md §4 / contracts/public-dive-rpc.md）
-- [ ] T023 [US2] `service-front/src/features/dives/server/actions.ts` に `setDiveVisibility(diveId, isPublic)` を実装（公開化で `public_slug` 生成、非公開化で遮断、revalidate）（contracts/visibility-actions.md）
-- [ ] T024 [P] [US2] `DiveVisibilityToggle` クライアントコンポーネント作成（`service-front/src/features/dives/components/client/DiveVisibilityToggle/`：`role="switch"`・`aria-checked`）→ `/generate-with-tests`
-- [ ] T025 [US2] DiveForm（新規既定 非公開）と DiveDetail に公開設定 UI を組み込み、関連テスト・story を同期更新
-- [ ] T026 [US2] 匿名共有ページ `service-front/src/app/(public)/dives/[slug]/page.tsx` を作成（`get_public_dive` 取得、非公開/不明 slug は 404、`generatePageMetadata` で OGP）
+- [X] T022 [US2] マイグレーション作成 `supabase/migrations/20260630100300_create_get_public_dive_fn.sql`（SECURITY DEFINER・`set search_path=''`・anon/authenticated に grant）（data-model.md §4 / contracts/public-dive-rpc.md）
+- [X] T023 [US2] `service-front/src/features/dives/server/actions.ts` に `setDiveVisibility(diveId, isPublic)` を実装（公開化で `public_slug` 生成、非公開化で遮断、revalidate）（contracts/visibility-actions.md）
+- [X] T024 [P] [US2] `DiveVisibilityToggle` クライアントコンポーネント作成（`service-front/src/features/dives/components/client/DiveVisibilityToggle/`：`role="switch"`・`aria-checked`）→ `/generate-with-tests`
+- [X] T025 [US2] DiveForm（新規既定 非公開）と DiveDetail に公開設定 UI を組み込み、関連テスト・story を同期更新
+- [X] T026 [US2] 匿名共有ページ `service-front/src/app/(public)/shared/dives/[slug]/page.tsx` を作成（`get_public_dive` 取得、非公開/不明 slug は 404、`generatePageMetadata` で OGP）
 
 **Checkpoint**: US1 と US2 が独立して機能（公開制御が安全に動く）
 

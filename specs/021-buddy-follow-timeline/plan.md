@@ -10,7 +10,7 @@
 
 技術アプローチ:
 - **DB（Supabase）**: 新規テーブル `dive_log_buddies`（dives×users/フリーテキストの中間）・`user_follows`（自己参照フォロー関係）を追加。既存 `dives.is_public` / `public_slug` を活性化し、`dives` に「公開ログは authenticated が閲覧可」の RLS と匿名共有用の `get_public_dive(slug)`（SECURITY DEFINER）を追加。
-- **service-front（Next.js App Router）**: 新規 feature `social`（フォロー・タイムライン・公開プロフィール）を追加し、`dives` feature を拡張（バディ入力・公開トグル・バディ検索）。TOP（`src/app/page.tsx`）にタイムラインを app 層で合成注入。匿名共有ページ `/(public)/dives/[slug]` を追加。
+- **service-front（Next.js App Router）**: 新規 feature `social`（フォロー・タイムライン・公開プロフィール）を追加し、`dives` feature を拡張（バディ入力・公開トグル・バディ検索）。TOP（`src/app/page.tsx`）にタイムラインを app 層で合成注入。匿名共有ページ `/(public)/shared/dives/[slug]` を追加。
 - Server Components デフォルト、変更系は Server Actions、状態は最小限の Client Component に限定。
 
 ## Technical Context
@@ -74,10 +74,10 @@ specs/021-buddy-follow-timeline/
 
 ```text
 supabase/migrations/
-├── 20260629100000_create_dive_log_buddies.sql      # 中間テーブル + RLS + 自己バディ防止トリガ
-├── 20260629100100_create_user_follows.sql          # フォロー関係 + RLS
-├── 20260629100200_add_dives_public_read_policy.sql # 公開ログの authenticated 読み取り + タイムライン用 index
-└── 20260629100300_create_get_public_dive_fn.sql    # 匿名共有用 SECURITY DEFINER 関数
+├── 20260630100000_create_dive_log_buddies.sql      # 中間テーブル + RLS + 自己バディ防止トリガ
+├── 20260630100100_create_user_follows.sql          # フォロー関係 + RLS
+├── 20260630100200_add_dives_public_read_policy.sql # 公開ログの authenticated 読み取り + タイムライン用 index
+└── 20260630100300_create_get_public_dive_fn.sql    # 匿名共有用 SECURITY DEFINER 関数
 
 service-front/src/
 ├── features/
@@ -110,10 +110,10 @@ service-front/src/
 └── app/
     ├── page.tsx                        # TOP：タイムラインセクションを app 層で合成
     ├── (authenticated)/users/[id]/page.tsx        # 公開プロフィール（フォロー・公開ログ）
-    └── (public)/dives/[slug]/page.tsx             # 匿名共有ページ（get_public_dive）
+    └── (public)/shared/dives/[slug]/page.tsx             # 匿名共有ページ（get_public_dive）
 ```
 
-> 注: `get_public_dive` 関数の migration（`20260629100300`）は US2（匿名共有）の独立性確保のため、tasks.md では US2 フェーズで作成する（構成図では他 3 本と並置しているが、適用は US2 着手時）。
+> 注: `get_public_dive` 関数の migration（`20260630100300`）は US2（匿名共有）の独立性確保のため、tasks.md では US2 フェーズで作成する（構成図では他 3 本と並置しているが、適用は US2 着手時）。
 
 **Structure Decision**: 既存の Feature-based 構成に従い、**フォロー／タイムライン／公開プロフィールは新規 `social` feature** に集約、**バディ記録・公開トグル・バディ検索は対象データを持つ `dives` feature の拡張**とする。feature 間 import は禁止のため、TOP ページ（app 層）で `social` のタイムラインと既存ダッシュボードを合成注入する（既存 `src/app/page.tsx` のパターンを踏襲）。匿名共有ページのみ `(public)` ルートグループに配置する。
 
@@ -159,7 +159,7 @@ service-front/src/
 
 ### 8. 匿名共有ページ（FR-011）
 
-- `/(public)/dives/[slug]/page.tsx`：`get_public_dive(slug)` RPC で公開ログのみ取得。非公開・存在しない slug は 404。`generatePageMetadata` でメタを出力（共有 OGP）。
+- `/(public)/shared/dives/[slug]/page.tsx`：`get_public_dive(slug)` RPC で公開ログのみ取得。非公開・存在しない slug は 404。`generatePageMetadata` でメタを出力（共有 OGP）。
 
 ## Phase 0: Research
 

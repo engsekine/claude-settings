@@ -22,10 +22,10 @@ npm run dev --workspace service-front
 ```
 
 検証対象マイグレーション:
-- `20260629100000_create_dive_log_buddies.sql`
-- `20260629100100_create_user_follows.sql`
-- `20260629100200_add_dives_public_read_policy.sql`
-- `20260629100300_create_get_public_dive_fn.sql`
+- `20260630100000_create_dive_log_buddies.sql`
+- `20260630100100_create_user_follows.sql`
+- `20260630100200_add_dives_public_read_policy.sql`
+- `20260630100300_create_get_public_dive_fn.sql`
 
 ## シナリオ別検証
 
@@ -40,7 +40,7 @@ npm run dev --workspace service-front
 
 1. 新規ログが既定 `is_public=false` で保存される
 2. 公開トグル → `public_slug` 付与、別アカウントから閲覧可
-3. 匿名ブラウザで共有 URL（`/dives/[slug]`）が表示される
+3. 匿名ブラウザで共有 URL（`/shared/dives/[slug]`）が表示される
 4. 非公開へ戻す → 別アカウント・匿名共有 URL ともに 404/不可（5 秒以内）
 5. 期待: 非公開かつ他人のログは一覧・タイムライン・検索・直URL・共有のいずれでも不可視
 

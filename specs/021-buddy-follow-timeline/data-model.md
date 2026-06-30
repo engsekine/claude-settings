@@ -37,7 +37,7 @@ create index idx_dive_log_buddies_dive_id on public.dive_log_buddies (dive_id);
 create index idx_dive_log_buddies_buddy_user_id on public.dive_log_buddies (buddy_user_id);
 ```
 
-### DDL（マイグレーション `20260629100000_create_dive_log_buddies.sql`）
+### DDL（マイグレーション `20260630100000_create_dive_log_buddies.sql`）
 
 ```sql
 create table public.dive_log_buddies (
@@ -158,7 +158,7 @@ create policy "dive owner can delete non-optout buddies"
 create index idx_user_follows_followee_id on public.user_follows (followee_id);
 ```
 
-### DDL（マイグレーション `20260629100100_create_user_follows.sql`）
+### DDL（マイグレーション `20260630100100_create_user_follows.sql`）
 
 ```sql
 create table public.user_follows (
@@ -192,7 +192,7 @@ create policy "users can unfollow own follows"
     using (follower_id = (select auth.uid()));
 ```
 
-## 3. 既存 `public.dives` への追加（`20260629100200_add_dives_public_read_policy.sql`）
+## 3. 既存 `public.dives` への追加（`20260630100200_add_dives_public_read_policy.sql`）
 
 スキーマ（カラム）変更はなし。RLS に公開読み取りを追加し、タイムライン用の部分 index を追加する。
 
@@ -211,7 +211,7 @@ create index idx_dives_public_user_date
 
 > 注意: SELECT は複数ポリシーが OR 結合される。本人ポリシー（`auth.uid() = user_id`）と公開ポリシー（`is_public = true`）の和が閲覧可能集合となり、非公開かつ他人のログは引き続き不可視（SC-002）。
 
-## 4. 匿名共有用関数（`20260629100300_create_get_public_dive_fn.sql`）
+## 4. 匿名共有用関数（`20260630100300_create_get_public_dive_fn.sql`）
 
 未ログインの共有ページ用に、公開ログ 1 件のみを slug で返す。テーブル RLS を anon に広げない（R2）。
 
@@ -247,7 +247,7 @@ comment on function public.get_public_dive(text) is '公開ログ 1 件を slug 
 
 > 返却列は共有ページに必要な最小限。バディ／写真など追加情報が必要になればタスクで列を拡張する。
 
-## 4b. ユーザー表示名の公開関数（`20260629100400_create_get_user_public_profiles_fn.sql`）
+## 4b. ユーザー表示名の公開関数（`20260630100400_create_get_user_public_profiles_fn.sql`）
 
 `user_details` は本人のみ SELECT 可（PII: 生年月日・性別・身長体重を含む）。一方、ソーシャル表示（バディ一覧・プロフィール・タイムライン・フォロー一覧）では**他ユーザーの nickname のみ**が必要。そこで nickname だけを返す関数を用意し、PII を晒さずに表示名を解決する。
 

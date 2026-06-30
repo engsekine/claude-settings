@@ -761,6 +761,18 @@ export type Database = {
           year: number
         }[]
       }
+      get_public_dive: {
+        Args: { p_slug: string }
+        Returns: {
+          id: string
+          dive_date: string
+          location: string
+          max_depth_m: number
+          bottom_time_min: number
+          notes: string | null
+          owner_nickname: string
+        }[]
+      }
       get_user_public_profiles: {
         Args: { p_ids: string[] }
         Returns: {

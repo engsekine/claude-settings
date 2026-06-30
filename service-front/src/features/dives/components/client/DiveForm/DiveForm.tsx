@@ -519,6 +519,11 @@ export const DiveForm = ({ diveId, defaultValues, siteOptions = [], existingPhot
                     講習ダイブ
                 </label>
 
+                <label className="flex items-center gap-2 text-sm">
+                    <input type="checkbox" {...register('isPublic')} />
+                    このログを公開する（フォロワー・共有リンクから閲覧可能になります）
+                </label>
+
                 <FormTextarea id="notes" label="メモ・印象" rows={4} {...register('notes')} />
             </section>
 

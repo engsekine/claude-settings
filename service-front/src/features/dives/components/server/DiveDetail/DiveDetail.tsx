@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 import { DeleteDiveButton } from '@/features/dives/components/client/DeleteDiveButton';
 import { DivePhotoGallery } from '@/features/dives/components/client/DivePhotoGallery';
+import { DiveVisibilityToggle } from '@/features/dives/components/client/DiveVisibilityToggle';
 import { DivePhotoUploader } from '@/features/dives/components/client/DivePhotoUploader';
 import { TANK_TYPE_LABEL_MAP, type TankTypeValue } from '@/features/dives/constants';
 import { diveLocationLabel } from '@/features/dives/lib/diveLabel';
@@ -120,6 +121,19 @@ export const DiveDetail = ({ dive, photos = [], buddies = [], canManage = false 
                     </span>
                 )}
             </header>
+
+            {canManage && (
+                <section aria-labelledby="dive-detail-visibility" className="flex flex-col gap-2">
+                    <h2 id="dive-detail-visibility" className="font-medium text-sm">
+                        公開設定
+                    </h2>
+                    <DiveVisibilityToggle
+                        diveId={dive.id}
+                        initialIsPublic={dive.isPublic}
+                        initialPublicSlug={dive.publicSlug}
+                    />
+                </section>
+            )}
 
             <section aria-labelledby="dive-detail-basic" className="flex flex-col gap-4">
                 <h2 id="dive-detail-basic" className="font-semibold text-lg">

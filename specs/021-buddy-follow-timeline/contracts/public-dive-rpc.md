@@ -1,6 +1,6 @@
 # Contract: 匿名共有 RPC `get_public_dive`
 
-未ログインの共有ページ（`/(public)/dives/[slug]`）から呼ぶ。詳細 DDL は data-model.md §4。
+未ログインの共有ページ（`/(public)/shared/dives/[slug]`）から呼ぶ。詳細 DDL は data-model.md §4。
 
 ## RPC `get_public_dive(p_slug text)`
 

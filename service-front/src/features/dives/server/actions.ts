@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
+import { resolvePublicSlug } from '@/features/dives/lib/visibility';
 import type { DiveFormValues } from '@/features/dives/schemas/dive.schema';
 import { createClient } from '@/shared/lib/supabase/server';
 import { type ActionResult, actionFailure, actionSuccess } from '@/shared/types/action-result';
@@ -216,6 +217,46 @@ export const updateDive = async (id: string, input: DiveFormValues): Promise<Act
     revalidatePath('/dives');
     revalidatePath(`/dives/${id}`);
     return actionSuccess();
+};
+
+export const setDiveVisibility = async (
+    id: string,
+    isPublic: boolean,
+): Promise<ActionResult<{ isPublic: boolean; publicSlug: string | null }>> => {
+    const supabase = await createClient();
+
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return actionFailure('ログインが必要です');
+
+    // 公開化時は slug を解決（既存があれば維持、無ければ生成）。非公開化時は slug を保持したまま遮断する
+    // （RLS と get_public_dive が is_public=false を返さないため、共有リンクも即無効になる）。
+    let publicSlug: string | null = null;
+    if (isPublic) {
+        const { data: existing, error: fetchError } = await supabase
+            .from('dives')
+            .select('public_slug')
+            .eq('id', id)
+            .maybeSingle();
+        if (fetchError) {
+            console.error('[setDiveVisibility] fetch error:', fetchError);
+            return actionFailure('公開設定の更新に失敗しました。時間をおいて再度お試しください');
+        }
+        publicSlug = resolvePublicSlug(existing?.public_slug ?? null);
+    }
+
+    const payload = isPublic ? { is_public: true, public_slug: publicSlug } : { is_public: false };
+    const { error } = await supabase.from('dives').update(payload).eq('id', id);
+
+    if (error) {
+        console.error('[setDiveVisibility] supabase error:', error);
+        return actionFailure('公開設定の更新に失敗しました。時間をおいて再度お試しください');
+    }
+
+    revalidatePath('/dives');
+    revalidatePath(`/dives/${id}`);
+    return actionSuccess({ isPublic, publicSlug });
 };
 
 export const deleteDive = async (id: string): Promise<ActionResult> => {
