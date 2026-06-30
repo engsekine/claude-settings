@@ -25,3 +25,17 @@ export const PAGE_DATA: PageMetadata = {
     title: 'お問い合わせ',
     description: 'サービスへのご質問・ご要望・不具合のご連絡はこちらのフォームからお送りください。',
 };
+
+/** 送信完了（サンクス）ページのメタ情報 */
+export const COMPLETE_PAGE_DATA: PageMetadata = {
+    slug: '/contact/complete',
+    title: 'お問い合わせ完了',
+    description: 'お問い合わせを受け付けました。',
+};
+
+/** 送信完了後に遷移するサンクスページのパス */
+export const CONTACT_COMPLETE_PATH = '/contact/complete';
+
+/** 種別の値を表示ラベルに変換する（確認画面などで使用。未知の値はそのまま返す） */
+export const inquiryCategoryLabel = (value: string): string =>
+    INQUIRY_CATEGORY_OPTIONS.find((option) => option.value === value)?.label ?? value;

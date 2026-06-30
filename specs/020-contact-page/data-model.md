@@ -64,6 +64,20 @@ set search_path = ''
 
 > しきい値（3 件 / 60 秒・5 分）は `service-front/src/features/contact/constants.ts` と関数定義で同値管理する。
 
+## 関数: `public.discard_recent_inquiry`
+
+通知メール送信失敗時に保存済み行を取り消す（厳密通知 / FR-023 / R-009）。`security definer` + `set search_path = ''`。anon/authenticated に EXECUTE 付与。マイグレーション: `supabase/migrations/20260629120000_add_discard_recent_inquiry.sql`。
+
+```text
+discard_recent_inquiry(p_id uuid) returns void
+language plpgsql
+security definer
+set search_path = ''
+```
+
+- `inquiries` から `id = p_id` かつ `created_at > now() - interval '2 minutes'` の行のみ削除する。
+- 直近 2 分・当該 id 限定のため第三者による任意行削除を防ぐ（id は `submit_inquiry` の戻り値として送信者にのみ返る）。
+
 ## RLS ポリシー
 
 ```sql

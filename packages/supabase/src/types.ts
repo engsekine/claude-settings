@@ -660,6 +660,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      discard_recent_inquiry: { Args: { p_id: string }; Returns: undefined }
       get_dive_monthly_stats: {
         Args: { months_back?: number }
         Returns: {

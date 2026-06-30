@@ -1,0 +1,64 @@
+import { Resend } from 'resend';
+
+import { inquiryCategoryLabel } from '../constants';
+import type { ContactFormValues } from '../schemas/contact.schema';
+
+/**
+ * お問い合わせの通知メールを送信する（FR-021: 運営者通知 / FR-022: 送信者への自動返信）。
+ * 送信基盤は Resend（HTTP API）。Vercel のサーバーレス上で生 SMTP より安定する（research R-009）。
+ * いずれかの送信に失敗した場合は throw し、呼び出し側で厳密に失敗扱いにする（FR-008/009/023）。
+ */
+export const sendInquiryNotifications = async (values: ContactFormValues): Promise<void> => {
+    const apiKey = process.env['RESEND_API_KEY'];
+    const from = process.env['CONTACT_MAIL_FROM'];
+    const notifyTo = process.env['CONTACT_NOTIFY_TO'];
+    if (!apiKey) throw new Error('RESEND_API_KEY is not configured');
+    if (!from) throw new Error('CONTACT_MAIL_FROM is not configured');
+    if (!notifyTo) throw new Error('CONTACT_NOTIFY_TO is not configured');
+
+    const resend = new Resend(apiKey);
+    const categoryLabel = inquiryCategoryLabel(values.category);
+
+    // 運営者への通知（返信先は送信者のメールにする）
+    const notifyResult = await resend.emails.send({
+        from,
+        to: notifyTo,
+        replyTo: values.email,
+        subject: `【お問い合わせ】${categoryLabel} - ${values.name} 様`,
+        text: [
+            'お問い合わせを受け付けました。',
+            '',
+            `種別: ${categoryLabel}`,
+            `お名前: ${values.name}`,
+            `メールアドレス: ${values.email}`,
+            '',
+            '本文:',
+            values.body,
+            '',
+        ].join('\n'),
+    });
+    if (notifyResult.error) {
+        throw new Error(`運営通知メールの送信に失敗しました: ${notifyResult.error.message}`);
+    }
+
+    // 送信者への自動返信
+    const replyResult = await resend.emails.send({
+        from,
+        to: values.email,
+        subject: 'お問い合わせを受け付けました',
+        text: [
+            `${values.name} 様`,
+            '',
+            'お問い合わせいただきありがとうございます。以下の内容で受け付けました。',
+            '内容を確認のうえ、改めてご連絡いたします。',
+            '',
+            `種別: ${categoryLabel}`,
+            '本文:',
+            values.body,
+            '',
+        ].join('\n'),
+    });
+    if (replyResult.error) {
+        throw new Error(`自動返信メールの送信に失敗しました: ${replyResult.error.message}`);
+    }
+};

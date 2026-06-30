@@ -6,7 +6,7 @@
 
 ## Summary
 
-公開（ログイン不要）の `/contact` ページにお問い合わせフォーム（氏名・メール・種別・本文）を設け、送信内容を Supabase の `inquiries` テーブルへ保存する。送信は service-front の Server Action から `security definer` 関数 `submit_inquiry` を呼ぶ単一経路とし、SELECT を管理者のみに閉じたままレート制限・重複拒否・ハニーポットを実装する。運営者は admin-front の既存リソース基盤（`listResource` / `requireAdmin` / `recordAudit`）を再利用して一覧・詳細を閲覧し、不要な問い合わせを物理削除（監査ログ付き）できる。ログイン中ユーザーには氏名・メールを初期表示する。
+公開（ログイン不要）の `/contact` ページにお問い合わせフォーム（氏名・メール・種別・本文）を設け、**入力 → 確認画面 → 送信 → 完了（サンクス）画面 `/contact/complete`** のフローで送信内容を Supabase の `inquiries` テーブルへ保存する。確認画面と入力画面の切替は `ContactForm`（Client Component）内のステップで行い、送信成功時に完了ページへ遷移する。送信は service-front の Server Action から `security definer` 関数 `submit_inquiry` を呼ぶ単一経路とし、SELECT を管理者のみに閉じたままレート制限・重複拒否・ハニーポットを実装する。運営者は admin-front の既存リソース基盤（`listResource` / `requireAdmin` / `recordAudit`）を再利用して一覧・詳細を閲覧し、不要な問い合わせを物理削除（監査ログ付き）できる。ログイン中ユーザーには氏名・メールを初期表示する。
 
 ## Technical Context
 
@@ -72,10 +72,11 @@ packages/supabase/src/
 # ── service-front（一般利用者向け公開フォーム）──
 service-front/src/
 ├── app/(public)/contact/
-│   └── page.tsx                                # 公開ページ（Server Component, metadata, Breadcrumbs）
+│   ├── page.tsx                                # 入力ページ（Server Component, metadata, Breadcrumbs）
+│   └── complete/page.tsx                       # 完了（サンクス）ページ（Server Component, metadata）
 ├── features/contact/
-│   ├── index.ts                                # PAGE_DATA / 公開 export
-│   ├── constants.ts                            # 問い合わせ種別の選択肢・本文上限・PAGE_DATA
+│   ├── index.ts                                # PAGE_DATA / COMPLETE_PAGE_DATA / 公開 export
+│   ├── constants.ts                            # 種別の選択肢/ラベル変換・本文上限・PAGE_DATA・COMPLETE_PAGE_DATA・完了パス
 │   ├── schemas/
 │   │   └── contact.schema.ts                   # yup スキーマ（氏名/メール/種別/本文/ハニーポット）
 │   ├── server/
@@ -83,7 +84,7 @@ service-front/src/
 │   ├── lib/
 │   │   └── prefill.ts                          # ログイン中ユーザーの氏名・メール初期値生成（+ test）
 │   └── components/client/ContactForm/
-│       ├── ContactForm.tsx                     # RHF + yup、送信中無効化、aria-live 受付表示
+│       ├── ContactForm.tsx                     # RHF + yup、入力⇄確認のステップ、送信成功で完了ページへ遷移
 │       ├── ContactForm.test.tsx
 │       ├── ContactForm.stories.tsx
 │       └── index.ts

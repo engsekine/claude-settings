@@ -75,7 +75,21 @@ description: "Task list for お問い合わせページ implementation"
 - [X] T017 [US1] feature の公開 export を確定: `service-front/src/features/contact/index.ts`（`PAGE_DATA`・`ContactForm` 等を re-export）
 - [X] T018 [US1] フッター導線追加（FR-016）: `service-front/src/shared/components/layout/Footer/Footer.tsx` の `FOOTER_LINKS` に `{ href: '/contact', label: 'お問い合わせ' }` を追加し、`Footer.test.tsx` を同期更新
 
-**Checkpoint**: `/contact` 単体で送信〜受付〜保存が成立（MVP）
+### 確認画面・完了（サンクス）ページ（FR-019 / FR-020）
+
+- [X] T036 [US1] 定数追加: `service-front/src/features/contact/constants.ts` に `COMPLETE_PAGE_DATA`・`CONTACT_COMPLETE_PATH`・`inquiryCategoryLabel`（値→ラベル）を追加し、`index.ts` から `COMPLETE_PAGE_DATA` を re-export
+- [X] T037 [US1] `ContactForm` を入力⇄確認の 2 ステップ化（FR-019）: 「確認画面へ進む」で検証通過後に確認表示（種別はラベル・本文は `whitespace-pre-wrap`）、「入力内容を修正する」で値を保持して戻る、確認画面で「送信する」→ 成功時 `router.push('/contact/complete')`・失敗時は確認画面に `role="alert"`。`ContactForm.test.tsx` を新フローへ同期
+- [X] T038 [US1] 完了（サンクス）ページ実装（FR-020）: `service-front/src/app/(public)/contact/complete/page.tsx`（Server Component、`generatePageMetadata(COMPLETE_PAGE_DATA)`、受付メッセージ + ホーム等への導線）
+
+### 通知メール（運営通知 + 自動返信・厳密通知 / FR-021〜023）
+
+- [X] T039 取り消し関数のマイグレーション: `supabase/migrations/20260629120000_add_discard_recent_inquiry.sql`（`discard_recent_inquiry(p_id)` = 直近 2 分の当該 id を削除・security definer・anon/authenticated に grant）→ 適用 + `supabase gen types` で型再生成
+- [X] T040 resend 依存追加: `service-front` に `resend` を追加（旧 `nodemailer` / `@types/nodemailer` は削除）
+- [X] T041 [P] [US1] メール送信モジュール実装: `service-front/src/features/contact/server/email.ts`（`sendInquiryNotifications`＝運営通知 + 送信者自動返信の 2 通、Resend HTTP API、`emails.send` の `error` を検査して throw、必須 env 欠如でも throw）+ `email.test.ts`（resend をモック）
+- [X] T042 [US1] Server Action を厳密通知に更新: `service-front/src/features/contact/server/actions.ts`（保存成功 → `sendInquiryNotifications` → 失敗時 `discard_recent_inquiry` で取り消して `actionFailure`）（contracts/contact-submit.md）
+- [ ] T043 環境変数の用意（手動）: `RESEND_API_KEY` / `CONTACT_MAIL_FROM` / `CONTACT_NOTIFY_TO` を service-front の `.env`（本番は各環境）に設定。Resend でドメイン認証（SPF/DKIM）を行う
+
+**Checkpoint**: `/contact` で 入力 → 確認 → 送信（保存 + 通知メール 2 通）→ `/contact/complete`。メール失敗時は取り消して確認画面でエラー
 
 ---
 

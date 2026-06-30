@@ -7,6 +7,7 @@ import { createClient } from '@/shared/lib/supabase/server';
 import { type ActionResult, actionFailure, actionSuccess } from '@/shared/types/action-result';
 
 import { type ContactFormValues, contactSchema } from '../schemas/contact.schema';
+import { sendInquiryNotifications } from './email';
 
 /** x-forwarded-for の先頭値を送信元 IP とみなす（無ければ null） */
 const resolveClientIp = (forwardedFor: string | null): string | null => {
@@ -42,8 +43,9 @@ export const submitInquiry = async (input: ContactFormValues): Promise<ActionRes
     const headerList = await headers();
     const ip = resolveClientIp(headerList.get('x-forwarded-for'));
 
+    // 1) 保存（レート制限・重複ガードはこの関数内で実行される）
     // 生成 Args は nullable 引数も非 null 型で表現されるため、null 許容の値はここで型境界を閉じる
-    const { error } = await supabase.rpc('submit_inquiry', {
+    const { data: inquiryId, error } = await supabase.rpc('submit_inquiry', {
         p_name: values.name,
         p_email: values.email,
         p_category: values.category,
@@ -61,6 +63,20 @@ export const submitInquiry = async (input: ContactFormValues): Promise<ActionRes
             return actionFailure('同じ内容のお問い合わせがすでに送信されています');
         }
         console.error('[submitInquiry] rpc error:', { message: error.message, code: error.code });
+        return actionFailure('送信に失敗しました。時間をおいて再度お試しください');
+    }
+
+    // 2) 通知メール送信（運営通知 + 送信者への自動返信）。
+    //    厳密通知（FR-008/009）: 送信に失敗したら保存済みの行を取り消し、失敗を返す。
+    //    取り消すことで、再送時に同一本文の重複ガードへ当たるのを防ぐ。
+    try {
+        await sendInquiryNotifications(values);
+    } catch (mailError) {
+        console.error('[submitInquiry] mail error:', mailError);
+        if (inquiryId) {
+            const { error: discardError } = await supabase.rpc('discard_recent_inquiry', { p_id: inquiryId });
+            if (discardError) console.error('[submitInquiry] discard error:', discardError);
+        }
         return actionFailure('送信に失敗しました。時間をおいて再度お試しください');
     }
 

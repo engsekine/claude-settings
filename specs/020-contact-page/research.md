@@ -60,6 +60,27 @@ Phase 0。spec.md / clarifications の決定を実装方式へ落とし込み、
 - **Rationale**: 型の手書きを避け、DB を単一の真実とする。`listResource` 等のジェネリクスが新テーブルでも型安全に動く。
 - **Alternatives considered**: 型を手書き追記 → 生成物との乖離リスク。却下。
 
+## R-008: 確認画面・完了（サンクス）ページ（スコープ拡張）
+
+- **Decision**: 送信フローを「入力 → 確認 → 送信 → 完了」に拡張する。確認は `ContactForm`（Client Component）内の `step: 'input' | 'confirm'` ステップとして実装（別ルートにしない）。完了は独立ルート `/contact/complete`（Server Component）。送信成功時に `router.push('/contact/complete')`。
+- **Rationale**: 確認画面はフォームの全入力値を必要とするため、別ルート化すると公開フォーム（セッション無し）では値の受け渡しが煩雑。同一コンポーネント内のステップなら RHF の状態をそのまま使え、修正で戻っても値が保持される。完了は再訪・ブックマーク・直アクセスに耐える静的ページが適切なので独立ルートにする。
+- **Alternatives considered**: 確認も別ルート（`/contact/confirm`）→ 値の受け渡し（クエリ/セッション）が必要で公開フォームには過剰。却下。
+
+## R-009: メール通知の基盤と厳密通知の実行順序（スコープ拡張）
+
+- **Decision**: 送信成立時に **運営者通知 + 送信者への自動返信の 2 通**を **Resend（HTTP API）** で送る。env（`RESEND_API_KEY`/`CONTACT_MAIL_FROM`/`CONTACT_NOTIFY_TO`）から構成。**厳密通知**: 失敗時は受付完了としない。
+  - 送信基盤は当初 SMTP（nodemailer）案だったが、Vercel のサーバーレスでは生 SMTP（ポート25 ブロック・587/465 も不安定）より **HTTP API の方が確実**なため Resend に変更。`resend.emails.send` の戻り値 `error` を検査し、非 null なら throw する（SDK は既定で throw しない）。
+  - 実行順序: **(1) `submit_inquiry` で保存（レート制限・重複ガードがここで作用） → (2) 2 通送信 → (3) 送信失敗なら `discard_recent_inquiry(id)` で保存行を取り消し失敗を返す**。
+- **Rationale**:
+  - 保存を先に行うことで、レート制限・重複・ハニーポット（スパム）を**メール送信前に**遮断でき、bot による通知メール大量送信を防げる。
+  - メール失敗時に保存行を取り消すことで、再送時に同一本文の重複ガード（5 分）へ当たって再送できなくなる問題を回避できる（厳密通知の前提）。
+  - `discard_recent_inquiry` は直近 2 分・当該 id 限定。id は `submit_inquiry` の戻り値として送信者にのみ返るため第三者は対象を特定できない。
+- **Alternatives considered**:
+  - メール送信を先・保存を後 → ガード前にメールが飛びスパムで悪用される。却下。
+  - ベストエフォート（保存成功なら完了・メール失敗は無視）→ クラリフィケーションで「厳密」を選択。却下。
+  - 取り消し用に anon へ DELETE ポリシーを開放 → 任意行削除のリスク。security definer + 時間/ id 限定の関数に閉じる。
+- **Note**: メール基盤（`RESEND_API_KEY` 等）未構成時は送信失敗＝完了させない（Edge Case）。本番では Resend でドメイン認証（SPF/DKIM）を行い到達性を確保する。
+
 ## まとめ（NEEDS CLARIFICATION の解消状況）
 
 | 項目 | 状態 |
@@ -71,5 +92,7 @@ Phase 0。spec.md / clarifications の決定を実装方式へ落とし込み、
 | ログイン補完 | 確定（R-005） |
 | 管理閲覧・削除 | 確定（R-006: 既存基盤再利用・hard delete） |
 | 型生成 | 確定（R-007） |
+| 確認・完了画面 | 確定（R-008: 確認は in-component step / 完了は独立ルート） |
+| メール通知・厳密通知順序 | 確定（R-009: Resend で 2 通 / insert→email→discard） |
 
 未解決の NEEDS CLARIFICATION なし。Phase 1 へ進む。
