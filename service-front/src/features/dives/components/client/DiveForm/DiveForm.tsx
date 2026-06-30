@@ -71,6 +71,8 @@ const createDefaultValues = (overrides?: Partial<DiveFormValues>): DiveFormValue
     instructorName: null,
     certificationDive: false,
     notes: null,
+    buddies: [],
+    isPublic: false,
     ...overrides,
 });
 

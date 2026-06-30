@@ -316,6 +316,48 @@ export type Database = {
         }
         Relationships: []
       }
+      dive_log_buddies: {
+        Row: {
+          buddy_name: string | null
+          buddy_user_id: string | null
+          created_at: string
+          dive_id: string
+          id: string
+          removed_by_buddy: boolean
+        }
+        Insert: {
+          buddy_name?: string | null
+          buddy_user_id?: string | null
+          created_at?: string
+          dive_id: string
+          id?: string
+          removed_by_buddy?: boolean
+        }
+        Update: {
+          buddy_name?: string | null
+          buddy_user_id?: string | null
+          created_at?: string
+          dive_id?: string
+          id?: string
+          removed_by_buddy?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dive_log_buddies_dive_id_fkey"
+            columns: ["dive_id"]
+            isOneToOne: false
+            referencedRelation: "dives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dive_log_buddies_buddy_user_id_fkey"
+            columns: ["buddy_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dives: {
         Row: {
           air_temp_c: number | null
@@ -632,6 +674,39 @@ export type Database = {
             foreignKeyName: "user_details_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_follows: {
+        Row: {
+          created_at: string
+          followee_id: string
+          follower_id: string
+        }
+        Insert: {
+          created_at?: string
+          followee_id: string
+          follower_id: string
+        }
+        Update: {
+          created_at?: string
+          followee_id?: string
+          follower_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_follows_follower_id_fkey"
+            columns: ["follower_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_follows_followee_id_fkey"
+            columns: ["followee_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
