@@ -177,7 +177,7 @@ description: "Task list for バディ・フォロー・タイムライン（ソ�
 - [ ] T050 [P] 非公開遮断の RLS 全経路テスト（直URL / タイムライン / 公開ログ一覧 / フォロー一覧 / 検索 / 匿名共有）を追加し、非公開・他人ログが漏れないことを確認（SC-002）
 - [ ] T051 [P] a11y 検証（`FollowButton`/`DiveVisibilityToggle`/`Timeline`/`DiveBuddyField`/`FollowList`）を Playwright + axe-core で確認（WCAG 2.1 AA）
 - [ ] T052 `specs/021-buddy-follow-timeline/quickstart.md` のシナリオ S1〜S6 を手動検証
-- [ ] T053 [P] `/sync-spec` で spec とのズレ確認・`/code-fix` でコード規約準拠を確認
+- [X] T053 [P] `/sync-spec` で spec とのズレ確認・`/code-fix` でコード規約準拠を確認
 
 ---
 
