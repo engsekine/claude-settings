@@ -25,7 +25,7 @@
 | 入力 | `buddyTagId`: 自分宛タグの行 ID |
 | 前提 | `buddy_user_id === auth.uid()` |
 | 動作 | `update dive_log_buddies set removed_by_buddy = true where id = buddyTagId`（RLS "buddy can opt out own tag"） |
-| 出力 | `{ ok: true }` |
+| 出力 | `{ success: true }` |
 | 効果 | 当該タグは以後どのログ閲覧経路でも非表示。所有者は削除も再追加も不可 |
 | 再検証 | 対象 dive 詳細・自分のプロフィール |
 

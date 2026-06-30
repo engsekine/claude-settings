@@ -127,7 +127,27 @@ create policy "dive owner can delete non-optout buddies"
     );
 ```
 
-> 退会フォールバックトリガ `handle_buddy_user_deleted` は data-model 内の補助。実装時に `users` 削除前トリガ、または `dive_log_buddies` の `buddy_user_id` set null と同時に nickname を `buddy_name` へ退避する形で追加する（タスクで詳細化）。
+退会フォールバックトリガ `handle_buddy_user_deleted`（実装済み）: `public.users` の **BEFORE DELETE** トリガとして、削除対象ユーザーを指す `dive_log_buddies` 行の `buddy_name` に当時の nickname を退避し `buddy_user_id` を NULL 化する。FK の `on delete set null` / `user_details` の cascade より前に走るため nickname を参照でき、`target_check` 整合も保たれる（`set search_path = ''`）。
+
+```sql
+create or replace function public.handle_buddy_user_deleted()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+    update public.dive_log_buddies b
+    set buddy_name = coalesce((select ud.nickname from public.user_details ud where ud.user_id = old.id), '退会したユーザー'),
+        buddy_user_id = null
+    where b.buddy_user_id = old.id;
+    return old;
+end;
+$$;
+
+create trigger users_handle_buddy_on_delete
+    before delete on public.users
+    for each row execute function public.handle_buddy_user_deleted();
+```
 
 ## 2. 新規テーブル `public.user_follows`
 
