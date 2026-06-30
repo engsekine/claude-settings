@@ -12,7 +12,7 @@
 
 **Language/Version**: TypeScript（strict mode）/ Next.js App Router（React 19 + React Compiler）
 
-**Primary Dependencies**: Supabase（PostgreSQL + Auth + RLS）, React Hook Form + yup, Tailwind CSS, `@repo/supabase`（生成 Database 型）, `@repo/ui`
+**Primary Dependencies**: Supabase（PostgreSQL + Auth + RLS）, React Hook Form + yup, Tailwind CSS, `@repo/supabase`（生成 Database 型）, `@repo/ui`, `resend`（メール送信 HTTP API）, `@react-email/components`（メール JSX テンプレート）, `@react-email/render`（JSX → HTML / プレーンテキスト変換）
 
 **Storage**: Supabase PostgreSQL。新規テーブル `public.inquiries`（RLS 有効）+ `security definer` 関数 `public.submit_inquiry`
 
@@ -79,8 +79,12 @@ service-front/src/
 │   ├── constants.ts                            # 種別の選択肢/ラベル変換・本文上限・PAGE_DATA・COMPLETE_PAGE_DATA・完了パス
 │   ├── schemas/
 │   │   └── contact.schema.ts                   # yup スキーマ（氏名/メール/種別/本文/ハニーポット）
+│   ├── emails/
+│   │   ├── InquiryNotificationEmail.tsx        # 運営者通知メール JSX テンプレート（FR-021）
+│   │   └── InquiryAutoReplyEmail.tsx           # 送信者自動返信メール JSX テンプレート（FR-022）
 │   ├── server/
-│   │   └── actions.ts                          # submitInquiry Server Action（honeypot 判定 → RPC 呼び出し）
+│   │   ├── actions.ts                          # submitInquiry Server Action（保存 → メール送信 → 失敗時 discard）
+│   │   └── email.ts                            # sendInquiryNotifications（react-email render + Resend 送信）
 │   ├── lib/
 │   │   └── prefill.ts                          # ログイン中ユーザーの氏名・メール初期値生成（+ test）
 │   └── components/client/ContactForm/

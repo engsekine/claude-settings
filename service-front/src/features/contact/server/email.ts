@@ -30,13 +30,17 @@ export const sendInquiryNotifications = async (values: ContactFormValues): Promi
         categoryLabel,
         body: values.body,
     });
+    const [notifyHtml, notifyText] = await Promise.all([
+        render(notifyTemplate),
+        render(notifyTemplate, { plainText: true }),
+    ]);
     const notifyResult = await resend.emails.send({
         from,
         to: notifyTo,
         replyTo: values.email,
         subject: `【お問い合わせ】${categoryLabel} - ${values.name} 様`,
-        html: await render(notifyTemplate),
-        text: await render(notifyTemplate, { plainText: true }),
+        html: notifyHtml,
+        text: notifyText,
     });
     if (notifyResult.error) {
         throw new Error(`運営通知メールの送信に失敗しました: ${notifyResult.error.message}`);
@@ -44,12 +48,16 @@ export const sendInquiryNotifications = async (values: ContactFormValues): Promi
 
     // 送信者への自動返信
     const replyTemplate = InquiryAutoReplyEmail({ name: values.name, categoryLabel, body: values.body });
+    const [replyHtml, replyText] = await Promise.all([
+        render(replyTemplate),
+        render(replyTemplate, { plainText: true }),
+    ]);
     const replyResult = await resend.emails.send({
         from,
         to: values.email,
         subject: 'お問い合わせを受け付けました',
-        html: await render(replyTemplate),
-        text: await render(replyTemplate, { plainText: true }),
+        html: replyHtml,
+        text: replyText,
     });
     if (replyResult.error) {
         throw new Error(`自動返信メールの送信に失敗しました: ${replyResult.error.message}`);

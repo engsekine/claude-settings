@@ -9,9 +9,14 @@ vi.mock('resend', () => ({
     },
 }));
 
-// react-email のレンダリングはテンプレート側テストで検証する。ここでは送信オーケストレーションに集中する
+// react-email のレンダリングはテンプレート側テストで検証する。ここでは送信オーケストレーションに集中する。
+// plainText オプションの有無で戻り値を変え、html / text が別経路でレンダリングされることを担保する。
 vi.mock('@react-email/render', () => ({
-    render: vi.fn().mockResolvedValue('<html>rendered</html>'),
+    render: vi
+        .fn()
+        .mockImplementation((_template, options) =>
+            Promise.resolve(options?.plainText ? 'plain text' : '<html>rendered</html>'),
+        ),
 }));
 
 import { sendInquiryNotifications } from './email';
@@ -49,9 +54,9 @@ describe('sendInquiryNotifications', () => {
         const opsMail = send.mock.calls.find((call) => call[0].to === 'ops@example.com')?.[0];
         expect(opsMail.replyTo).toBe('taro@example.com');
         expect(opsMail.subject).toContain('ご質問');
-        // 本文は react-email を HTML / テキストにレンダリングして渡す
+        // 本文は react-email を HTML / プレーンテキストに別々にレンダリングして渡す
         expect(opsMail.html).toBe('<html>rendered</html>');
-        expect(opsMail.text).toBe('<html>rendered</html>');
+        expect(opsMail.text).toBe('plain text');
     });
 
     it('RESEND_API_KEY 未設定なら送信せず throw する', async () => {
