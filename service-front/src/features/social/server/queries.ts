@@ -1,0 +1,198 @@
+import 'server-only';
+
+import type { Database } from '@repo/supabase';
+import type { SupabaseClient } from '@supabase/supabase-js';
+
+import type {
+    FollowListKind,
+    FollowState,
+    FollowUser,
+    PublicProfile,
+    TimelineCursor,
+    TimelineItem,
+    TimelinePage,
+} from '@/features/social/types';
+import { createClient } from '@/shared/lib/supabase/server';
+
+type Client = SupabaseClient<Database>;
+
+/** ダイブ公開一覧で取得する列（TimelineItem に対応） */
+const PUBLIC_DIVE_COLUMNS = 'id, user_id, dive_date, location, max_depth_m, bottom_time_min';
+const DEFAULT_PAGE_SIZE = 20;
+
+/** user_id 配列 → nickname の Map を get_user_public_profiles（SECURITY DEFINER）で解決する */
+const resolveNicknames = async (supabase: Client, userIds: string[]): Promise<Map<string, string>> => {
+    const unique = [...new Set(userIds)];
+    const map = new Map<string, string>();
+    if (unique.length === 0) return map;
+    const { data, error } = await supabase.rpc('get_user_public_profiles', { p_ids: unique });
+    if (error) throw new Error(`表示名の取得に失敗しました: ${error.message}`);
+    for (const profile of data ?? []) map.set(profile.user_id, profile.nickname);
+    return map;
+};
+
+/**
+ * 対象ユーザーへのフォロー状態と件数（spec 021 FR-016）。
+ * isFollowing は閲覧者（auth.uid）→ 対象、件数は対象を起点に集計する。
+ */
+export const fetchFollowState = async (targetUserId: string): Promise<FollowState> => {
+    const supabase = await createClient();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    const [followingState, followerCountRes, followingCountRes] = await Promise.all([
+        user
+            ? supabase
+                  .from('user_follows')
+                  .select('follower_id', { head: true, count: 'exact' })
+                  .eq('follower_id', user.id)
+                  .eq('followee_id', targetUserId)
+            : Promise.resolve({ count: 0 }),
+        supabase
+            .from('user_follows')
+            .select('followee_id', { head: true, count: 'exact' })
+            .eq('followee_id', targetUserId),
+        supabase
+            .from('user_follows')
+            .select('follower_id', { head: true, count: 'exact' })
+            .eq('follower_id', targetUserId),
+    ]);
+
+    return {
+        isFollowing: (followingState.count ?? 0) > 0,
+        followerCount: followerCountRes.count ?? 0,
+        followingCount: followingCountRes.count ?? 0,
+    };
+};
+
+/**
+ * フォロー一覧 / フォロワー一覧（spec 021 FR-016）。created_at 降順のキーセット。
+ * 各行に閲覧者がフォロー中かを付与してリスト上のフォローボタンに使う。
+ */
+export const fetchFollowLists = async (
+    userId: string,
+    kind: FollowListKind,
+    options: { limit?: number; cursor?: string | null } = {},
+): Promise<{ items: FollowUser[]; nextCursor: string | null }> => {
+    const supabase = await createClient();
+    const { limit = DEFAULT_PAGE_SIZE, cursor } = options;
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    // following 一覧なら相手 = followee_id、followers 一覧なら相手 = follower_id
+    const filterColumn = kind === 'following' ? 'follower_id' : 'followee_id';
+    const targetColumn = kind === 'following' ? 'followee_id' : 'follower_id';
+
+    let query = supabase
+        .from('user_follows')
+        .select(`${targetColumn}, created_at`)
+        .eq(filterColumn, userId)
+        .order('created_at', { ascending: false })
+        .limit(limit + 1);
+    if (cursor) query = query.lt('created_at', cursor);
+
+    const { data: rows, error } = await query;
+    if (error) throw new Error(`フォロー一覧の取得に失敗しました: ${error.message}`);
+
+    const hasNext = (rows?.length ?? 0) > limit;
+    const pageRows = (hasNext ? rows?.slice(0, limit) : rows) ?? [];
+    const getTargetId = (row: (typeof pageRows)[number]): string => (row as Record<string, string>)[targetColumn] ?? '';
+    const targetIds = pageRows.map(getTargetId);
+
+    const [nicknames, myFollowing] = await Promise.all([
+        resolveNicknames(supabase, targetIds),
+        // 閲覧者が targetIds の誰をフォロー中か（リストのフォローボタン用）
+        user && targetIds.length > 0
+            ? supabase
+                  .from('user_follows')
+                  .select('followee_id')
+                  .eq('follower_id', user.id)
+                  .in('followee_id', targetIds)
+            : Promise.resolve({ data: [] as { followee_id: string }[] }),
+    ]);
+    const followingSet = new Set((myFollowing.data ?? []).map((row) => row.followee_id));
+
+    const items: FollowUser[] = pageRows.map((row) => {
+        const id = getTargetId(row);
+        return { userId: id, nickname: nicknames.get(id) ?? '（不明なユーザー）', isFollowing: followingSet.has(id) };
+    });
+
+    const lastCursor = hasNext ? ((pageRows.at(-1) as { created_at: string } | undefined)?.created_at ?? null) : null;
+    return { items, nextCursor: lastCursor };
+};
+
+/**
+ * 公開プロフィール（spec 021 US3）。nickname を解決し、存在しなければ null（→ 404）。
+ * フォロー状態・件数も併せて返す。
+ */
+export const fetchPublicProfile = async (userId: string): Promise<PublicProfile | null> => {
+    const supabase = await createClient();
+    const nicknames = await resolveNicknames(supabase, [userId]);
+    const nickname = nicknames.get(userId);
+    if (!nickname) return null;
+
+    const followState = await fetchFollowState(userId);
+    return { userId, nickname, followState };
+};
+
+/** dives 行（公開一覧用）→ TimelineItem に変換（owner nickname は別途解決） */
+const mapTimelineRow = (
+    row: {
+        id: string;
+        user_id: string;
+        dive_date: string;
+        location: string | null;
+        max_depth_m: number;
+        bottom_time_min: number;
+    },
+    nicknames: Map<string, string>,
+): TimelineItem => ({
+    diveId: row.id,
+    diveDate: row.dive_date,
+    // location はサイト参照時 null。公開一覧/タイムラインではサイト名未結合のためフォールバック表示する
+    location: row.location ?? '名称未設定',
+    maxDepthM: Number(row.max_depth_m),
+    bottomTimeMin: row.bottom_time_min,
+    ownerId: row.user_id,
+    ownerNickname: nicknames.get(row.user_id) ?? '（不明なユーザー）',
+});
+
+/**
+ * 特定ユーザーの公開ログ一覧（spec 021 FR-015）。is_public=true のみ、(dive_date, id) キーセット。
+ * RLS（authenticated can read public dives）により非公開は取得不可。
+ */
+export const fetchUserPublicDives = async (
+    userId: string,
+    options: { limit?: number; cursor?: TimelineCursor | null } = {},
+): Promise<TimelinePage> => {
+    const supabase = await createClient();
+    const { limit = DEFAULT_PAGE_SIZE, cursor } = options;
+
+    let query = supabase
+        .from('dives')
+        .select(PUBLIC_DIVE_COLUMNS)
+        .eq('user_id', userId)
+        .eq('is_public', true)
+        .order('dive_date', { ascending: false })
+        .order('id', { ascending: false })
+        .limit(limit + 1);
+    if (cursor)
+        query = query.or(`dive_date.lt.${cursor.diveDate},and(dive_date.eq.${cursor.diveDate},id.lt.${cursor.id})`);
+
+    const { data: rows, error } = await query;
+    if (error) throw new Error(`公開ログの取得に失敗しました: ${error.message}`);
+
+    const hasNext = (rows?.length ?? 0) > limit;
+    const pageRows = (hasNext ? rows?.slice(0, limit) : rows) ?? [];
+    const nicknames = await resolveNicknames(
+        supabase,
+        pageRows.map((row) => row.user_id),
+    );
+    const items = pageRows.map((row) => mapTimelineRow(row, nicknames));
+    const last = pageRows.at(-1);
+    const nextCursor = hasNext && last ? { diveDate: last.dive_date, id: last.id } : null;
+
+    return { items, nextCursor };
+};

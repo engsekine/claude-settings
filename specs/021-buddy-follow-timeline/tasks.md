@@ -113,15 +113,15 @@ description: "Task list for バディ・フォロー・タイムライン（ソ�
 
 ### Implementation for User Story 3
 
-- [ ] T030 [US3] `service-front/src/features/social/server/actions.ts` に `followUser`/`unfollowUser` を実装（`follower_id=auth.uid()` 固定・冪等・revalidate）（contracts/follow-actions.md）
-- [ ] T031 [US3] `service-front/src/features/social/server/queries.ts` に `fetchFollowState` と `fetchUserPublicDives` を実装（contracts/timeline-query.md）
-- [ ] T032 [US3] `service-front/src/features/social/server/queries.ts` に `fetchFollowLists(userId, kind: 'following' | 'followers', { limit, cursor })` を実装（`user_follows` × `user_details.nickname` 結合、キーセット）
-- [ ] T033 [P] [US3] `FollowButton` クライアントコンポーネント作成（`service-front/src/features/social/components/client/FollowButton/`：`aria-pressed`・状態通知）→ `/generate-with-tests`
-- [ ] T034 [P] [US3] `FollowCounts` サーバーコンポーネント作成（`service-front/src/features/social/components/server/FollowCounts/`）→ `/generate-with-tests`
-- [ ] T035 [P] [US3] `FollowList` サーバーコンポーネント作成（`service-front/src/features/social/components/server/FollowList/`：各行 nickname + `FollowButton`）→ `/generate-with-tests`
-- [ ] T036 [P] [US3] `PublicProfile` サーバーコンポーネント作成（`service-front/src/features/social/components/server/PublicProfile/`：公開ログ一覧 + フォロー UI 合成）→ `/generate-with-tests`
-- [ ] T037 [US3] プロフィールページ `service-front/src/app/(authenticated)/users/[id]/page.tsx` を作成（`PublicProfile` 合成、`generatePageMetadata`）
-- [ ] T038 [US3] フォロー/フォロワー一覧ページ `service-front/src/app/(authenticated)/users/[id]/following/page.tsx` と `.../followers/page.tsx` を作成（`FollowList` 合成、`generatePageMetadata`）
+- [X] T030 [US3] `service-front/src/features/social/server/actions.ts` に `followUser`/`unfollowUser` を実装（`follower_id=auth.uid()` 固定・冪等・revalidate）（contracts/follow-actions.md）
+- [X] T031 [US3] `service-front/src/features/social/server/queries.ts` に `fetchFollowState` と `fetchUserPublicDives` を実装（contracts/timeline-query.md）
+- [X] T032 [US3] `service-front/src/features/social/server/queries.ts` に `fetchFollowLists(userId, kind: 'following' | 'followers', { limit, cursor })` を実装（`user_follows` × `user_details.nickname` 結合、キーセット）
+- [X] T033 [P] [US3] `FollowButton` クライアントコンポーネント作成（`service-front/src/features/social/components/client/FollowButton/`：`aria-pressed`・状態通知）→ `/generate-with-tests`
+- [X] T034 [P] [US3] `FollowCounts` サーバーコンポーネント作成（`service-front/src/features/social/components/server/FollowCounts/`）→ `/generate-with-tests`
+- [X] T035 [P] [US3] `FollowList` サーバーコンポーネント作成（`service-front/src/features/social/components/server/FollowList/`：各行 nickname + `FollowButton`）→ `/generate-with-tests`
+- [X] T036 [P] [US3] `PublicProfile` サーバーコンポーネント作成（`service-front/src/features/social/components/server/PublicProfile/`：公開ログ一覧 + フォロー UI 合成）→ `/generate-with-tests`
+- [X] T037 [US3] プロフィールページ `service-front/src/app/(authenticated)/users/[id]/page.tsx` を作成（`PublicProfile` 合成、`generatePageMetadata`）
+- [X] T038 [US3] フォロー/フォロワー一覧ページ `service-front/src/app/(authenticated)/users/[id]/following/page.tsx` と `.../followers/page.tsx` を作成（`FollowList` 合成、`generatePageMetadata`）
 
 **Checkpoint**: US1〜US3 が独立して機能（つながりが成立）
 

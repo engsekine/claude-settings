@@ -4,8 +4,8 @@ import Link from 'next/link';
 
 import { DeleteDiveButton } from '@/features/dives/components/client/DeleteDiveButton';
 import { DivePhotoGallery } from '@/features/dives/components/client/DivePhotoGallery';
-import { DiveVisibilityToggle } from '@/features/dives/components/client/DiveVisibilityToggle';
 import { DivePhotoUploader } from '@/features/dives/components/client/DivePhotoUploader';
+import { DiveVisibilityToggle } from '@/features/dives/components/client/DiveVisibilityToggle';
 import { TANK_TYPE_LABEL_MAP, type TankTypeValue } from '@/features/dives/constants';
 import { diveLocationLabel } from '@/features/dives/lib/diveLabel';
 import { calcSacRate, formatSacRate, SAC_INPUT_FIELD_LABELS } from '@/features/dives/lib/sacRate';

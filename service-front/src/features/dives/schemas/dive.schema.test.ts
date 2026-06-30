@@ -349,9 +349,9 @@ describe('diveSchema - buddies / isPublic（spec 021）', () => {
     });
 
     it('フリーテキスト（name のみ）のバディを受理する', async () => {
-        await expect(
-            diveSchema.validate({ ...validBase, buddies: [{ name: '海太郎' }] }),
-        ).resolves.toMatchObject({ buddies: [{ name: '海太郎' }] });
+        await expect(diveSchema.validate({ ...validBase, buddies: [{ name: '海太郎' }] })).resolves.toMatchObject({
+            buddies: [{ name: '海太郎' }],
+        });
     });
 
     it('userId と name を両方指定すると失敗する（排他）', async () => {
@@ -368,15 +368,15 @@ describe('diveSchema - buddies / isPublic（spec 021）', () => {
     });
 
     it('バディ名が 100 文字超だと失敗する', async () => {
-        await expect(
-            diveSchema.validate({ ...validBase, buddies: [{ name: 'あ'.repeat(101) }] }),
-        ).rejects.toThrow(/100文字以内/);
+        await expect(diveSchema.validate({ ...validBase, buddies: [{ name: 'あ'.repeat(101) }] })).rejects.toThrow(
+            /100文字以内/,
+        );
     });
 
     it('userId が uuid 形式でないと失敗する', async () => {
-        await expect(
-            diveSchema.validate({ ...validBase, buddies: [{ userId: 'not-a-uuid' }] }),
-        ).rejects.toThrow(/バディの指定が不正/);
+        await expect(diveSchema.validate({ ...validBase, buddies: [{ userId: 'not-a-uuid' }] })).rejects.toThrow(
+            /バディの指定が不正/,
+        );
     });
 
     it('isPublic に true を指定すると保持される', async () => {

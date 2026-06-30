@@ -1,1 +1,1 @@
-export { type DiveBuddyValue, DiveBuddyField } from './DiveBuddyField';
+export { DiveBuddyField, type DiveBuddyValue } from './DiveBuddyField';

@@ -134,9 +134,7 @@ const syncDiveBuddies = async (
     // 削除対象: 既存のうち入力に無いもの
     const toDeleteIds = (existing ?? [])
         .filter((r) =>
-            r.buddy_user_id
-                ? !desiredUserIds.has(r.buddy_user_id)
-                : !(r.buddy_name && desiredNames.has(r.buddy_name)),
+            r.buddy_user_id ? !desiredUserIds.has(r.buddy_user_id) : !(r.buddy_name && desiredNames.has(r.buddy_name)),
         )
         .map((r) => r.id);
 

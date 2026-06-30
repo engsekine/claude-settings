@@ -261,15 +261,11 @@ export const diveSchema = yup.object({
                         .transform((v) => (v === '' || v == null ? undefined : v))
                         .optional(),
                 })
-                .test(
-                    'user-xor-name',
-                    'バディは登録ユーザーか名前のどちらか一方を指定してください',
-                    (value) => {
-                        const hasUser = Boolean(value?.userId);
-                        const hasName = Boolean(value?.name);
-                        return (hasUser && !hasName) || (!hasUser && hasName);
-                    },
-                ),
+                .test('user-xor-name', 'バディは登録ユーザーか名前のどちらか一方を指定してください', (value) => {
+                    const hasUser = Boolean(value?.userId);
+                    const hasName = Boolean(value?.name);
+                    return (hasUser && !hasName) || (!hasUser && hasName);
+                }),
         )
         .default([]),
     // 公開フラグ（spec 021 FR-007/008）: 新規は既定で非公開
