@@ -196,3 +196,54 @@ export const fetchUserPublicDives = async (
 
     return { items, nextCursor };
 };
+
+/**
+ * TOP タイムライン（spec 021 FR-017〜021）。
+ * フォロー中ユーザーの公開ログを新しい順（dive_date, id キーセット）で取得する。
+ * 未ログイン・フォロー 0 件は空。非公開は RLS により取得不可（二重防御）。
+ */
+export const fetchTimeline = async (
+    options: { limit?: number; cursor?: TimelineCursor | null } = {},
+): Promise<TimelinePage> => {
+    const supabase = await createClient();
+    const { limit = DEFAULT_PAGE_SIZE, cursor } = options;
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { items: [], nextCursor: null };
+
+    // フォロー中の followee_id 集合を引く（0 件なら即空）
+    const { data: follows, error: followError } = await supabase
+        .from('user_follows')
+        .select('followee_id')
+        .eq('follower_id', user.id);
+    if (followError) throw new Error(`フォロー情報の取得に失敗しました: ${followError.message}`);
+    const followeeIds = (follows ?? []).map((row) => row.followee_id);
+    if (followeeIds.length === 0) return { items: [], nextCursor: null };
+
+    let query = supabase
+        .from('dives')
+        .select(PUBLIC_DIVE_COLUMNS)
+        .in('user_id', followeeIds)
+        .eq('is_public', true)
+        .order('dive_date', { ascending: false })
+        .order('id', { ascending: false })
+        .limit(limit + 1);
+    if (cursor)
+        query = query.or(`dive_date.lt.${cursor.diveDate},and(dive_date.eq.${cursor.diveDate},id.lt.${cursor.id})`);
+
+    const { data: rows, error } = await query;
+    if (error) throw new Error(`タイムラインの取得に失敗しました: ${error.message}`);
+
+    const hasNext = (rows?.length ?? 0) > limit;
+    const pageRows = (hasNext ? rows?.slice(0, limit) : rows) ?? [];
+    const nicknames = await resolveNicknames(
+        supabase,
+        pageRows.map((row) => row.user_id),
+    );
+    const items = pageRows.map((row) => mapTimelineRow(row, nicknames));
+    const last = pageRows.at(-1);
+    const nextCursor = hasNext && last ? { diveDate: last.dive_date, id: last.id } : null;
+
+    return { items, nextCursor };
+};

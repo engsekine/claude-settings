@@ -2,6 +2,7 @@ import { RecordOverhaulButton, TopDashboard } from '@/features/dashboard';
 import { diveLocationLabel, listDives } from '@/features/dives';
 import { NextPlanCard } from '@/features/plans';
 import { recordOverhaul } from '@/features/regulators';
+import { fetchTimeline, Timeline } from '@/features/social';
 import { generatePageMetadata } from '@/shared/config/metadata';
 
 export const metadata = generatePageMetadata(
@@ -19,7 +20,7 @@ export const metadata = generatePageMetadata(
  * ここ（app 層）で組み立てて TopDashboard に注入する。
  */
 export default async function Home() {
-    const recentPage = await listDives({ limit: 5 });
+    const [recentPage, timeline] = await Promise.all([listDives({ limit: 5 }), fetchTimeline({ limit: 20 })]);
     const recentDives = recentPage.items.map((dive) => ({
         id: dive.id,
         diveDate: dive.diveDate,
@@ -45,6 +46,13 @@ export default async function Home() {
                         <RecordOverhaulButton regulatorId={regulatorId} onRecord={recordOverhaul} />
                     )}
                 />
+
+                <section aria-labelledby="dashboard-timeline" className="flex flex-col gap-3">
+                    <h2 id="dashboard-timeline" className="font-semibold text-lg">
+                        タイムライン
+                    </h2>
+                    <Timeline items={timeline.items} />
+                </section>
             </div>
         </div>
     );

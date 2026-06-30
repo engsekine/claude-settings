@@ -136,14 +136,14 @@ description: "Task list for バディ・フォロー・タイムライン（ソ�
 ### Tests for User Story 4 ⚠️
 
 - [ ] T039 [P] [US4] `fetchTimeline` のキーセット・非公開除外・フォロー集合フィルタの単体テスト（`service-front/src/features/social/server/`）
-- [ ] T040 [P] [US4] タイムライン整形ユーティリティの単体テスト `service-front/src/features/social/lib/timeline/`
+- [X] T040 [P] [US4] タイムライン整形ユーティリティの単体テスト `service-front/src/features/social/lib/timeline/`
 
 ### Implementation for User Story 4
 
-- [ ] T041 [US4] `service-front/src/features/social/server/queries.ts` に `fetchTimeline({limit=20,cursor})` を実装（`is_public=true` × フォロー集合、`dive_date desc,id desc` キーセット）（contracts/timeline-query.md）
-- [ ] T042 [P] [US4] タイムライン整形ユーティリティ `service-front/src/features/social/lib/timeline/`（行→`TimelineItem`、空判定）を実装
-- [ ] T043 [P] [US4] `Timeline` サーバーコンポーネント作成（`service-front/src/features/social/components/server/Timeline/`：リスト構造・空状態・続き読み込み）→ `/generate-with-tests`
-- [ ] T044 [US4] TOP `service-front/src/app/page.tsx` にタイムラインセクションを app 層で合成注入（既存ダッシュボードと並置、`Timeline` を `social` から注入）
+- [X] T041 [US4] `service-front/src/features/social/server/queries.ts` に `fetchTimeline({limit=20,cursor})` を実装（`is_public=true` × フォロー集合、`dive_date desc,id desc` キーセット）（contracts/timeline-query.md）
+- [X] T042 [P] [US4] タイムライン整形ユーティリティ `service-front/src/features/social/lib/timeline/`（行→`TimelineItem`、空判定）を実装
+- [X] T043 [P] [US4] `Timeline` サーバーコンポーネント作成（`service-front/src/features/social/components/server/Timeline/`：リスト構造・空状態・続き読み込み）→ `/generate-with-tests`
+- [X] T044 [US4] TOP `service-front/src/app/page.tsx` にタイムラインセクションを app 層で合成注入（既存ダッシュボードと並置、`Timeline` を `social` から注入）
 
 **Checkpoint**: US1〜US4 が独立して機能（フィードが見える）
 
