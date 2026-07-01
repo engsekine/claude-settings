@@ -1,16 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+const createClient = vi.fn();
+
 vi.mock('server-only', () => ({}));
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
-vi.mock('@/shared/lib/supabase/server', () => ({ createClient: vi.fn() }));
+vi.mock('@/shared/lib/supabase/server', () => ({
+    createClient: (...args: unknown[]) => createClient(...args),
+}));
 
-import { createClient } from '@/shared/lib/supabase/server';
+import { getProfile, type UpdateProfileInput, updateProfile } from './actions';
 
-import { type UpdateProfileInput, updateProfile } from './actions';
-
-const mockedCreateClient = vi.mocked(createClient);
-
-const input: UpdateProfileInput = {
+const updateInput: UpdateProfileInput = {
     lastName: '山田',
     firstName: '太郎',
     lastNameRomaji: 'Yamada',
@@ -22,60 +22,97 @@ const input: UpdateProfileInput = {
     weightKg: null,
     diverType: 'general',
     diverNumber: null,
+    emailOptIn: false,
 };
 
-interface ClientOptions {
-    user?: { id: string } | null;
+/** getProfile が返す user_details Row（diver / emailOptIn 検証に必要な列を含む） */
+const profileRow = {
+    last_name: '山田',
+    first_name: '太郎',
+    last_name_romaji: 'Yamada',
+    first_name_romaji: 'Taro',
+    nickname: 'たろちゃん',
+    birth_on: '1990-01-01',
+    gender: 'male',
+    height_cm: null,
+    weight_kg: null,
+    diver_type: 'general',
+    diver_number: null,
+    is_email_opted_in: true,
+};
+
+interface MockOptions {
+    user?: { id: string; email?: string } | null;
+    /** is_nickname_taken RPC の戻り */
     nicknameTaken?: boolean;
+    /** update().eq() の戻り error */
     updateError?: { code?: string; message: string } | null;
+    /** updateProfile が読む現在の配信許可状態 */
+    current?: { is_email_opted_in: boolean; email_opted_in_at: string | null };
+    /** getProfile が返す Row（null はエラー扱い） */
+    selectRow?: typeof profileRow | null;
 }
 
-const buildClient = ({ user = { id: 'user-1' }, nicknameTaken = false, updateError = null }: ClientOptions = {}) => {
-    // update().eq() のチェーン。最終 await で updateError を返す thenable
-    const eq = vi.fn();
-    const updateBuilder = {
-        eq,
-        // biome-ignore lint/suspicious/noThenProperty: Supabase クエリビルダーは thenable のためモックでも then を実装する
-        then: (resolve: (value: { error: { message: string } | null }) => void) => resolve({ error: updateError }),
-    };
-    eq.mockReturnValue(updateBuilder);
-    const update = vi.fn(() => updateBuilder);
-    const from = vi.fn(() => ({ update }));
+/**
+ * updateProfile は rpc('is_nickname_taken') → select(現在の opt-in).single() → update().eq() を、
+ * getProfile は select(...).single() を呼ぶ。両経路を1つのモックでカバーする。
+ */
+const buildSupabaseMock = (options: MockOptions = {}) => {
+    const {
+        user = { id: 'user-1', email: 'user@example.com' },
+        nicknameTaken = false,
+        updateError = null,
+        current,
+        selectRow,
+    } = options;
+
+    const updateEq = vi.fn().mockResolvedValue({ error: updateError });
+    const update = vi.fn().mockReturnValue({ eq: updateEq });
+    const single = vi.fn().mockResolvedValue({
+        // updateProfile の現在値読み取り or getProfile の Row 取得（テストごとに一方だけ設定する）
+        data: current ?? selectRow ?? null,
+        error: selectRow === null ? { message: 'not found' } : null,
+    });
+    const select = vi.fn().mockReturnValue({ eq: vi.fn().mockReturnValue({ single }) });
     const rpc = vi.fn().mockResolvedValue({ data: nicknameTaken, error: null });
     const getUser = vi.fn().mockResolvedValue({ data: { user } });
 
-    const client = { from, rpc, auth: { getUser } };
-    mockedCreateClient.mockResolvedValue(client as never);
-    return { client, from, update, rpc };
+    const client = {
+        auth: { getUser },
+        from: vi.fn().mockReturnValue({ select, update }),
+        rpc,
+    };
+    createClient.mockResolvedValue(client);
+    return { client, update, rpc };
 };
 
 beforeEach(() => {
-    vi.clearAllMocks();
+    createClient.mockReset();
 });
 
 describe('updateProfile', () => {
     it('更新成功で success を返す', async () => {
-        const { update } = buildClient();
+        const { update } = buildSupabaseMock();
 
-        const result = await updateProfile(input);
+        const result = await updateProfile(updateInput);
 
         expect(update).toHaveBeenCalled();
         expect(result).toEqual({ success: true });
     });
 
     it('未ログインなら失敗を返す', async () => {
-        const { update } = buildClient({ user: null });
+        const { update } = buildSupabaseMock({ user: null });
 
-        const result = await updateProfile(input);
+        const result = await updateProfile(updateInput);
 
         expect(result).toEqual({ success: false, error: 'ログインが必要です' });
         expect(update).not.toHaveBeenCalled();
     });
 
     it('nickname が既に使われている場合は UPDATE せず失敗を返す（自分は除外して判定）', async () => {
-        const { update, rpc } = buildClient({ nicknameTaken: true });
+        const { update, rpc } = buildSupabaseMock({ nicknameTaken: true });
 
-        const result = await updateProfile(input);
+        const result = await updateProfile(updateInput);
 
         expect(rpc).toHaveBeenCalledWith('is_nickname_taken', {
             p_nickname: 'たろちゃん',
@@ -86,15 +123,59 @@ describe('updateProfile', () => {
     });
 
     it('nickname 一意制約違反（競合時 23505）はニックネーム重複の失敗を返す', async () => {
-        buildClient({
+        buildSupabaseMock({
             updateError: { code: '23505', message: 'violates unique constraint "user_details_nickname_key"' },
         });
 
-        const result = await updateProfile(input);
+        const result = await updateProfile(updateInput);
 
         expect(result).toEqual({
             success: false,
             error: 'このニックネームは既に使われています。別のニックネームをお試しください',
         });
+    });
+});
+
+describe('getProfile - メール配信許可（022）', () => {
+    it('is_email_opted_in を emailOptIn として返す', async () => {
+        buildSupabaseMock({ selectRow: profileRow });
+
+        const result = await getProfile();
+
+        expect(result?.emailOptIn).toBe(true);
+    });
+});
+
+describe('updateProfile - メール配信許可（022）', () => {
+    it('OFF→ON で email_opted_in_at に日時をセットする', async () => {
+        const { update } = buildSupabaseMock({ current: { is_email_opted_in: false, email_opted_in_at: null } });
+
+        await updateProfile({ ...updateInput, emailOptIn: true });
+
+        const payload = update.mock.calls[0]?.[0];
+        expect(payload.is_email_opted_in).toBe(true);
+        expect(typeof payload.email_opted_in_at).toBe('string');
+    });
+
+    it('ON→OFF（撤回）で email_opted_in_at を null にする', async () => {
+        const { update } = buildSupabaseMock({
+            current: { is_email_opted_in: true, email_opted_in_at: '2026-01-01T00:00:00.000Z' },
+        });
+
+        await updateProfile({ ...updateInput, emailOptIn: false });
+
+        const payload = update.mock.calls[0]?.[0];
+        expect(payload.is_email_opted_in).toBe(false);
+        expect(payload.email_opted_in_at).toBeNull();
+    });
+
+    it('ON 維持なら最初の許可日時を保持する', async () => {
+        const past = '2026-01-01T00:00:00.000Z';
+        const { update } = buildSupabaseMock({ current: { is_email_opted_in: true, email_opted_in_at: past } });
+
+        await updateProfile({ ...updateInput, emailOptIn: true });
+
+        const payload = update.mock.calls[0]?.[0];
+        expect(payload.email_opted_in_at).toBe(past);
     });
 });

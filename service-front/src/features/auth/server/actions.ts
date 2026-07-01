@@ -36,6 +36,8 @@ export interface CompleteProfileInput {
     diverType: DiverType;
     /** ダイバー番号（019）。インストラクターのみ・任意 */
     diverNumber: string | null;
+    /** メール配信許可（022）。任意（オプトイン） */
+    emailOptIn: boolean;
 }
 
 export interface SignUpInput {
@@ -59,6 +61,8 @@ export interface SignUpInput {
     diverType: DiverType;
     /** ダイバー番号（019）。インストラクターのみ・任意 */
     diverNumber: string | null;
+    /** メール配信許可（022）。任意（オプトイン） */
+    emailOptIn: boolean;
 }
 
 export const signIn = async (email: string, password: string): Promise<ActionResult> => {
@@ -113,6 +117,8 @@ export const signUp = async (input: SignUpInput): Promise<ActionResult<SignUpPay
                 /** ダイバー種別/番号（019）。番号は instructor のときのみトリガーが保存する */
                 diver_type: input.diverType,
                 diver_number: input.diverType === 'instructor' ? input.diverNumber : null,
+                /** handle_new_user トリガーが user_details.is_email_opted_in に記録する（022） */
+                email_opt_in: input.emailOptIn,
             },
         },
     });

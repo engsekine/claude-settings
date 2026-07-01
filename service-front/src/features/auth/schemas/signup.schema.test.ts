@@ -36,3 +36,15 @@ describe('signupSchema - agreedToTerms（018）', () => {
         expect(() => signupSchema.validateSync(withoutAgree)).toThrow();
     });
 });
+
+describe('signupSchema - emailOptIn（022）', () => {
+    it('emailOptIn=true で通過し true を保持する', () => {
+        const result = signupSchema.validateSync({ ...validInput, emailOptIn: true });
+        expect(result.emailOptIn).toBe(true);
+    });
+
+    it('emailOptIn 未指定でも通過し、デフォルト false になる（任意）', () => {
+        const result = signupSchema.validateSync(validInput);
+        expect(result.emailOptIn).toBe(false);
+    });
+});

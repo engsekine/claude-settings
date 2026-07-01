@@ -614,10 +614,12 @@ export type Database = {
                     created_at: string;
                     diver_number: string | null;
                     diver_type: string | null;
+                    email_opted_in_at: string | null;
                     first_name: string;
                     first_name_romaji: string;
                     gender: string;
                     height_cm: number | null;
+                    is_email_opted_in: boolean;
                     last_name: string;
                     last_name_romaji: string;
                     nickname: string;
@@ -632,10 +634,12 @@ export type Database = {
                     created_at?: string;
                     diver_number?: string | null;
                     diver_type?: string | null;
+                    email_opted_in_at?: string | null;
                     first_name: string;
                     first_name_romaji: string;
                     gender?: string;
                     height_cm?: number | null;
+                    is_email_opted_in?: boolean;
                     last_name: string;
                     last_name_romaji: string;
                     nickname: string;
@@ -650,10 +654,12 @@ export type Database = {
                     created_at?: string;
                     diver_number?: string | null;
                     diver_type?: string | null;
+                    email_opted_in_at?: string | null;
                     first_name?: string;
                     first_name_romaji?: string;
                     gender?: string;
                     height_cm?: number | null;
+                    is_email_opted_in?: boolean;
                     last_name?: string;
                     last_name_romaji?: string;
                     nickname?: string;

@@ -37,6 +37,7 @@ export default async function ProfileEditPage() {
                         weightKg: profile.weightKg,
                         diverType: profile.diverType,
                         diverNumber: profile.diverNumber,
+                        emailOptIn: profile.emailOptIn,
                     }}
                 />
                 <section

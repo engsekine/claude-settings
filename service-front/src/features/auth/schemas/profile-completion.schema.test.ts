@@ -43,4 +43,14 @@ describe('profileCompletionSchema', () => {
     it('利用規約に同意していない（false）と拒否する（018）', () => {
         expect(() => profileCompletionSchema.validateSync({ ...validInput, agreedToTerms: false })).toThrow();
     });
+
+    it('emailOptIn は任意で、未指定ならデフォルト false になる（022）', () => {
+        const result = profileCompletionSchema.validateSync(validInput);
+        expect(result.emailOptIn).toBe(false);
+    });
+
+    it('emailOptIn=true を保持する（022）', () => {
+        const result = profileCompletionSchema.validateSync({ ...validInput, emailOptIn: true });
+        expect(result.emailOptIn).toBe(true);
+    });
 });

@@ -28,4 +28,7 @@ export const toUserDetailsInsert = (userId: string, input: CompleteProfileInput)
     // ダイバー種別/番号（019）。番号は instructor のときのみ保持（CHECK ③整合）
     diver_type: input.diverType,
     diver_number: input.diverType === 'instructor' ? (input.diverNumber ?? null) : null,
+    // メール配信許可（022）。許可時のみ日時を記録し、不許可は NULL（CHECK 充足）。
+    is_email_opted_in: input.emailOptIn,
+    email_opted_in_at: input.emailOptIn ? new Date().toISOString() : null,
 });
