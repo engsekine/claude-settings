@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 
 import { buildDivePrefix, DIVE_PHOTOS_BUCKET, type PhotoKind } from '@/features/dives/lib/photoStorage';
 import type { DiveFormValues } from '@/features/dives/schemas/dive.schema';
+import { requireUser } from '@/shared/lib/auth';
 import { todayInJst } from '@/shared/lib/date';
 import { createClient } from '@/shared/lib/supabase/server';
 import { type ActionResult, actionFailure, actionSuccess } from '@/shared/types/action-result';
@@ -176,10 +177,8 @@ export const createDive = async (
 ): Promise<ActionResult<{ id: string; buddyWarning?: string }>> => {
     const supabase = await createClient();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return actionFailure('ログインが必要です');
+    const { user, failure } = await requireUser(supabase);
+    if (failure) return failure;
 
     const siteError = await validateDiveSite(supabase, input);
     if (siteError) return actionFailure(siteError);
@@ -220,10 +219,8 @@ export const createDiveFromPlan = async (
 ): Promise<ActionResult<{ id: string; buddyWarning?: string; planDeleteFailed?: boolean }>> => {
     const supabase = await createClient();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return actionFailure('ログインが必要です');
+    const { user, failure } = await requireUser(supabase);
+    if (failure) return failure;
 
     // 移動元の予定が残っているか確認（他タブで移動済み等なら重複ログを作らない / FR-015）。
     // 所有者条件は RLS でも担保されるが、アプリ層でも明示して防御的にする（FR-014）
@@ -274,10 +271,8 @@ export const updateDive = async (
 ): Promise<ActionResult<{ buddyWarning?: string }>> => {
     const supabase = await createClient();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return actionFailure('ログインが必要です');
+    const { user, failure } = await requireUser(supabase);
+    if (failure) return failure;
 
     const siteError = await validateDiveSite(supabase, input);
     if (siteError) return actionFailure(siteError);
@@ -312,10 +307,8 @@ export const setDiveVisibility = async (
 ): Promise<ActionResult<{ isPublic: boolean }>> => {
     const supabase = await createClient();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return actionFailure('ログインが必要です');
+    const { user, failure } = await requireUser(supabase);
+    if (failure) return failure;
 
     // 公開ログの閲覧は /dives/[id]（RLS: is_public=true を authenticated が読める）に統合したため、
     // slug は生成しない。共有リンクは dive id ベース（{SITE_URL}/dives/{id}）。
@@ -373,10 +366,8 @@ const removeDivePhotoObjects = async (
 export const deleteDive = async (id: string): Promise<ActionResult> => {
     const supabase = await createClient();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return actionFailure('ログインが必要です');
+    const { user, failure } = await requireUser(supabase);
+    if (failure) return failure;
 
     // owner 限定。公開ログでも他人は削除不可（RLS でも弾かれるが、0 件削除を誤成功にしない二重防御）
     const { data: deleted, error } = await supabase

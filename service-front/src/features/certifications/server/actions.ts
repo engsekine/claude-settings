@@ -1,22 +1,21 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { ValidationError } from 'yup';
 
 import { parseSpecialtyTags } from '@/features/certifications/lib/specialtyTags';
 import {
     type CertificationFormValues,
     certificationSchema,
 } from '@/features/certifications/schemas/certification.schema';
+import { requireUser } from '@/shared/lib/auth';
 import { createClient } from '@/shared/lib/supabase/server';
+import { type ValidationResult, validateWithSchema } from '@/shared/lib/validation';
 import { type ActionResult, actionFailure, actionSuccess } from '@/shared/types/action-result';
 
 /** PostgreSQL の一意制約違反（重複登録） */
 const UNIQUE_VIOLATION = '23505';
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
-
-type ValidationResult = { values: CertificationFormValues; error?: never } | { values?: never; error: string };
 
 /** CertificationFormValues を DB の snake_case にマッピング（タグは子テーブルのため含まない） */
 const toDbRow = (input: CertificationFormValues) => ({
@@ -39,14 +38,10 @@ const validateCertificationInput = async (
     supabase: SupabaseServerClient,
     userId: string,
     input: CertificationFormValues,
-): Promise<ValidationResult> => {
-    let values: CertificationFormValues;
-    try {
-        values = await certificationSchema.validate(input);
-    } catch (error) {
-        if (error instanceof ValidationError) return { error: error.message };
-        throw error;
-    }
+): Promise<ValidationResult<CertificationFormValues>> => {
+    const validated = await validateWithSchema(certificationSchema, input);
+    if (validated.error !== undefined) return validated;
+    const values = validated.values;
 
     const { data, error } = await supabase.from('user_details').select('birth_on').eq('user_id', userId).single();
 
@@ -106,10 +101,8 @@ const insertTags = async (
 export const createCertification = async (input: CertificationFormValues): Promise<ActionResult<{ id: string }>> => {
     const supabase = await createClient();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return actionFailure('ログインが必要です');
+    const { user, failure } = await requireUser(supabase);
+    if (failure) return failure;
 
     const validation = await validateCertificationInput(supabase, user.id, input);
     if (validation.error !== undefined) return actionFailure(validation.error);
@@ -139,10 +132,8 @@ export const createCertification = async (input: CertificationFormValues): Promi
 export const updateCertification = async (id: string, input: CertificationFormValues): Promise<ActionResult> => {
     const supabase = await createClient();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return actionFailure('ログインが必要です');
+    const { user, failure } = await requireUser(supabase);
+    if (failure) return failure;
 
     const validation = await validateCertificationInput(supabase, user.id, input);
     if (validation.error !== undefined) return actionFailure(validation.error);
@@ -175,10 +166,8 @@ export const updateCertification = async (id: string, input: CertificationFormVa
 export const deleteCertification = async (id: string): Promise<ActionResult> => {
     const supabase = await createClient();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return actionFailure('ログインが必要です');
+    const { user, failure } = await requireUser(supabase);
+    if (failure) return failure;
 
     const { error } = await supabase.from('certifications').delete().eq('id', id);
 

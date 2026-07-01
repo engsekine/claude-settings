@@ -1,28 +1,13 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { ValidationError } from 'yup';
 
 import { type RegulatorFormValues, regulatorSchema } from '@/features/regulators/schemas/regulator.schema';
+import { requireUser } from '@/shared/lib/auth';
 import { todayInJst } from '@/shared/lib/date';
 import { createClient } from '@/shared/lib/supabase/server';
+import { validateWithSchema } from '@/shared/lib/validation';
 import { type ActionResult, actionFailure, actionSuccess } from '@/shared/types/action-result';
-
-/**
- * サーバー側の入力再検証。Server Action は任意クライアントから直接呼べるため、
- * クライアントの yupResolver に依存せず DB 書き込み前に必ずスキーマを通す
- * （certifications の validateCertificationInput と同方針）。
- */
-const validateRegulatorInput = async (
-    input: RegulatorFormValues,
-): Promise<{ values: RegulatorFormValues; error?: never } | { values?: never; error: string }> => {
-    try {
-        return { values: await regulatorSchema.validate(input) };
-    } catch (error) {
-        if (error instanceof ValidationError) return { error: error.message };
-        throw error;
-    }
-};
 
 /** RegulatorFormValues を DB の snake_case にマッピング */
 const toDbRow = (input: RegulatorFormValues) => ({
@@ -64,12 +49,10 @@ const demoteCurrentPrimary = async (
 export const createRegulator = async (input: RegulatorFormValues): Promise<ActionResult<{ id: string }>> => {
     const supabase = await createClient();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return actionFailure('ログインが必要です');
+    const { user, failure } = await requireUser(supabase);
+    if (failure) return failure;
 
-    const validated = await validateRegulatorInput(input);
+    const validated = await validateWithSchema(regulatorSchema, input);
     if (validated.error !== undefined) return actionFailure(validated.error);
     const values = validated.values;
 
@@ -110,12 +93,10 @@ export const createRegulator = async (input: RegulatorFormValues): Promise<Actio
 export const updateRegulator = async (id: string, input: RegulatorFormValues): Promise<ActionResult> => {
     const supabase = await createClient();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return actionFailure('ログインが必要です');
+    const { user, failure } = await requireUser(supabase);
+    if (failure) return failure;
 
-    const validated = await validateRegulatorInput(input);
+    const validated = await validateWithSchema(regulatorSchema, input);
     if (validated.error !== undefined) return actionFailure(validated.error);
     const values = validated.values;
 
@@ -142,10 +123,8 @@ export const updateRegulator = async (id: string, input: RegulatorFormValues): P
 export const deleteRegulator = async (id: string): Promise<ActionResult> => {
     const supabase = await createClient();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return actionFailure('ログインが必要です');
+    const { user, failure } = await requireUser(supabase);
+    if (failure) return failure;
 
     const { error } = await supabase.from('regulators').delete().eq('id', id).eq('user_id', user.id);
 
@@ -162,10 +141,8 @@ export const deleteRegulator = async (id: string): Promise<ActionResult> => {
 export const recordOverhaul = async (regulatorId: string): Promise<ActionResult> => {
     const supabase = await createClient();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return actionFailure('ログインが必要です');
+    const { user, failure } = await requireUser(supabase);
+    if (failure) return failure;
 
     const { error } = await supabase
         .from('regulators')

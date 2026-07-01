@@ -10,6 +10,7 @@ import { TANK_TYPE_LABEL_MAP, type TankTypeValue } from '@/features/dives/consta
 import { diveLocationLabel } from '@/features/dives/lib/diveLabel';
 import { calcSacRate, formatSacRate, SAC_INPUT_FIELD_LABELS } from '@/features/dives/lib/sacRate';
 import type { Dive, DiveBuddy, DivePhotoView } from '@/features/dives/types';
+import { formatJstDate } from '@/shared/lib/date';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
 
 interface DiveDetailProps {
@@ -48,11 +49,6 @@ const BuddyList = ({ buddies }: { buddies: DiveBuddy[] }) => {
 };
 
 const EMPTY_PLACEHOLDER = '—';
-
-const formatDate = (isoDate: string): string => {
-    const [y, m, d] = isoDate.split('-');
-    return `${y}/${m}/${d}`;
-};
 
 const formatTime = (value: string | null): string | null => {
     if (!value) return null;
@@ -94,7 +90,7 @@ export const DiveDetail = ({ dive, photos = [], buddies = [], canManage = false 
         <div className="flex flex-col gap-6">
             <header className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground text-sm">{formatDate(dive.diveDate)}</span>
+                    <span className="text-muted-foreground text-sm">{formatJstDate(dive.diveDate)}</span>
                     {/* バッジは text-muted-foreground だと bg-muted 上でコントラスト AA 未達のため text-foreground を使う */}
                     {tidePhase !== null && (
                         <span className="rounded-md bg-muted px-2 py-0.5 text-foreground text-xs">

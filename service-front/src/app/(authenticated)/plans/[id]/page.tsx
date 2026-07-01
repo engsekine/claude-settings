@@ -5,17 +5,12 @@ import { notFound } from 'next/navigation';
 import { canMovePlanToLog, DeletePlanButton, daysUntil, getPlan, PackingList } from '@/features/plans';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
 import { generatePageMetadata } from '@/shared/config/metadata';
-import { todayInJst } from '@/shared/lib/date';
+import { formatJstDate, todayInJst } from '@/shared/lib/date';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
 
 interface PlanPageProps {
     params: Promise<{ id: string }>;
 }
-
-const formatDate = (isoDate: string): string => {
-    const [y, m, d] = isoDate.split('-');
-    return `${y}/${m}/${d}`;
-};
 
 export const generateMetadata = async ({ params }: PlanPageProps) => {
     const { id } = await params;
@@ -46,7 +41,7 @@ export default async function PlanPage({ params }: PlanPageProps) {
                         <div className="flex items-center gap-2">
                             <span className="text-muted-foreground text-sm">
                                 <span className="sr-only">予定日: </span>
-                                {formatDate(plan.plannedOn)}
+                                {formatJstDate(plan.plannedOn)}
                             </span>
                             {tidePhase !== null && (
                                 <span className="rounded-md bg-muted px-2 py-0.5 text-foreground text-xs">

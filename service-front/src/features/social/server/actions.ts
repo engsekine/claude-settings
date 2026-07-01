@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 
+import { requireUser } from '@/shared/lib/auth';
 import { createClient } from '@/shared/lib/supabase/server';
 import { type ActionResult, actionFailure, actionSuccess } from '@/shared/types/action-result';
 
@@ -15,10 +16,8 @@ const PG_UNIQUE_VIOLATION = '23505';
 export const followUser = async (followeeId: string): Promise<ActionResult<{ isFollowing: true }>> => {
     const supabase = await createClient();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return actionFailure('ログインが必要です');
+    const { user, failure } = await requireUser(supabase);
+    if (failure) return failure;
     if (user.id === followeeId) return actionFailure('自分自身はフォローできません');
 
     const { error } = await supabase.from('user_follows').insert({ follower_id: user.id, followee_id: followeeId });
@@ -37,10 +36,8 @@ export const followUser = async (followeeId: string): Promise<ActionResult<{ isF
 export const unfollowUser = async (followeeId: string): Promise<ActionResult<{ isFollowing: false }>> => {
     const supabase = await createClient();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return actionFailure('ログインが必要です');
+    const { user, failure } = await requireUser(supabase);
+    if (failure) return failure;
 
     const { error } = await supabase
         .from('user_follows')
@@ -65,10 +62,8 @@ export const unfollowUser = async (followeeId: string): Promise<ActionResult<{ i
 export const removeBuddyTagOfSelf = async (buddyTagId: string): Promise<ActionResult> => {
     const supabase = await createClient();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return actionFailure('ログインが必要です');
+    const { user, failure } = await requireUser(supabase);
+    if (failure) return failure;
 
     const { data, error } = await supabase
         .from('dive_log_buddies')

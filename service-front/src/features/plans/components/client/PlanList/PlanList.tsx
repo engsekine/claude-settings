@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { canMovePlanToLog } from '@/features/plans/lib/canMovePlanToLog';
 import { daysUntil } from '@/features/plans/lib/days-until';
 import type { Plan } from '@/features/plans/types';
+import { formatJstDate } from '@/shared/lib/date';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
 
 interface PlanListProps {
@@ -13,11 +14,6 @@ interface PlanListProps {
     /** JST の今日（YYYY-MM-DD）。サーバー側で todayInJst() を渡す */
     today: string;
 }
-
-const formatDate = (isoDate: string): string => {
-    const [y, m, d] = isoDate.split('-');
-    return `${y}/${m}/${d}`;
-};
 
 /** 残り日数の表示文言（0 = 今日、正 = あと N 日） */
 const formatDaysUntil = (days: number): string => (days === 0 ? '今日' : `あと${days}日`);
@@ -106,7 +102,7 @@ const PlanCard = ({ plan, daysLabel, today }: PlanCardProps) => {
                     <div className="flex items-center gap-2">
                         <span className="text-muted-foreground text-sm">
                             <span className="sr-only">予定日: </span>
-                            {formatDate(plan.plannedOn)}
+                            {formatJstDate(plan.plannedOn)}
                         </span>
                         {/* バッジは text-muted-foreground だと bg-muted 上でコントラスト AA 未達のため text-foreground を使う */}
                         {tidePhase !== null && (

@@ -2,12 +2,13 @@
 
 import type { Route } from 'next';
 import { redirect } from 'next/navigation';
-import { ValidationError } from 'yup';
 
 import type { DiverType } from '@/shared/constants/diver-type';
 import type { Gender } from '@/shared/constants/gender';
 import { CURRENT_TERMS_VERSION } from '@/shared/constants/terms';
+import { requireUser } from '@/shared/lib/auth';
 import { createClient } from '@/shared/lib/supabase/server';
+import { validateWithSchema } from '@/shared/lib/validation';
 import { passwordField } from '@/shared/schemas/fields';
 import { type ActionResult, actionFailure, actionSuccess } from '@/shared/types/action-result';
 
@@ -20,30 +21,6 @@ const getSiteUrl = (): string => process.env['NEXT_PUBLIC_SITE_URL'] ?? 'https:/
 export interface SignUpPayload {
     /** 確認メールを送信した場合 true（ユーザーはまだログインしていない） */
     needsEmailConfirmation: boolean;
-}
-
-/** Google ログイン初回の補完で受け取るプロフィール（メール/パスワードを除く） */
-export interface CompleteProfileInput {
-    lastName: string;
-    firstName: string;
-    lastNameRomaji: string;
-    firstNameRomaji: string;
-    nickname: string;
-    /** ISO 8601 date string (YYYY-MM-DD) */
-    birthOn: string;
-    gender: Gender;
-    /** 身長（cm）。任意入力 */
-    heightCm: number | null;
-    /** 体重（kg）。任意入力 */
-    weightKg: number | null;
-    /** 利用規約への同意（018）。true 必須 */
-    agreedToTerms: boolean;
-    /** ダイバー種別（019）。登録時必須 */
-    diverType: DiverType;
-    /** ダイバー番号（019）。インストラクターのみ・任意 */
-    diverNumber: string | null;
-    /** メール配信許可（022）。任意（オプトイン） */
-    emailOptIn: boolean;
 }
 
 export interface SignUpInput {
@@ -70,6 +47,9 @@ export interface SignUpInput {
     /** メール配信許可（022）。任意（オプトイン） */
     emailOptIn: boolean;
 }
+
+/** Google ログイン初回の補完で受け取るプロフィール（メール/パスワードを除く） */
+export type CompleteProfileInput = Omit<SignUpInput, 'email' | 'password'>;
 
 export const signIn = async (email: string, password: string): Promise<ActionResult> => {
     const supabase = await createClient();
@@ -188,12 +168,8 @@ export const updatePassword = async (password: string): Promise<ActionResult> =>
     }
 
     /** クライアントの yupResolver に依存せず、サーバー側でもパスワード要件を再検証する */
-    try {
-        await passwordField.validate(password);
-    } catch (error) {
-        if (error instanceof ValidationError) return actionFailure(error.message);
-        throw error;
-    }
+    const validated = await validateWithSchema(passwordField, password);
+    if (validated.error !== undefined) return actionFailure(validated.error);
 
     const { error } = await supabase.auth.updateUser({ password });
     if (error) {
@@ -292,10 +268,8 @@ export const completeProfile = async (input: CompleteProfileInput): Promise<Acti
 
     const supabase = await createClient();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return actionFailure('ログインが必要です');
+    const { user, failure } = await requireUser(supabase);
+    if (failure) return failure;
 
     /** nickname 一意制約に触れる前に事前チェックし、親切なエラーを返す */
     const { data: nicknameTaken } = await supabase.rpc('is_nickname_taken', {

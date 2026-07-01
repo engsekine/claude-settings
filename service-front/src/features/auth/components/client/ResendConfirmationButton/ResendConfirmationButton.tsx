@@ -1,9 +1,10 @@
 'use client';
 
 import { Button } from '@repo/ui/components/button';
-import { useEffect, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 
 import { resendConfirmationEmail } from '@/features/auth/server/actions';
+import { useCooldown } from '@/shared/hooks/useCooldown';
 
 /** 連続再送を抑止するクールダウン秒数（FR-005） */
 const COOLDOWN_SECONDS = 60;
@@ -25,16 +26,10 @@ export const ResendConfirmationButton = ({ email: fixedEmail }: ResendConfirmati
     const [inputEmail, setInputEmail] = useState('');
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const [cooldown, setCooldown] = useState(0);
+    const { cooldown, startCooldown } = useCooldown();
 
     const email = fixedEmail ?? inputEmail;
     const showEmailInput = fixedEmail === undefined;
-
-    useEffect(() => {
-        if (cooldown <= 0) return;
-        const timer = setTimeout(() => setCooldown((current) => current - 1), 1000);
-        return () => clearTimeout(timer);
-    }, [cooldown]);
 
     const handleClick = () => {
         setMessage(null);
@@ -46,7 +41,7 @@ export const ResendConfirmationButton = ({ email: fixedEmail }: ResendConfirmati
                 return;
             }
             setMessage('確認メールを再送しました。メールをご確認ください。');
-            setCooldown(COOLDOWN_SECONDS);
+            startCooldown(COOLDOWN_SECONDS);
         });
     };
 

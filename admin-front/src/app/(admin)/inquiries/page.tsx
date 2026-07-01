@@ -1,6 +1,11 @@
 import Link from 'next/link';
 
-import { type InquiryListRow, inquiryCategoryLabel, listInquiries } from '@/features/inquiries-admin';
+import {
+    INQUIRY_SORTABLE_COLUMNS,
+    type InquiryListRow,
+    inquiryCategoryLabel,
+    listInquiries,
+} from '@/features/inquiries-admin';
 import { type Column, DataTable } from '@/shared/components/table/DataTable';
 import { Pagination } from '@/shared/components/table/Pagination';
 import { TableSearchBar } from '@/shared/components/table/TableSearchBar';
@@ -20,13 +25,11 @@ export const metadata = generatePageMetadata({
     description: '届いたお問い合わせの一覧',
 });
 
-const SORTABLE = ['created_at'];
-
 export default async function InquiriesPage({ searchParams }: { searchParams: Promise<RawSearchParams> }) {
     const sp = await searchParams;
     const page = parsePage(firstParam(sp, 'page'));
     const search = parseSearch(firstParam(sp, 'search'));
-    const sort = parseSort(firstParam(sp, 'sort'), firstParam(sp, 'dir'), SORTABLE);
+    const sort = parseSort(firstParam(sp, 'sort'), firstParam(sp, 'dir'), INQUIRY_SORTABLE_COLUMNS);
 
     const { rows, total, perPage } = await listInquiries({ page, perPage: DEFAULT_PER_PAGE, search, sort });
 

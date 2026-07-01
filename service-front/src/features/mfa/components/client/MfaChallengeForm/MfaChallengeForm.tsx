@@ -1,10 +1,11 @@
 'use client';
 
 import { Button } from '@repo/ui/components/button';
-import { useEffect, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 
 import { OTP_LENGTH, OTP_PATTERN } from '@/features/mfa/schemas';
 import { challengeLoginFactor, verifyLogin } from '@/features/mfa/server/actions';
+import { useCooldown } from '@/shared/hooks/useCooldown';
 
 /** 再送のクールダウン秒数（FR-013） */
 const RESEND_COOLDOWN_SECONDS = 30;
@@ -25,15 +26,9 @@ export const MfaChallengeForm = ({ factorId }: MfaChallengeFormProps) => {
     const [code, setCode] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [message, setMessage] = useState<string | null>(null);
-    const [cooldown, setCooldown] = useState(0);
+    const { cooldown, startCooldown } = useCooldown();
 
-    useEffect(() => {
-        if (cooldown <= 0) return;
-        const timer = setTimeout(() => setCooldown((current) => current - 1), 1000);
-        return () => clearTimeout(timer);
-    }, [cooldown]);
-
-    const sendCode = () => {
+    const handleSendCode = () => {
         setError(null);
         setMessage(null);
         startTransition(async () => {
@@ -44,11 +39,11 @@ export const MfaChallengeForm = ({ factorId }: MfaChallengeFormProps) => {
             }
             setChallengeId(result.challengeId);
             setMessage('確認コードを送信しました。SMS をご確認ください。');
-            setCooldown(RESEND_COOLDOWN_SECONDS);
+            startCooldown(RESEND_COOLDOWN_SECONDS);
         });
     };
 
-    const verify = () => {
+    const handleVerify = () => {
         setError(null);
         if (challengeId === null) return;
         if (!OTP_PATTERN.test(code)) {
@@ -71,7 +66,7 @@ export const MfaChallengeForm = ({ factorId }: MfaChallengeFormProps) => {
             </p>
 
             {challengeId === null ? (
-                <Button type="button" onClick={sendCode} disabled={isPending} aria-busy={isPending}>
+                <Button type="button" onClick={handleSendCode} disabled={isPending} aria-busy={isPending}>
                     {isPending ? '送信中...' : 'SMS で確認コードを送信する'}
                 </Button>
             ) : (
@@ -87,10 +82,15 @@ export const MfaChallengeForm = ({ factorId }: MfaChallengeFormProps) => {
                             className="rounded-md border border-border px-3 py-2 text-base"
                         />
                     </label>
-                    <Button type="button" onClick={verify} disabled={isPending} aria-busy={isPending}>
+                    <Button type="button" onClick={handleVerify} disabled={isPending} aria-busy={isPending}>
                         {isPending ? '確認中...' : 'ログインを完了する'}
                     </Button>
-                    <Button type="button" variant="outline" onClick={sendCode} disabled={isPending || cooldown > 0}>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleSendCode}
+                        disabled={isPending || cooldown > 0}
+                    >
                         {cooldown > 0 ? `再送する（${cooldown} 秒後）` : '確認コードを再送する'}
                     </Button>
                 </>

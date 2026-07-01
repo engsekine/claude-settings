@@ -25,7 +25,7 @@ describe('NextPlanCardView', () => {
     describe('予定があるとき', () => {
         it('見出し・予定日・ポイント名と詳細ページへのリンクを表示する', () => {
             render(<NextPlanCardView summary={baseSummary} />);
-            expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('次の予定');
+            expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent('次の予定');
             expect(screen.getByText('2026/06/20')).toBeInTheDocument();
             expect(screen.getByText('沖縄 / 青の洞窟')).toBeInTheDocument();
             expect(screen.getByRole('link')).toHaveAttribute('href', '/plans/plan-1');
