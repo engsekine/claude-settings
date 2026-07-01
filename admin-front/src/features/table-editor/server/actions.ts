@@ -40,7 +40,9 @@ export const deleteTableRow = async (table: string, id: string): Promise<ActionR
             return actionFailure('参照データの確認に失敗しました。時間をおいて再度お試しください');
         }
         if ((count ?? 0) > 0) {
-            return actionFailure(`この行を参照するデータが ${count} 件あるため削除できません。先に参照側を削除してください`);
+            return actionFailure(
+                `この行を参照するデータが ${count} 件あるため削除できません。先に参照側を削除してください`,
+            );
         }
     }
 
