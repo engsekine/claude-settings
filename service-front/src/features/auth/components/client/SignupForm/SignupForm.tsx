@@ -7,6 +7,7 @@ import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { GoogleAuthButton } from '@/features/auth/components/client/GoogleAuthButton';
+import { ResendConfirmationButton } from '@/features/auth/components/client/ResendConfirmationButton';
 import { TermsAgreementField } from '@/features/auth/components/client/TermsAgreementField';
 import { type SignupFormValues, signupSchema } from '@/features/auth/schemas/signup.schema';
 import { signUp } from '@/features/auth/server/actions';
@@ -70,8 +71,9 @@ export const SignupForm = () => {
                     メール内のリンクをクリックして登録を完了してください。
                 </p>
                 <p className="text-muted-foreground text-sm">
-                    メールが届かない場合は、迷惑メールフォルダもご確認ください。
+                    メールが届かない場合は、迷惑メールフォルダもご確認のうえ、下のボタンから再送してください。
                 </p>
+                <ResendConfirmationButton email={sentTo} />
                 <Link href="/login" className="text-muted-foreground text-sm underline hover:text-foreground">
                     ログイン画面に戻る
                 </Link>

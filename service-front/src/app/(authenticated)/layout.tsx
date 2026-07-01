@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 
+import { isMfaChallengePending } from '@/features/mfa/lib/aalGuard';
 import { createClient } from '@/shared/lib/supabase/server';
 
 /**
@@ -34,6 +35,18 @@ export default async function AuthenticatedLayout({
     if (!user.email_confirmed_at) {
         await supabase.auth.signOut();
         redirect('/login?error=email_not_verified');
+    }
+
+    /**
+     * SMS 2 要素認証（023 / US2 / FR-010）。2 要素認証を有効化しているユーザーが
+     * 1 段階目（パスワード / Google）だけ通過した状態（AAL1→AAL2 保留）では、
+     * 保護ルートに入れず 2 段階目チャレンジへ誘導する。
+     * /login/verify は本レイアウト配下ではないためループしない。
+     * 未有効化ユーザーは AAL1→AAL1 のため素通りする（体験不変 / FR-015）。
+     */
+    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (isMfaChallengePending(aal ? { currentLevel: aal.currentLevel, nextLevel: aal.nextLevel } : null)) {
+        redirect('/login/verify');
     }
 
     const { data: details } = await supabase

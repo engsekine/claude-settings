@@ -164,6 +164,32 @@ export const requestPasswordReset = async (email: string): Promise<ActionResult>
 };
 
 /**
+ * サインアップ確認メールを再送する（023 / FR-004）。
+ * 未確認ユーザーがメールを紛失・未達だった場合の再送導線から呼ばれる。
+ * ユーザー列挙を防ぐため、レート制限以外の失敗は成功と同じ見え方にする（詳細を返さない）。
+ */
+export const resendConfirmationEmail = async (email: string): Promise<ActionResult> => {
+    const supabase = await createClient();
+
+    const siteUrl = process.env['NEXT_PUBLIC_SITE_URL'] ?? 'https://localhost:3000';
+
+    const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+        options: {
+            emailRedirectTo: `${siteUrl}/api/auth/callback?next=/dives`,
+        },
+    });
+
+    /** レート制限（FR-005）のみユーザーに明示し、それ以外は情報漏洩防止のため成功扱いにする */
+    if (error && (error.status === 429 || /rate limit/i.test(error.message))) {
+        return actionFailure('確認メールの再送は、しばらく時間をおいてから再度お試しください');
+    }
+
+    return actionSuccess();
+};
+
+/**
  * Google OAuth ログインを開始する（016-google-login）。
  * 成功時は Google の同意画面 URL へリダイレクトする（関数は戻らない）。
  * 戻り先（/api/auth/callback）は既存のメール認証コールバックと共通。
