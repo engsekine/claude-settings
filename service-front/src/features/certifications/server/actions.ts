@@ -166,7 +166,7 @@ export const updateCertification = async (id: string, input: CertificationFormVa
 export const deleteCertification = async (id: string): Promise<ActionResult> => {
     const supabase = await createClient();
 
-    const { user, failure } = await requireUser(supabase);
+    const { failure } = await requireUser(supabase);
     if (failure) return failure;
 
     const { error } = await supabase.from('certifications').delete().eq('id', id);

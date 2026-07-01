@@ -64,7 +64,7 @@ export const createPlan = async (input: PlanFormValues): Promise<ActionResult<{ 
 export const updatePlan = async (id: string, input: PlanFormValues): Promise<ActionResult> => {
     const supabase = await createClient();
 
-    const { user, failure } = await requireUser(supabase);
+    const { failure } = await requireUser(supabase);
     if (failure) return failure;
 
     const { error } = await supabase.from('dive_plans').update(toDbRow(input)).eq('id', id);
@@ -82,7 +82,7 @@ export const updatePlan = async (id: string, input: PlanFormValues): Promise<Act
 export const deletePlan = async (id: string): Promise<ActionResult> => {
     const supabase = await createClient();
 
-    const { user, failure } = await requireUser(supabase);
+    const { failure } = await requireUser(supabase);
     if (failure) return failure;
 
     const { error } = await supabase.from('dive_plans').delete().eq('id', id);
@@ -100,7 +100,7 @@ export const deletePlan = async (id: string): Promise<ActionResult> => {
 export const togglePackingItem = async (itemId: string, isChecked: boolean): Promise<ActionResult> => {
     const supabase = await createClient();
 
-    const { user, failure } = await requireUser(supabase);
+    const { failure } = await requireUser(supabase);
     if (failure) return failure;
 
     const { error } = await supabase.from('plan_packing_items').update({ is_checked: isChecked }).eq('id', itemId);
@@ -118,7 +118,7 @@ export const togglePackingItem = async (itemId: string, isChecked: boolean): Pro
 export const addPackingItem = async (planId: string, name: string): Promise<ActionResult<{ id: string }>> => {
     const supabase = await createClient();
 
-    const { user, failure } = await requireUser(supabase);
+    const { failure } = await requireUser(supabase);
     if (failure) return failure;
 
     const { data: last, error: lastError } = await supabase
@@ -153,7 +153,7 @@ export const addPackingItem = async (planId: string, name: string): Promise<Acti
 export const deletePackingItem = async (itemId: string): Promise<ActionResult> => {
     const supabase = await createClient();
 
-    const { user, failure } = await requireUser(supabase);
+    const { failure } = await requireUser(supabase);
     if (failure) return failure;
 
     const { error } = await supabase.from('plan_packing_items').delete().eq('id', itemId);
