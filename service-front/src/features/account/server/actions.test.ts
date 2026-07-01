@@ -8,7 +8,7 @@ vi.mock('@/shared/lib/supabase/server', () => ({
     createClient: (...args: unknown[]) => createClient(...args),
 }));
 
-import { getProfile, updateProfile, type UpdateProfileInput } from './actions';
+import { getProfile, type UpdateProfileInput, updateProfile } from './actions';
 
 const updateInput: UpdateProfileInput = {
     lastName: '山田',
