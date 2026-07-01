@@ -1,5 +1,6 @@
 'use server';
 
+import type { Route } from 'next';
 import { redirect } from 'next/navigation';
 
 import type { DiverType } from '@/shared/constants/diver-type';
@@ -207,7 +208,8 @@ export const signInWithGoogle = async (): Promise<ActionResult> => {
         return actionFailure('Google ログインを開始できませんでした。時間をおいて再度お試しください');
     }
 
-    redirect(toBrowserReachableAuthorizeUrl(data.url));
+    /** Supabase が発行する外部 authorize URL のため typedRoutes の静的検証対象外（cast が必要） */
+    redirect(toBrowserReachableAuthorizeUrl(data.url) as Route);
 };
 
 /**

@@ -44,7 +44,13 @@ export default async function AuthenticatedLayout({
      * /login/verify は本レイアウト配下ではないためループしない。
      * 未有効化ユーザーは AAL1→AAL1 のため素通りする（体験不変 / FR-015）。
      */
-    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    const { data: aal, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    /**
+     * AAL 取得失敗時は遮断せず通す（アベイラビリティ優先）。
+     * 失敗時に /login へ飛ばすと、AAL API の一時障害で 2 要素認証を使っていない
+     * ユーザーまで全員ロックアウトされるため。検知のためログには残す。
+     */
+    if (aalError) console.error('[AuthenticatedLayout] AAL の取得に失敗しました:', aalError);
     if (isMfaChallengePending(aal ? { currentLevel: aal.currentLevel, nextLevel: aal.nextLevel } : null)) {
         redirect('/login/verify');
     }
