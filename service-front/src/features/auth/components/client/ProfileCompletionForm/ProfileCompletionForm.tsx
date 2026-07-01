@@ -10,7 +10,7 @@ import {
     profileCompletionSchema,
 } from '@/features/auth/schemas/profile-completion.schema';
 import { completeProfile } from '@/features/auth/server/actions';
-import { FormField, FormRadioGroup } from '@/shared/components/form';
+import { EmailOptInField, FormField, FormRadioGroup } from '@/shared/components/form';
 import { DIVER_TYPE_OPTIONS } from '@/shared/constants/diver-type';
 import { DEFAULT_GENDER, GENDER_OPTIONS } from '@/shared/constants/gender';
 
@@ -49,6 +49,7 @@ export const ProfileCompletionForm = () => {
                 agreedToTerms: values.agreedToTerms,
                 diverType: values.diverType,
                 diverNumber: values.diverNumber ?? null,
+                emailOptIn: values.emailOptIn,
             });
             if (!result.success) {
                 setError('root', { message: result.error });
@@ -192,6 +193,8 @@ export const ProfileCompletionForm = () => {
                 error={errors.agreedToTerms?.message}
                 {...register('agreedToTerms')}
             />
+
+            <EmailOptInField id="emailOptIn" error={errors.emailOptIn?.message} {...register('emailOptIn')} />
 
             {errors.root && (
                 <div role="alert" className="text-red-600 text-sm">

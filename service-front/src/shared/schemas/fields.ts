@@ -14,6 +14,13 @@ export const agreedToTermsField = yup
     .oneOf([true], '利用規約に同意してください')
     .required('利用規約に同意してください');
 
+/**
+ * メール配信許可（022-email-consent）。新規登録・プロフィール編集フォームで使う。
+ * オプトイン（任意）のため、利用規約同意（agreedToTermsField）と異なり oneOf は付けない。
+ * 未チェック（false）でも通し、デフォルトは false（明示的な許可のみ true）。
+ */
+export const emailOptInField = yup.boolean().default(false);
+
 export const emailField = yup
     .string()
     .email('正しいメールアドレスを入力してください')

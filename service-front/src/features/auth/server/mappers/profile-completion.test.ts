@@ -18,6 +18,7 @@ const input: CompleteProfileInput = {
     agreedToTerms: true,
     diverType: 'instructor',
     diverNumber: 'PADI-12345',
+    emailOptIn: false,
 };
 
 describe('toUserDetailsInsert', () => {
@@ -60,5 +61,17 @@ describe('toUserDetailsInsert', () => {
         const result = toUserDetailsInsert('user-1', { ...input, heightCm: null, weightKg: null });
         expect(result.height_cm).toBeNull();
         expect(result.weight_kg).toBeNull();
+    });
+
+    it('emailOptIn=true なら is_email_opted_in=true と email_opted_in_at（非 null）をセットする（022）', () => {
+        const result = toUserDetailsInsert('user-1', { ...input, emailOptIn: true });
+        expect(result.is_email_opted_in).toBe(true);
+        expect(typeof result.email_opted_in_at).toBe('string');
+    });
+
+    it('emailOptIn=false なら is_email_opted_in=false と email_opted_in_at=null をセットする（022）', () => {
+        const result = toUserDetailsInsert('user-1', { ...input, emailOptIn: false });
+        expect(result.is_email_opted_in).toBe(false);
+        expect(result.email_opted_in_at).toBeNull();
     });
 });

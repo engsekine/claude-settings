@@ -7,7 +7,7 @@ import type { Gender } from '@/shared/constants/gender';
 import { createClient } from '@/shared/lib/supabase/server';
 import { type ActionResult, actionFailure, actionSuccess } from '@/shared/types/action-result';
 
-import { toProfile, toUserDetailsUpdate } from './mappers/profile';
+import { resolveEmailOptedInAt, toProfile, toUserDetailsUpdate } from './mappers/profile';
 
 export interface UpdateProfileInput {
     lastName: string;
@@ -26,6 +26,8 @@ export interface UpdateProfileInput {
     diverType: DiverType | null;
     /** ダイバー番号（019）。インストラクターのみ・任意 */
     diverNumber: string | null;
+    /** メール配信許可（022）。任意（オプトイン） */
+    emailOptIn: boolean;
 }
 
 export interface ProfileData {
@@ -46,6 +48,8 @@ export interface ProfileData {
     diverType: DiverType | null;
     /** ダイバー番号（019）。未設定は null */
     diverNumber: string | null;
+    /** メール配信許可（022）。デフォルト false */
+    emailOptIn: boolean;
 }
 
 export const getProfile = async (): Promise<ProfileData | null> => {
@@ -59,7 +63,7 @@ export const getProfile = async (): Promise<ProfileData | null> => {
     const { data, error } = await supabase
         .from('user_details')
         .select(
-            'last_name, first_name, last_name_romaji, first_name_romaji, nickname, birth_on, gender, height_cm, weight_kg, diver_type, diver_number',
+            'last_name, first_name, last_name_romaji, first_name_romaji, nickname, birth_on, gender, height_cm, weight_kg, diver_type, diver_number, is_email_opted_in',
         )
         .eq('user_id', user.id)
         .single();
@@ -89,7 +93,31 @@ export const updateProfile = async (input: UpdateProfileInput): Promise<ActionRe
         return actionFailure('このニックネームは既に使われています。別のニックネームをお試しください');
     }
 
-    const { error } = await supabase.from('user_details').update(toUserDetailsUpdate(input)).eq('user_id', user.id);
+    /**
+     * 配信許可日時は「最初に許可した時点」を表す（022）。
+     * 現在値を読み、OFF→ON のときだけ now() を新規記録し、ON 維持なら既存日時を保持、
+     * ON→OFF（撤回）では NULL にクリアする。クライアント送信値だけに依存しない。
+     */
+    const { data: current, error: currentError } = await supabase
+        .from('user_details')
+        .select('is_email_opted_in, email_opted_in_at')
+        .eq('user_id', user.id)
+        .single();
+
+    if (currentError) {
+        console.error('[updateProfile] failed to fetch current email opt-in state:', currentError);
+    }
+
+    const emailOptedInAt = resolveEmailOptedInAt(
+        input.emailOptIn,
+        current?.is_email_opted_in ?? false,
+        current?.email_opted_in_at ?? null,
+    );
+
+    const { error } = await supabase
+        .from('user_details')
+        .update(toUserDetailsUpdate(input, emailOptedInAt))
+        .eq('user_id', user.id);
 
     if (error) {
         /** 競合時のフォールバック（一意制約違反） */

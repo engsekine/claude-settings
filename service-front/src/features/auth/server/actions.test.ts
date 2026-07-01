@@ -73,6 +73,7 @@ const signUpInput: SignUpInput = {
     agreedToTerms: true,
     diverType: 'general',
     diverNumber: null,
+    emailOptIn: false,
 };
 
 const profileInput: CompleteProfileInput = {
@@ -88,6 +89,7 @@ const profileInput: CompleteProfileInput = {
     agreedToTerms: true,
     diverType: 'general',
     diverNumber: null,
+    emailOptIn: false,
 };
 
 beforeEach(() => {
@@ -244,5 +246,61 @@ describe('signUp - 利用規約同意（018）', () => {
 
         expect(result.success).toBe(false);
         expect(mock.supabaseSignUp).not.toHaveBeenCalled();
+    });
+});
+
+describe('signUp - メール配信許可（022）', () => {
+    it('emailOptIn の値を options.data.email_opt_in に渡す（true）', async () => {
+        const mock = buildSupabaseMock();
+        createClient.mockResolvedValue(mock.client);
+
+        await signUp({ ...signUpInput, emailOptIn: true });
+
+        expect(mock.supabaseSignUp).toHaveBeenCalledWith(
+            expect.objectContaining({
+                options: expect.objectContaining({
+                    data: expect.objectContaining({ email_opt_in: true }),
+                }),
+            }),
+        );
+    });
+
+    it('emailOptIn の値を options.data.email_opt_in に渡す（false）', async () => {
+        const mock = buildSupabaseMock();
+        createClient.mockResolvedValue(mock.client);
+
+        await signUp({ ...signUpInput, emailOptIn: false });
+
+        expect(mock.supabaseSignUp).toHaveBeenCalledWith(
+            expect.objectContaining({
+                options: expect.objectContaining({
+                    data: expect.objectContaining({ email_opt_in: false }),
+                }),
+            }),
+        );
+    });
+});
+
+describe('completeProfile - メール配信許可（022）', () => {
+    it('emailOptIn=true なら INSERT に is_email_opted_in=true と email_opted_in_at（非 null）を含める', async () => {
+        const mock = buildSupabaseMock();
+        createClient.mockResolvedValue(mock.client);
+
+        await expect(completeProfile({ ...profileInput, emailOptIn: true })).rejects.toThrow('NEXT_REDIRECT:/dives');
+
+        const payload = mock.insert.mock.calls[0]?.[0];
+        expect(payload.is_email_opted_in).toBe(true);
+        expect(typeof payload.email_opted_in_at).toBe('string');
+    });
+
+    it('emailOptIn=false なら is_email_opted_in=false と email_opted_in_at=null を含める', async () => {
+        const mock = buildSupabaseMock();
+        createClient.mockResolvedValue(mock.client);
+
+        await expect(completeProfile({ ...profileInput, emailOptIn: false })).rejects.toThrow('NEXT_REDIRECT:/dives');
+
+        const payload = mock.insert.mock.calls[0]?.[0];
+        expect(payload.is_email_opted_in).toBe(false);
+        expect(payload.email_opted_in_at).toBeNull();
     });
 });

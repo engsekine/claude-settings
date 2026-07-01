@@ -133,6 +133,32 @@ describe('SignupForm', () => {
         expect(signUp).toHaveBeenCalledWith(expect.objectContaining({ heightCm: 170, weightKg: 60.5 }));
     });
 
+    it('メール配信許可（022）の任意チェックを表示し、チェックすると signUp に emailOptIn=true が渡る', async () => {
+        signUp.mockResolvedValueOnce({ success: true, needsEmailConfirmation: true });
+        const user = userEvent.setup();
+        render(<SignupForm />);
+
+        const optIn = screen.getByRole('checkbox', { name: /お知らせメールを受け取る/ });
+        expect(optIn).not.toBeChecked();
+
+        await user.type(screen.getByLabelText('姓'), '山田');
+        await user.type(screen.getByLabelText('名'), '太郎');
+        await user.type(screen.getByLabelText('姓（ローマ字）'), 'Yamada');
+        await user.type(screen.getByLabelText('名（ローマ字）'), 'Taro');
+        await user.type(screen.getByLabelText('ニックネーム'), 'taro');
+        await user.type(screen.getByLabelText('生年月日'), '1990-01-01');
+        await user.type(screen.getByLabelText('メールアドレス'), 'user@example.com');
+        await user.type(screen.getByLabelText('パスワード（12文字以上・英大文字小文字と数字を含む）'), 'Password1234');
+        await user.type(screen.getByLabelText('パスワード（確認）'), 'Password1234');
+        await user.click(screen.getByRole('radio', { name: '一般ダイバー' }));
+        await agreeToTerms(user);
+        await user.click(optIn);
+        await user.click(screen.getByRole('button', { name: '新規登録' }));
+
+        await screen.findByText('確認メールを送信しました');
+        expect(signUp).toHaveBeenCalledWith(expect.objectContaining({ emailOptIn: true }));
+    });
+
     it('signUp が error を返すと alert に表示される', async () => {
         signUp.mockResolvedValueOnce({ success: false, error: 'このメールアドレスは既に登録されています' });
         const user = userEvent.setup();

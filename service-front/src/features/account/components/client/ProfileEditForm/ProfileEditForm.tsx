@@ -8,7 +8,7 @@ import { useForm } from 'react-hook-form';
 
 import { type ProfileFormValues, profileSchema } from '@/features/account/schemas/profile.schema';
 import { updateProfile } from '@/features/account/server/actions';
-import { FormField, FormRadioGroup } from '@/shared/components/form';
+import { EmailOptInField, FormField, FormRadioGroup } from '@/shared/components/form';
 import { DIVER_TYPE_OPTIONS } from '@/shared/constants/diver-type';
 import { GENDER_OPTIONS } from '@/shared/constants/gender';
 
@@ -51,7 +51,13 @@ export const ProfileEditForm = ({ email, defaultValues }: ProfileEditFormProps) 
     });
 
     return (
-        <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
+        <form
+            onSubmit={(e) => {
+                void onSubmit(e);
+            }}
+            className="flex flex-col gap-4"
+            noValidate
+        >
             {/* メールアドレスは変更不可の読み取り専用表示 + 補足文があるため FormField を使わない */}
             <div className="flex flex-col gap-1">
                 <label htmlFor="email" className="font-medium text-sm">
@@ -181,6 +187,8 @@ export const ProfileEditForm = ({ email, defaultValues }: ProfileEditFormProps) 
                     {...register('weightKg')}
                 />
             </div>
+
+            <EmailOptInField id="emailOptIn" error={errors.emailOptIn?.message} {...register('emailOptIn')} />
 
             {errors.root && (
                 <div role="alert" className="text-red-600 text-sm">

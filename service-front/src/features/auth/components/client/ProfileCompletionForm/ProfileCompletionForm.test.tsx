@@ -82,4 +82,26 @@ describe('ProfileCompletionForm', () => {
         expect(await screen.findByText('利用規約に同意してください')).toBeInTheDocument();
         expect(completeProfile).not.toHaveBeenCalled();
     });
+
+    it('メール配信許可（022）の任意チェックを表示し、チェックすると completeProfile に emailOptIn=true が渡る', async () => {
+        completeProfile.mockResolvedValueOnce({ success: false, error: 'x' });
+        const user = userEvent.setup();
+        render(<ProfileCompletionForm />);
+
+        const optIn = screen.getByRole('checkbox', { name: /お知らせメールを受け取る/ });
+        expect(optIn).not.toBeChecked();
+
+        await user.type(screen.getByLabelText('姓'), '山田');
+        await user.type(screen.getByLabelText('名'), '太郎');
+        await user.type(screen.getByLabelText('姓（ローマ字）'), 'Yamada');
+        await user.type(screen.getByLabelText('名（ローマ字）'), 'Taro');
+        await user.type(screen.getByLabelText('ニックネーム'), 'たろちゃん');
+        await user.type(screen.getByLabelText('生年月日'), '1990-01-01');
+        await user.click(screen.getByRole('radio', { name: '一般ダイバー' }));
+        await agreeToTerms(user);
+        await user.click(optIn);
+        await user.click(screen.getByRole('button', { name: '登録して始める' }));
+
+        expect(completeProfile).toHaveBeenCalledWith(expect.objectContaining({ emailOptIn: true }));
+    });
 });
