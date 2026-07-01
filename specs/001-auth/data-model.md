@@ -175,6 +175,12 @@ erDiagram
 
 `user_id` が主キーのため 1:1 が保証される。
 
+| 制約名 | 内容 | 補足 |
+|--------|------|------|
+| `user_details_nickname_key` | `unique (lower(trim(nickname)))` | ニックネームの一意制約。大文字小文字・前後空白を正規化した表示名で重複禁止（`20260701110000_add_user_details_nickname_unique.sql`）。フォロー/検索の表示名の曖昧さ解消のため導入 |
+
+使用可否判定は SECURITY DEFINER 関数 `is_nickname_taken(p_nickname text, p_exclude_user_id uuid default null) returns boolean`（`search_path=''`・anon/authenticated に grant）で行い、サインアップ／プロフィール補完・編集の各 Server Action が書き込み前に事前チェックして親切なエラーを返す（競合時は一意制約 23505 をフォールバックで捕捉）。`user_details` は本人のみ SELECT 可のため、他ユーザー nickname 照合には boolean だけを返すこの関数を使う。
+
 #### CHECK 制約
 
 | 制約名 | 内容 | 補足 |

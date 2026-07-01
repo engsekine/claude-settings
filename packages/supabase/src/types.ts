@@ -775,6 +775,7 @@ export type Database = {
                 }[];
             };
             is_admin: { Args: never; Returns: boolean };
+            is_nickname_taken: { Args: { p_nickname: string; p_exclude_user_id?: string }; Returns: boolean };
             is_public_dive_photo: { Args: { object_name: string }; Returns: boolean };
             is_superadmin: { Args: never; Returns: boolean };
             search_users_by_nickname: {
