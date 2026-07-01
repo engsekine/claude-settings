@@ -5,19 +5,47 @@ import Link from 'next/link';
 import { DeleteDiveButton } from '@/features/dives/components/client/DeleteDiveButton';
 import { DivePhotoGallery } from '@/features/dives/components/client/DivePhotoGallery';
 import { DivePhotoUploader } from '@/features/dives/components/client/DivePhotoUploader';
+import { DiveVisibilityToggle } from '@/features/dives/components/client/DiveVisibilityToggle';
 import { TANK_TYPE_LABEL_MAP, type TankTypeValue } from '@/features/dives/constants';
 import { diveLocationLabel } from '@/features/dives/lib/diveLabel';
 import { calcSacRate, formatSacRate, SAC_INPUT_FIELD_LABELS } from '@/features/dives/lib/sacRate';
-import type { Dive, DivePhotoView } from '@/features/dives/types';
+import type { Dive, DiveBuddy, DivePhotoView } from '@/features/dives/types';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
 
 interface DiveDetailProps {
     dive: Dive;
     /** 添付写真（表示順・署名 URL 解決済み）。既定は空 */
     photos?: DivePhotoView[];
+    /** 同行バディ（登録ユーザー + フリーテキスト）。既定は空 */
+    buddies?: DiveBuddy[];
     /** 本人として写真を管理（追加）できるか。公開ページなどでは false */
     canManage?: boolean;
 }
+
+/** 同行バディ一覧。登録ユーザーはプロフィールへリンク、フリーテキストは素テキスト（spec 021 FR-004） */
+const BuddyList = ({ buddies }: { buddies: DiveBuddy[] }) => {
+    if (buddies.length === 0) return <span className="text-sm">{EMPTY_PLACEHOLDER}</span>;
+    return (
+        <ul className="flex flex-wrap gap-2">
+            {buddies.map((buddy) =>
+                buddy.isRegistered && buddy.userId ? (
+                    <li key={buddy.id}>
+                        <Link
+                            href={`/users/${buddy.userId}` as Route}
+                            className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm hover:bg-muted/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+                        >
+                            {buddy.name}
+                        </Link>
+                    </li>
+                ) : (
+                    <li key={buddy.id} className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm">
+                        {buddy.name}
+                    </li>
+                ),
+            )}
+        </ul>
+    );
+};
 
 const EMPTY_PLACEHOLDER = '—';
 
@@ -58,7 +86,7 @@ const FullField = ({ label, value }: { label: string; value: string | null | und
     );
 };
 
-export const DiveDetail = ({ dive, photos = [], canManage = false }: DiveDetailProps) => {
+export const DiveDetail = ({ dive, photos = [], buddies = [], canManage = false }: DiveDetailProps) => {
     const tidePhase = getTidePhase(dive.diveDate);
     const sacRate = calcSacRate(dive);
 
@@ -93,6 +121,19 @@ export const DiveDetail = ({ dive, photos = [], canManage = false }: DiveDetailP
                     </span>
                 )}
             </header>
+
+            {canManage && (
+                <section aria-labelledby="dive-detail-visibility" className="flex flex-col gap-2">
+                    <h2 id="dive-detail-visibility" className="font-medium text-sm">
+                        公開設定
+                    </h2>
+                    <DiveVisibilityToggle
+                        diveId={dive.id}
+                        initialIsPublic={dive.isPublic}
+                        initialPublicSlug={dive.publicSlug}
+                    />
+                </section>
+            )}
 
             <section aria-labelledby="dive-detail-basic" className="flex flex-col gap-4">
                 <h2 id="dive-detail-basic" className="font-semibold text-lg">
@@ -179,9 +220,16 @@ export const DiveDetail = ({ dive, photos = [], canManage = false }: DiveDetailP
                 </h2>
 
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <Field label="バディ名" value={dive.buddyName} />
+                    <Field label="バディ名（旧）" value={dive.buddyName} />
                     <Field label="インストラクター名" value={dive.instructorName} />
                 </div>
+
+                <dl className="flex flex-col gap-1">
+                    <dt className="font-medium text-sm">同行バディ</dt>
+                    <dd>
+                        <BuddyList buddies={buddies} />
+                    </dd>
+                </dl>
 
                 <FullField label="メモ・印象" value={dive.notes} />
             </section>

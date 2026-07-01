@@ -1,9 +1,10 @@
 import 'server-only';
 
+import { type BuddyRowInput, mapDiveBuddies } from '@/features/dives/lib/buddies/buddy-mapper';
 import { DIVE_SITE_JOIN, type DiveRowWithSite, mapDive } from '@/features/dives/lib/dive-mapper';
 import { diveLocationLabel } from '@/features/dives/lib/diveLabel';
 import { fetchDiveListPage } from '@/features/dives/lib/list-query';
-import type { Dive, DiveCursor, DiveListFilter, DiveListPage } from '@/features/dives/types';
+import type { Dive, DiveBuddy, DiveCursor, DiveListFilter, DiveListPage } from '@/features/dives/types';
 import { createClient } from '@/shared/lib/supabase/server';
 
 export interface ListDivesOptions {
@@ -53,6 +54,48 @@ export const getDive = async (id: string): Promise<Dive | null> => {
     if (!data) return null;
 
     return mapDive(data as unknown as DiveRowWithSite);
+};
+
+/**
+ * 指定ダイブの同行バディ一覧を取得する（spec 021 US1）。
+ * 本人除去済み（removed_by_buddy=true）は除外。登録ユーザーの nickname は
+ * user_details から 2 段引きで解決する（PostgREST の多段 embed を避け堅牢にする）。
+ * RLS により、閲覧可能なダイブ（自分 or 公開）のバディのみ返る。
+ */
+export const getDiveBuddies = async (diveId: string): Promise<DiveBuddy[]> => {
+    const supabase = await createClient();
+
+    const { data: rows, error } = await supabase
+        .from('dive_log_buddies')
+        .select('id, buddy_user_id, buddy_name')
+        .eq('dive_id', diveId)
+        .eq('removed_by_buddy', false)
+        .order('created_at', { ascending: true });
+
+    if (error) throw new Error(`バディの取得に失敗しました: ${error.message}`);
+    if (!rows || rows.length === 0) return [];
+
+    // 登録ユーザーの nickname をまとめて解決する。
+    // 他ユーザーの user_details は RLS で読めないため、nickname のみを返す
+    // get_user_public_profiles（SECURITY DEFINER）経由で取得する。
+    const userIds = [...new Set(rows.map((r) => r.buddy_user_id).filter((id): id is string => id !== null))];
+    const nicknameById = new Map<string, string>();
+    if (userIds.length > 0) {
+        const { data: profiles, error: profileError } = await supabase.rpc('get_user_public_profiles', {
+            p_ids: userIds,
+        });
+        if (profileError) throw new Error(`バディの表示名取得に失敗しました: ${profileError.message}`);
+        for (const profile of profiles ?? []) nicknameById.set(profile.user_id, profile.nickname);
+    }
+
+    const inputs: BuddyRowInput[] = rows.map((r) => ({
+        id: r.id,
+        buddyUserId: r.buddy_user_id,
+        buddyName: r.buddy_name,
+        nickname: r.buddy_user_id ? (nicknameById.get(r.buddy_user_id) ?? null) : null,
+    }));
+
+    return mapDiveBuddies(inputs);
 };
 
 /** 他機能からの紐づけ選択用に最小限の項目だけ持つダイブの要約 */

@@ -25,6 +25,8 @@ interface MockOptions {
     user?: { id: string } | null;
     /** user_details への insert の戻り error */
     insertError?: { code?: string; message: string } | null;
+    /** is_nickname_taken（rpc）の戻り。true は「既に使われている」 */
+    nicknameTaken?: boolean;
 }
 
 const buildSupabaseMock = (options: MockOptions = {}) => {
@@ -32,11 +34,13 @@ const buildSupabaseMock = (options: MockOptions = {}) => {
         oauth = { data: { url: 'https://accounts.google.com/o/oauth2/auth' }, error: null },
         user = { id: 'user-1' },
         insertError = null,
+        nicknameTaken = false,
     } = options;
 
     const signInWithOAuth = vi.fn().mockResolvedValue(oauth);
     const getUser = vi.fn().mockResolvedValue({ data: { user } });
     const insert = vi.fn().mockResolvedValue({ error: insertError });
+    const rpc = vi.fn().mockResolvedValue({ data: nicknameTaken, error: null });
     const supabaseSignUp = vi
         .fn()
         .mockResolvedValue({ data: { user: { id: 'user-1', identities: [{ id: 'i1' }] } }, error: null });
@@ -45,9 +49,11 @@ const buildSupabaseMock = (options: MockOptions = {}) => {
         client: {
             auth: { signInWithOAuth, getUser, signUp: supabaseSignUp },
             from: vi.fn().mockReturnValue({ insert }),
+            rpc,
         },
         signInWithOAuth,
         insert,
+        rpc,
         supabaseSignUp,
     };
 };
@@ -172,6 +178,33 @@ describe('completeProfile', () => {
         expect(result.success).toBe(false);
     });
 
+    it('nickname が既に使われている場合は INSERT せず失敗を返す（/dives へ流さない）', async () => {
+        const mock = buildSupabaseMock({ nicknameTaken: true });
+        createClient.mockResolvedValue(mock.client);
+
+        const result = await completeProfile(profileInput);
+
+        expect(result.success).toBe(false);
+        expect(mock.insert).not.toHaveBeenCalled();
+        expect(redirect).not.toHaveBeenCalled();
+    });
+
+    it('nickname 一意制約違反（競合時 23505）は補完済みと混同せず失敗を返す', async () => {
+        createClient.mockResolvedValue(
+            buildSupabaseMock({
+                insertError: {
+                    code: '23505',
+                    message: 'duplicate key value violates unique constraint "user_details_nickname_key"',
+                },
+            }).client,
+        );
+
+        const result = await completeProfile(profileInput);
+
+        expect(result.success).toBe(false);
+        expect(redirect).not.toHaveBeenCalled();
+    });
+
     it('利用規約未同意なら Supabase に到達せず失敗を返す（018 / FR-008）', async () => {
         const result = await completeProfile({ ...profileInput, agreedToTerms: false });
 
@@ -201,5 +234,15 @@ describe('signUp - 利用規約同意（018）', () => {
                 }),
             }),
         );
+    });
+
+    it('nickname が既に使われている場合は signUp せず失敗を返す', async () => {
+        const mock = buildSupabaseMock({ nicknameTaken: true });
+        createClient.mockResolvedValue(mock.client);
+
+        const result = await signUp(signUpInput);
+
+        expect(result.success).toBe(false);
+        expect(mock.supabaseSignUp).not.toHaveBeenCalled();
     });
 });

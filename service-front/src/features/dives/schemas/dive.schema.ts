@@ -242,6 +242,37 @@ export const diveSchema = yup.object({
         .transform((v) => (v === '' ? null : v))
         .nullable()
         .default(null),
+    // 同行バディ（spec 021 FR-001〜003）: 登録ユーザー（userId）か名前（name）の
+    // どちらか一方を持つ要素の配列。自分自身の除外は server / DB トリガで担保する。
+    buddies: yup
+        .array()
+        .of(
+            yup
+                .object({
+                    userId: yup
+                        .string()
+                        .transform((v) => (v === '' || v == null ? undefined : v))
+                        .uuid('バディの指定が不正です')
+                        .optional(),
+                    name: yup
+                        .string()
+                        .trim()
+                        .max(100, 'バディ名は100文字以内で入力してください')
+                        .transform((v) => (v === '' || v == null ? undefined : v))
+                        .optional(),
+                    // 登録ユーザーの表示名（編集画面のチップ表示用・xor 判定の対象外）。
+                    // サーバー同期では userId のみ使うため保存には影響しない。
+                    nickname: yup.string().optional(),
+                })
+                .test('user-xor-name', 'バディは登録ユーザーか名前のどちらか一方を指定してください', (value) => {
+                    const hasUser = Boolean(value?.userId);
+                    const hasName = Boolean(value?.name);
+                    return (hasUser && !hasName) || (!hasUser && hasName);
+                }),
+        )
+        .default([]),
+    // 公開フラグ（spec 021 FR-007/008）: 新規は既定で非公開
+    isPublic: yup.boolean().default(false).required(),
 });
 
 export type DiveFormValues = yup.InferType<typeof diveSchema>;
@@ -304,6 +335,14 @@ export const diveSearchSchema = yup.object({
         .string()
         .trim()
         .max(120, 'ポイント名は120文字以内で入力してください')
+        .transform((v) => (v === '' ? null : v))
+        .nullable()
+        .default(null),
+    // バディ名（フリーテキスト・部分一致）での絞り込み（spec 021 FR-022）
+    buddyName: yup
+        .string()
+        .trim()
+        .max(100, 'バディ名は100文字以内で入力してください')
         .transform((v) => (v === '' ? null : v))
         .nullable()
         .default(null),

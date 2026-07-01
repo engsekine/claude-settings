@@ -80,9 +80,22 @@ export const updateProfile = async (input: UpdateProfileInput): Promise<ActionRe
     } = await supabase.auth.getUser();
     if (!user) return actionFailure('ログインが必要です');
 
+    /** nickname 一意制約の事前チェック。自分の現在の nickname は衝突対象から除外する */
+    const { data: nicknameTaken } = await supabase.rpc('is_nickname_taken', {
+        p_nickname: input.nickname,
+        p_exclude_user_id: user.id,
+    });
+    if (nicknameTaken) {
+        return actionFailure('このニックネームは既に使われています。別のニックネームをお試しください');
+    }
+
     const { error } = await supabase.from('user_details').update(toUserDetailsUpdate(input)).eq('user_id', user.id);
 
     if (error) {
+        /** 競合時のフォールバック（一意制約違反） */
+        if (error.code === '23505' && error.message.includes('user_details_nickname_key')) {
+            return actionFailure('このニックネームは既に使われています。別のニックネームをお試しください');
+        }
         console.error('[updateProfile] supabase error:', {
             message: error.message,
             code: error.code,

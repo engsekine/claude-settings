@@ -108,7 +108,7 @@ create policy "users can insert own details"
 | `last_name` / `first_name` | 必須・`length(trim()) > 0`・50 文字以内（アプリ側） |
 | `last_name_romaji` / `first_name_romaji` | 必須・半角英字のみ・50 文字以内（アプリ側）・空白のみ不可 |
 | `nickname` | 必須・50 文字以内・空白のみ不可 |
-| `birth_on` | 必須・`>= 1900-01-01` かつ `<= current_date` |
+| `birth_on` | 必須・`>= 1900-01-01` かつ `<= (now() at time zone 'Asia/Tokyo')::date`（JST 基準） |
 | `gender` | `male` / `female` / `unanswered` の 3 択（既定 `unanswered`） |
 | `height_cm` / `weight_kg` | 任意・範囲制約あり・空は `NULL` に正規化 |
 

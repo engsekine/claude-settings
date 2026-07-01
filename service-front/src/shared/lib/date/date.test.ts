@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 
-import { isValidBirthDate, todayInJst } from './date';
+import { formatJstDate, isValidBirthDate, todayInJst } from './date';
 
 describe('todayInJst', () => {
     it('YYYY-MM-DD 形式の文字列を返す', () => {
@@ -15,6 +15,17 @@ describe('todayInJst', () => {
         expect(todayInJst()).toBe('2026-06-10');
 
         vi.useRealTimers();
+    });
+});
+
+describe('formatJstDate', () => {
+    it('YYYY-MM-DD を YYYY/MM/DD に整形する', () => {
+        expect(formatJstDate('2026-06-10')).toBe('2026/06/10');
+    });
+
+    it('要素が揃わない不正な形式はそのまま返す', () => {
+        expect(formatJstDate('2026-06')).toBe('2026-06');
+        expect(formatJstDate('invalid')).toBe('invalid');
     });
 });
 

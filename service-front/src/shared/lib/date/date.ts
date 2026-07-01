@@ -6,6 +6,16 @@
  */
 export const todayInJst = (): string => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Tokyo' });
 
+/**
+ * YYYY-MM-DD の日付文字列を YYYY/MM/DD 表示に整形する純粋関数。
+ * 想定外の形式（要素が 3 つ揃わない）はそのまま返し、"undefined" 混入を防ぐ。
+ */
+export const formatJstDate = (isoDate: string): string => {
+    const [year, month, day] = isoDate.split('-');
+    if (!year || !month || !day) return isoDate;
+    return `${year}/${month}/${day}`;
+};
+
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 /**

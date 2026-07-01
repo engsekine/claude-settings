@@ -81,6 +81,12 @@ export const signUp = async (input: SignUpInput): Promise<ActionResult<SignUpPay
 
     const supabase = await createClient();
 
+    /** nickname 一意制約（user_details_nickname_key）に触れる前に事前チェックし、親切なエラーを返す */
+    const { data: nicknameTaken } = await supabase.rpc('is_nickname_taken', { p_nickname: input.nickname });
+    if (nicknameTaken) {
+        return actionFailure('このニックネームは既に使われています。別のニックネームをお試しください');
+    }
+
     const siteUrl = process.env['NEXT_PUBLIC_SITE_URL'] ?? 'https://localhost:3000';
 
     const { data, error } = await supabase.auth.signUp({
@@ -214,10 +220,23 @@ export const completeProfile = async (input: CompleteProfileInput): Promise<Acti
     } = await supabase.auth.getUser();
     if (!user) return actionFailure('ログインが必要です');
 
+    /** nickname 一意制約に触れる前に事前チェックし、親切なエラーを返す */
+    const { data: nicknameTaken } = await supabase.rpc('is_nickname_taken', {
+        p_nickname: input.nickname,
+        p_exclude_user_id: user.id,
+    });
+    if (nicknameTaken) {
+        return actionFailure('このニックネームは既に使われています。別のニックネームをお試しください');
+    }
+
     const { error } = await supabase.from('user_details').insert(toUserDetailsInsert(user.id, input));
 
     if (error) {
-        /** 既に補完済み（PK 重複）の場合は冪等に成功扱いとし /dives へ */
+        /** nickname 一意制約違反（競合時のフォールバック）は「補完済み」と混同せずエラーを返す */
+        if (error.code === '23505' && error.message.includes('user_details_nickname_key')) {
+            return actionFailure('このニックネームは既に使われています。別のニックネームをお試しください');
+        }
+        /** 既に補完済み（PK user_id 重複）の場合は冪等に成功扱いとし /dives へ */
         if (error.code === '23505') {
             redirect('/dives');
         }

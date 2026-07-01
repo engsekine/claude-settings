@@ -120,7 +120,7 @@ Phase 2 で「公開機能」を実装する予定があり、`is_public` / `pub
 | 制約名 | 内容 |
 |--------|------|
 | `dives_dive_number_check` | `dive_number is null or dive_number >= 0` |
-| `dives_dive_date_check` | `dive_date >= '1900-01-01' and dive_date <= current_date` |
+| `dives_dive_date_check` | `dive_date >= '1900-01-01' and dive_date <= (now() at time zone 'Asia/Tokyo')::date`（JST の当日まで。UTC の `current_date` だと JST 午前に当日が弾かれるため JST 基準に統一） |
 | `dives_location_check` | `length(trim(location)) > 0` |
 | `dives_visibility_m_check` | `visibility_m is null or visibility_m >= 0` |
 | `dives_max_depth_m_check` | `max_depth_m > 0 and max_depth_m <= 300` |

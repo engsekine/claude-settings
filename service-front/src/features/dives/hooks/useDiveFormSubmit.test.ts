@@ -48,6 +48,8 @@ const buildValues = (overrides: Partial<DiveFormValues> = {}): DiveFormValues =>
         instructorName: null,
         certificationDive: false,
         notes: null,
+        buddies: [],
+        isPublic: false,
         ...overrides,
     }) as DiveFormValues;
 
@@ -117,5 +119,33 @@ describe('useDiveFormSubmit', () => {
             expect(result.current.serverError).toBe('更新に失敗しました');
         });
         expect(routerPush).not.toHaveBeenCalled();
+    });
+
+    it('編集で buddyWarning が返ると serverWarning に反映し詳細へ遷移しない', async () => {
+        updateDive.mockResolvedValueOnce({ success: true, buddyWarning: 'バディ保存に一部失敗' });
+        const { result } = renderHook(() => useDiveFormSubmit('existing-id'));
+
+        act(() => {
+            result.current.submit(buildValues());
+        });
+
+        await waitFor(() => {
+            expect(result.current.serverWarning).toBe('バディ保存に一部失敗');
+        });
+        expect(routerPush).not.toHaveBeenCalled();
+        expect(routerRefresh).toHaveBeenCalled();
+    });
+
+    it('新規作成で buddyWarning が返っても本体は作成済みのため詳細へ遷移する', async () => {
+        createDive.mockResolvedValueOnce({ success: true, id: 'new-id', buddyWarning: 'バディ保存に一部失敗' });
+        const { result } = renderHook(() => useDiveFormSubmit());
+
+        act(() => {
+            result.current.submit(buildValues());
+        });
+
+        await waitFor(() => {
+            expect(routerPush).toHaveBeenCalledWith('/dives/new-id');
+        });
     });
 });

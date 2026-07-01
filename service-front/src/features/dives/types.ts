@@ -84,6 +84,10 @@ export interface DiveListFilter {
     /** ダイブタイプ（DIVE_TYPE_OPTIONS の value） */
     diveType?: string;
     location?: string;
+    /** バディ（登録ユーザー）の user_id で絞り込み（spec 021 FR-022） */
+    buddyUserId?: string;
+    /** バディ名（フリーテキスト）の部分一致で絞り込み（spec 021 FR-022） */
+    buddyName?: string;
 }
 
 /** キーセットページネーションのカーソル */
@@ -115,6 +119,18 @@ export interface DivePhoto {
     isCover: boolean;
     width: number | null;
     height: number | null;
+}
+
+/** ダイブログの同行バディ（登録ユーザー or フリーテキスト）。spec 021 US1 */
+export interface DiveBuddy {
+    /** dive_log_buddies.id */
+    id: string;
+    /** 登録ユーザーのバディの場合の users.id。フリーテキストの場合は null */
+    userId: string | null;
+    /** 表示名（登録ユーザーは nickname、フリーテキストはそのテキスト） */
+    name: string;
+    /** 登録ユーザー由来か（true なら userId からプロフィールへ遷移可能） */
+    isRegistered: boolean;
 }
 
 /** 表示用（署名 URL を解決済み）。ギャラリー / サムネイルに渡す */

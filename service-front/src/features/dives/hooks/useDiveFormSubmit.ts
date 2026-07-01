@@ -12,6 +12,8 @@ import { createClient } from '@/shared/lib/supabase/browser';
 interface UseDiveFormSubmitResult {
     isPending: boolean;
     serverError: string | null;
+    /** ログ本体は保存できたが、同行バディの同期など一部処理に失敗したときの警告 */
+    serverWarning: string | null;
     /**
      * react-hook-form の handleSubmit に渡すサブミットハンドラ。
      * - 新規作成時: photos に File[] を渡すと、ログ保存 → dive_id 確定 → アップロードの順で同時添付する。
@@ -29,11 +31,13 @@ export const useDiveFormSubmit = (diveId?: string): UseDiveFormSubmitResult => {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [serverError, setServerError] = useState<string | null>(null);
+    const [serverWarning, setServerWarning] = useState<string | null>(null);
 
     const isEdit = diveId !== undefined;
 
     const submit = (values: DiveFormValues, photos?: File[], photoIdsToDelete?: string[]): void => {
         setServerError(null);
+        setServerWarning(null);
         startTransition(async () => {
             if (isEdit) {
                 const result = await updateDive(diveId, values);
@@ -45,6 +49,12 @@ export const useDiveFormSubmit = (diveId?: string): UseDiveFormSubmitResult => {
                 // 部分失敗はログ更新を巻き戻さない（FR-015）。
                 if (photoIdsToDelete && photoIdsToDelete.length > 0) {
                     await Promise.all(photoIdsToDelete.map((photoId) => deleteDivePhoto(photoId)));
+                }
+                // バディ同期が一部失敗した場合は、保存自体は成功しているため遷移せず警告のみ表示する。
+                if (result.buddyWarning) {
+                    setServerWarning(result.buddyWarning);
+                    router.refresh();
+                    return;
                 }
                 router.push(`/dives/${diveId}`);
                 router.refresh();
@@ -66,10 +76,13 @@ export const useDiveFormSubmit = (diveId?: string): UseDiveFormSubmitResult => {
                 if (user) await uploadDivePhotos(result.id, user.id, photos);
             }
 
+            // バディ同期が一部失敗しても本体は作成済みなので詳細へ遷移する（警告はログのみ）。
+            if (result.buddyWarning) console.warn('[useDiveFormSubmit]', result.buddyWarning);
+
             router.push(`/dives/${result.id}`);
             router.refresh();
         });
     };
 
-    return { isPending, serverError, submit };
+    return { isPending, serverError, serverWarning, submit };
 };

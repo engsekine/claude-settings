@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
+import { resolvePublicSlug } from '@/features/dives/lib/visibility';
 import type { DiveFormValues } from '@/features/dives/schemas/dive.schema';
 import { createClient } from '@/shared/lib/supabase/server';
 import { type ActionResult, actionFailure, actionSuccess } from '@/shared/types/action-result';
@@ -75,9 +76,103 @@ const toDbRow = (input: DiveFormValues) => ({
     instructor_name: input.instructorName,
     certification_dive: input.certificationDive,
     notes: input.notes,
+    is_public: input.isPublic,
 });
 
-export const createDive = async (input: DiveFormValues): Promise<ActionResult<{ id: string }>> => {
+/** フォームのバディ入力を、DB 同期用に正規化する（自己タグ除外・重複除去・空要素除外） */
+const normalizeBuddies = (
+    buddies: DiveFormValues['buddies'],
+    ownerId: string,
+): { registeredUserIds: string[]; freetextNames: string[] } => {
+    const registered = new Set<string>();
+    const freetext = new Set<string>();
+    for (const buddy of buddies ?? []) {
+        const userId = buddy.userId?.trim();
+        const name = buddy.name?.trim();
+        // 登録ユーザー指定（自分自身は除外＝DB トリガの前段でユーザー向けに弾く）
+        if (userId && userId !== ownerId) {
+            registered.add(userId);
+            continue;
+        }
+        if (!userId && name) freetext.add(name);
+    }
+    return { registeredUserIds: [...registered], freetextNames: [...freetext] };
+};
+
+/**
+ * dive_log_buddies を入力内容に差分同期する（spec 021 FR-001〜003 / contracts/buddy-actions）。
+ * - 追加: 既存に無い登録ユーザー / フリーテキストを INSERT
+ * - 削除: 入力から消えた行を DELETE（本人除去済み行は RLS により対象外＝再タグ付けブロック維持）
+ * dive 本体は保存済み前提。同期に失敗しても本体保存は巻き戻さないが、成否を返して
+ * 呼び出し元がユーザーへ警告できるようにする（true = 全て成功）。
+ */
+const syncDiveBuddies = async (
+    supabase: DiveSupabaseClient,
+    diveId: string,
+    ownerId: string,
+    buddies: DiveFormValues['buddies'],
+): Promise<boolean> => {
+    const { registeredUserIds, freetextNames } = normalizeBuddies(buddies, ownerId);
+
+    const { data: existing, error: fetchError } = await supabase
+        .from('dive_log_buddies')
+        .select('id, buddy_user_id, buddy_name')
+        .eq('dive_id', diveId)
+        .eq('removed_by_buddy', false);
+    if (fetchError) {
+        console.error('[syncDiveBuddies] fetch error:', fetchError);
+        return false;
+    }
+
+    const existingUserIds = new Set(
+        (existing ?? []).map((r) => r.buddy_user_id).filter((v): v is string => v !== null),
+    );
+    const existingNames = new Set((existing ?? []).map((r) => r.buddy_name).filter((v): v is string => v !== null));
+
+    const desiredUserIds = new Set(registeredUserIds);
+    const desiredNames = new Set(freetextNames);
+
+    // 削除対象: 既存のうち入力に無いもの
+    const toDeleteIds = (existing ?? [])
+        .filter((r) =>
+            r.buddy_user_id ? !desiredUserIds.has(r.buddy_user_id) : !(r.buddy_name && desiredNames.has(r.buddy_name)),
+        )
+        .map((r) => r.id);
+
+    // 追加対象: 入力のうち既存に無いもの
+    const toInsert = [
+        ...registeredUserIds
+            .filter((id) => !existingUserIds.has(id))
+            .map((id) => ({ dive_id: diveId, buddy_user_id: id, buddy_name: null })),
+        ...freetextNames
+            .filter((name) => !existingNames.has(name))
+            .map((name) => ({ dive_id: diveId, buddy_user_id: null, buddy_name: name })),
+    ];
+
+    let ok = true;
+    if (toDeleteIds.length > 0) {
+        const { error } = await supabase.from('dive_log_buddies').delete().in('id', toDeleteIds);
+        if (error) {
+            console.error('[syncDiveBuddies] delete error:', error);
+            ok = false;
+        }
+    }
+    if (toInsert.length > 0) {
+        const { error } = await supabase.from('dive_log_buddies').insert(toInsert);
+        if (error) {
+            console.error('[syncDiveBuddies] insert error:', error);
+            ok = false;
+        }
+    }
+    return ok;
+};
+
+/** バディ同期に失敗したときにユーザーへ返す警告メッセージ */
+const BUDDY_SYNC_WARNING = '同行バディの保存に一部失敗しました。時間をおいて再度お試しください';
+
+export const createDive = async (
+    input: DiveFormValues,
+): Promise<ActionResult<{ id: string; buddyWarning?: string }>> => {
     const supabase = await createClient();
 
     const {
@@ -102,11 +197,16 @@ export const createDive = async (input: DiveFormValues): Promise<ActionResult<{ 
         return actionFailure('ログの作成に失敗しました。時間をおいて再度お試しください');
     }
 
+    const buddiesOk = await syncDiveBuddies(supabase, data.id, user.id, input.buddies);
+
     revalidatePath('/dives');
-    return actionSuccess({ id: data.id });
+    return actionSuccess({ id: data.id, ...(buddiesOk ? {} : { buddyWarning: BUDDY_SYNC_WARNING }) });
 };
 
-export const updateDive = async (id: string, input: DiveFormValues): Promise<ActionResult> => {
+export const updateDive = async (
+    id: string,
+    input: DiveFormValues,
+): Promise<ActionResult<{ buddyWarning?: string }>> => {
     const supabase = await createClient();
 
     const {
@@ -127,9 +227,61 @@ export const updateDive = async (id: string, input: DiveFormValues): Promise<Act
         return actionFailure('ログの更新に失敗しました。時間をおいて再度お試しください');
     }
 
+    const buddiesOk = await syncDiveBuddies(supabase, id, user.id, input.buddies);
+
     revalidatePath('/dives');
     revalidatePath(`/dives/${id}`);
-    return actionSuccess();
+    return actionSuccess(buddiesOk ? {} : { buddyWarning: BUDDY_SYNC_WARNING });
+};
+
+export const setDiveVisibility = async (
+    id: string,
+    isPublic: boolean,
+): Promise<ActionResult<{ isPublic: boolean; publicSlug: string | null }>> => {
+    const supabase = await createClient();
+
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return actionFailure('ログインが必要です');
+
+    // 公開化時は slug を解決（既存があれば維持、無ければ生成）。非公開化時は slug を保持したまま遮断する
+    // （RLS と get_public_dive が is_public=false を返さないため、共有リンクも即無効になる）。
+    // slug 取得は owner 限定で行い、対象が無い（他人/存在しない id）場合は誤成功にせずエラーを返す。
+    let publicSlug: string | null = null;
+    if (isPublic) {
+        const { data: existing, error: fetchError } = await supabase
+            .from('dives')
+            .select('public_slug')
+            .eq('id', id)
+            .eq('user_id', user.id)
+            .maybeSingle();
+        if (fetchError) {
+            console.error('[setDiveVisibility] fetch error:', fetchError);
+            return actionFailure('公開設定の更新に失敗しました。時間をおいて再度お試しください');
+        }
+        if (!existing) return actionFailure('対象のログが見つかりません');
+        publicSlug = resolvePublicSlug(existing.public_slug ?? null);
+    }
+
+    // owner 以外の id では RLS により 0 件更新になるため、更新行数を確認して誤成功を防ぐ。
+    const payload = isPublic ? { is_public: true, public_slug: publicSlug } : { is_public: false };
+    const { data: updated, error } = await supabase
+        .from('dives')
+        .update(payload)
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select('id');
+
+    if (error) {
+        console.error('[setDiveVisibility] supabase error:', error);
+        return actionFailure('公開設定の更新に失敗しました。時間をおいて再度お試しください');
+    }
+    if (!updated || updated.length === 0) return actionFailure('対象のログが見つかりません');
+
+    revalidatePath('/dives');
+    revalidatePath(`/dives/${id}`);
+    return actionSuccess({ isPublic, publicSlug });
 };
 
 export const deleteDive = async (id: string): Promise<ActionResult> => {
