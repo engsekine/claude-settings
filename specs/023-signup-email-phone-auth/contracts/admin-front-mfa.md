@@ -17,18 +17,21 @@ removeMfaFactor(userId: string): Promise<ActionResult>
 - **ガード**: 先頭で `requireAdmin()`（未認証/非管理者はリダイレクト）。
 - **処理**:
   1. `adminClient.auth.admin.mfa.listFactors({ userId })` で対象ユーザーの要素一覧を取得。
-  2. phone 要素すべてを `adminClient.auth.admin.mfa.deleteFactor({ id, userId })` で削除。
-  3. `recordAudit({ action: 'mfa_factor_removed', targetUserId: userId, actorAdminId })` で監査記録。
-- **結果**: 成功で `{ ok: true }`。以後、対象ユーザーは 2 段階目なしでログインでき、必要なら再登録できる（FR-016）。
-- **失敗**: 対象なし/削除失敗は `{ ok: false, message }`。
+  2. 取得した要素すべてを `adminClient.auth.admin.mfa.deleteFactor({ id, userId })` で削除。
+  3. `recordAudit(supabase, adminId, { action: 'hard_delete', targetTable: 'mfa_factors', targetId: userId, changes: { removedFactorIds } })` で監査記録（audit action は新規値を追加せず既存の `hard_delete` を再利用 / T028）。
+- **監査の堅牢性**: 途中の削除失敗で一部だけ削除された場合も、削除できた要素 ID は必ず監査ログに記録する（証跡欠落を防ぐ）。監査記録自体の失敗は捕捉してログ出力し、解除操作は巻き戻さない。
+- **結果**: 成功で `{ success: true }`（`ActionResult`）。以後、対象ユーザーは 2 段階目なしでログインでき、必要なら再登録できる（FR-016）。
+- **失敗**: 対象なし/削除失敗は `{ success: false, error }`。
 
-## getUserMfaStatus（任意）
+## getUserMfaStatus
 
 ```
-getUserMfaStatus(userId: string): Promise<{ enabled: boolean, phoneMasked?: string }>
+getUserMfaStatus(userId: string): Promise<{ enabled: boolean }>
 ```
 
-- ユーザー詳細で「2 要素認証: 有効/無効」を表示し、解除ボタンの出し分けに使う。`listFactors` から判定。
+- ユーザー詳細で「2 要素認証: 有効/無効」を表示し、解除ボタンの出し分けに使う。先頭で `requireAdmin()`。
+- `listFactors` の結果に `status === 'verified'` の要素があれば `enabled: true`。取得失敗時は `enabled: false`（安全側）。
+- 電話番号のマスク表示（`phoneMasked`）は UI 上不要のため実装しない。
 
 ## UI
 

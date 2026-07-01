@@ -50,21 +50,21 @@
 
 | 対象 | 変更内容 |
 |------|----------|
-| `supabase/config.toml [auth.email.smtp]` | コメント解除・SendGrid 本番設定（sender/admin_email/pass=env） |
+| `supabase/config.toml [auth.email.smtp]` | コメント解除・Resend 本番設定（`smtp.resend.com` / sender_name / admin_email=env / pass=env(RESEND_API_KEY)） |
 | `supabase/config.toml [auth.mfa.phone]` | `enroll_enabled=true` / `verify_enabled=true` |
 | `supabase/config.toml [auth.sms.twilio]` | `enabled=true` + `account_sid`/`message_service_sid`/`auth_token=env` |
 | `supabase/templates/confirmation.html`（新規） | 日本語のサインアップ確認テンプレート |
 | `supabase/templates/recovery.html` ほか（任意） | パスワードリセット等の日本語化（優先度低） |
-| 環境変数 | `SENDGRID_API_KEY` / `SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN` / `SUPABASE_SERVICE_ROLE_KEY`（admin-front） |
-| DNS（本番・コード外） | SendGrid ドメイン認証（SPF/DKIM CNAME）+ DMARC |
+| 環境変数 | `RESEND_API_KEY` / `CONTACT_MAIL_FROM` / `SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN` / `SUPABASE_SERVICE_ROLE_KEY`（admin-front） |
+| DNS（本番・コード外） | Resend ドメイン認証（SPF/DKIM）+ DMARC |
 
 ## D. 監査ログ（既存 `recordAudit` を利用）
 
 - admin による MFA 要素解除（FR-016）は `admin-front/src/shared/lib/audit/recordAudit.ts` で記録する。
-- 記録項目（概念）: 実行した管理者・対象ユーザー ID・アクション種別（例: `mfa_factor_removed`）・日時。
-- 既存の監査テーブル定義に従う（本フィーチャーで監査テーブルの新規追加はしない想定。既存の型に不足があれば tasks で確認）。
+- 記録項目: 実行した管理者・対象ユーザー ID（`targetId`）・アクション種別 `hard_delete`（新規値は追加せず既存を再利用 / T028）・`targetTable: 'mfa_factors'`・削除した要素 ID 一覧（`changes.removedFactorIds`）・日時。
+- 既存の監査テーブル定義に従う（本フィーチャーで監査テーブルの新規追加・enum 追加は不要と確定）。
 
 ## 新規マイグレーションの要否
 
-- **原則不要**: MFA 状態は auth スキーマ管理、確認メールは Auth 管理、監査は既存テーブル。
-- **例外確認事項（tasks で判断）**: `recordAudit` が受け付けるアクション種別が固定 enum 等で `mfa_factor_removed` を追加する必要がある場合のみ、`sql.md` 準拠のマイグレーションを 1 本追加する。
+- **不要（確定）**: MFA 状態は auth スキーマ管理、確認メールは Auth 管理、監査は既存テーブル。
+- 監査アクション種別は既存の `hard_delete` を再利用したため、enum 追加のマイグレーションも不要と確定（T028 でスキップ済み）。

@@ -8,7 +8,7 @@
 
 既存の Supabase Auth（001-auth メール/パスワード、016-google-login）を土台に、2 つの独立した価値を追加する。
 
-1. **認証メールの本番配信（US1）**: `supabase/config.toml` の `[auth.email.smtp]` を本番 SMTP 送信元（SendGrid）に設定し、送信者認証（SPF/DKIM/DMARC）を整えて、サインアップ確認・パスワードリセット・メール変更などの全認証メールを実受信箱へ届ける。加えて日本語のメールテンプレートと「確認メール再送」導線を追加する。
+1. **認証メールの本番配信（US1）**: `supabase/config.toml` の `[auth.email.smtp]` を本番 SMTP 送信元（Resend）に設定し、送信者認証（SPF/DKIM/DMARC）を整えて、サインアップ確認・パスワードリセット・メール変更などの全認証メールを実受信箱へ届ける。加えて日本語のメールテンプレートと「確認メール再送」導線を追加する。
 2. **SMS 2 要素認証（US2）**: `[auth.mfa.phone]` と `[auth.sms.twilio]` を有効化し、設定画面で電話番号を登録・有効化（enroll → challenge → verify）、ログイン時に AAL1→AAL2 の昇格をルートガードで強制、設定画面から無効化できるようにする。電話紛失時は admin-front から管理者が要素を解除する（サービスロール経由 + 監査ログ）。
 
 技術方針は「Supabase が管理する認証機能（auth スキーマの `mfa_factors` / `mfa_challenges`、確認メール送信）をアプリ側から orchestrate する」形を取り、`public` スキーマへの新規テーブル追加は行わない。
@@ -31,7 +31,7 @@
 
 **Constraints**:
 - 2 要素認証はオプトイン（本人が設定画面で有効化）、有効化済みは毎回のログインで SMS 必須（信頼済みデバイスはスコープ外）
-- メール送信元 = SMTP（SendGrid、既存 config.toml の雛形に準拠）／ SMS = Twilio（既存 config.toml の雛形に準拠）
+- メール送信元 = SMTP（Resend、プロジェクト既存の email プロバイダに統一 / tasks.md T004）／ SMS = Twilio（既存 config.toml の雛形に準拠）
 - 2FA 未有効化ユーザーのログイン体験は不変（FR-015）
 - Twilio SMS / MFA は Supabase Pro プラン前提（config.toml 記載）
 
@@ -84,13 +84,14 @@ service-front/src/
 ├── features/auth/
 │   ├── server/actions.ts           # resendConfirmationEmail 追加
 │   └── components/client/           # 確認メール再送ボタン / ログイン 2 段階目コード入力フォーム
-├── features/account/ または features/mfa/    # MFA enroll/verify/disable のサーバーアクション + フォーム
+├── features/mfa/                    # MFA enroll/verify/disable のサーバーアクション + フォーム（research.md Decision 9 で新規機能に確定）
 │   ├── server/actions.ts
 │   ├── schemas/
+│   ├── lib/aalGuard/                # AAL 判定ユーティリティ（isMfaChallengePending）
 │   └── components/client/TwoFactorSettings/ 等
 ├── app/(authenticated)/settings/two-factor/   # 2 要素認証 設定ページ（新規）
-├── app/(auth)/login/                # 2 段階目チャレンジ導線（verify ページ or ログイン内遷移）
-└── proxy.ts + app/(authenticated)/layout.tsx   # AAL2 未達（enroll 済みで aal1）の保護ルート遮断
+├── app/(auth)/login/verify/         # 2 段階目チャレンジページ（verify ページ方式に確定）
+└── app/(authenticated)/layout.tsx   # AAL2 未達（enroll 済みで aal1）の保護ルート遮断（layout に一元化。proxy.ts は注記コメントのみ / research.md Decision 6）
 
 admin-front/src/
 ├── shared/lib/supabase/admin.ts     # サービスロールクライアント（server-only・新規）

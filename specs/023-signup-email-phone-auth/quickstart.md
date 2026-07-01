@@ -5,8 +5,8 @@
 ## 前提
 
 - Supabase プロジェクト（本番/ステージング、MFA phone は Pro プラン）。
-- 環境変数: `SENDGRID_API_KEY`、`SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN`、admin-front 用 `SUPABASE_SERVICE_ROLE_KEY`。
-- SendGrid: ドメイン認証（SPF/DKIM CNAME）投入済み + DMARC。Twilio: 送信可能な番号/Messaging Service。
+- 環境変数: `RESEND_API_KEY`、`CONTACT_MAIL_FROM`、`SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN`、admin-front 用 `SUPABASE_SERVICE_ROLE_KEY`。
+- Resend: ドメイン認証（SPF/DKIM）投入済み + DMARC。Twilio: 送信可能な番号/Messaging Service。
 - ローカルはユニット/コンポーネントテスト用。メール到達・SMS は Inbucket / `[auth.sms.test_otp]` で擬似検証できる。
 
 ## シナリオ 1: 本番で認証メールが届く（US1）
@@ -47,7 +47,7 @@
 
 ## config / DNS チェックリスト（ユニット不能・手動）
 
-- [ ] `supabase/config.toml [auth.email.smtp] enabled=true`（SendGrid、sender/admin_email 設定）
+- [ ] `supabase/config.toml [auth.email.smtp] enabled=true`（Resend、sender_name / admin_email=env(CONTACT_MAIL_FROM) 設定）
 - [ ] `supabase/templates/confirmation.html`（日本語）反映
 - [ ] SPF / DKIM / DMARC レコード投入済み・検証パス
 - [ ] `[auth.mfa.phone] enroll_enabled=true / verify_enabled=true`

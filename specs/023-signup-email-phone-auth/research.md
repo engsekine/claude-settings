@@ -4,13 +4,13 @@ spec の Deferred 項目と Technical Context の未確定点を解決する。�
 
 ## 1. 本番メール送信元（SMTP プロバイダ）
 
-- **Decision**: Supabase Auth の `[auth.email.smtp]` を **SendGrid**（`smtp.sendgrid.net:587`、user=`apikey`、pass=`env(SENDGRID_API_KEY)`）で有効化する。`sender_name` / `admin_email` は本サービス用の差出人に設定。
-- **Rationale**: `supabase/config.toml` に SendGrid の雛形が既にコメントで用意されており（`host = "smtp.sendgrid.net"`）、プロジェクトの既定選択と解釈できる。Supabase 内蔵メールは本番非推奨・低レート（`max_frequency` 制約）で到達性が低いため、外部 SMTP が必須。
-- **Alternatives considered**: Amazon SES（安価だが初期設定・サンドボックス解除が重い）、Resend（DX 良好だが config.toml に雛形なし）。既存雛形との一致を優先し SendGrid を採用。
+- **Decision**: Supabase Auth の `[auth.email.smtp]` を **Resend**（`smtp.resend.com:587`、user=`resend`、pass=`env(RESEND_API_KEY)`）で有効化する。`sender_name="ダイビングログ"` / `admin_email=env(CONTACT_MAIL_FROM)` を設定。※ 当初は SendGrid 案だったが、実装時のコード確認でプロジェクトが既に Resend を email プロバイダとして利用していると判明し、既存プロバイダへの統一を優先して変更（tasks.md T004 参照）。
+- **Rationale**: 既存の問い合わせメール送信が Resend を利用しており、プロバイダ・API キー・ドメイン認証を一本化できる。Supabase 内蔵メールは本番非推奨・低レート（`max_frequency` 制約）で到達性が低いため、外部 SMTP が必須。
+- **Alternatives considered**: SendGrid（config.toml に雛形コメントあり。当初案だったが既存 Resend 利用との重複を避け不採用）、Amazon SES（安価だが初期設定・サンドボックス解除が重い）。
 
 ## 2. メール到達性（送信者認証: SPF / DKIM / DMARC）
 
-- **Decision**: 送信元ドメインに対し SendGrid のドメイン認証（SPF・DKIM の CNAME 群）を設定し、DMARC レコードを `p=none`（監視）から開始する。設定は本番 DNS の運用作業として quickstart に手順化し、コード変更はしない。
+- **Decision**: 送信元ドメインに対し Resend のドメイン認証（SPF・DKIM レコード）を設定し、DMARC レコードを `p=none`（監視）から開始する。設定は本番 DNS の運用作業として quickstart に手順化し、コード変更はしない。
 - **Rationale**: FR-007（送信元ドメインの正当性）と SC-001（99% 到達）を満たすには送信者認証が前提。迷惑メール振り分け（Edge Case）を最小化する。
 - **Alternatives considered**: 認証なしの共有 IP 送信（到達性が低くバウンス/スパム率が悪化）→ 却下。
 
@@ -34,7 +34,7 @@ spec の Deferred 項目と Technical Context の未確定点を解決する。�
 
 ## 6. 有効化後のログイン 2 段階目（AAL1 → AAL2 の強制）
 
-- **Decision**: ログイン 1 段階目成功後、`supabase.auth.mfa.getAuthenticatorAssuranceLevel()` が `currentLevel='aal1'` かつ `nextLevel='aal2'` の場合、保護ルート（`(authenticated)`）へ入れず 2 段階目チャレンジ画面へ誘導する。ガードは `service-front/src/proxy.ts`（middleware）+ `app/(authenticated)/layout.tsx` の二層で行い、既存の email 未確認チェックと同じ場所に AAL チェックを追加する。チャレンジは `mfa.challenge({ factorId })` で SMS 送信 → `mfa.verify({ factorId, challengeId, code })` で昇格。
+- **Decision**: ログイン 1 段階目成功後、`supabase.auth.mfa.getAuthenticatorAssuranceLevel()` が `currentLevel='aal1'` かつ `nextLevel='aal2'` の場合、保護ルート（`(authenticated)`）へ入れず 2 段階目チャレンジ画面（`/login/verify`）へ誘導する。ガードは `app/(authenticated)/layout.tsx` に**一元化**し、既存の email 未確認チェックと同じ場所に AAL チェックを追加する。※ 当初は proxy.ts（middleware）との二層案だったが、middleware でのリクエスト毎 AAL 取得コストとリダイレクトループ回避のため実装時に layout 一元化へ変更（proxy.ts には `/login/verify` が AUTH_ROUTES に含まれない旨の注記のみ）。チャレンジは `mfa.challenge({ factorId })` で SMS 送信 → `mfa.verify({ factorId, challengeId, code })` で昇格。
 - **Rationale**: Supabase MFA はパスワード認証後に AAL1 セッションを張り、challenge/verify で AAL2 へ昇格するモデル。spec の「2 段階目未完了ではログイン未完了（保護コンテンツに入れない）」を、AAL2 未達なら保護ルートを遮断することで満たす。既存ガードに AAL 判定を足すだけで済み、変更範囲が小さい。
 - **Alternatives considered**: RLS で AAL2 を要求（`(select auth.jwt()->>'aal')`）する DB 側強制 → 本フィーチャーは public 新規テーブルを持たないためルートガードで十分。将来 DB 側強制が必要になれば追加。
 
@@ -58,4 +58,4 @@ spec の Deferred 項目と Technical Context の未確定点を解決する。�
 
 ## 未解決（NEEDS CLARIFICATION 残なし）
 
-Phase 0 で spec の Deferred はすべて設計判断として解決済み。実運用値（SendGrid/Twilio の本番アカウント発行、DNS への実レコード投入、しきい値の最終数値）は実装・運用作業として quickstart / tasks に委譲する。
+Phase 0 で spec の Deferred はすべて設計判断として解決済み。実運用値（Resend/Twilio の本番アカウント発行、DNS への実レコード投入、しきい値の最終数値）は実装・運用作業として quickstart / tasks に委譲する。

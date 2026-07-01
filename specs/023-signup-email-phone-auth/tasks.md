@@ -62,7 +62,7 @@ Web アプリ（モノレポ）: `service-front/src/`、`admin-front/src/`、`su
 - [X] T009 [US1] `ResendConfirmationButton` Client Component を `service-front/src/features/auth/components/client/ResendConfirmationButton/`（本体 + `index.ts`）に実装（T008 に依存）
 - [X] T010 [US1] サインアップ完了状態（「確認メールを送信しました」）に再送ボタンを組み込む: `service-front/src/features/auth/components/client/SignupForm/SignupForm.tsx`（`ResendConfirmationButton email={sentTo}`）
 - [X] T011 [US1] `/login?error=email_not_verified` 表示時に再送導線を追加: `service-front/src/app/(auth)/login/page.tsx`（宛先不明のため `ResendConfirmationButton`（email 未指定＝メール入力欄あり）を表示）
-- [ ] T012 [US1] （運用・コード外）本番 DNS に SendGrid ドメイン認証（SPF/DKIM CNAME）と DMARC を設定し検証（FR-007 / SC-001）。手順は `quickstart.md` に記載
+- [ ] T012 [US1] （運用・コード外）本番 DNS に Resend ドメイン認証（SPF/DKIM）と DMARC を設定し検証（FR-007 / SC-001）。手順は `quickstart.md` に記載
 - [ ] T013 [US1] `quickstart.md` シナリオ 1 を実行して US1 を検証（到達 2 分以内 / 再送 / 期限切れリンク / リセットメール到達）
 
 **Checkpoint**: US1 が単独で機能・検証可能（MVP）
@@ -108,7 +108,7 @@ Web アプリ（モノレポ）: `service-front/src/`、`admin-front/src/`、`su
 
 - [ ] T034 [P] パスワードリセット（recovery）・メール変更（email_change）の日本語テンプレートを `supabase/templates/` に追加し、`supabase/config.toml` から参照（優先度低・Clarify Q2=A の補完）
 - [X] T035 各フロントで `npm run check`（biome）・型チェック・Vitest を通し、命名/CSS/a11y 規約（`.claude/rules/`）準拠を確認
-- [ ] T036 `/review` と仕様同期（spec/plan と実装の整合）を実施し、`checklists/requirements.md` を再検証
+- [X] T036 `/review` と仕様同期（spec/plan と実装の整合）を実施し、`checklists/requirements.md` を再検証（2026-07-02: /review + /sync-spec 実施。contracts 3 件・plan・research・quickstart・data-model を実装に合わせて更新。requirements.md は全項目パス維持）
 - [ ] T037 `quickstart.md` の全シナリオ + config/DNS チェックリストを本番相当環境で通し、SC-001/004/005/006 を確認
 
 ---

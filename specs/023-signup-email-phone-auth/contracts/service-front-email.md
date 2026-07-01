@@ -10,10 +10,10 @@ resendConfirmationEmail(email: string): Promise<ActionResult>
 
 - **目的**: 未確認ユーザーがサインアップ確認メールを再送する（FR-004）。
 - **入力**: `email`（サインアップに使ったアドレス）。
-- **処理**: `supabase.auth.resend({ type: 'signup', email, options: { emailRedirectTo: '/api/auth/callback?next=/dives' } })`。
-- **成功**: `{ ok: true }`（UI は「再送しました」+ クールダウン開始）。
-- **失敗/レート制限**: `{ ok: false, message }`。`max_frequency` 超過時は「しばらくしてから再度お試しください」を返す（FR-005）。
-- **既確認/存在しないアドレス**: ユーザー列挙を避けるため、成功と同一の見え方にする（メッセージは「送信しました（該当する場合）」）。
+- **処理**: `supabase.auth.resend({ type: 'signup', email, options: { emailRedirectTo: `${siteUrl}/api/auth/callback?next=/dives` } })`。`siteUrl` は `NEXT_PUBLIC_SITE_URL`（未設定時 `https://localhost:3000`）。
+- **成功**: `{ success: true }`（`ActionResult`）。UI は「確認メールを再送しました。メールをご確認ください。」+ 60 秒クールダウン開始。
+- **レート制限**: `{ success: false, error: '確認メールの再送は、しばらく時間をおいてから再度お試しください' }`（status 429 または rate limit エラー時 / FR-005）。
+- **既確認/存在しないアドレス/その他の失敗**: ユーザー列挙を避けるため、レート制限以外の失敗はすべて成功と同一の見え方にする（`{ success: true }` を返し、UI 文言も成功時と同一）。
 
 ### 呼び出し UI
 
