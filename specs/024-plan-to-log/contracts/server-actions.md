@@ -24,14 +24,15 @@ createDiveFromPlan(
 |---|---|---|---|
 | 1 | `auth.getUser()` で認証確認 | 未認証 → `actionFailure('ログインが必要です')` | FR-014 |
 | 2 | `dive_plans` から `planId` を select（本人分・RLS） | 見つからない → `actionFailure('この予定は既に移動済みか削除されています')`（**ログを作成しない**） | FR-015（重複作成防止） |
-| 3 | `createDive(input)` を呼びログ作成 | `!result.success` → その `result` をそのまま返す（**予定は削除しない**） | FR-006 / FR-010 |
-| 4 | `dive_plans` を `planId` で delete（`plan_packing_items` は cascade） | delete エラー → `actionSuccess({ ...result, planDeleteFailed: true })`（**ログは保持**） | FR-011 / FR-011a |
-| 5 | `revalidatePath('/plans')` / `revalidatePath('/')`（次の予定カード） | — | 一覧・TOP の再検証 |
-| 6 | `actionSuccess({ id: result.id, buddyWarning?: result.buddyWarning })` を返す | — | FR-012 / FR-013 |
+| 3 | `planned_on` の未来日検証（JST の今日を基準） | 未来日 → `actionFailure('未来の予定はログに移動できません。予定日を過ぎてから移動してください')`（**ログを作成しない**） | FR-002 |
+| 4 | `createDive(input)` を呼びログ作成 | `!result.success` → その `result` をそのまま返す（**予定は削除しない**） | FR-006 / FR-010 |
+| 5 | `dive_plans` を `planId` で delete（`plan_packing_items` は cascade） | delete エラーまたは削除行数 0 → `actionSuccess({ ...result, planDeleteFailed: true })`（**ログは保持**） | FR-011 / FR-011a / FR-015 |
+| 6 | `revalidatePath('/plans')` / `revalidatePath('/')`（次の予定カード） | — | 一覧・TOP の再検証 |
+| 7 | `actionSuccess({ id: result.id, buddyWarning?: result.buddyWarning })` を返す | — | FR-012 / FR-013 |
 
 - ステップ 2 の存在確認はログ作成の**前**に行う（作成後に確認しても重複ログは防げない）。
-- ステップ 3 は既存 `createDive` を再利用し、写真・バディ同期を含む挙動を重複実装しない。
-- 未来日予定が誤って渡された場合は `createDive` 内の潜水日バリデーション（未来日不可）で失敗し、ステップ 4 に到達せず予定は残る（保険）。
+- ステップ 3 で `createDiveFromPlan` がサーバー側で `planned_on` を検証し、未来日は「未来の予定はログに移動できません。予定日を過ぎてから移動してください」で拒否する（FR-002）。UI の導線出し分けには依存しない。
+- ステップ 4 は既存 `createDive` を再利用し、写真・バディ同期を含む挙動を重複実装しない。
 
 ### 成功/失敗レスポンス例
 

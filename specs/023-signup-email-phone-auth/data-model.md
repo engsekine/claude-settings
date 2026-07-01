@@ -53,6 +53,7 @@
 | `supabase/config.toml [auth.email.smtp]` | コメント解除・Resend 本番設定（`smtp.resend.com` / sender_name / admin_email=env / pass=env(RESEND_API_KEY)） |
 | `supabase/config.toml [auth.mfa.phone]` | `enroll_enabled=true` / `verify_enabled=true` |
 | `supabase/config.toml [auth.sms.twilio]` | `enabled=true` + `account_sid`/`message_service_sid`/`auth_token=env` |
+| `supabase/config.toml [auth] / [auth.email]` | `secure_password_change=true`（再認証必須）・`[auth.email] max_frequency=60s`（メール爆撃対策・UI クールダウンと整合）に変更（2026-07-02 セキュリティ監査） |
 | `supabase/templates/confirmation.html`（新規） | 日本語のサインアップ確認テンプレート |
 | `supabase/templates/recovery.html` ほか（任意） | パスワードリセット等の日本語化（優先度低） |
 | 環境変数 | `RESEND_API_KEY` / `CONTACT_MAIL_FROM` / `SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN` / `SUPABASE_SERVICE_ROLE_KEY`（admin-front） |

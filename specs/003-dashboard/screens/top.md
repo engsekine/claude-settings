@@ -29,7 +29,7 @@
 ┌──────────────────────────────────┐
 │ Header                            │
 ├──────────────────────────────────┤
-│ こんにちは、🪼〇〇さん              │
+│ ようこそ、○○さん                  │
 │ 前回のダイブから 12 日              │
 │              [＋ 新しいログを記録]  │
 ├──────────────────────────────────┤
@@ -75,13 +75,13 @@
 | 累計ダイブ本数 | `count(*) from dives where user_id = auth.uid()` |
 | 累計潜水時間 | `sum(bottom_time_min) from dives where user_id = auth.uid()` |
 | 最大水深 | `max(max_depth_m) from dives where user_id = auth.uid()` |
-| 訪問スポット数 | `count(distinct location) from dives where user_id = auth.uid()` |
+| 訪問スポット数 | `count(distinct coalesce(dive_site_id::text, location)) from dives where user_id = auth.uid()`（サイト参照または自由入力の distinct カウント） |
 
 ### 表示
 
 - 累計潜水時間: `XX 時間 YY 分`（60 分未満なら `YY 分`。100 時間超でも丸めず時間表記のまま — 実装で確定）
 - 累計本数: `XX 本`
-- 最大水深: `XX.X m`
+- 最大水深: 記録値をそのまま `m` 付きで表示（小数は `32.5 m`、整数もそのまま `32 m`）
 - 訪問スポット数: `XX スポット`
 
 ### 取得方針

@@ -115,6 +115,9 @@ create policy "buddy can opt out own tag"
     using (buddy_user_id = (select auth.uid()))
     with check (buddy_user_id = (select auth.uid()));
 
+-- 補足: dive_log_buddies の UPDATE は removed_by_buddy の変更のみ許可
+-- （20260702110300 のトリガで dive_id 等の付け替えを禁止）
+
 -- DELETE: dive 所有者のみ、かつ本人除去済みでない行
 create policy "dive owner can delete non-optout buddies"
     on public.dive_log_buddies for delete

@@ -18,7 +18,7 @@ canMovePlanToLog(plannedOn: string, today: string): boolean
 | 画面 | 位置 | 表示条件 | 実体 |
 |---|---|---|---|
 | 予定詳細 `/plans/[id]` | 「編集 / 削除」ボタンと同じ操作行 | `canMovePlanToLog(plannedOn, todayInJst())` が true | `Link`（`buttonVariants({ variant: 'default' })`）→ `/dives/new?fromPlanId=<id>` |
-| 予定一覧 `/plans`（`PlanList` 内 `PlanCard`） | 対象カードのアクション | 同上（`today` prop を利用） | 同上 |
+| 予定一覧 `/plans`（`PlanList` 内 `PlanCard`） | 対象カードのアクション | 同上（`today` prop を利用） | `Link`（`buttonVariants({ variant: 'outline', size: 'sm' })`）→ `/dives/new?fromPlanId=<id>` |
 
 - ラベル: 「ログに記録する」。未来日の予定には**表示しない**（非表示。FR-002）。
 - アクセシビリティ: `Link` によりキーボード操作可。アイコンのみにせず可視テキストを持つ。予定日・ポイントが同カード内で読めるため、リンクには `aria-label`（例: 「<ポイント名>の予定をログに記録する」）を付与して文脈を補う。
@@ -41,7 +41,7 @@ canMovePlanToLog(plannedOn: string, today: string): boolean
 
 ```ts
 planToDiveDefaults(plan: PlanView): Partial<DiveFormValues>
-// { diveDate: plan.plannedOn, location: plan.location, notes: plan.notes ?? undefined }
+// { diveDate: plan.plannedOn, location: plan.location, notes: plan.notes }（notes は null のまま渡す）
 ```
 
 | 予定 | → DiveFormValues | 備考 |

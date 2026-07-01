@@ -261,6 +261,7 @@ export const calcOverhaulStatus = (input: OverhaulInput): OverhaulStatus => { ..
 ### 判定ロジック
 
 ```
+nextOverhaulDate = lastOverhauledOn + intervalMonths ヶ月
 remainingDays  = nextOverhaulDate - today（日単位）
 remainingDives = intervalDives - divesSinceLastOverhaul
 
@@ -268,6 +269,8 @@ if (remainingDays <= 0 || remainingDives <= 0) level = 'expired'
 else if (remainingDays <= 30 || remainingDives <= 10) level = 'warning'
 else level = 'ok'
 ```
+
+`nextOverhaulDate` の月加算では、加算後の月に存在しない日（例: 1/31 + 1 ヶ月）は対象月の月末日に丸める（`overhaul.ts` の `addMonths`）。
 
 ### 「last_overhauled_on 以降のダイブ本数」の取得
 

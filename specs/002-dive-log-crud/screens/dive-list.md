@@ -95,13 +95,8 @@ graph LR
 
 ## 5. 検索仕様
 
-| 項目 | 入力 | クエリ |
-|------|------|--------|
-| ダイブ番号 | `<input type="number">` | `dive_number = ?` |
-| 潜水日 | `<input type="date">` | `dive_date = ?` |
-| ポイント名（部分一致） | `<input type="text">` | `location ilike '%?%'` |
+検索条件・URL パラメータの初版仕様（`?diveNumber=&diveDate=&location=`）は **013-dive-search-filters の検索仕様に置換済み**。項目一覧・URL クエリの contract は [`specs/013-dive-search-filters/contracts/search-params.md`](../../013-dive-search-filters/contracts/search-params.md) を参照。
 
-- 検索条件は URL クエリ（`?diveNumber=&diveDate=&location=`）で保持
 - 並び順: `dive_date desc, id desc`
 - ページサイズ: 20
 
