@@ -2,16 +2,12 @@ import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
 
 import type { NextPlanSummary } from '@/features/plans/types';
+import { formatJstDate } from '@/shared/lib/date';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
 
 interface NextPlanCardViewProps {
     summary: NextPlanSummary | null;
 }
-
-const formatDate = (isoDate: string): string => {
-    const [y, m, d] = isoDate.split('-');
-    return `${y}/${m}/${d}`;
-};
 
 /** 残り日数の表示。色だけに依存せずテキストで伝える（表記は PlanList と統一: あとN日） */
 const formatDaysUntil = (daysUntil: number): string => {
@@ -31,9 +27,11 @@ export const NextPlanCardView = ({ summary }: NextPlanCardViewProps) => {
                 aria-labelledby="next-plan-empty-heading"
                 className="flex flex-col items-start gap-3 rounded-lg border border-border bg-background p-4"
             >
-                <h2 id="next-plan-empty-heading" className="font-semibold text-base text-foreground">
+                {/* app/page.tsx の h2「次のダイビング予定」配下に置かれるため h3 が正しい階層。
+                    markuplint のコンポーネント単独解析による見出しスキップ誤検知は .markuplintrc で抑止 */}
+                <h3 id="next-plan-empty-heading" className="font-semibold text-base text-foreground">
                     次の予定
-                </h2>
+                </h3>
                 <p className="text-muted-foreground text-sm">次のダイビングを計画しよう</p>
                 <Link href="/plans/new" className={buttonVariants()}>
                     予定を作成する
@@ -51,9 +49,9 @@ export const NextPlanCardView = ({ summary }: NextPlanCardViewProps) => {
         >
             <Link href={`/plans/${summary.id}`} className="flex flex-col gap-2">
                 <div className="flex items-center justify-between gap-2">
-                    <h2 id="next-plan-heading" className="font-semibold text-base text-foreground">
+                    <h3 id="next-plan-heading" className="font-semibold text-base text-foreground">
                         次の予定
-                    </h2>
+                    </h3>
                     <span className="rounded-md bg-primary/10 px-2 py-0.5 text-primary text-xs">
                         <span className="sr-only">残り日数: </span>
                         {formatDaysUntil(summary.daysUntil)}
@@ -62,7 +60,7 @@ export const NextPlanCardView = ({ summary }: NextPlanCardViewProps) => {
                 <div className="flex items-center gap-2">
                     <p className="text-muted-foreground text-sm">
                         <span className="sr-only">予定日: </span>
-                        {formatDate(summary.plannedOn)}
+                        {formatJstDate(summary.plannedOn)}
                     </p>
                     {/* バッジは text-muted-foreground だと bg-muted 上でコントラスト AA 未達のため text-foreground を使う */}
                     {tidePhase !== null && (

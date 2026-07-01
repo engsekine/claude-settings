@@ -2,11 +2,11 @@
 
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button } from '@repo/ui/components/button';
-import type { KeyboardEvent, WheelEvent } from 'react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { DIVE_TYPE_OPTIONS } from '@/features/dives/constants';
+import { blockNonIntegerKeys, blurOnWheel } from '@/features/dives/lib/numericInput';
 import { type DiveSearchValues, diveSearchSchema } from '@/features/dives/schemas/dive.schema';
 import type { DiveListFilter } from '@/features/dives/types';
 import { FormField } from '@/shared/components/form';
@@ -21,19 +21,6 @@ const countAdvancedFilters = (filter: DiveListFilter | undefined): number => {
     if (!filter) return 0;
     const keys: (keyof DiveListFilter)[] = ['dateFrom', 'dateTo', 'depthMin', 'depthMax', 'diveType', 'buddyName'];
     return keys.filter((key) => filter[key] !== undefined).length;
-};
-
-/** number 入力にホイールでフォーカスしたまま値が変わる事故を防ぐ */
-const blurOnWheel = (e: WheelEvent<HTMLInputElement>) => {
-    e.currentTarget.blur();
-};
-
-/** type=number でも 'e' / '+' / '-' などは入力できてしまうのでブロックする（非負整数用） */
-const BLOCKED_INTEGER_KEYS = new Set(['e', 'E', '+', '-', '.', ',']);
-const blockNonIntegerKeys = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (BLOCKED_INTEGER_KEYS.has(e.key)) {
-        e.preventDefault();
-    }
 };
 
 const ADVANCED_PANEL_ID = 'dive-advanced-filters';

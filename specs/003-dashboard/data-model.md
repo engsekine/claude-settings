@@ -58,7 +58,7 @@ returns table (total_dives bigint, total_bottom_time_min bigint, max_depth_m num
 language sql / stable / security invoker / set search_path = ''
 ```
 
-- `security invoker` + RLS により呼び出しユーザーのデータのみ集計される
+- 本人限定は関数内の `where user_id = (select auth.uid())` が保証する。RLS は 021 の公開読み取りポリシー以降、他人の公開ログも可視にするため単独では不十分
 - `max_depth_m` は numeric のため、アプリ側は `toNumber`（`@/shared/lib/number`）で数値化する
 
 ## アプリ型との対応

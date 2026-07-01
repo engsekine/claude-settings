@@ -18,6 +18,8 @@
 - `duplicate_user`: 同一登録ユーザー重複 → 部分ユニーク違反を捕捉
 - `retag_blocked`: 本人除去済み相手の再タグ → INSERT 失敗を握り、UI に理由表示
 
+> 注記: 現フェーズの実装は INSERT 失敗を汎用警告「同行バディの保存に一部失敗しました」に集約する（登録ユーザーのバディ追加 UI 未提供のため）。
+
 ## `removeBuddyTagOfSelf(buddyTagId: string)`（本人除去・FR-024a）
 
 | 項目 | 内容 |

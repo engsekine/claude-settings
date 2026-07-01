@@ -43,6 +43,8 @@
 
 **Gate 結果**: 違反なし。Complexity Tracking は不要。
 
+**セキュリティ強化（2026-07-02 監査）**: `submit_inquiry` は 20260702110400 で強化: `submitter_user_id` は引数でなく `auth.uid()` を記録（偽装防止）。IP 非依存のレート制限（同一メール宛 3件/60秒・同一メール+本文の重複拒否・全体 20件/60秒）を追加。XFF 先頭値は偽装可能なため IP ベースの制限は防御の一層にすぎない。
+
 ## Project Structure
 
 ### Documentation (this feature)

@@ -14,11 +14,11 @@ const GENDER_LABEL: Record<string, string> = { male: '男性', female: '女性',
 
 export default async function UserDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const view = await getUserDetail(id);
+    /** 両クエリは独立（それぞれ requireAdmin を通る）ため並列で取得する */
+    const [view, mfaStatus] = await Promise.all([getUserDetail(id), getUserMfaStatus(id)]);
     if (!view) notFound();
 
     const { detail, diveCount } = view;
-    const mfaStatus = await getUserMfaStatus(id);
 
     const rows: { label: string; value: string }[] = [
         { label: 'ニックネーム', value: detail.nickname },

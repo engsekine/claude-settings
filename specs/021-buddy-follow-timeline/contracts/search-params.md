@@ -17,7 +17,7 @@
 |---|---|
 | `buddyUserId` | `dive_log_buddies` に `(dive_id, buddy_user_id=:buddyUserId, removed_by_buddy=false)` が存在する dive に限定 |
 | `buddyName` | `dive_log_buddies.buddy_name ILIKE %:buddyName%`（`removed_by_buddy=false`）が存在する dive に限定 |
-| 権限 | 結果は既存 dives RLS により「本人ログ + 閲覧可能な公開ログ」のみ（FR-023） |
+| 権限 | 検索対象は本人ログのみ（`fetchDiveListPage` が `user_id=self` を固定。公開ログは検索対象外）（FR-023） |
 
 実装は `dive_id in (select dive_id from dive_log_buddies where ...)` のサブクエリ、または inner join + distinct。除去済みタグ（`removed_by_buddy=true`）はヒットさせない。
 

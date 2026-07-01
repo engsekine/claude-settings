@@ -15,7 +15,7 @@ Phase 0。spec.md / clarifications の決定を実装方式へ落とし込み、
 
 ## R-002: レート制限の方式としきい値
 
-- **Decision**: IP 単位のレート制限を `submit_inquiry` 内で実施する。`inquiries.submitter_ip inet`（nullable）に送信元 IP を保存し、**同一 IP から直近 60 秒で 3 件以上**の送信があれば例外を送出して拒否する。加えて**同一 IP + 同一本文**が直近 5 分以内にあれば重複として拒否する（多重送信防止）。IP は Server Action で `headers()` の `x-forwarded-for` 先頭値から取得して関数に渡す。
+- **Decision**: IP 単位のレート制限を `submit_inquiry` 内で実施する。`inquiries.submitter_ip inet`（nullable）に送信元 IP を保存し、**同一 IP から直近 60 秒で 3 件以上**の送信があれば例外を送出して拒否する。加えて**同一 IP + 同一本文**が直近 5 分以内にあれば重複として拒否する（多重送信防止）。IP は Server Action で `headers()` の `x-forwarded-for` 先頭値から取得して関数に渡す。ただし XFF 先頭値はクライアントが偽装可能なため、IP ベースの制限は防御の一層にすぎない（20260702110400 で IP 非依存のレート制限を追加済み）。
 - **Rationale**:
   - clarifications で「レート制限の閾値は計画フェーズで決定」とした未確定点をここで確定。低頻度の正当な利用を妨げず、bot の連投を抑える妥当な初期値。
   - IP 単位はメール詐称に強い。`inet` 型は PostgreSQL ネイティブで比較・索引が容易。

@@ -38,10 +38,15 @@ export const getAdminUser = async (): Promise<AdminUser | null> => {
 /**
  * 管理者であることを要求する二次ガード（多層防御 / SC-001）。
  * 全 queries.ts / actions.ts の冒頭で呼ぶ。
- * 未認証・非管理者ならログインへリダイレクトする。
+ *
+ * 失敗時は署名アウト用 Route Handler 経由でログインへ誘導する。
+ * 直接 /login に飛ばすと「認証済みだが非管理者」（無効化直後の管理者等）のセッションが残り、
+ * proxy（認証済みは /login → /）との間で無限リダイレクトになるため。
+ * Server Component のレンダリング中は Cookie を変更できないので、
+ * signOut は Route Handler（/api/auth/signout）側で行う。
  */
 export const requireAdmin = async (): Promise<AdminUser> => {
     const admin = await getAdminUser();
-    if (!admin) redirect('/login');
+    if (!admin) redirect('/api/auth/signout');
     return admin;
 };

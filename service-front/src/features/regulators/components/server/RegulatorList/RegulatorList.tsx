@@ -2,17 +2,13 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import type { Regulator } from '@/features/regulators/types';
+import { formatJstDate } from '@/shared/lib/date';
 
 interface RegulatorListProps {
     regulators: Regulator[];
     /** 各行の操作エリア（編集リンク・削除ボタン等）。ページ側で組み立てて渡す */
     renderActions?: (regulator: Regulator) => ReactNode;
 }
-
-const formatDate = (isoDate: string): string => {
-    const [y, m, d] = isoDate.split('-');
-    return `${y}/${m}/${d}`;
-};
 
 interface RegulatorCardProps {
     regulator: Regulator;
@@ -35,7 +31,7 @@ const RegulatorCard = ({ regulator, actions }: RegulatorCardProps) => {
             <dl className="flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground text-sm">
                 <div className="flex items-center gap-1">
                     <dt className="font-medium">前回 OH 日</dt>
-                    <dd>{formatDate(regulator.lastOverhauledOn)}</dd>
+                    <dd>{formatJstDate(regulator.lastOverhauledOn)}</dd>
                 </div>
                 <div className="flex items-center gap-1">
                     <dt className="font-medium">OH 周期</dt>

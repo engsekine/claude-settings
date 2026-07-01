@@ -88,8 +88,11 @@ create trigger dive_log_buddies_prevent_self_buddy
 alter table public.dive_log_buddies enable row level security;
 
 -- SELECT: 親 dive が閲覧可能（所有者 or 公開・未削除）、または自分宛タグ（本人による管理用）
+-- 20260702120000 で to authenticated に限定（anon の残置面を除去。公開写真の
+-- dive_photos / Storage 読み取りも同マイグレーションで authenticated 限定）
 create policy "read buddies of viewable dives"
     on public.dive_log_buddies for select
+    to authenticated
     using (
         exists (
             select 1 from public.dives d
@@ -114,6 +117,9 @@ create policy "buddy can opt out own tag"
     on public.dive_log_buddies for update
     using (buddy_user_id = (select auth.uid()))
     with check (buddy_user_id = (select auth.uid()));
+
+-- 補足: dive_log_buddies の UPDATE は removed_by_buddy の変更のみ許可
+-- （20260702110300 のトリガで dive_id 等の付け替えを禁止）
 
 -- DELETE: dive 所有者のみ、かつ本人除去済みでない行
 create policy "dive owner can delete non-optout buddies"

@@ -5,12 +5,13 @@ import { Button } from '@repo/ui/components/button';
 import { XIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { type ChangeEvent, type KeyboardEvent, useEffect, useState, type WheelEvent } from 'react';
+import { type ChangeEvent, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { DIVE_TYPE_OPTIONS, GAS_TYPE_OPTIONS, TANK_TYPE_OPTIONS } from '@/features/dives/constants';
 import { useDiveFormSubmit } from '@/features/dives/hooks/useDiveFormSubmit';
 import { calcBottomTimeMin } from '@/features/dives/lib/calcBottomTime';
+import { blockNonIntegerKeys, blurOnWheel } from '@/features/dives/lib/numericInput';
 import { type PhotoFileMeta, photoValidationMessage, validateNewPhotos } from '@/features/dives/lib/photoValidation';
 import { type DiveFormValues, diveSchema } from '@/features/dives/schemas/dive.schema';
 import type { DivePhotoView } from '@/features/dives/types';
@@ -31,19 +32,6 @@ interface DiveFormProps {
     /** 予定→ログ移動（024）のとき、移動元の予定 ID。保存成功時にその予定が削除される */
     fromPlanId?: string;
 }
-
-/** number 入力にホイールでフォーカスしたまま値が変わる事故を防ぐ */
-const blurOnWheel = (e: WheelEvent<HTMLInputElement>) => {
-    e.currentTarget.blur();
-};
-
-/** type=number でも 'e' / '+' / '-' / '.' などは入力できてしまうのでブロックする（非負整数用） */
-const BLOCKED_INTEGER_KEYS = new Set(['e', 'E', '+', '-', '.', ',']);
-const blockNonIntegerKeys = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (BLOCKED_INTEGER_KEYS.has(e.key)) {
-        e.preventDefault();
-    }
-};
 
 const createDefaultValues = (overrides?: Partial<DiveFormValues>): DiveFormValues => ({
     diveNumber: null,

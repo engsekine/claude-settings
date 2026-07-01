@@ -10,6 +10,10 @@ concurrency:
     group: full-test-${{ github.ref }}
     cancel-in-progress: false
 
+# GITHUB_TOKEN は最小権限に固定（依存 install スクリプト経由のトークン窃取対策）
+permissions:
+    contents: read
+
 jobs:
     e2e:
         runs-on: ubuntu-latest
@@ -18,7 +22,7 @@ jobs:
             - uses: actions/checkout@v4
             - uses: actions/setup-node@v4
               with:
-                  node-version: 22
+                  node-version: 24
                   cache: npm
             - run: npm ci
             - uses: supabase/setup-cli@v1
@@ -60,7 +64,7 @@ jobs:
             - uses: actions/checkout@v4
             - uses: actions/setup-node@v4
               with:
-                  node-version: 22
+                  node-version: 24
                   cache: npm
             - run: npm ci
             - name: Playwright ブラウザをインストール

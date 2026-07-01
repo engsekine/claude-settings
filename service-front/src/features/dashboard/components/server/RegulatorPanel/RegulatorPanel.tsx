@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 
 import type { OverhaulLevel } from '@/features/dashboard/lib/overhaul';
 import type { PrimaryRegulatorStatus } from '@/features/dashboard/types';
+import { formatJstDate } from '@/shared/lib/date';
 
 interface RegulatorPanelProps {
     /** メイン機材の OH ステータス。レギュレーター未登録は null */
@@ -18,8 +19,6 @@ const LEVEL_DISPLAY: Record<OverhaulLevel, { symbol: string; label: string; clas
     warning: { symbol: '▲', label: '期限間近', className: 'bg-yellow-100 text-yellow-800' },
     expired: { symbol: '■', label: '期限切れ', className: 'bg-red-100 text-red-800' },
 };
-
-const formatDate = (isoDate: string): string => isoDate.split('-').join('/');
 
 const formatRemainingDays = (remainingDays: number): string => {
     if (remainingDays < 0) return `${-remainingDays}日超過`;
@@ -38,9 +37,11 @@ export const RegulatorPanel = ({ status, recordButton }: RegulatorPanelProps) =>
                 aria-labelledby="regulator-panel-empty-heading"
                 className="flex flex-col items-start gap-3 rounded-lg border border-border bg-background p-4"
             >
-                <h2 id="regulator-panel-empty-heading" className="font-semibold text-base text-foreground">
+                {/* TopDashboard の h2「レギュレーター OH 状況」配下に置かれるため h3 が正しい階層。
+                    markuplint のコンポーネント単独解析による見出しスキップ誤検知は .markuplintrc で抑止 */}
+                <h3 id="regulator-panel-empty-heading" className="font-semibold text-base text-foreground">
                     OH ステータス
-                </h2>
+                </h3>
                 <p className="text-muted-foreground text-sm">レギュレーターを登録すると OH 期限をお知らせします</p>
                 <Link href="/settings/equipment" className={buttonVariants()}>
                     レギュレーターを登録する
@@ -58,9 +59,9 @@ export const RegulatorPanel = ({ status, recordButton }: RegulatorPanelProps) =>
             className="flex flex-col gap-2 rounded-lg border border-border bg-background p-4"
         >
             <div className="flex items-center justify-between gap-2">
-                <h2 id="regulator-panel-heading" className="font-semibold text-base text-foreground">
+                <h3 id="regulator-panel-heading" className="font-semibold text-base text-foreground">
                     OH ステータス
-                </h2>
+                </h3>
                 <span
                     role={level === 'expired' ? 'status' : undefined}
                     className={`rounded-md px-2 py-0.5 text-xs ${display.className}`}
@@ -74,7 +75,7 @@ export const RegulatorPanel = ({ status, recordButton }: RegulatorPanelProps) =>
                 <span className="sr-only">機材名: </span>
                 {`${status.brand} ${status.model}`}
             </p>
-            <p className="text-muted-foreground text-sm">{`次回 OH 期限: ${formatDate(nextOverhaulDate)}`}</p>
+            <p className="text-muted-foreground text-sm">{`次回 OH 期限: ${formatJstDate(nextOverhaulDate)}`}</p>
             <p className="text-muted-foreground text-sm">
                 {`${formatRemainingDays(remainingDays)} / ${formatRemainingDives(remainingDives)}`}
             </p>

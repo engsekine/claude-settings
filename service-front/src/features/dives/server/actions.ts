@@ -3,7 +3,10 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
+import { buildDivePrefix, DIVE_PHOTOS_BUCKET, type PhotoKind } from '@/features/dives/lib/photoStorage';
 import type { DiveFormValues } from '@/features/dives/schemas/dive.schema';
+import { requireUser } from '@/shared/lib/auth';
+import { todayInJst } from '@/shared/lib/date';
 import { createClient } from '@/shared/lib/supabase/server';
 import { type ActionResult, actionFailure, actionSuccess } from '@/shared/types/action-result';
 
@@ -174,10 +177,8 @@ export const createDive = async (
 ): Promise<ActionResult<{ id: string; buddyWarning?: string }>> => {
     const supabase = await createClient();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return actionFailure('ログインが必要です');
+    const { user, failure } = await requireUser(supabase);
+    if (failure) return failure;
 
     const siteError = await validateDiveSite(supabase, input);
     if (siteError) return actionFailure(siteError);
@@ -218,16 +219,14 @@ export const createDiveFromPlan = async (
 ): Promise<ActionResult<{ id: string; buddyWarning?: string; planDeleteFailed?: boolean }>> => {
     const supabase = await createClient();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return actionFailure('ログインが必要です');
+    const { user, failure } = await requireUser(supabase);
+    if (failure) return failure;
 
     // 移動元の予定が残っているか確認（他タブで移動済み等なら重複ログを作らない / FR-015）。
     // 所有者条件は RLS でも担保されるが、アプリ層でも明示して防御的にする（FR-014）
     const { data: plan, error: planError } = await supabase
         .from('dive_plans')
-        .select('id')
+        .select('id, planned_on')
         .eq('id', planId)
         .eq('user_id', user.id)
         .maybeSingle();
@@ -237,19 +236,30 @@ export const createDiveFromPlan = async (
     }
     if (!plan) return actionFailure('この予定は既に移動済みか削除されています');
 
+    // 未来日の予定は移動不可（FR-002）。UI の出し分けに依存せずサーバーでも検証する
+    if (plan.planned_on > todayInJst()) {
+        return actionFailure('未来の予定はログに移動できません。予定日を過ぎてから移動してください');
+    }
+
     // ログ作成（既存ロジックを再利用）。失敗時は予定を削除しない（FR-010）
     const result = await createDive(input);
     if (!result.success) return result;
 
-    // ログ作成成功時のみ予定を削除する（FR-009）。持ち物は FK cascade（FR-011）
-    const { error: deleteError } = await supabase.from('dive_plans').delete().eq('id', planId).eq('user_id', user.id);
+    // ログ作成成功時のみ予定を削除する（FR-009）。持ち物は FK cascade（FR-011）。
+    // 0 行削除（並行タブが先に移動済み等）を成功と誤認しないよう削除行を取得して確認する（FR-015）
+    const { data: deletedRows, error: deleteError } = await supabase
+        .from('dive_plans')
+        .delete()
+        .eq('id', planId)
+        .eq('user_id', user.id)
+        .select('id');
     revalidatePath('/plans');
     revalidatePath('/');
 
     const buddyWarning = result.buddyWarning ? { buddyWarning: result.buddyWarning } : {};
-    if (deleteError) {
-        console.error('[createDiveFromPlan] plan delete error:', deleteError);
-        // ログは作成済みのため保持し、削除失敗を通知に委ねる（FR-011a）
+    if (deleteError || (deletedRows ?? []).length === 0) {
+        console.error('[createDiveFromPlan] plan delete error:', deleteError ?? 'no rows deleted');
+        // ログは作成済みのため保持し、削除失敗（または並行操作による削除済み）を通知に委ねる（FR-011a）
         return actionSuccess({ id: result.id, ...buddyWarning, planDeleteFailed: true });
     }
     return actionSuccess({ id: result.id, ...buddyWarning });
@@ -261,10 +271,8 @@ export const updateDive = async (
 ): Promise<ActionResult<{ buddyWarning?: string }>> => {
     const supabase = await createClient();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return actionFailure('ログインが必要です');
+    const { user, failure } = await requireUser(supabase);
+    if (failure) return failure;
 
     const siteError = await validateDiveSite(supabase, input);
     if (siteError) return actionFailure(siteError);
@@ -299,10 +307,8 @@ export const setDiveVisibility = async (
 ): Promise<ActionResult<{ isPublic: boolean }>> => {
     const supabase = await createClient();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return actionFailure('ログインが必要です');
+    const { user, failure } = await requireUser(supabase);
+    if (failure) return failure;
 
     // 公開ログの閲覧は /dives/[id]（RLS: is_public=true を authenticated が読める）に統合したため、
     // slug は生成しない。共有リンクは dive id ベース（{SITE_URL}/dives/{id}）。
@@ -325,13 +331,43 @@ export const setDiveVisibility = async (
     return actionSuccess({ isPublic });
 };
 
+/**
+ * ログ配下の Storage 写真オブジェクトを一括削除する（012 FR-014 / T035）。
+ * メタ行（dive_photos）は FK cascade で消えるため、実体オブジェクトのみ対象。
+ * 削除失敗は本人フォルダ内の孤児残留にとどまる（公開判定は dive 消滅で false）ため、
+ * best-effort としてログ出力のみ行い、ログ削除自体は成功として扱う。
+ */
+const removeDivePhotoObjects = async (
+    supabase: Awaited<ReturnType<typeof createClient>>,
+    userId: string,
+    diveId: string,
+): Promise<void> => {
+    const prefix = buildDivePrefix(userId, diveId);
+    const kinds: PhotoKind[] = ['display', 'thumb', 'orig'];
+
+    const listed = await Promise.all(
+        kinds.map(async (kind) => {
+            const { data, error } = await supabase.storage.from(DIVE_PHOTOS_BUCKET).list(`${prefix}${kind}`);
+            if (error) {
+                console.error(`[deleteDive] storage list error (${kind}):`, error);
+                return [];
+            }
+            return (data ?? []).map((object) => `${prefix}${kind}/${object.name}`);
+        }),
+    );
+
+    const paths = listed.flat();
+    if (paths.length === 0) return;
+
+    const { error } = await supabase.storage.from(DIVE_PHOTOS_BUCKET).remove(paths);
+    if (error) console.error('[deleteDive] storage remove error:', error);
+};
+
 export const deleteDive = async (id: string): Promise<ActionResult> => {
     const supabase = await createClient();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return actionFailure('ログインが必要です');
+    const { user, failure } = await requireUser(supabase);
+    if (failure) return failure;
 
     // owner 限定。公開ログでも他人は削除不可（RLS でも弾かれるが、0 件削除を誤成功にしない二重防御）
     const { data: deleted, error } = await supabase
@@ -346,6 +382,9 @@ export const deleteDive = async (id: string): Promise<ActionResult> => {
         return actionFailure('ログの削除に失敗しました。時間をおいて再度お試しください');
     }
     if (!deleted || deleted.length === 0) return actionFailure('対象のログが見つかりません');
+
+    // 写真の実体オブジェクトを片付ける（012 FR-014。redirect は throw するためこの位置で行う）
+    await removeDivePhotoObjects(supabase, user.id, id);
 
     revalidatePath('/dives');
     redirect('/dives');

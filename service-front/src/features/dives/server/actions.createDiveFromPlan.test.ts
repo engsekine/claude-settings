@@ -51,29 +51,34 @@ const buildInput = (overrides: Partial<DiveFormValues> = {}): DiveFormValues =>
 
 interface SupabaseOptions {
     user?: { id: string } | null;
-    plan?: { id: string } | null;
+    plan?: { id: string; planned_on: string } | null;
     planFetchError?: { message: string } | null;
     diveInsert?: { id: string } | null;
     diveInsertError?: { code?: string; message?: string } | null;
     planDeleteError?: { message: string } | null;
+    /** delete().select('id') が返す削除行。空配列は「並行操作で削除済み（0 行削除）」を再現 */
+    planDeleteRows?: { id: string }[];
 }
 
 /** dive_plans（fetch + delete）/ dives（insert）/ dive_log_buddies（sync）を最小モックする */
 const buildSupabase = (opts: SupabaseOptions = {}) => {
     const {
         user = { id: 'user-1' },
-        plan = { id: 'plan-1' },
+        plan = { id: 'plan-1', planned_on: '2026-06-30' },
         planFetchError = null,
         diveInsert = { id: 'dive-1' },
         diveInsertError = null,
         planDeleteError = null,
+        planDeleteRows = [{ id: 'plan-1' }],
     } = opts;
 
-    // delete().eq('id', ...).eq('user_id', ...) を await できる thenable な削除チェーン
+    // delete().eq('id', ...).eq('user_id', ...).select('id') を await できる削除チェーン
     const deleteChain = {
         eq: vi.fn(() => deleteChain),
-        // biome-ignore lint/suspicious/noThenProperty: テスト用の thenable チェーン
-        then: (resolve: (v: unknown) => unknown) => resolve({ error: planDeleteError }),
+        select: vi.fn(async () => ({
+            data: planDeleteError ? null : planDeleteRows,
+            error: planDeleteError,
+        })),
     };
 
     const divePlansChain = {
@@ -159,6 +164,31 @@ describe('createDiveFromPlan', () => {
         const result = await createDiveFromPlan('plan-1', buildInput());
 
         expect(result).toEqual({ success: true, id: 'dive-1', planDeleteFailed: true });
+    });
+
+    it('削除が 0 行（並行タブが先に移動済み）の場合も成功と誤認せず planDeleteFailed を返す（FR-015）', async () => {
+        const { client } = buildSupabase({ planDeleteRows: [] });
+        createClient.mockResolvedValue(client);
+
+        const result = await createDiveFromPlan('plan-1', buildInput());
+
+        expect(result).toEqual({ success: true, id: 'dive-1', planDeleteFailed: true });
+    });
+
+    it('未来日の予定はサーバー側で拒否し、ログを作成しない（FR-002）', async () => {
+        const { client, divesChain, divePlansChain } = buildSupabase({
+            plan: { id: 'plan-1', planned_on: '2999-12-31' },
+        });
+        createClient.mockResolvedValue(client);
+
+        const result = await createDiveFromPlan('plan-1', buildInput());
+
+        expect(result).toEqual({
+            success: false,
+            error: '未来の予定はログに移動できません。予定日を過ぎてから移動してください',
+        });
+        expect(divesChain.insert).not.toHaveBeenCalled();
+        expect(divePlansChain.delete).not.toHaveBeenCalled();
     });
 
     it('未認証のときは失敗を返す（FR-014）', async () => {

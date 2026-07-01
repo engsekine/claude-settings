@@ -5,8 +5,9 @@ import { updateSession } from '@/shared/lib/supabase/middleware';
 /**
  * 認証必須のパス（プレフィックス一致）。TOP（`/`）はプレフィックスだと全パスに一致するため完全一致で別判定。
  * `/profile-completion` は認証必須だが補完未完了でも到達できるよう AUTH_ROUTES には入れない（016-google-login）。
+ * `/update-password` はリセットメールのリカバリーセッション（認証済み）で到達する（001 / FR-019）。
  */
-const APP_ROUTE_PREFIXES = ['/dives', '/dive-sites', '/plans', '/settings', '/profile-completion'];
+const APP_ROUTE_PREFIXES = ['/dives', '/dive-sites', '/plans', '/settings', '/profile-completion', '/update-password'];
 
 /**
  * 未認証ユーザー向けのパス（認証済みなら /dives へ飛ばす）。完全一致で判定する。

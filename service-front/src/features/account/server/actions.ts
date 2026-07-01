@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 
 import type { DiverType } from '@/shared/constants/diver-type';
 import type { Gender } from '@/shared/constants/gender';
+import { requireUser } from '@/shared/lib/auth';
 import { createClient } from '@/shared/lib/supabase/server';
 import { type ActionResult, actionFailure, actionSuccess } from '@/shared/types/action-result';
 
@@ -79,10 +80,8 @@ export const getProfile = async (): Promise<ProfileData | null> => {
 export const updateProfile = async (input: UpdateProfileInput): Promise<ActionResult> => {
     const supabase = await createClient();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return actionFailure('ログインが必要です');
+    const { user, failure } = await requireUser(supabase);
+    if (failure) return failure;
 
     /** nickname 一意制約の事前チェック。自分の現在の nickname は衝突対象から除外する */
     const { data: nicknameTaken } = await supabase.rpc('is_nickname_taken', {

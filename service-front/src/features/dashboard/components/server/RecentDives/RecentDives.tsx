@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import type { RecentDiveItem } from '@/features/dashboard/types';
+import { formatJstDate } from '@/shared/lib/date';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
 
 interface RecentDivesProps {
@@ -9,11 +10,6 @@ interface RecentDivesProps {
 }
 
 const MAX_VISIBLE_DIVES = 5;
-
-const formatDate = (isoDate: string): string => {
-    const [y, m, d] = isoDate.split('-');
-    return `${y}/${m}/${d}`;
-};
 
 export const RecentDives = ({ dives }: RecentDivesProps) => {
     if (dives.length === 0) {
@@ -45,7 +41,7 @@ export const RecentDives = ({ dives }: RecentDivesProps) => {
                                 <div className="flex items-center gap-2">
                                     <span className="text-muted-foreground text-sm">
                                         <span className="sr-only">潜水日: </span>
-                                        {formatDate(dive.diveDate)}
+                                        {formatJstDate(dive.diveDate)}
                                     </span>
                                     {/* バッジは text-muted-foreground だと bg-muted 上でコントラスト AA 未達のため text-foreground を使う */}
                                     {tidePhase !== null && (

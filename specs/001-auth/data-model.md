@@ -159,6 +159,8 @@ erDiagram
 | `created_at` | `timestamptz` | NO | `now()` | 作成日時 |
 | `updated_at` | `timestamptz` | NO | `now()` | 更新日時（トリガで自動更新） |
 
+> 後続 feature による追加列: `terms_version` / `terms_agreed_at`（018）、`diver_type` / `diver_number`（019）、`is_email_opted_in` / `email_opted_in_at`（022）。定義は各 feature の data-model.md を参照。
+
 ### 3. 制約
 
 #### 主キー

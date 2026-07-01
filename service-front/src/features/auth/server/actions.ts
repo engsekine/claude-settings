@@ -1,11 +1,15 @@
 'use server';
 
+import type { Route } from 'next';
 import { redirect } from 'next/navigation';
 
 import type { DiverType } from '@/shared/constants/diver-type';
 import type { Gender } from '@/shared/constants/gender';
 import { CURRENT_TERMS_VERSION } from '@/shared/constants/terms';
+import { requireUser } from '@/shared/lib/auth';
 import { createClient } from '@/shared/lib/supabase/server';
+import { validateWithSchema } from '@/shared/lib/validation';
+import { passwordField } from '@/shared/schemas/fields';
 import { type ActionResult, actionFailure, actionSuccess } from '@/shared/types/action-result';
 
 import { toUserDetailsInsert } from './mappers/profile-completion';
@@ -17,30 +21,6 @@ const getSiteUrl = (): string => process.env['NEXT_PUBLIC_SITE_URL'] ?? 'https:/
 export interface SignUpPayload {
     /** 確認メールを送信した場合 true（ユーザーはまだログインしていない） */
     needsEmailConfirmation: boolean;
-}
-
-/** Google ログイン初回の補完で受け取るプロフィール（メール/パスワードを除く） */
-export interface CompleteProfileInput {
-    lastName: string;
-    firstName: string;
-    lastNameRomaji: string;
-    firstNameRomaji: string;
-    nickname: string;
-    /** ISO 8601 date string (YYYY-MM-DD) */
-    birthOn: string;
-    gender: Gender;
-    /** 身長（cm）。任意入力 */
-    heightCm: number | null;
-    /** 体重（kg）。任意入力 */
-    weightKg: number | null;
-    /** 利用規約への同意（018）。true 必須 */
-    agreedToTerms: boolean;
-    /** ダイバー種別（019）。登録時必須 */
-    diverType: DiverType;
-    /** ダイバー番号（019）。インストラクターのみ・任意 */
-    diverNumber: string | null;
-    /** メール配信許可（022）。任意（オプトイン） */
-    emailOptIn: boolean;
 }
 
 export interface SignUpInput {
@@ -67,6 +47,9 @@ export interface SignUpInput {
     /** メール配信許可（022）。任意（オプトイン） */
     emailOptIn: boolean;
 }
+
+/** Google ログイン初回の補完で受け取るプロフィール（メール/パスワードを除く） */
+export type CompleteProfileInput = Omit<SignUpInput, 'email' | 'password'>;
 
 export const signIn = async (email: string, password: string): Promise<ActionResult> => {
     const supabase = await createClient();
@@ -158,10 +141,50 @@ export const signOut = async (): Promise<void> => {
 export const requestPasswordReset = async (email: string): Promise<ActionResult> => {
     const supabase = await createClient();
 
-    /** 登録済みかどうかに関わらず成功扱い（情報漏洩防止） */
-    await supabase.auth.resetPasswordForEmail(email);
+    /**
+     * 登録済みかどうかに関わらず成功扱い（情報漏洩防止）。
+     * リセットリンクは callback 経由で新パスワード設定ページへ誘導する（001 / FR-019）
+     */
+    await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${getSiteUrl()}/api/auth/callback?next=/update-password`,
+    });
 
     return actionSuccess();
+};
+
+/**
+ * リセットリンク経由で新しいパスワードを設定する（001 / US4-3 / FR-019）。
+ * リカバリーセッション（リセットメール → callback で確立）を前提とし、
+ * 更新成功後はサインアウトして /login へ誘導する（新パスワードで明示的に再ログインさせる）。
+ */
+export const updatePassword = async (password: string): Promise<ActionResult> => {
+    const supabase = await createClient();
+
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+        return actionFailure('セッションが無効です。リセットメールのリンクからやり直してください');
+    }
+
+    /** クライアントの yupResolver に依存せず、サーバー側でもパスワード要件を再検証する */
+    const validated = await validateWithSchema(passwordField, password);
+    if (validated.error !== undefined) return actionFailure(validated.error);
+
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) {
+        if (/different from the old password|same.*password/i.test(error.message)) {
+            return actionFailure('現在と同じパスワードは設定できません。別のパスワードを入力してください');
+        }
+        console.error('[updatePassword] supabase error:', {
+            message: error.message,
+            status: error.status,
+        });
+        return actionFailure('パスワードの更新に失敗しました。時間をおいて再度お試しください');
+    }
+
+    await supabase.auth.signOut();
+    redirect('/login');
 };
 
 /**
@@ -207,7 +230,8 @@ export const signInWithGoogle = async (): Promise<ActionResult> => {
         return actionFailure('Google ログインを開始できませんでした。時間をおいて再度お試しください');
     }
 
-    redirect(toBrowserReachableAuthorizeUrl(data.url));
+    /** Supabase が発行する外部 authorize URL のため typedRoutes の静的検証対象外（cast が必要） */
+    redirect(toBrowserReachableAuthorizeUrl(data.url) as Route);
 };
 
 /**
@@ -244,10 +268,8 @@ export const completeProfile = async (input: CompleteProfileInput): Promise<Acti
 
     const supabase = await createClient();
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return actionFailure('ログインが必要です');
+    const { user, failure } = await requireUser(supabase);
+    if (failure) return failure;
 
     /** nickname 一意制約に触れる前に事前チェックし、親切なエラーを返す */
     const { data: nicknameTaken } = await supabase.rpc('is_nickname_taken', {

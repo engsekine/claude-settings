@@ -32,7 +32,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <h1 className="font-semibold text-2xl">ログイン</h1>
             <LoginForm initialError={initialError} />
             {isEmailNotVerified && (
-                <section className="flex flex-col gap-2 border-t border-border pt-6">
+                <section className="flex flex-col gap-2 border-border border-t pt-6">
                     <h2 className="font-medium text-sm">確認メールが届いていませんか？</h2>
                     <p className="text-muted-foreground text-sm">
                         登録したメールアドレスを入力すると、確認メールを再送できます。
