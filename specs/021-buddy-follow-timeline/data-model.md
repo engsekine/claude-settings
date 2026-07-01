@@ -87,14 +87,14 @@ create trigger dive_log_buddies_prevent_self_buddy
 
 alter table public.dive_log_buddies enable row level security;
 
--- SELECT: 親 dive が閲覧可能（所有者 or 公開）、または自分宛タグ（本人による管理用）
+-- SELECT: 親 dive が閲覧可能（所有者 or 公開・未削除）、または自分宛タグ（本人による管理用）
 create policy "read buddies of viewable dives"
     on public.dive_log_buddies for select
     using (
         exists (
             select 1 from public.dives d
             where d.id = dive_id
-              and (d.user_id = (select auth.uid()) or d.is_public = true)
+              and (d.user_id = (select auth.uid()) or (d.is_public = true and d.deleted_at is null))
         )
         or buddy_user_id = (select auth.uid())
     );
@@ -221,7 +221,7 @@ create policy "users can unfollow own follows"
 create policy "authenticated can read public dives"
     on public.dives for select
     to authenticated
-    using (is_public = true);
+    using (is_public = true and deleted_at is null);
 
 -- タイムライン / 公開ログ一覧（is_public かつ user_id 絞り込み、dive_date 降順）の高速化
 create index idx_dives_public_user_date
@@ -256,7 +256,8 @@ as $$
     from public.dives d
     join public.user_details ud on ud.user_id = d.user_id
     where d.public_slug = p_slug
-      and d.is_public = true;
+      and d.is_public = true
+      and d.deleted_at is null;
 $$;
 
 revoke all on function public.get_public_dive(text) from public;

@@ -89,14 +89,14 @@ create trigger users_handle_buddy_on_delete
 -- ========================================
 alter table public.dive_log_buddies enable row level security;
 
--- SELECT: 親 dive が閲覧可能（所有者 or 公開）、または自分宛タグ（本人による管理用）
+-- SELECT: 親 dive が閲覧可能（所有者 or 公開・未削除）、または自分宛タグ（本人による管理用）
 create policy "read buddies of viewable dives"
     on public.dive_log_buddies for select
     using (
         exists (
             select 1 from public.dives d
             where d.id = dive_id
-              and (d.user_id = (select auth.uid()) or d.is_public = true)
+              and (d.user_id = (select auth.uid()) or (d.is_public = true and d.deleted_at is null))
         )
         or buddy_user_id = (select auth.uid())
     );

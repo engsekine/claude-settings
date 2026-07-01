@@ -66,6 +66,17 @@ export const fetchFollowState = async (targetUserId: string): Promise<FollowStat
             .eq('follower_id', targetUserId),
     ]);
 
+    // 件数はフォロー UI の中核（SC-003）。DB エラー時に 0 を誤表示しないよう明示的に失敗させる。
+    if ('error' in followingState && followingState.error) {
+        throw new Error(`フォロー状態の取得に失敗しました: ${followingState.error.message}`);
+    }
+    if (followerCountRes.error) {
+        throw new Error(`フォロワー数の取得に失敗しました: ${followerCountRes.error.message}`);
+    }
+    if (followingCountRes.error) {
+        throw new Error(`フォロー数の取得に失敗しました: ${followingCountRes.error.message}`);
+    }
+
     return {
         isFollowing: (followingState.count ?? 0) > 0,
         followerCount: followerCountRes.count ?? 0,

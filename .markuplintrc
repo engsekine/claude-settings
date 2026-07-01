@@ -17,7 +17,7 @@
         "id-duplication": false
       }
     },
-    "**/components/server/{TrendChartCard,DiveTrends}/*.{jsx,tsx}": {
+    "**/components/server/{TrendChartCard,DiveTrends,Timeline}/*.{jsx,tsx}": {
       "rules": {
         "heading-levels": false
       }

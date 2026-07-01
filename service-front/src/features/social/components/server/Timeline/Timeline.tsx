@@ -28,6 +28,8 @@ export const Timeline = ({ items }: TimelineProps) => {
         <ol className="flex flex-col gap-5">
             {groups.map((group) => (
                 <li key={group.date} className="flex flex-col gap-2">
+                    {/* page.tsx の h2「タイムライン」配下に置かれるため h3 が正しい階層。
+                        markuplint のコンポーネント単独解析による見出しスキップ誤検知は .markuplintrc で抑止 */}
                     <h3 className="font-medium text-muted-foreground text-sm">{formatJstDate(group.date)}</h3>
                     <ul className="flex flex-col divide-y divide-border rounded-md border border-border">
                         {group.items.map((dive) => (

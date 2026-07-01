@@ -24,7 +24,8 @@ as $$
     from public.dives d
     join public.user_details ud on ud.user_id = d.user_id
     where d.public_slug = p_slug
-      and d.is_public = true;
+      and d.is_public = true
+      and d.deleted_at is null;
 $$;
 
 revoke all on function public.get_public_dive(text) from public;
