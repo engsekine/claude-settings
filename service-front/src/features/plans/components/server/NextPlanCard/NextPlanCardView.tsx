@@ -27,6 +27,8 @@ export const NextPlanCardView = ({ summary }: NextPlanCardViewProps) => {
                 aria-labelledby="next-plan-empty-heading"
                 className="flex flex-col items-start gap-3 rounded-lg border border-border bg-background p-4"
             >
+                {/* app/page.tsx の h2「次のダイビング予定」配下に置かれるため h3 が正しい階層。
+                    markuplint のコンポーネント単独解析による見出しスキップ誤検知は .markuplintrc で抑止 */}
                 <h3 id="next-plan-empty-heading" className="font-semibold text-base text-foreground">
                     次の予定
                 </h3>

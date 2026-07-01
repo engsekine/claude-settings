@@ -37,6 +37,8 @@ export const RegulatorPanel = ({ status, recordButton }: RegulatorPanelProps) =>
                 aria-labelledby="regulator-panel-empty-heading"
                 className="flex flex-col items-start gap-3 rounded-lg border border-border bg-background p-4"
             >
+                {/* TopDashboard の h2「レギュレーター OH 状況」配下に置かれるため h3 が正しい階層。
+                    markuplint のコンポーネント単独解析による見出しスキップ誤検知は .markuplintrc で抑止 */}
                 <h3 id="regulator-panel-empty-heading" className="font-semibold text-base text-foreground">
                     OH ステータス
                 </h3>
