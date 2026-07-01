@@ -242,11 +242,7 @@ export const createDiveFromPlan = async (
     if (!result.success) return result;
 
     // ログ作成成功時のみ予定を削除する（FR-009）。持ち物は FK cascade（FR-011）
-    const { error: deleteError } = await supabase
-        .from('dive_plans')
-        .delete()
-        .eq('id', planId)
-        .eq('user_id', user.id);
+    const { error: deleteError } = await supabase.from('dive_plans').delete().eq('id', planId).eq('user_id', user.id);
     revalidatePath('/plans');
     revalidatePath('/');
 

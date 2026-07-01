@@ -150,12 +150,7 @@ describe('DiveForm', () => {
     it('fromPlanId 指定で作成すると createDiveFromPlan を呼ぶ（024 US1）', async () => {
         createDiveFromPlan.mockResolvedValueOnce({ success: true, id: 'moved-id' });
         const user = userEvent.setup();
-        render(
-            <DiveForm
-                fromPlanId="plan-1"
-                defaultValues={{ diveDate: '2026-06-30', location: '伊豆 / 大瀬崎' }}
-            />,
-        );
+        render(<DiveForm fromPlanId="plan-1" defaultValues={{ diveDate: '2026-06-30', location: '伊豆 / 大瀬崎' }} />);
 
         await user.clear(screen.getByLabelText(/最大水深\(m\)/));
         await user.type(screen.getByLabelText(/最大水深\(m\)/), '18');

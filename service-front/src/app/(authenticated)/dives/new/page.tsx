@@ -1,5 +1,5 @@
 import { listDiveSites, siteLabel } from '@/features/dive-sites';
-import { type DiveFormValues, DiveForm, getLatestDiveNumber, planToDiveDefaults } from '@/features/dives';
+import { DiveForm, type DiveFormValues, getLatestDiveNumber, planToDiveDefaults } from '@/features/dives';
 import { canMovePlanToLog, getPlan } from '@/features/plans';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
 import { generatePageMetadata } from '@/shared/config/metadata';
