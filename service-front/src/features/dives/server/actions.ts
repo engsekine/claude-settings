@@ -202,6 +202,63 @@ export const createDive = async (
     return actionSuccess({ id: data.id, ...(buddiesOk ? {} : { buddyWarning: BUDDY_SYNC_WARNING }) });
 };
 
+/**
+ * ダイビング予定を 1 本のログへ「移動」する（024 FR-004〜FR-015）。
+ *
+ * 1. 移動元の予定が存在・所有されているか確認（無ければログを作らず失敗 = 重複作成防止 / FR-015）
+ * 2. createDive を再利用してログを作成（失敗時は予定を残す / FR-010）
+ * 3. ログ作成成功時のみ予定を削除（持ち物は on delete cascade で連動削除 / FR-011）
+ *    - 削除に失敗してもログは巻き戻さず、planDeleteFailed を返して通知に委ねる（FR-011a）
+ *
+ * ログ作成と予定削除は別操作（非原子）。ログを真実として保持する方針。
+ */
+export const createDiveFromPlan = async (
+    planId: string,
+    input: DiveFormValues,
+): Promise<ActionResult<{ id: string; buddyWarning?: string; planDeleteFailed?: boolean }>> => {
+    const supabase = await createClient();
+
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return actionFailure('ログインが必要です');
+
+    // 移動元の予定が残っているか確認（他タブで移動済み等なら重複ログを作らない / FR-015）。
+    // 所有者条件は RLS でも担保されるが、アプリ層でも明示して防御的にする（FR-014）
+    const { data: plan, error: planError } = await supabase
+        .from('dive_plans')
+        .select('id')
+        .eq('id', planId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+    if (planError) {
+        console.error('[createDiveFromPlan] plan fetch error:', planError);
+        return actionFailure('予定の確認に失敗しました。時間をおいて再度お試しください');
+    }
+    if (!plan) return actionFailure('この予定は既に移動済みか削除されています');
+
+    // ログ作成（既存ロジックを再利用）。失敗時は予定を削除しない（FR-010）
+    const result = await createDive(input);
+    if (!result.success) return result;
+
+    // ログ作成成功時のみ予定を削除する（FR-009）。持ち物は FK cascade（FR-011）
+    const { error: deleteError } = await supabase
+        .from('dive_plans')
+        .delete()
+        .eq('id', planId)
+        .eq('user_id', user.id);
+    revalidatePath('/plans');
+    revalidatePath('/');
+
+    const buddyWarning = result.buddyWarning ? { buddyWarning: result.buddyWarning } : {};
+    if (deleteError) {
+        console.error('[createDiveFromPlan] plan delete error:', deleteError);
+        // ログは作成済みのため保持し、削除失敗を通知に委ねる（FR-011a）
+        return actionSuccess({ id: result.id, ...buddyWarning, planDeleteFailed: true });
+    }
+    return actionSuccess({ id: result.id, ...buddyWarning });
+};
+
 export const updateDive = async (
     id: string,
     input: DiveFormValues,

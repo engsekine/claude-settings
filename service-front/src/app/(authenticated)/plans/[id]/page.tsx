@@ -2,7 +2,7 @@ import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { DeletePlanButton, daysUntil, getPlan, PackingList } from '@/features/plans';
+import { canMovePlanToLog, DeletePlanButton, daysUntil, getPlan, PackingList } from '@/features/plans';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
 import { generatePageMetadata } from '@/shared/config/metadata';
 import { todayInJst } from '@/shared/lib/date';
@@ -70,7 +70,17 @@ export default async function PlanPage({ params }: PlanPageProps) {
                     </div>
                     <h1 className="font-semibold text-2xl text-foreground">{plan.location}</h1>
                     {plan.notes && <p className="whitespace-pre-wrap text-muted-foreground text-sm">{plan.notes}</p>}
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                        {/* 当日以前の予定のみ「ログに記録する」を表示（未来日は非表示 / 024 FR-001,002） */}
+                        {canMovePlanToLog(plan.plannedOn, todayInJst()) && (
+                            <Link
+                                href={`/dives/new?fromPlanId=${plan.id}`}
+                                className={buttonVariants({ variant: 'default' })}
+                                aria-label={`${plan.location}の予定をログに記録する`}
+                            >
+                                ログに記録する
+                            </Link>
+                        )}
                         <Link href={`/plans/${plan.id}/edit`} className={buttonVariants({ variant: 'outline' })}>
                             編集
                         </Link>

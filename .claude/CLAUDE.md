@@ -190,5 +190,5 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at specs/023-signup-email-phone-auth/plan.md
+at specs/024-plan-to-log/plan.md
 <!-- SPECKIT END -->

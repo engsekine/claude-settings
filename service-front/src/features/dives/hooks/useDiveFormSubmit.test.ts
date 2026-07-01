@@ -2,12 +2,14 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 
 const createDive = vi.fn();
+const createDiveFromPlan = vi.fn();
 const updateDive = vi.fn();
 const routerPush = vi.fn();
 const routerRefresh = vi.fn();
 
 vi.mock('@/features/dives/server/actions', () => ({
     createDive: (...args: unknown[]) => createDive(...args),
+    createDiveFromPlan: (...args: unknown[]) => createDiveFromPlan(...args),
     updateDive: (...args: unknown[]) => updateDive(...args),
 }));
 
@@ -57,6 +59,7 @@ describe('useDiveFormSubmit', () => {
     beforeEach(() => {
         createDive.mockReset();
         updateDive.mockReset();
+        createDiveFromPlan.mockReset();
         routerPush.mockReset();
         routerRefresh.mockReset();
     });
@@ -147,5 +150,50 @@ describe('useDiveFormSubmit', () => {
         await waitFor(() => {
             expect(routerPush).toHaveBeenCalledWith('/dives/new-id');
         });
+    });
+
+    it('fromPlanId 指定時は createDiveFromPlan を呼び、詳細ページへ遷移する（024 US1）', async () => {
+        createDiveFromPlan.mockResolvedValueOnce({ success: true, id: 'moved-id' });
+        const { result } = renderHook(() => useDiveFormSubmit(undefined, 'plan-1'));
+
+        act(() => {
+            result.current.submit(buildValues());
+        });
+
+        await waitFor(() => {
+            expect(routerPush).toHaveBeenCalledWith('/dives/moved-id');
+        });
+        expect(createDiveFromPlan).toHaveBeenCalledWith('plan-1', expect.any(Object));
+        expect(createDive).not.toHaveBeenCalled();
+    });
+
+    it('移動でログ作成成功だが予定削除に失敗した場合は planDeleteFailed クエリ付きで遷移する（024 FR-011a）', async () => {
+        createDiveFromPlan.mockResolvedValueOnce({ success: true, id: 'moved-id', planDeleteFailed: true });
+        const { result } = renderHook(() => useDiveFormSubmit(undefined, 'plan-1'));
+
+        act(() => {
+            result.current.submit(buildValues());
+        });
+
+        await waitFor(() => {
+            expect(routerPush).toHaveBeenCalledWith('/dives/moved-id?planDeleteFailed=1');
+        });
+    });
+
+    it('移動が失敗した場合は serverError を表示し遷移しない（024 FR-010 / FR-015）', async () => {
+        createDiveFromPlan.mockResolvedValueOnce({
+            success: false,
+            error: 'この予定は既に移動済みか削除されています',
+        });
+        const { result } = renderHook(() => useDiveFormSubmit(undefined, 'plan-1'));
+
+        act(() => {
+            result.current.submit(buildValues());
+        });
+
+        await waitFor(() => {
+            expect(result.current.serverError).toBe('この予定は既に移動済みか削除されています');
+        });
+        expect(routerPush).not.toHaveBeenCalled();
     });
 });

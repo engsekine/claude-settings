@@ -3,6 +3,7 @@ export { PackingList } from './components/client/PackingList';
 export { PlanForm } from './components/client/PlanForm';
 export { PlanList } from './components/client/PlanList';
 export { NextPlanCard, NextPlanCardView } from './components/server/NextPlanCard';
+export { canMovePlanToLog } from './lib/canMovePlanToLog';
 export { daysUntil } from './lib/days-until';
 export type { PlanFormValues } from './schemas/plan.schema';
 export { getNextPlanWithProgress, getPlan, listPlans } from './server/queries';

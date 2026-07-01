@@ -28,6 +28,8 @@ interface DiveFormProps {
     siteOptions?: FormSelectOption[];
     /** 編集モードで表示する既存の添付写真。✕ でマークし、保存時にまとめて削除する */
     existingPhotos?: DivePhotoView[];
+    /** 予定→ログ移動（024）のとき、移動元の予定 ID。保存成功時にその予定が削除される */
+    fromPlanId?: string;
 }
 
 /** number 入力にホイールでフォーカスしたまま値が変わる事故を防ぐ */
@@ -78,11 +80,17 @@ const createDefaultValues = (overrides?: Partial<DiveFormValues>): DiveFormValue
     ...overrides,
 });
 
-export const DiveForm = ({ diveId, defaultValues, siteOptions = [], existingPhotos = [] }: DiveFormProps) => {
+export const DiveForm = ({
+    diveId,
+    defaultValues,
+    siteOptions = [],
+    existingPhotos = [],
+    fromPlanId,
+}: DiveFormProps) => {
     const router = useRouter();
     const isEdit = diveId !== undefined;
 
-    const { isPending, serverError, serverWarning, submit } = useDiveFormSubmit(diveId);
+    const { isPending, serverError, serverWarning, submit } = useDiveFormSubmit(diveId, fromPlanId);
 
     const {
         register,
