@@ -31,9 +31,16 @@ export const listDives = async (options: ListDivesOptions = {}): Promise<DiveLis
 export const getLatestDiveNumber = async (): Promise<number | null> => {
     const supabase = await createClient();
 
+    // 公開読み取り RLS で他人の公開ログを拾わないよう本人に限定する
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return null;
+
     const { data, error } = await supabase
         .from('dives')
         .select('dive_number')
+        .eq('user_id', user.id)
         .not('dive_number', 'is', null)
         .order('dive_number', { ascending: false })
         .limit(1)
@@ -44,7 +51,11 @@ export const getLatestDiveNumber = async (): Promise<number | null> => {
     return data?.dive_number ?? null;
 };
 
-/** 自分の dive を 1 件取得。データなし（RLS により他人のレコードを含む）は null を返す */
+/**
+ * dive を 1 件取得する。RLS により「本人のログ」または「公開ログ」を取得できる
+ * （公開ログの詳細を /dives/[id] で他ユーザーが閲覧できるようにするため）。
+ * 閲覧不可・存在しない場合は null。編集など所有者限定の操作は呼び出し側で userId を確認すること。
+ */
 export const getDive = async (id: string): Promise<Dive | null> => {
     const supabase = await createClient();
 
@@ -113,9 +124,16 @@ export interface DiveOption {
 export const listDiveOptions = async (): Promise<DiveOption[]> => {
     const supabase = await createClient();
 
+    // 選択肢は本人のログのみ。公開読み取り RLS で他人の公開ログを拾わないよう user_id を絞る
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return [];
+
     const { data, error } = await supabase
         .from('dives')
         .select(`id, dive_date, location, ${DIVE_SITE_JOIN}`)
+        .eq('user_id', user.id)
         .order('dive_date', { ascending: false })
         .order('created_at', { ascending: false });
 

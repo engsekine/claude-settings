@@ -231,9 +231,9 @@ create index idx_dives_public_user_date
 
 > 注意: SELECT は複数ポリシーが OR 結合される。本人ポリシー（`auth.uid() = user_id`）と公開ポリシー（`is_public = true`）の和が閲覧可能集合となり、非公開かつ他人のログは引き続き不可視（SC-002）。
 
-## 4. 匿名共有用関数（`20260630100300_create_get_public_dive_fn.sql`）
+## 4. 匿名共有用関数（廃止済み）
 
-未ログインの共有ページ用に、公開ログ 1 件のみを slug で返す。テーブル RLS を anon に広げない（R2）。
+> **廃止（2026-07-01, `20260701130000_drop_get_public_dive_fn.sql`）**: 匿名共有ページを廃止し、公開ログの閲覧を認証済みの `/dives/[id]` に統合したため、この関数は `drop function` した。公開ログの閲覧は §3 の RLS「authenticated can read public dives」で担保する（本人 or 公開ログのみ SELECT 可）。`public_slug` カラム・`idx_dives_public_slug` は影響範囲を広げないため残置するが未使用（共有リンクは dive id ベース）。以下は廃止前の定義（参考）。
 
 ```sql
 create or replace function public.get_public_dive(p_slug text)

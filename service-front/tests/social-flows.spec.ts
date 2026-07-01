@@ -62,41 +62,37 @@ test('S1: フリーテキストのバディを記録し詳細で表示できる'
     await deleteCurrentDive(page);
 });
 
-test('S2: 公開 → 匿名共有で閲覧可 → 非公開化で共有 URL が 404（SC-002）', async ({ page, browser }) => {
+test('S2: 公開で共有リンク(/dives/[id])が出て直接コピーできる → 匿名は閲覧不可 → 非公開化でリンク消滅（SC-002/005）', async ({
+    page,
+    browser,
+}) => {
     await login(page);
     await createDive(page, 'S2 公開制御の検証', 9102);
     await page.getByRole('button', { name: '作成する' }).click();
     await page.waitForURL(/\/dives\/[0-9a-f-]+$/);
+    const divePath = new URL(page.url()).pathname;
 
-    // 公開トグル ON → 共有リンク（/shared/dives/<slug>）が表示される
+    // 公開トグル ON → 共有リンク（{SITE_URL}/dives/<id>）が読み取り専用入力で表示される
     await page.getByRole('switch', { name: 'このログを公開する' }).click();
-    const shareCode = page.locator('code', { hasText: '/shared/dives/' });
-    await expect(shareCode).toBeVisible();
-    const sharePath = (await shareCode.textContent())?.trim() ?? '';
-    expect(sharePath).toMatch(/^\/shared\/dives\/.+/);
+    const shareInput = page.getByRole('textbox', { name: '共有リンク' });
+    await expect(shareInput).toBeVisible();
+    await expect(shareInput).toHaveValue(new RegExp(`${divePath}$`));
 
-    // 匿名（未認証）コンテキストで共有 URL を開くと閲覧できる
+    // 未ログイン（匿名）で /dives/[id] を開くと閲覧できず /login へ誘導される（匿名共有ページは廃止）
     const anonContext = await browser.newContext();
     try {
         const anonPage = await anonContext.newPage();
-        const visibleRes = await anonPage.goto(sharePath);
-        expect(visibleRes?.status()).toBe(200);
-        await expect(anonPage.getByRole('heading', { name: 'S2 公開制御の検証' })).toBeVisible();
-        await expect(anonPage.getByText('さんのログ')).toBeVisible();
+        await anonPage.goto(divePath);
+        await anonPage.waitForURL(/\/login/);
         await anonPage.close();
-
-        // 非公開へ戻す
-        await page.getByRole('switch', { name: 'このログを公開する' }).click();
-        await expect(page.getByText('非公開')).toBeVisible();
-
-        // 匿名で同じ共有 URL を開くと 404（is_public=false は get_public_dive が 0 行 → notFound）
-        const blockedPage = await anonContext.newPage();
-        const blockedRes = await blockedPage.goto(sharePath);
-        expect(blockedRes?.status()).toBe(404);
-        await blockedPage.close();
     } finally {
         await anonContext.close();
     }
+
+    // 非公開へ戻す → 共有リンク入力が消える（SC-005：閲覧経路を即遮断）
+    await page.getByRole('switch', { name: 'このログを公開する' }).click();
+    await expect(page.getByText('非公開')).toBeVisible();
+    await expect(page.getByRole('textbox', { name: '共有リンク' })).toHaveCount(0);
 
     await deleteCurrentDive(page);
 });

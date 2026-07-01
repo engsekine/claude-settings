@@ -191,6 +191,14 @@ description: "Task list for バディ・フォロー・タイムライン（ソ�
 - [X] T058 バディ同期の失敗を握りつぶさず伝播（`syncDiveBuddies` が成否を返し、`createDive`/`updateDive` が `buddyWarning` を返却→フォームで表示）。`list-query` のバディ絞り込みもエラー時に throw
 - [X] T059 `fetchTimeline` のフォロー先を直近 `MAX_TIMELINE_FOLLOWEES=1000` 件に絞り、IN 句肥大化を防止（FR-021）。`fetchFollowLists` の動的キー unsafe cast を kind 分岐で解消
 - [X] T060 `DiveBuddyField` の登録済みバディを nickname 表示に修正（schema に表示専用 `nickname` を追加）。`formatJstDate`（`shared/lib/date`）を共通化し 3 箇所の重複を統合。共有リンクのコピーボタン追加＋`bg-muted` 上のコントラスト（WCAG AA）を修正
+- [X] T061 `DiveVisibilityToggle` の共有リンクを完全な絶対 URL（`SITE_URL` 基準）で読み取り専用入力欄に表示し、直接選択・コピー可能にする（`window.location.origin` 依存を廃止）。契約: contracts/visibility-actions.md「共有リンクの提示（UI）」
+
+### 2026-07-01 改定（匿名共有廃止・/dives/[id] 統合・作成者のみ編集削除）
+
+- [X] T062 他人の公開ログが「自分のログ一覧」「最近のダイブログ」等に混ざる不具合を修正。公開読み取り RLS 依存だった本人限定クエリに `user_id` 明示フィルタを追加（`fetchDiveListPage` / `getLatestDiveNumber` / `listDiveOptions` / `fetchDivesForExport`（`ownerId`）/ dashboard `getPrimaryRegulatorStatus`・`getDashboardHero`）
+- [X] T063 編集・削除・公開設定・PDF 出力を作成者本人のみに制限。`DiveDetail` を `canManage` で出し分け、`/dives/[id]/edit` に owner ガード（`notFound`）、`updateDive`/`deleteDive` に owner 二重防御（`.eq('user_id', …)` + 行数チェック）
+- [X] T064 匿名共有ページ `/(public)/shared/dives/[slug]` と `get_public_dive` RPC を廃止（`20260701130000_drop_get_public_dive_fn.sql`）。公開ログ閲覧を `/dives/[id]` に統合。`setDiveVisibility` の slug 生成を廃止し `is_public` のみ更新。`DiveVisibilityToggle` の共有 URL を `{SITE_URL}/dives/[id]` に変更。未使用の `lib/visibility` を削除
+- [X] T065 spec.md / plan.md / data-model.md / contracts / quickstart / Playwright（`tests/social-flows.spec.ts` S2）を上記改定に同期
 
 ---
 

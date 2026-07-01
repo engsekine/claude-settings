@@ -17,5 +17,5 @@ export const Private: Story = {
 };
 
 export const Public: Story = {
-    args: { initialIsPublic: true, initialPublicSlug: '0123456789abcdef' },
+    args: { initialIsPublic: true },
 };

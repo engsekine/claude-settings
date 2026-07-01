@@ -10,6 +10,7 @@ import {
 } from '@/features/dives';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
 import { generatePageMetadata } from '@/shared/config/metadata';
+import { createClient } from '@/shared/lib/supabase/server';
 
 interface EditDivePageProps {
     params: Promise<{ id: string }>;
@@ -31,6 +32,14 @@ export default async function EditDivePage({ params }: EditDivePageProps) {
     const { id } = await params;
     const [dive, sites] = await Promise.all([getDive(id), listDiveSites()]);
     if (!dive) notFound();
+
+    // getDive は公開ログ（他人のログ）も返すため、編集は作成者本人に限定する。
+    // 他人の公開ログの編集 URL を直接開いても 404 にする（更新は RLS でも弾かれる二重防御）。
+    const supabase = await createClient();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+    if (dive.userId !== user?.id) notFound();
 
     const [photos, buddies] = await Promise.all([
         getDivePhotos(id, `${dive.diveDate} ${diveLocationLabel(dive)} の写真`),

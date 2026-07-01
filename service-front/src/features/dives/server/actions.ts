@@ -3,7 +3,6 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
-import { resolvePublicSlug } from '@/features/dives/lib/visibility';
 import type { DiveFormValues } from '@/features/dives/schemas/dive.schema';
 import { createClient } from '@/shared/lib/supabase/server';
 import { type ActionResult, actionFailure, actionSuccess } from '@/shared/types/action-result';
@@ -217,7 +216,13 @@ export const updateDive = async (
     const siteError = await validateDiveSite(supabase, input);
     if (siteError) return actionFailure(siteError);
 
-    const { error } = await supabase.from('dives').update(toDbRow(input)).eq('id', id);
+    // owner 限定。公開ログでも他人は更新不可（RLS でも弾かれるが、0 件更新を誤成功にしない二重防御）
+    const { data: updated, error } = await supabase
+        .from('dives')
+        .update(toDbRow(input))
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select('id');
 
     if (error) {
         if (isDiveNumberDuplicate(error)) {
@@ -226,6 +231,7 @@ export const updateDive = async (
         console.error('[updateDive] supabase error:', error);
         return actionFailure('ログの更新に失敗しました。時間をおいて再度お試しください');
     }
+    if (!updated || updated.length === 0) return actionFailure('対象のログが見つかりません');
 
     const buddiesOk = await syncDiveBuddies(supabase, id, user.id, input.buddies);
 
@@ -237,7 +243,7 @@ export const updateDive = async (
 export const setDiveVisibility = async (
     id: string,
     isPublic: boolean,
-): Promise<ActionResult<{ isPublic: boolean; publicSlug: string | null }>> => {
+): Promise<ActionResult<{ isPublic: boolean }>> => {
     const supabase = await createClient();
 
     const {
@@ -245,30 +251,12 @@ export const setDiveVisibility = async (
     } = await supabase.auth.getUser();
     if (!user) return actionFailure('ログインが必要です');
 
-    // 公開化時は slug を解決（既存があれば維持、無ければ生成）。非公開化時は slug を保持したまま遮断する
-    // （RLS と get_public_dive が is_public=false を返さないため、共有リンクも即無効になる）。
-    // slug 取得は owner 限定で行い、対象が無い（他人/存在しない id）場合は誤成功にせずエラーを返す。
-    let publicSlug: string | null = null;
-    if (isPublic) {
-        const { data: existing, error: fetchError } = await supabase
-            .from('dives')
-            .select('public_slug')
-            .eq('id', id)
-            .eq('user_id', user.id)
-            .maybeSingle();
-        if (fetchError) {
-            console.error('[setDiveVisibility] fetch error:', fetchError);
-            return actionFailure('公開設定の更新に失敗しました。時間をおいて再度お試しください');
-        }
-        if (!existing) return actionFailure('対象のログが見つかりません');
-        publicSlug = resolvePublicSlug(existing.public_slug ?? null);
-    }
-
-    // owner 以外の id では RLS により 0 件更新になるため、更新行数を確認して誤成功を防ぐ。
-    const payload = isPublic ? { is_public: true, public_slug: publicSlug } : { is_public: false };
+    // 公開ログの閲覧は /dives/[id]（RLS: is_public=true を authenticated が読める）に統合したため、
+    // slug は生成しない。共有リンクは dive id ベース（{SITE_URL}/dives/{id}）。
+    // owner 以外の id では RLS により 0 件更新になるため、更新行数を確認して誤成功を防ぐ（二重防御）。
     const { data: updated, error } = await supabase
         .from('dives')
-        .update(payload)
+        .update({ is_public: isPublic })
         .eq('id', id)
         .eq('user_id', user.id)
         .select('id');
@@ -281,7 +269,7 @@ export const setDiveVisibility = async (
 
     revalidatePath('/dives');
     revalidatePath(`/dives/${id}`);
-    return actionSuccess({ isPublic, publicSlug });
+    return actionSuccess({ isPublic });
 };
 
 export const deleteDive = async (id: string): Promise<ActionResult> => {
@@ -292,12 +280,19 @@ export const deleteDive = async (id: string): Promise<ActionResult> => {
     } = await supabase.auth.getUser();
     if (!user) return actionFailure('ログインが必要です');
 
-    const { error } = await supabase.from('dives').delete().eq('id', id);
+    // owner 限定。公開ログでも他人は削除不可（RLS でも弾かれるが、0 件削除を誤成功にしない二重防御）
+    const { data: deleted, error } = await supabase
+        .from('dives')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select('id');
 
     if (error) {
         console.error('[deleteDive] supabase error:', error);
         return actionFailure('ログの削除に失敗しました。時間をおいて再度お試しください');
     }
+    if (!deleted || deleted.length === 0) return actionFailure('対象のログが見つかりません');
 
     revalidatePath('/dives');
     redirect('/dives');

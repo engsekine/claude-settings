@@ -142,9 +142,17 @@ export const fetchDiveListPage = async (
 ): Promise<DiveListPage> => {
     const { filter, cursor, limit = DIVE_PAGE_SIZE } = options;
 
+    // 一覧は本人のログのみ。公開読み取り RLS（authenticated can read public dives）により
+    // 他人の公開ログが混ざらないよう、user_id を明示的に絞る（RLS 任せにしない二重防御）。
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { items: [], nextCursor: null };
+
     let query = supabase
         .from('dives')
         .select(DIVE_LIST_COLUMNS)
+        .eq('user_id', user.id)
         .order('dive_date', { ascending: false })
         .order('id', { ascending: false })
         .limit(limit + 1);

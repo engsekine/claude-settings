@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { setDiveVisibility } from '@/features/dives/server/actions';
+import { SITE_URL } from '@/shared/constants/site';
 import { DiveVisibilityToggle } from './DiveVisibilityToggle';
 
 vi.mock('@/features/dives/server/actions', () => ({
@@ -23,8 +24,8 @@ describe('DiveVisibilityToggle', () => {
         expect(screen.getByText('非公開')).toBeInTheDocument();
     });
 
-    it('公開化に成功すると公開状態になり共有リンクを表示する', async () => {
-        mockedSetDiveVisibility.mockResolvedValue({ success: true, isPublic: true, publicSlug: 'abcdef0123456789' });
+    it('公開化に成功すると公開状態になり共有リンク(/dives/[id])を表示する', async () => {
+        mockedSetDiveVisibility.mockResolvedValue({ success: true, isPublic: true });
         const user = userEvent.setup();
         render(<DiveVisibilityToggle diveId="d1" initialIsPublic={false} />);
 
@@ -32,7 +33,7 @@ describe('DiveVisibilityToggle', () => {
 
         expect(mockedSetDiveVisibility).toHaveBeenCalledWith('d1', true);
         await waitFor(() => expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'true'));
-        expect(screen.getByText('/shared/dives/abcdef0123456789')).toBeInTheDocument();
+        expect(screen.getByRole('textbox', { name: '共有リンク' })).toHaveValue(`${SITE_URL}/dives/d1`);
     });
 
     it('失敗時は role="alert" でエラーを表示し、状態を変えない', async () => {
@@ -46,21 +47,21 @@ describe('DiveVisibilityToggle', () => {
         expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'false');
     });
 
-    it('公開中は初期 slug の共有リンクを表示する', () => {
-        render(<DiveVisibilityToggle diveId="d1" initialIsPublic initialPublicSlug="0123456789abcdef" />);
-        expect(screen.getByText('/shared/dives/0123456789abcdef')).toBeInTheDocument();
+    it('公開中は共有リンク(/dives/[id])を絶対 URL で表示する', () => {
+        render(<DiveVisibilityToggle diveId="d1" initialIsPublic />);
+        expect(screen.getByRole('textbox', { name: '共有リンク' })).toHaveValue(`${SITE_URL}/dives/d1`);
     });
 
-    it('「リンクをコピー」で絶対 URL をクリップボードへ書き込む', async () => {
+    it('「コピー」で絶対 URL をクリップボードへ書き込む', async () => {
         const writeText = vi.fn().mockResolvedValue(undefined);
         // userEvent.setup() は navigator.clipboard を独自スタブへ差し替えるため、setup 後に上書きする
         const user = userEvent.setup();
         Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
-        render(<DiveVisibilityToggle diveId="d1" initialIsPublic initialPublicSlug="0123456789abcdef" />);
+        render(<DiveVisibilityToggle diveId="d1" initialIsPublic />);
 
-        await user.click(screen.getByRole('button', { name: 'リンクをコピー' }));
+        await user.click(screen.getByRole('button', { name: 'コピー' }));
 
-        expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/shared/dives/0123456789abcdef`);
+        expect(writeText).toHaveBeenCalledWith(`${SITE_URL}/dives/d1`);
         await waitFor(() => expect(screen.getByRole('button', { name: 'コピーしました' })).toBeInTheDocument());
     });
 });

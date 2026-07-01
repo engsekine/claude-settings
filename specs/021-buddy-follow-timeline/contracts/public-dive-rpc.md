@@ -1,6 +1,8 @@
-# Contract: 匿名共有 RPC `get_public_dive`
+# Contract: 匿名共有 RPC `get_public_dive`（廃止済み）
 
-未ログインの共有ページ（`/(public)/shared/dives/[slug]`）から呼ぶ。詳細 DDL は data-model.md §4。
+> **廃止（2026-07-01）**: 匿名共有ページ `/(public)/shared/dives/[slug]` を廃止し、公開ログの閲覧を認証済みの `/dives/[id]` に統合したため、この RPC は `drop function`（`20260701130000_drop_get_public_dive_fn.sql`）した。公開ログの閲覧は `dives` の RLS「authenticated can read public dives」＋ `getDive`／`/dives/[id]` で担保する。共有リンクは dive id ベースの `{SITE_URL}/dives/[id]`。以下は廃止前の仕様（参考）。
+
+~~未ログインの共有ページ（`/(public)/shared/dives/[slug]`）から呼ぶ。詳細 DDL は data-model.md §4。~~
 
 ## RPC `get_public_dive(p_slug text)`
 

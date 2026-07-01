@@ -8,9 +8,11 @@
 
 ダイブログに「同行バディ（登録ユーザー／フリーテキスト）」を記録できるようにし、それを起点に **フォロー（承認不要・一方向）**・**ログの公開/非公開**・**TOP タイムライン**・**バディ検索（013 拡張）** を実現するソーシャルレイヤーを追加する。
 
+> **改定（2026-07-01）**: 匿名共有ページ `/(public)/shared/dives/[slug]` と `get_public_dive(slug)` RPC を廃止し、公開ログの閲覧はログイン済みユーザー向けの `/dives/[id]` に統合した。共有リンクは dive id ベース（`{SITE_URL}/dives/[id]`）。編集・削除・PDF 出力・公開設定は作成者本人のみ。以下の記述のうち匿名共有・`public_slug`・`get_public_dive` に関する部分はこの改定で置き換わっている。
+
 技術アプローチ:
-- **DB（Supabase）**: 新規テーブル `dive_log_buddies`（dives×users/フリーテキストの中間）・`user_follows`（自己参照フォロー関係）を追加。既存 `dives.is_public` / `public_slug` を活性化し、`dives` に「公開ログは authenticated が閲覧可」の RLS と匿名共有用の `get_public_dive(slug)`（SECURITY DEFINER）を追加。
-- **service-front（Next.js App Router）**: 新規 feature `social`（フォロー・タイムライン・公開プロフィール）を追加し、`dives` feature を拡張（バディ入力・公開トグル・バディ検索）。TOP（`src/app/page.tsx`）にタイムラインを app 層で合成注入。匿名共有ページ `/(public)/shared/dives/[slug]` を追加。
+- **DB（Supabase）**: 新規テーブル `dive_log_buddies`（dives×users/フリーテキストの中間）・`user_follows`（自己参照フォロー関係）を追加。既存 `dives.is_public` を活性化し、`dives` に「公開ログは authenticated が閲覧可」の RLS を追加（この RLS が `/dives/[id]` での他人の公開ログ閲覧・タイムライン・公開プロフィールを支える）。匿名共有用の `get_public_dive(slug)` は当初追加したが 2026-07-01 に撤去（`20260701130000_drop_get_public_dive_fn.sql`）。
+- **service-front（Next.js App Router）**: 新規 feature `social`（フォロー・タイムライン・公開プロフィール）を追加し、`dives` feature を拡張（バディ入力・公開トグル・バディ検索）。TOP（`src/app/page.tsx`）にタイムラインを app 層で合成注入。公開ログの閲覧は認証済みの `/dives/[id]` に統合（作成者以外は編集・削除・公開設定・PDF を非表示）。
 - Server Components デフォルト、変更系は Server Actions、状態は最小限の Client Component に限定。
 
 ## Technical Context
@@ -23,7 +25,7 @@
 
 **Testing**: Vitest（単体）、Storybook、Playwright + axe-core（a11y）
 
-**Target Platform**: Web（認証済みエリア + 匿名公開ページ 1 種）
+**Target Platform**: Web（認証済みエリア。※改定前は匿名公開ページ 1 種を含んだが 2026-07-01 に廃止）
 
 **Project Type**: Web application（service-front 単一 Next.js アプリ + Supabase）
 
@@ -77,7 +79,7 @@ supabase/migrations/
 ├── 20260630100000_create_dive_log_buddies.sql      # 中間テーブル + RLS + 自己バディ防止トリガ
 ├── 20260630100100_create_user_follows.sql          # フォロー関係 + RLS
 ├── 20260630100200_add_dives_public_read_policy.sql # 公開ログの authenticated 読み取り + タイムライン用 index
-└── 20260630100300_create_get_public_dive_fn.sql    # 匿名共有用 SECURITY DEFINER 関数
+└── 20260630100300_create_get_public_dive_fn.sql    # 匿名共有用 SECURITY DEFINER 関数（20260701130000 で drop 済み）
 
 service-front/src/
 ├── features/
@@ -110,7 +112,7 @@ service-front/src/
 └── app/
     ├── page.tsx                        # TOP：タイムラインセクションを app 層で合成
     ├── (authenticated)/users/[id]/page.tsx        # 公開プロフィール（フォロー・公開ログ）
-    └── (public)/shared/dives/[slug]/page.tsx             # 匿名共有ページ（get_public_dive）
+    # （2026-07-01 廃止）(public)/shared/dives/[slug]/page.tsx  ← 公開ログ閲覧は /dives/[id] に統合
 ```
 
 > 注: `get_public_dive` 関数の migration（`20260630100300`）は US2（匿名共有）の独立性確保のため、tasks.md では US2 フェーズで作成する（構成図では他 3 本と並置しているが、適用は US2 着手時）。
@@ -138,7 +140,9 @@ service-front/src/
 
 ### 4. ログ公開/非公開（FR-007〜011）
 
-- `DiveVisibilityToggle`（Client）から Server Action `setDiveVisibility(diveId, isPublic)` を呼ぶ。公開化時に `public_slug` 未付与なら生成、非公開化時は閲覧経路を即遮断（RLS が `is_public=false` を弾く。共有リンクも `get_public_dive` が false を返さない）。
+- `DiveVisibilityToggle`（Client）から Server Action `setDiveVisibility(diveId, isPublic)` を呼ぶ。`is_public` を切り替えるだけ（slug は生成しない）。owner 限定（`.eq('user_id', …)` + 更新行数チェック）。非公開化時は閲覧経路を即遮断（RLS が `is_public=false` を弾くため `/dives/[id]` からも見えなくなる）。
+- 公開中は共有リンク `{SITE_URL}/dives/[id]` を読み取り専用入力欄で提示し、直接コピーできる。
+- 編集・削除・PDF 出力・公開設定は作成者本人のみ（`DiveDetail` の `canManage` 出し分け + `updateDive`/`deleteDive`/`setDiveVisibility` の owner チェック + 編集ページの owner ガード）。
 - 新規ログ既定は `is_public=false`（既存 default）。フォームに公開チェックを追加。
 
 ### 5. バディ記録（FR-001〜006）
@@ -157,9 +161,11 @@ service-front/src/
 - `search-params.ts` に `buddy`（登録ユーザー ID）/ `buddyName`（フリーテキスト部分一致）を追加（contracts/search-params.md）。
 - `list-query.ts` に `dive_log_buddies` の存在条件（`dive_id in (...)` または inner join）で絞り込みを追加。結果は既存 RLS により本人ログ＋閲覧可能な公開ログのみ（FR-023）。
 
-### 8. 匿名共有ページ（FR-011）
+### 8. 公開ログの閲覧（FR-010/011）※2026-07-01 改定
 
-- `/(public)/shared/dives/[slug]/page.tsx`：`get_public_dive(slug)` RPC で公開ログのみ取得。非公開・存在しない slug は 404。`generatePageMetadata` でメタを出力（共有 OGP）。
+- 公開ログの閲覧は認証済みの `/dives/[id]` に統合する（当初の匿名共有ページ `/(public)/shared/dives/[slug]` と `get_public_dive` RPC は廃止）。
+- `/dives/[id]` は `getDive`（RLS: 本人 or 公開ログ）で取得。閲覧者が作成者本人か（`dive.userId === user.id`）で `canManage` を出し分け、他人の公開ログでは編集・削除・公開設定・PDF を非表示にする。写真・同行バディは全項目表示。
+- 未ログインは `(authenticated)` グループのため proxy/認証で `/login` へ誘導される（匿名閲覧は不可）。
 
 ## Phase 0: Research
 

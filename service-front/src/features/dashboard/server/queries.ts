@@ -101,9 +101,16 @@ export const getPrimaryRegulatorStatus = async (): Promise<PrimaryRegulatorStatu
     }
     if (!regulator) return null;
 
+    // 公開読み取り RLS で他人の公開ログを数えないよう本人に限定する
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return null;
+
     const { count, error: countError } = await supabase
         .from('dives')
         .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
         .gte('dive_date', regulator.last_overhauled_on);
 
     if (countError) {
@@ -131,9 +138,20 @@ export const getPrimaryRegulatorStatus = async (): Promise<PrimaryRegulatorStatu
 export const getDashboardHero = async (): Promise<DashboardHero> => {
     const supabase = await createClient();
 
+    // 最終ダイブ日は本人のログから求める。公開読み取り RLS で他人の公開ログを拾わないよう user_id で絞る
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
     const [detailsResult, lastDiveResult] = await Promise.all([
         supabase.from('user_details').select('nickname').maybeSingle(),
-        supabase.from('dives').select('dive_date').order('dive_date', { ascending: false }).limit(1).maybeSingle(),
+        supabase
+            .from('dives')
+            .select('dive_date')
+            .eq('user_id', user?.id ?? '')
+            .order('dive_date', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
     ]);
 
     if (detailsResult.error) {

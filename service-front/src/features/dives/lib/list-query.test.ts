@@ -43,7 +43,14 @@ const createMockClient = (result: QueryResult) => {
         builder[method].mockReturnValue(builder);
     }
     const from = vi.fn(() => builder);
-    return { client: { from } as unknown as SupabaseClient<Database>, from, builder };
+    // fetchDiveListPage は本人限定のため auth.getUser を呼ぶ。既定でログイン済みユーザーを返す
+    const getUser = vi.fn().mockResolvedValue({ data: { user: { id: 'u1' } } });
+    return {
+        client: { from, auth: { getUser } } as unknown as SupabaseClient<Database>,
+        from,
+        builder,
+        getUser,
+    };
 };
 
 describe('mapDiveListItem', () => {
