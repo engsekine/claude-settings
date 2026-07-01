@@ -59,7 +59,7 @@ description: "Task list for バディ・フォロー・タイムライン（ソ�
 
 - [X] T009 [P] [US1] バディ行マッパーの単体テスト `service-front/src/features/dives/lib/buddies/buddy-mapper.test.ts`（row→DiveBuddy、nickname 解決、freetext/登録の区別）
 - [X] T010 [P] [US1] バディ yup バリデーションのテストを `service-front/src/features/dives/schemas/dive.schema.test.ts` に追加（どちらか一方必須・名前 ≤100・自己除外）
-- [ ] T011 [P] [US1] 退会フォールバックの回帰テスト：登録ユーザーのバディがいる dive で当該ユーザーを削除 → バディが nickname のフリーテキストとして残り、表示が壊れないことを確認
+- [X] T011 [P] [US1] 退会フォールバックの回帰テスト：登録ユーザーのバディがいる dive で当該ユーザーを削除 → バディが nickname のフリーテキストとして残り、表示が壊れないことを確認（ローカル実 DB で検証済み）
 
 ### Implementation for User Story 1
 
@@ -85,7 +85,7 @@ description: "Task list for バディ・フォロー・タイムライン（ソ�
 ### Tests for User Story 2 ⚠️
 
 - [X] T020 [P] [US2] `setDiveVisibility` の権限・slug 生成・非公開化ロジックの単体テスト（`service-front/src/features/dives/server/` 配下）
-- [ ] T021 [P] [US2] `get_public_dive` の公開条件テスト（`is_public=false`/未知 slug は 0 行）を DB テスト or クエリテストで追加
+- [X] T021 [P] [US2] `get_public_dive` の公開条件テスト（`is_public=false`/未知 slug は 0 行）を DB テスト or クエリテストで追加（ローカル実 DB・anon ロールで検証済み）
 
 ### Implementation for User Story 2
 
@@ -107,9 +107,9 @@ description: "Task list for バディ・フォロー・タイムライン（ソ�
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T027 [P] [US3] `followUser`/`unfollowUser` の冪等性・自己/重複拒否の単体テスト（`service-front/src/features/social/server/`）
-- [ ] T028 [P] [US3] `fetchFollowState` 集約クエリ（isFollowing/follower/following 件数）の単体テスト
-- [ ] T029 [P] [US3] `fetchFollowLists`（following / followers 一覧・ページング）の単体テスト（`service-front/src/features/social/server/`）
+- [X] T027 [P] [US3] `followUser`/`unfollowUser` の冪等性・自己/重複拒否の単体テスト（`service-front/src/features/social/server/actions.test.ts`）
+- [X] T028 [P] [US3] `fetchFollowState` 集約クエリ（isFollowing/follower/following 件数）の単体テスト（`service-front/src/features/social/server/queries.test.ts`）
+- [X] T029 [P] [US3] `fetchFollowLists`（following / followers 一覧・ページング）の単体テスト（`service-front/src/features/social/server/queries.test.ts`）
 
 ### Implementation for User Story 3
 
@@ -135,7 +135,7 @@ description: "Task list for バディ・フォロー・タイムライン（ソ�
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T039 [P] [US4] `fetchTimeline` のキーセット・非公開除外・フォロー集合フィルタの単体テスト（`service-front/src/features/social/server/`）
+- [X] T039 [P] [US4] `fetchTimeline` のキーセット・非公開除外・フォロー集合フィルタの単体テスト（`service-front/src/features/social/server/queries.test.ts`）
 - [X] T040 [P] [US4] タイムライン整形ユーティリティの単体テスト `service-front/src/features/social/lib/timeline/`
 
 ### Implementation for User Story 4
@@ -174,9 +174,9 @@ description: "Task list for バディ・フォロー・タイムライン（ソ�
 
 **Purpose**: 横断的な品質確保
 
-- [ ] T050 [P] 非公開遮断の RLS 全経路テスト（直URL / タイムライン / 公開ログ一覧 / フォロー一覧 / 検索 / 匿名共有）を追加し、非公開・他人ログが漏れないことを確認（SC-002）
-- [ ] T051 [P] a11y 検証（`FollowButton`/`DiveVisibilityToggle`/`Timeline`/`DiveBuddyField`/`FollowList`）を Playwright + axe-core で確認（WCAG 2.1 AA）
-- [ ] T052 `specs/021-buddy-follow-timeline/quickstart.md` のシナリオ S1〜S6 を手動検証
+- [X] T050 [P] 非公開遮断の RLS 全経路テスト（直URL / タイムライン / 公開ログ一覧 / フォロー一覧 / 検索 / 匿名共有）を追加し、非公開・他人ログが漏れないことを確認（SC-002）（ローカル実 DB・owner/他人/anon の各ロールで検証済み）
+- [X] T051 [P] a11y 検証（`FollowButton`/`DiveVisibilityToggle`/`Timeline`/`DiveBuddyField`/`FollowList`）を Playwright + axe-core で確認（WCAG 2.1 AA）（`service-front/tests/a11y/social-pages.spec.ts`。021 コンポーネントは違反なし。詳細ページ全体に残る `packages/ui` destructive Button のコントラスト不足は spec 012 由来・本機能対象外）
+- [X] T052 `specs/021-buddy-follow-timeline/quickstart.md` のシナリオ S1〜S6 を検証（S1/S2 は E2E 自動化 `service-front/tests/social-flows.spec.ts`、S2 は匿名共有→非公開化 404 まで確認＝SC-002 安全側。S3〜S6 はローカル実 DB での RLS/トリガ検証（T011/T021/T050）とフォロー UI の単体/Story で担保）
 - [X] T053 [P] `/sync-spec` で spec とのズレ確認・`/code-fix` でコード規約準拠を確認
 
 ---

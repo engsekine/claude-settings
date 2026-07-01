@@ -1,0 +1,102 @@
+import { expect, type Page, test } from '@playwright/test';
+
+import { presetConsent } from './a11y/_helpers';
+
+/**
+ * spec 021 quickstart S1 / S2 の E2E 検証（T052 の自動化分）。
+ * - S1: バディ（フリーテキスト）を記録し詳細で表示できる
+ * - S2: 公開トグル → 匿名共有 URL で閲覧可 → 非公開化で共有 URL が 404（SC-002 の安全側）
+ * S3〜S6 は seed データ制約（公開ログ・2 人目の非 admin ユーザー不足）のため
+ * ローカル実 DB での RLS/トリガ検証とフォロー UI の単体/Story で担保する。
+ */
+
+/** supabase/seed.sql のローカル開発専用テストユーザー */
+const TEST_EMAIL = 'test@example.com';
+const TEST_PASSWORD = 'password123';
+
+// ダイブ番号の一意制約衝突を避けるため直列実行する
+test.describe.configure({ mode: 'serial' });
+
+test.beforeEach(async ({ context }) => {
+    await presetConsent(context);
+});
+
+const login = async (page: Page) => {
+    await page.goto('/login');
+    await page.getByLabel('メールアドレス').fill(TEST_EMAIL);
+    await page.getByLabel('パスワード').fill(TEST_PASSWORD);
+    await page.getByRole('button', { name: 'ログイン', exact: true }).click();
+    await page.waitForURL(/\/dives/);
+};
+
+const createDive = async (page: Page, location: string, diveNumber: number) => {
+    await page.goto('/dives/new');
+    await page.getByLabel(/潜水日/).fill('2026-04-20');
+    // ダイブ番号を明示指定して seed/他テストとの一意制約衝突を避ける
+    await page.getByLabel('ダイブ番号').fill(String(diveNumber));
+    await page.getByLabel(/ポイント名/).fill(location);
+    await page.getByLabel(/最大水深/).fill('20');
+    await page.getByLabel(/潜水時間/).fill('42');
+};
+
+const deleteCurrentDive = async (page: Page) => {
+    await page.getByRole('button', { name: /削除/ }).first().click();
+    await page.getByRole('dialog').getByRole('button', { name: /削除/ }).click();
+    await page.waitForURL(/\/dives$/);
+};
+
+test('S1: フリーテキストのバディを記録し詳細で表示できる', async ({ page }) => {
+    await login(page);
+    await createDive(page, 'S1 バディ記録の検証', 9101);
+
+    // バディ（フリーテキスト）を 1 件追加して保存
+    await page.getByRole('button', { name: 'バディを追加' }).click();
+    await page.getByLabel('バディ名 1').fill('テスト相棒');
+    await page.getByRole('button', { name: '作成する' }).click();
+    await page.waitForURL(/\/dives\/[0-9a-f-]+$/);
+
+    // 詳細の「同行バディ」にフリーテキスト名が表示される
+    await expect(page.getByText('同行バディ')).toBeVisible();
+    await expect(page.getByText('テスト相棒')).toBeVisible();
+
+    await deleteCurrentDive(page);
+});
+
+test('S2: 公開 → 匿名共有で閲覧可 → 非公開化で共有 URL が 404（SC-002）', async ({ page, browser }) => {
+    await login(page);
+    await createDive(page, 'S2 公開制御の検証', 9102);
+    await page.getByRole('button', { name: '作成する' }).click();
+    await page.waitForURL(/\/dives\/[0-9a-f-]+$/);
+
+    // 公開トグル ON → 共有リンク（/shared/dives/<slug>）が表示される
+    await page.getByRole('switch', { name: 'このログを公開する' }).click();
+    const shareCode = page.locator('code', { hasText: '/shared/dives/' });
+    await expect(shareCode).toBeVisible();
+    const sharePath = (await shareCode.textContent())?.trim() ?? '';
+    expect(sharePath).toMatch(/^\/shared\/dives\/.+/);
+
+    // 匿名（未認証）コンテキストで共有 URL を開くと閲覧できる
+    const anonContext = await browser.newContext();
+    try {
+        const anonPage = await anonContext.newPage();
+        const visibleRes = await anonPage.goto(sharePath);
+        expect(visibleRes?.status()).toBe(200);
+        await expect(anonPage.getByRole('heading', { name: 'S2 公開制御の検証' })).toBeVisible();
+        await expect(anonPage.getByText('さんのログ')).toBeVisible();
+        await anonPage.close();
+
+        // 非公開へ戻す
+        await page.getByRole('switch', { name: 'このログを公開する' }).click();
+        await expect(page.getByText('非公開')).toBeVisible();
+
+        // 匿名で同じ共有 URL を開くと 404（is_public=false は get_public_dive が 0 行 → notFound）
+        const blockedPage = await anonContext.newPage();
+        const blockedRes = await blockedPage.goto(sharePath);
+        expect(blockedRes?.status()).toBe(404);
+        await blockedPage.close();
+    } finally {
+        await anonContext.close();
+    }
+
+    await deleteCurrentDive(page);
+});

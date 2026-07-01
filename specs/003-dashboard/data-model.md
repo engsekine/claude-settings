@@ -21,7 +21,7 @@ users 1 ──── N regulators
 | `brand` | `text` | NOT NULL, `check (length(trim(brand)) > 0 and char_length(brand) <= 60)` | メーカー名 |
 | `model` | `text` | NOT NULL, `check (length(trim(model)) > 0 and char_length(model) <= 80)` | モデル名 |
 | `purchased_on` | `date` | nullable | 購入日 |
-| `last_overhauled_on` | `date` | NOT NULL, `check (>= '1900-01-01' and <= current_date)` | 前回 OH 日。OH 完了記録で今日に更新 |
+| `last_overhauled_on` | `date` | NOT NULL, `check (>= '1900-01-01' and <= (now() at time zone 'Asia/Tokyo')::date)` | 前回 OH 日。OH 完了記録で今日に更新（JST 基準） |
 | `overhaul_interval_months` | `integer` | NOT NULL, `default 12`, `check (> 0)` | OH 推奨周期（月） |
 | `overhaul_interval_dives` | `integer` | NOT NULL, `default 100`, `check (> 0)` | OH 推奨周期（本数） |
 | `is_primary` | `boolean` | NOT NULL, `default false` | メイン機材フラグ。TOP の表示対象 |

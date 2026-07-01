@@ -184,7 +184,7 @@ erDiagram
 | `user_details_last_name_romaji_check` | `length(trim(last_name_romaji)) > 0` | 同上 |
 | `user_details_first_name_romaji_check` | `length(trim(first_name_romaji)) > 0` | 同上 |
 | `user_details_nickname_check` | `length(trim(nickname)) > 0` | 同上 |
-| `user_details_birth_on_check` | `birth_on >= '1900-01-01' and birth_on <= current_date` | 1900-01-01〜当日 |
+| `user_details_birth_on_check` | `birth_on >= '1900-01-01' and birth_on <= (now() at time zone 'Asia/Tokyo')::date` | 1900-01-01〜当日（JST 基準） |
 | `user_details_gender_check` | `gender in ('male', 'female', 'unanswered')` | 3 値列挙 |
 | `user_details_height_cm_check` | `height_cm > 0 and height_cm <= 300` | `NULL` は許容 |
 | `user_details_weight_kg_check` | `weight_kg > 0 and weight_kg <= 500` | `NULL` は許容 |
