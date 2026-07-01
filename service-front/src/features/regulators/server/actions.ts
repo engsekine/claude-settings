@@ -1,11 +1,28 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { ValidationError } from 'yup';
 
-import type { RegulatorFormValues } from '@/features/regulators/schemas/regulator.schema';
+import { type RegulatorFormValues, regulatorSchema } from '@/features/regulators/schemas/regulator.schema';
 import { todayInJst } from '@/shared/lib/date';
 import { createClient } from '@/shared/lib/supabase/server';
 import { type ActionResult, actionFailure, actionSuccess } from '@/shared/types/action-result';
+
+/**
+ * サーバー側の入力再検証。Server Action は任意クライアントから直接呼べるため、
+ * クライアントの yupResolver に依存せず DB 書き込み前に必ずスキーマを通す
+ * （certifications の validateCertificationInput と同方針）。
+ */
+const validateRegulatorInput = async (
+    input: RegulatorFormValues,
+): Promise<{ values: RegulatorFormValues; error?: never } | { values?: never; error: string }> => {
+    try {
+        return { values: await regulatorSchema.validate(input) };
+    } catch (error) {
+        if (error instanceof ValidationError) return { error: error.message };
+        throw error;
+    }
+};
 
 /** RegulatorFormValues を DB の snake_case にマッピング */
 const toDbRow = (input: RegulatorFormValues) => ({
@@ -52,6 +69,10 @@ export const createRegulator = async (input: RegulatorFormValues): Promise<Actio
     } = await supabase.auth.getUser();
     if (!user) return actionFailure('ログインが必要です');
 
+    const validated = await validateRegulatorInput(input);
+    if (validated.error !== undefined) return actionFailure(validated.error);
+    const values = validated.values;
+
     const { count, error: countError } = await supabase.from('regulators').select('id', { count: 'exact', head: true });
 
     if (countError) {
@@ -60,9 +81,9 @@ export const createRegulator = async (input: RegulatorFormValues): Promise<Actio
     }
 
     const isFirst = (count ?? 0) === 0;
-    const isPrimary = isFirst || input.isPrimary;
+    const isPrimary = isFirst || values.isPrimary;
 
-    if (!isFirst && input.isPrimary) {
+    if (!isFirst && values.isPrimary) {
         const demoteError = await demoteCurrentPrimary(supabase);
         if (demoteError) {
             console.error('[createRegulator] demote error:', demoteError);
@@ -72,7 +93,7 @@ export const createRegulator = async (input: RegulatorFormValues): Promise<Actio
 
     const { data, error } = await supabase
         .from('regulators')
-        .insert({ ...toDbRow(input), is_primary: isPrimary, user_id: user.id })
+        .insert({ ...toDbRow(values), is_primary: isPrimary, user_id: user.id })
         .select('id')
         .single();
 
@@ -94,7 +115,11 @@ export const updateRegulator = async (id: string, input: RegulatorFormValues): P
     } = await supabase.auth.getUser();
     if (!user) return actionFailure('ログインが必要です');
 
-    if (input.isPrimary) {
+    const validated = await validateRegulatorInput(input);
+    if (validated.error !== undefined) return actionFailure(validated.error);
+    const values = validated.values;
+
+    if (values.isPrimary) {
         const demoteError = await demoteCurrentPrimary(supabase, id);
         if (demoteError) {
             console.error('[updateRegulator] demote error:', demoteError);
@@ -102,7 +127,7 @@ export const updateRegulator = async (id: string, input: RegulatorFormValues): P
         }
     }
 
-    const { error } = await supabase.from('regulators').update(toDbRow(input)).eq('id', id);
+    const { error } = await supabase.from('regulators').update(toDbRow(values)).eq('id', id).eq('user_id', user.id);
 
     if (error) {
         console.error('[updateRegulator] supabase error:', error);
@@ -122,7 +147,7 @@ export const deleteRegulator = async (id: string): Promise<ActionResult> => {
     } = await supabase.auth.getUser();
     if (!user) return actionFailure('ログインが必要です');
 
-    const { error } = await supabase.from('regulators').delete().eq('id', id);
+    const { error } = await supabase.from('regulators').delete().eq('id', id).eq('user_id', user.id);
 
     if (error) {
         console.error('[deleteRegulator] supabase error:', error);
@@ -145,7 +170,8 @@ export const recordOverhaul = async (regulatorId: string): Promise<ActionResult>
     const { error } = await supabase
         .from('regulators')
         .update({ last_overhauled_on: todayInJst() })
-        .eq('id', regulatorId);
+        .eq('id', regulatorId)
+        .eq('user_id', user.id);
 
     if (error) {
         console.error('[recordOverhaul] supabase error:', error);

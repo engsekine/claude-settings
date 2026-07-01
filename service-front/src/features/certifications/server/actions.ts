@@ -59,13 +59,15 @@ const validateCertificationInput = async (
         return { error: '取得日には生年月日以降の日付を入力してください' };
     }
 
-    // 取得ダイブの所有者確認。FK 制約はログの存在しか保証しないため、
-    // RLS スコープの select で「自分のログとして見えるか」を検証する（他人の ID の混入を防ぐ）
+    // 取得ダイブの所有者確認。FK 制約はログの存在しか保証しない。
+    // RLS は公開ログ（他人の is_public ログ）も可視にするため RLS スコープの select だけでは
+    // 不十分で、user_id の明示条件で「本人のログ」であることを検証する（021 以降の前提）
     if (values.diveId !== null) {
         const { data: dive, error: diveError } = await supabase
             .from('dives')
             .select('id')
             .eq('id', values.diveId)
+            .eq('user_id', userId)
             .maybeSingle();
 
         if (diveError) {

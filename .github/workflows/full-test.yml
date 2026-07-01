@@ -10,6 +10,10 @@ concurrency:
     group: full-test-${{ github.ref }}
     cancel-in-progress: false
 
+# GITHUB_TOKEN は最小権限に固定（依存 install スクリプト経由のトークン窃取対策）
+permissions:
+    contents: read
+
 jobs:
     e2e:
         runs-on: ubuntu-latest

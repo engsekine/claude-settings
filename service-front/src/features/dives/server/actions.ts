@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 import type { DiveFormValues } from '@/features/dives/schemas/dive.schema';
+import { todayInJst } from '@/shared/lib/date';
 import { createClient } from '@/shared/lib/supabase/server';
 import { type ActionResult, actionFailure, actionSuccess } from '@/shared/types/action-result';
 
@@ -227,7 +228,7 @@ export const createDiveFromPlan = async (
     // 所有者条件は RLS でも担保されるが、アプリ層でも明示して防御的にする（FR-014）
     const { data: plan, error: planError } = await supabase
         .from('dive_plans')
-        .select('id')
+        .select('id, planned_on')
         .eq('id', planId)
         .eq('user_id', user.id)
         .maybeSingle();
@@ -237,19 +238,30 @@ export const createDiveFromPlan = async (
     }
     if (!plan) return actionFailure('この予定は既に移動済みか削除されています');
 
+    // 未来日の予定は移動不可（FR-002）。UI の出し分けに依存せずサーバーでも検証する
+    if (plan.planned_on > todayInJst()) {
+        return actionFailure('未来の予定はログに移動できません。予定日を過ぎてから移動してください');
+    }
+
     // ログ作成（既存ロジックを再利用）。失敗時は予定を削除しない（FR-010）
     const result = await createDive(input);
     if (!result.success) return result;
 
-    // ログ作成成功時のみ予定を削除する（FR-009）。持ち物は FK cascade（FR-011）
-    const { error: deleteError } = await supabase.from('dive_plans').delete().eq('id', planId).eq('user_id', user.id);
+    // ログ作成成功時のみ予定を削除する（FR-009）。持ち物は FK cascade（FR-011）。
+    // 0 行削除（並行タブが先に移動済み等）を成功と誤認しないよう削除行を取得して確認する（FR-015）
+    const { data: deletedRows, error: deleteError } = await supabase
+        .from('dive_plans')
+        .delete()
+        .eq('id', planId)
+        .eq('user_id', user.id)
+        .select('id');
     revalidatePath('/plans');
     revalidatePath('/');
 
     const buddyWarning = result.buddyWarning ? { buddyWarning: result.buddyWarning } : {};
-    if (deleteError) {
-        console.error('[createDiveFromPlan] plan delete error:', deleteError);
-        // ログは作成済みのため保持し、削除失敗を通知に委ねる（FR-011a）
+    if (deleteError || (deletedRows ?? []).length === 0) {
+        console.error('[createDiveFromPlan] plan delete error:', deleteError ?? 'no rows deleted');
+        // ログは作成済みのため保持し、削除失敗（または並行操作による削除済み）を通知に委ねる（FR-011a）
         return actionSuccess({ id: result.id, ...buddyWarning, planDeleteFailed: true });
     }
     return actionSuccess({ id: result.id, ...buddyWarning });
