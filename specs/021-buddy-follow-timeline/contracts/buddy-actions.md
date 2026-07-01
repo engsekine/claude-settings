@@ -6,11 +6,11 @@
 
 | 項目 | 内容 |
 |---|---|
-| 入力 | `diveId`, `buddies: { userId?: string; name?: string }[]` |
+| 入力 | `diveId`, `buddies: { userId?: string; name?: string; nickname?: string }[]`（`nickname` は編集画面のチップ表示専用で xor 判定・保存には不使用） |
 | 検証（yup） | 各要素は `userId` か `name` のいずれか一方必須。`name` は trim 後 1〜100 文字。自分自身（`userId === auth.uid()`）は不可 |
 | 動作 | 既存 `dive_log_buddies`（当該 dive・`removed_by_buddy=false`）と入力を比較し、追加＝INSERT / 削除＝DELETE。`removed_by_buddy=true` の行は対象外（再追加不可・FR-024b） |
 | 権限 | dive 所有者のみ（RLS insert/delete ポリシー） |
-| 出力 | 保存後の `DiveBuddy[]`（表示モデル） |
+| 出力 | Dive 保存の `ActionResult`。同期が一部失敗しても本体保存は巻き戻さず、`createDive`/`updateDive` が `buddyWarning` を返す（フォームで警告表示。編集時は遷移せず警告、作成時は詳細へ遷移） |
 
 ### エラー
 

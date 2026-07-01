@@ -318,6 +318,44 @@ grant execute on function public.search_users_by_nickname(text, integer) to auth
 - 大文字小文字を無視した部分一致（`ilike`）。空クエリは 0 件。呼び出し元自身は除外。nickname 昇順で最大 50 件。
 - アプリ層 `searchUsers(query)`（`social/server/queries.ts`）が結果に閲覧者のフォロー状態を付与し、`/users/search`（`UserSearchBar` + `FollowList`）で表示する。
 
+## 4d. nickname 一意制約と使用可否判定（`20260701110000_add_user_details_nickname_unique.sql`）
+
+フォロー・検索で表示名の曖昧さを解消するため、`user_details.nickname` に正規化キー `lower(trim(nickname))` の一意制約を付ける（ユーザー検索の `ilike` 部分一致とも整合）。加えて、サインアップ／プロフィール補完・編集の事前チェック用に「取得済みか（boolean）」だけを返す関数を用意する（実体の nickname は返さない）。
+
+```sql
+-- 大文字小文字・前後空白を正規化した表示名で重複を禁止（事前に重複が無いことを確認済み）
+create unique index user_details_nickname_key
+    on public.user_details (lower(trim(nickname)));
+
+-- nickname 使用可否（boolean のみ）。p_exclude_user_id は自分の行を衝突判定から除外
+create or replace function public.is_nickname_taken(p_nickname text, p_exclude_user_id uuid default null)
+returns boolean
+language sql
+security definer
+set search_path = ''
+stable
+as $$
+    select exists (
+        select 1 from public.user_details ud
+        where lower(trim(ud.nickname)) = lower(trim(p_nickname))
+          and ud.user_id is distinct from p_exclude_user_id
+    );
+$$;
+
+revoke all on function public.is_nickname_taken(text, uuid) from public;
+grant execute on function public.is_nickname_taken(text, uuid) to anon, authenticated;  -- サインアップは anon から呼ぶ
+```
+
+- `auth/server/actions.ts`（`signUp` / `completeProfile`）・`account/server/actions.ts`（`updateProfile`）が書き込み前にこの関数で事前チェックし、DB 側は一意制約で最終担保する（constitution IV）。
+- **デプロイ注意**: 本番適用前に `select lower(trim(nickname)), count(*) from user_details group by 1 having count(*) > 1` で重複が無いことを確認する（重複があると index 作成が失敗する）。
+
+## 4e. 日付 CHECK 制約の JST 統一（`20260701090000_alter_date_checks_to_jst.sql`）
+
+DB の `current_date` はサーバ TZ（UTC）依存のため、JST 早朝（0:00〜8:59）に「JST の今日」を保存するとクライアント検証（`todayInJst()`）は通るのに DB の未来日 CHECK で弾かれていた。各テーブルの未来日上限を `(now() at time zone 'Asia/Tokyo')::date` に統一してアプリと整合させる。
+
+- 対象: `dives.dives_dive_date_check` / `regulators.regulators_last_overhauled_on_check` / `user_details.user_details_birth_on_check` / `certifications.certifications_acquired_on_check`（取得日は翌日許容を維持）。
+- 本機能（021）で判明した不具合の横断修正であり、021 以外のテーブルにも影響する（レギュレーター・プロフィール・資格の日付保存）。
+
 ## 5. アプリ層の型・表示モデル（service-front）
 
 | 表示モデル | 由来 | 主フィールド |

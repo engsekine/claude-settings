@@ -20,6 +20,13 @@ type Client = SupabaseClient<Database>;
 const PUBLIC_DIVE_COLUMNS = 'id, user_id, dive_date, location, max_depth_m, bottom_time_min';
 const DEFAULT_PAGE_SIZE = 20;
 
+/**
+ * タイムラインで IN 句に載せるフォロー先の上限（spec 021 FR-021）。
+ * フォロー数が多いユーザーでも PostgREST の URL 長制限に達しないよう、
+ * 直近フォローした relationships を優先して絞る。超過分は console.warn で明示する。
+ */
+const MAX_TIMELINE_FOLLOWEES = 1000;
+
 /** user_id 配列 → nickname の Map を get_user_public_profiles（SECURITY DEFINER）で解決する */
 const resolveNicknames = async (supabase: Client, userIds: string[]): Promise<Map<string, string>> => {
     const unique = [...new Set(userIds)];
@@ -81,25 +88,30 @@ export const fetchFollowLists = async (
         data: { user },
     } = await supabase.auth.getUser();
 
-    // following 一覧なら相手 = followee_id、followers 一覧なら相手 = follower_id
-    const filterColumn = kind === 'following' ? 'follower_id' : 'followee_id';
-    const targetColumn = kind === 'following' ? 'followee_id' : 'follower_id';
+    // following 一覧: 自分が follower の行を引き、相手 = followee_id。
+    // followers 一覧: 自分が followee の行を引き、相手 = follower_id。
+    // kind ごとに select を分けて、動的キーの unsafe cast を避けつつ相手 id を型安全に取り出す。
+    const buildQuery = () => {
+        const base =
+            kind === 'following'
+                ? supabase.from('user_follows').select('followee_id, created_at').eq('follower_id', userId)
+                : supabase.from('user_follows').select('follower_id, created_at').eq('followee_id', userId);
+        const ordered = base.order('created_at', { ascending: false }).limit(limit + 1);
+        return cursor ? ordered.lt('created_at', cursor) : ordered;
+    };
 
-    let query = supabase
-        .from('user_follows')
-        .select(`${targetColumn}, created_at`)
-        .eq(filterColumn, userId)
-        .order('created_at', { ascending: false })
-        .limit(limit + 1);
-    if (cursor) query = query.lt('created_at', cursor);
-
-    const { data: rows, error } = await query;
+    const { data: rows, error } = await buildQuery();
     if (error) throw new Error(`フォロー一覧の取得に失敗しました: ${error.message}`);
 
-    const hasNext = (rows?.length ?? 0) > limit;
-    const pageRows = (hasNext ? rows?.slice(0, limit) : rows) ?? [];
-    const getTargetId = (row: (typeof pageRows)[number]): string => (row as Record<string, string>)[targetColumn] ?? '';
-    const targetIds = pageRows.map(getTargetId);
+    // kind に応じて相手 id と created_at を { targetId, createdAt } に正規化する
+    const normalized = (rows ?? []).map((row) => ({
+        targetId: 'followee_id' in row ? row.followee_id : row.follower_id,
+        createdAt: row.created_at,
+    }));
+
+    const hasNext = normalized.length > limit;
+    const pageRows = hasNext ? normalized.slice(0, limit) : normalized;
+    const targetIds = pageRows.map((row) => row.targetId);
 
     const [nicknames, myFollowing] = await Promise.all([
         resolveNicknames(supabase, targetIds),
@@ -114,12 +126,13 @@ export const fetchFollowLists = async (
     ]);
     const followingSet = new Set((myFollowing.data ?? []).map((row) => row.followee_id));
 
-    const items: FollowUser[] = pageRows.map((row) => {
-        const id = getTargetId(row);
-        return { userId: id, nickname: nicknames.get(id) ?? '（不明なユーザー）', isFollowing: followingSet.has(id) };
-    });
+    const items: FollowUser[] = pageRows.map(({ targetId }) => ({
+        userId: targetId,
+        nickname: nicknames.get(targetId) ?? '（不明なユーザー）',
+        isFollowing: followingSet.has(targetId),
+    }));
 
-    const lastCursor = hasNext ? ((pageRows.at(-1) as { created_at: string } | undefined)?.created_at ?? null) : null;
+    const lastCursor = hasNext ? (pageRows.at(-1)?.createdAt ?? null) : null;
     return { items, nextCursor: lastCursor };
 };
 
@@ -250,14 +263,23 @@ export const fetchTimeline = async (
     } = await supabase.auth.getUser();
     if (!user) return { items: [], nextCursor: null };
 
-    // フォロー中の followee_id 集合を引く（0 件なら即空）
+    // フォロー中の followee_id 集合を引く（0 件なら即空）。
+    // フォロー数が多い場合は IN 句肥大化を避けるため直近フォロー順に上限で絞る（FR-021）。
     const { data: follows, error: followError } = await supabase
         .from('user_follows')
         .select('followee_id')
-        .eq('follower_id', user.id);
+        .eq('follower_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(MAX_TIMELINE_FOLLOWEES + 1);
     if (followError) throw new Error(`フォロー情報の取得に失敗しました: ${followError.message}`);
-    const followeeIds = (follows ?? []).map((row) => row.followee_id);
-    if (followeeIds.length === 0) return { items: [], nextCursor: null };
+    const allFolloweeIds = (follows ?? []).map((row) => row.followee_id);
+    if (allFolloweeIds.length === 0) return { items: [], nextCursor: null };
+    if (allFolloweeIds.length > MAX_TIMELINE_FOLLOWEES) {
+        console.warn(
+            `[fetchTimeline] フォロー数が上限(${MAX_TIMELINE_FOLLOWEES})を超えたため、直近フォロー分のみタイムラインに含めます`,
+        );
+    }
+    const followeeIds = allFolloweeIds.slice(0, MAX_TIMELINE_FOLLOWEES);
 
     let query = supabase
         .from('dives')

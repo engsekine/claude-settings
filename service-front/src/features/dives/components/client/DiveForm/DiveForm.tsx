@@ -82,7 +82,7 @@ export const DiveForm = ({ diveId, defaultValues, siteOptions = [], existingPhot
     const router = useRouter();
     const isEdit = diveId !== undefined;
 
-    const { isPending, serverError, submit } = useDiveFormSubmit(diveId);
+    const { isPending, serverError, serverWarning, submit } = useDiveFormSubmit(diveId);
 
     const {
         register,
@@ -619,6 +619,12 @@ export const DiveForm = ({ diveId, defaultValues, siteOptions = [], existingPhot
             {serverError && (
                 <div role="alert" className="text-red-600 text-sm">
                     {serverError}
+                </div>
+            )}
+
+            {serverWarning && (
+                <div role="alert" className="text-amber-700 text-sm">
+                    {serverWarning}
                 </div>
             )}
 

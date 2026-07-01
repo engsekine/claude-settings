@@ -179,6 +179,19 @@ description: "Task list for バディ・フォロー・タイムライン（ソ�
 - [X] T052 `specs/021-buddy-follow-timeline/quickstart.md` のシナリオ S1〜S6 を検証（S1/S2 は E2E 自動化 `service-front/tests/social-flows.spec.ts`、S2 は匿名共有→非公開化 404 まで確認＝SC-002 安全側。S3〜S6 はローカル実 DB での RLS/トリガ検証（T011/T021/T050）とフォロー UI の単体/Story で担保）
 - [X] T053 [P] `/sync-spec` で spec とのズレ確認・`/code-fix` でコード規約準拠を確認
 
+### 追加実装（実装中に判明・spec.md「実装メモ」に反映済み）
+
+- [X] T054 ユーザー検索・フォロー導線を追加: `search_users_by_nickname` 関数（§4c）+ `searchUsers`（`social/server/queries.ts`）+ `/users/search` ページ + `UserSearchBar` + `AuthNav` の「マイプロフィール」「ユーザーを探す」導線
+- [X] T055 `user_details.nickname` の一意制約と `is_nickname_taken` 関数を追加（`20260701110000_...`・§4d）。`signUp`/`completeProfile`/`updateProfile` に事前チェックを組み込み
+- [X] T056 日付 CHECK 制約の JST 統一（`20260701090000_...`・§4e）。JST 早朝に「今日」を保存できない不具合を横断修正
+
+### レビュー指摘対応（develop マージ前レビュー）
+
+- [X] T057 `setDiveVisibility` に owner 限定（`.eq('user_id', …)`）+ 更新行数チェックを追加し、他人/存在しない id への誤成功応答を防止
+- [X] T058 バディ同期の失敗を握りつぶさず伝播（`syncDiveBuddies` が成否を返し、`createDive`/`updateDive` が `buddyWarning` を返却→フォームで表示）。`list-query` のバディ絞り込みもエラー時に throw
+- [X] T059 `fetchTimeline` のフォロー先を直近 `MAX_TIMELINE_FOLLOWEES=1000` 件に絞り、IN 句肥大化を防止（FR-021）。`fetchFollowLists` の動的キー unsafe cast を kind 分岐で解消
+- [X] T060 `DiveBuddyField` の登録済みバディを nickname 表示に修正（schema に表示専用 `nickname` を追加）。`formatJstDate`（`shared/lib/date`）を共通化し 3 箇所の重複を統合。共有リンクのコピーボタン追加＋`bg-muted` 上のコントラスト（WCAG AA）を修正
+
 ---
 
 ## Dependencies & Execution Order

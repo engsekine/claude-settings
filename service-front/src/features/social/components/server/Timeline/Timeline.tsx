@@ -3,15 +3,11 @@ import Link from 'next/link';
 
 import { groupTimelineByDate, isTimelineEmpty } from '@/features/social/lib/timeline';
 import type { TimelineItem } from '@/features/social/types';
+import { formatJstDate } from '@/shared/lib/date';
 
 interface TimelineProps {
     items: TimelineItem[];
 }
-
-const formatDate = (isoDate: string): string => {
-    const [y, m, d] = isoDate.split('-');
-    return `${y}/${m}/${d}`;
-};
 
 /**
  * TOP タイムライン（spec 021 US4）。フォロー中ユーザーの公開ログを日付ごとに表示する。
@@ -32,7 +28,7 @@ export const Timeline = ({ items }: TimelineProps) => {
         <ol className="flex flex-col gap-5">
             {groups.map((group) => (
                 <li key={group.date} className="flex flex-col gap-2">
-                    <h3 className="font-medium text-muted-foreground text-sm">{formatDate(group.date)}</h3>
+                    <h3 className="font-medium text-muted-foreground text-sm">{formatJstDate(group.date)}</h3>
                     <ul className="flex flex-col divide-y divide-border rounded-md border border-border">
                         {group.items.map((dive) => (
                             <li key={dive.diveId} className="flex flex-col gap-1 px-4 py-3">

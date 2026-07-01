@@ -97,11 +97,13 @@ export const applyDiveListFilter = async <Q extends DiveFilterQuery<Q>>(
     // バディ絞り込み（spec 021 FR-022/023）: dive_log_buddies から該当 dive_id を引き、in で限定する。
     // 本人除去済み（removed_by_buddy=true）はヒットさせない。空集合なら 0 件に絞る。
     if (filter.buddyUserId) {
-        const { data } = await supabase
+        const { data, error } = await supabase
             .from('dive_log_buddies')
             .select('dive_id')
             .eq('buddy_user_id', filter.buddyUserId)
             .eq('removed_by_buddy', false);
+        // エラーを握りつぶすと 0 件（=該当なし）と区別できず誤表示になるため throw する
+        if (error) throw new Error(`バディ絞り込みの取得に失敗しました: ${error.message}`);
         next = next.in(
             'id',
             (data ?? []).map((row) => row.dive_id),
@@ -109,11 +111,12 @@ export const applyDiveListFilter = async <Q extends DiveFilterQuery<Q>>(
     }
     if (filter.buddyName) {
         const safeBuddy = filter.buddyName.replace(/[,()*"%_]/g, '');
-        const { data } = await supabase
+        const { data, error } = await supabase
             .from('dive_log_buddies')
             .select('dive_id')
             .eq('removed_by_buddy', false)
             .ilike('buddy_name', `%${safeBuddy}%`);
+        if (error) throw new Error(`バディ名絞り込みの取得に失敗しました: ${error.message}`);
         next = next.in(
             'id',
             (data ?? []).map((row) => row.dive_id),

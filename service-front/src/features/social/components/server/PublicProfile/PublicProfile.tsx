@@ -2,6 +2,7 @@ import type { Route } from 'next';
 import Link from 'next/link';
 
 import type { PublicProfile as PublicProfileData, TimelineItem } from '@/features/social/types';
+import { formatJstDate } from '@/shared/lib/date';
 
 import { FollowButton } from '../../client/FollowButton';
 import { FollowCounts } from '../FollowCounts';
@@ -13,11 +14,6 @@ interface PublicProfileProps {
     /** 閲覧者自身のプロフィールか（自分はフォローボタン非表示） */
     isSelf: boolean;
 }
-
-const formatDate = (isoDate: string): string => {
-    const [y, m, d] = isoDate.split('-');
-    return `${y}/${m}/${d}`;
-};
 
 /** 公開プロフィール（spec 021 US3）。表示名・フォロー UI・件数・公開ログ一覧を表示する。 */
 export const PublicProfile = ({ profile, publicDives, isSelf }: PublicProfileProps) => (
@@ -51,7 +47,7 @@ export const PublicProfile = ({ profile, publicDives, isSelf }: PublicProfilePro
                                 className="flex items-baseline justify-between gap-3 hover:underline"
                             >
                                 <span className="font-medium text-sm">{dive.location}</span>
-                                <span className="text-muted-foreground text-sm">{formatDate(dive.diveDate)}</span>
+                                <span className="text-muted-foreground text-sm">{formatJstDate(dive.diveDate)}</span>
                             </Link>
                         </li>
                     ))}

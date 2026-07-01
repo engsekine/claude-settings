@@ -260,6 +260,9 @@ export const diveSchema = yup.object({
                         .max(100, 'バディ名は100文字以内で入力してください')
                         .transform((v) => (v === '' || v == null ? undefined : v))
                         .optional(),
+                    // 登録ユーザーの表示名（編集画面のチップ表示用・xor 判定の対象外）。
+                    // サーバー同期では userId のみ使うため保存には影響しない。
+                    nickname: yup.string().optional(),
                 })
                 .test('user-xor-name', 'バディは登録ユーザーか名前のどちらか一方を指定してください', (value) => {
                     const hasUser = Boolean(value?.userId);

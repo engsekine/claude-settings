@@ -56,6 +56,18 @@ describe('DiveBuddyField', () => {
         expect(handleChange).toHaveBeenCalledWith([{ name: '海太郎' }]);
     });
 
+    it('登録済みバディの nickname があればチップに表示する', () => {
+        render(
+            <DiveBuddyField
+                value={[{ userId: '123e4567-e89b-12d3-a456-426614174000', nickname: 'はなこ' }]}
+                onChange={vi.fn()}
+            />,
+        );
+
+        expect(screen.getByText('はなこ')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'はなこを削除' })).toBeInTheDocument();
+    });
+
     it('error を role="alert" で表示する', () => {
         render(<DiveBuddyField value={[]} onChange={vi.fn()} error="バディの指定が不正です" />);
         expect(screen.getByRole('alert')).toHaveTextContent('バディの指定が不正です');

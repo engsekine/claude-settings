@@ -7,6 +7,8 @@ import { XIcon } from 'lucide-react';
 export interface DiveBuddyValue {
     userId?: string | undefined;
     name?: string | undefined;
+    /** 登録ユーザーの表示名（チップ表示用・保存には使わない） */
+    nickname?: string | undefined;
 }
 
 interface DiveBuddyFieldProps {
@@ -55,11 +57,11 @@ export const DiveBuddyField = ({ value, onChange, error }: DiveBuddyFieldProps) 
                             key={buddy.userId}
                             className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm"
                         >
-                            <span>登録済みバディ</span>
+                            <span>{buddy.nickname ?? '登録済みバディ'}</span>
                             <button
                                 type="button"
                                 onClick={() => buddy.userId && handleRemoveRegistered(buddy.userId)}
-                                aria-label="登録済みバディを削除"
+                                aria-label={`${buddy.nickname ?? '登録済みバディ'}を削除`}
                                 className="inline-flex size-5 items-center justify-center rounded-full hover:bg-foreground/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
                             >
                                 <XIcon className="size-3.5" aria-hidden="true" />

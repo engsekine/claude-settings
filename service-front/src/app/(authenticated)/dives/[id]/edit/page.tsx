@@ -39,7 +39,7 @@ export default async function EditDivePage({ params }: EditDivePageProps) {
     // 既存バディをフォーム値へ（登録ユーザーは userId、フリーテキストは name）。
     // 編集時に preload しないと保存時の差分同期で全削除されてしまうため必須。
     const buddyValues = buddies.map((buddy) =>
-        buddy.isRegistered && buddy.userId ? { userId: buddy.userId } : { name: buddy.name },
+        buddy.isRegistered && buddy.userId ? { userId: buddy.userId, nickname: buddy.name } : { name: buddy.name },
     );
     const defaultValues = { ...mapDiveToFormValues(dive), buddies: buddyValues };
     const siteOptions = sites.map((site) => ({ value: site.id, label: siteLabel(site) }));

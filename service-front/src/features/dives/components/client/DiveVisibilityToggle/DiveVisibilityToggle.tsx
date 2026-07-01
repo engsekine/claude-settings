@@ -28,6 +28,7 @@ export const DiveVisibilityToggle = ({
     const [isPublic, setIsPublic] = useState(initialIsPublic);
     const [publicSlug, setPublicSlug] = useState<string | null>(initialPublicSlug);
     const [error, setError] = useState<string | null>(null);
+    const [isCopied, setIsCopied] = useState(false);
     const [isPending, startTransition] = useTransition();
 
     const handleToggle = () => {
@@ -41,7 +42,19 @@ export const DiveVisibilityToggle = ({
             }
             setIsPublic(result.isPublic);
             setPublicSlug(result.publicSlug);
+            setIsCopied(false);
         });
+    };
+
+    // 共有リンクは相対パスだけだとコピーしても使えないため、絶対 URL を組み立ててコピーする
+    const handleCopy = async (slug: string) => {
+        try {
+            await navigator.clipboard.writeText(`${window.location.origin}${sharePath(slug)}`);
+            setIsCopied(true);
+        } catch (copyError) {
+            console.warn('[DiveVisibilityToggle] copy failed:', copyError);
+            setError('共有リンクのコピーに失敗しました');
+        }
     };
 
     return (
@@ -70,9 +83,21 @@ export const DiveVisibilityToggle = ({
             </div>
 
             {isPublic && publicSlug && (
-                <p className="text-muted-foreground text-sm">
-                    共有リンク: <code className="rounded bg-muted px-1 py-0.5">{sharePath(publicSlug)}</code>
-                </p>
+                <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-sm">
+                    <span>共有リンク:</span>
+                    {/* bg-muted 上で muted-foreground だとコントラスト 4.34 で WCAG AA 未満のため text-foreground にする */}
+                    <code className="rounded bg-muted px-1 py-0.5 text-foreground">{sharePath(publicSlug)}</code>
+                    <button
+                        type="button"
+                        onClick={() => void handleCopy(publicSlug)}
+                        className="rounded border border-input px-2 py-0.5 text-foreground text-xs hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+                    >
+                        {isCopied ? 'コピーしました' : 'リンクをコピー'}
+                    </button>
+                    <span role="status" aria-live="polite" className="sr-only">
+                        {isCopied ? '共有リンクをコピーしました' : ''}
+                    </span>
+                </div>
             )}
 
             {error && (

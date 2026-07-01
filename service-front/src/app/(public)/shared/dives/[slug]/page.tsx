@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
 import { generatePageMetadata } from '@/shared/config/metadata';
+import { formatJstDate } from '@/shared/lib/date';
 import { createClient } from '@/shared/lib/supabase/server';
 
 interface SharedDivePageProps {
@@ -33,11 +34,6 @@ const fetchPublicDive = async (slug: string): Promise<PublicDive | null> => {
     return data?.[0] ?? null;
 };
 
-const formatDate = (isoDate: string): string => {
-    const [y, m, d] = isoDate.split('-');
-    return `${y}/${m}/${d}`;
-};
-
 export const generateMetadata = async ({ params }: SharedDivePageProps) => {
     const { slug } = await params;
     const dive = await fetchPublicDive(slug);
@@ -46,7 +42,7 @@ export const generateMetadata = async ({ params }: SharedDivePageProps) => {
             slug: `/shared/dives/${slug}`,
             title: dive ? `${dive.location} のダイビングログ` : '公開ダイビングログ',
             description: dive
-                ? `${dive.owner_nickname} さんが共有したダイビングログ（${formatDate(dive.dive_date)}）`
+                ? `${dive.owner_nickname} さんが共有したダイビングログ（${formatJstDate(dive.dive_date)}）`
                 : '共有されたダイビングログ',
         },
         { noIndex: true },
@@ -63,7 +59,7 @@ export default async function SharedDivePage({ params }: SharedDivePageProps) {
             <Breadcrumbs breadcrumbs={[{ name: '公開ダイビングログ' }]} />
             <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-8">
                 <header className="flex flex-col gap-1">
-                    <span className="text-muted-foreground text-sm">{formatDate(dive.dive_date)}</span>
+                    <span className="text-muted-foreground text-sm">{formatJstDate(dive.dive_date)}</span>
                     <h1 className="font-semibold text-2xl">{dive.location}</h1>
                     <p className="text-muted-foreground text-sm">{dive.owner_nickname} さんのログ</p>
                 </header>

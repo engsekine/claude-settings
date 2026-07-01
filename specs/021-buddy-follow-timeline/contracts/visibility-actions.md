@@ -10,6 +10,7 @@
 | 権限 | dive 所有者のみ（既存 update RLS `auth.uid() = user_id`） |
 | 動作（公開化） | `is_public = true`。`public_slug` が NULL なら一意な slug を生成して設定 |
 | 動作（非公開化） | `is_public = false`。`public_slug` は保持（再公開時に同一 URL）だが、`get_public_dive` と RLS が `is_public=false` を返さないため共有リンクは即無効 |
+| owner 確認 | slug 取得・UPDATE とも `.eq('user_id', auth.uid())` で owner 限定。対象が 0 件（他人/存在しない id）なら誤成功にせず `{ success: false, error: '対象のログが見つかりません' }` を返す（RLS に加えたアプリ層の二重防御） |
 | 出力 | `{ success: true, isPublic, publicSlug }` / `{ success: false, error }` |
 | 再検証 | 対象 dive 詳細・所有者プロフィール・フォロワーのタイムライン |
 

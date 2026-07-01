@@ -50,4 +50,17 @@ describe('DiveVisibilityToggle', () => {
         render(<DiveVisibilityToggle diveId="d1" initialIsPublic initialPublicSlug="0123456789abcdef" />);
         expect(screen.getByText('/shared/dives/0123456789abcdef')).toBeInTheDocument();
     });
+
+    it('「リンクをコピー」で絶対 URL をクリップボードへ書き込む', async () => {
+        const writeText = vi.fn().mockResolvedValue(undefined);
+        // userEvent.setup() は navigator.clipboard を独自スタブへ差し替えるため、setup 後に上書きする
+        const user = userEvent.setup();
+        Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+        render(<DiveVisibilityToggle diveId="d1" initialIsPublic initialPublicSlug="0123456789abcdef" />);
+
+        await user.click(screen.getByRole('button', { name: 'リンクをコピー' }));
+
+        expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/shared/dives/0123456789abcdef`);
+        await waitFor(() => expect(screen.getByRole('button', { name: 'コピーしました' })).toBeInTheDocument());
+    });
 });
