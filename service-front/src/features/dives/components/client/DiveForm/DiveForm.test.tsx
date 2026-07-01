@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 
 const createDive = vi.fn();
+const createDiveFromPlan = vi.fn();
 const updateDive = vi.fn();
 const routerPush = vi.fn();
 const routerRefresh = vi.fn();
@@ -10,6 +11,7 @@ const routerBack = vi.fn();
 
 vi.mock('@/features/dives/server/actions', () => ({
     createDive: (...args: unknown[]) => createDive(...args),
+    createDiveFromPlan: (...args: unknown[]) => createDiveFromPlan(...args),
     updateDive: (...args: unknown[]) => updateDive(...args),
 }));
 
@@ -22,6 +24,7 @@ import { DiveForm } from './DiveForm';
 describe('DiveForm', () => {
     beforeEach(() => {
         createDive.mockReset();
+        createDiveFromPlan.mockReset();
         updateDive.mockReset();
         routerPush.mockReset();
         routerRefresh.mockReset();
@@ -123,6 +126,42 @@ describe('DiveForm', () => {
         await user.click(screen.getByRole('button', { name: '作成する' }));
 
         expect(await screen.findByText('失敗しました')).toBeInTheDocument();
+    });
+
+    it('予定から引き継いだ初期値を表示し、編集できる（024 US1 / FR-007）', async () => {
+        const user = userEvent.setup();
+        render(
+            <DiveForm
+                fromPlanId="plan-1"
+                defaultValues={{ diveDate: '2026-06-30', location: '伊豆 / 大瀬崎', notes: '外洋狙い' }}
+            />,
+        );
+
+        const location = screen.getByLabelText(/ポイント名/) as HTMLInputElement;
+        expect(location.value).toBe('伊豆 / 大瀬崎');
+        expect((screen.getByLabelText(/潜水日/) as HTMLInputElement).value).toBe('2026-06-30');
+
+        // 引き継ぎ値は初期値であり編集できる
+        await user.clear(location);
+        await user.type(location, '串本 / 備前');
+        expect(location.value).toBe('串本 / 備前');
+    });
+
+    it('fromPlanId 指定で作成すると createDiveFromPlan を呼ぶ（024 US1）', async () => {
+        createDiveFromPlan.mockResolvedValueOnce({ success: true, id: 'moved-id' });
+        const user = userEvent.setup();
+        render(<DiveForm fromPlanId="plan-1" defaultValues={{ diveDate: '2026-06-30', location: '伊豆 / 大瀬崎' }} />);
+
+        await user.clear(screen.getByLabelText(/最大水深\(m\)/));
+        await user.type(screen.getByLabelText(/最大水深\(m\)/), '18');
+        await user.clear(screen.getByLabelText(/潜水時間\(分\)/));
+        await user.type(screen.getByLabelText(/潜水時間\(分\)/), '45');
+
+        await user.click(screen.getByRole('button', { name: '作成する' }));
+
+        expect(createDiveFromPlan).toHaveBeenCalledWith('plan-1', expect.any(Object));
+        expect(createDive).not.toHaveBeenCalled();
+        expect(routerPush).toHaveBeenCalledWith('/dives/moved-id');
     });
 
     it('編集モードでは既存写真に ✕ を表示し、押すと削除予定にマークする', async () => {

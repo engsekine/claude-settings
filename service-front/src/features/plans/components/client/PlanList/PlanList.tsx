@@ -1,7 +1,9 @@
 'use client';
 
+import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
 
+import { canMovePlanToLog } from '@/features/plans/lib/canMovePlanToLog';
 import { daysUntil } from '@/features/plans/lib/days-until';
 import type { Plan } from '@/features/plans/types';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
@@ -24,6 +26,8 @@ interface PlanCardProps {
     plan: Plan;
     /** 残り日数の表示文言。終了済みの予定は null（残り日数の代わりにバッジを表示する） */
     daysLabel: string | null;
+    /** JST の今日（YYYY-MM-DD）。移動導線の出し分け判定に使う */
+    today: string;
 }
 
 export const PlanList = ({ plans, today }: PlanListProps) => {
@@ -56,7 +60,11 @@ export const PlanList = ({ plans, today }: PlanListProps) => {
                     <ul className="flex flex-col gap-3">
                         {upcomingPlans.map((plan) => (
                             <li key={plan.id}>
-                                <PlanCard plan={plan} daysLabel={formatDaysUntil(daysUntil(plan.plannedOn, today))} />
+                                <PlanCard
+                                    plan={plan}
+                                    daysLabel={formatDaysUntil(daysUntil(plan.plannedOn, today))}
+                                    today={today}
+                                />
                             </li>
                         ))}
                     </ul>
@@ -71,7 +79,7 @@ export const PlanList = ({ plans, today }: PlanListProps) => {
                     <ul className="flex flex-col gap-3">
                         {finishedPlans.map((plan) => (
                             <li key={plan.id}>
-                                <PlanCard plan={plan} daysLabel={null} />
+                                <PlanCard plan={plan} daysLabel={null} today={today} />
                             </li>
                         ))}
                     </ul>
@@ -86,11 +94,13 @@ export const PlanList = ({ plans, today }: PlanListProps) => {
  * 注: markuplint の heading-levels はファイル内の出現順で判定するため、
  * h2 を含む PlanList より後に定義する。
  */
-const PlanCard = ({ plan, daysLabel }: PlanCardProps) => {
+const PlanCard = ({ plan, daysLabel, today }: PlanCardProps) => {
     const tidePhase = getTidePhase(plan.plannedOn);
+    // 当日以前の予定のみ「ログに記録する」を表示（未来日は非表示 / 024 FR-001,002）
+    const canMove = canMovePlanToLog(plan.plannedOn, today);
 
     return (
-        <article className="rounded-lg border border-border bg-background p-4 transition-colors hover:bg-muted/50">
+        <article className="flex flex-col gap-3 rounded-lg border border-border bg-background p-4 transition-colors hover:bg-muted/50">
             <Link href={`/plans/${plan.id}`} className="flex flex-col gap-2">
                 <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
@@ -117,6 +127,17 @@ const PlanCard = ({ plan, daysLabel }: PlanCardProps) => {
                 </div>
                 <h3 className="font-semibold text-base text-foreground">{plan.location}</h3>
             </Link>
+            {canMove && (
+                <div className="flex">
+                    <Link
+                        href={`/dives/new?fromPlanId=${plan.id}`}
+                        className={buttonVariants({ variant: 'outline', size: 'sm' })}
+                        aria-label={`${plan.location}の予定をログに記録する`}
+                    >
+                        ログに記録する
+                    </Link>
+                </div>
+            )}
         </article>
     );
 };

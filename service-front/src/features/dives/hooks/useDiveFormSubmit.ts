@@ -5,7 +5,7 @@ import { useState, useTransition } from 'react';
 
 import { uploadDivePhotos } from '@/features/dives/lib/uploadDivePhotos';
 import type { DiveFormValues } from '@/features/dives/schemas/dive.schema';
-import { createDive, updateDive } from '@/features/dives/server/actions';
+import { createDive, createDiveFromPlan, updateDive } from '@/features/dives/server/actions';
 import { deleteDivePhoto } from '@/features/dives/server/photoActions';
 import { createClient } from '@/shared/lib/supabase/browser';
 
@@ -24,10 +24,11 @@ interface UseDiveFormSubmitResult {
 
 /**
  * DiveForm の送信処理を担うフック。
- * diveId が渡されたら更新（updateDive）、無ければ新規作成（createDive）として動作する。
+ * diveId が渡されたら更新（updateDive）として動作する。
+ * 新規作成では、fromPlanId があれば予定→ログ移動（createDiveFromPlan）、無ければ通常作成（createDive）。
  * 成功時は詳細ページへ遷移し router.refresh() でサーバーコンポーネント側のキャッシュを破棄する。
  */
-export const useDiveFormSubmit = (diveId?: string): UseDiveFormSubmitResult => {
+export const useDiveFormSubmit = (diveId?: string, fromPlanId?: string): UseDiveFormSubmitResult => {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [serverError, setServerError] = useState<string | null>(null);
@@ -61,7 +62,8 @@ export const useDiveFormSubmit = (diveId?: string): UseDiveFormSubmitResult => {
                 return;
             }
 
-            const result = await createDive(values);
+            // 予定→ログ移動（024）なら createDiveFromPlan、通常作成なら createDive。
+            const result = fromPlanId ? await createDiveFromPlan(fromPlanId, values) : await createDive(values);
             if (!result.success) {
                 setServerError(result.error);
                 return;
@@ -79,7 +81,10 @@ export const useDiveFormSubmit = (diveId?: string): UseDiveFormSubmitResult => {
             // バディ同期が一部失敗しても本体は作成済みなので詳細へ遷移する（警告はログのみ）。
             if (result.buddyWarning) console.warn('[useDiveFormSubmit]', result.buddyWarning);
 
-            router.push(`/dives/${result.id}`);
+            // 予定→ログ移動でログは作成できたが予定削除に失敗した場合（024 FR-011a）。
+            // serverWarning はフォームのアンマウントで失われるため、遷移先のログ詳細ページで通知する。
+            const planDeleteFailed = 'planDeleteFailed' in result && result.planDeleteFailed === true;
+            router.push(planDeleteFailed ? `/dives/${result.id}?planDeleteFailed=1` : `/dives/${result.id}`);
             router.refresh();
         });
     };
