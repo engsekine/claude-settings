@@ -18,5 +18,8 @@
         "@rolldown/binding-linux-x64-gnu": "1.0.3",
         "@tailwindcss/oxide-linux-x64-gnu": "4.3.0",
         "lightningcss-linux-x64-gnu": "1.32.0"
+    },
+    "volta": {
+        "node": "24.18.0"
     }
 }
