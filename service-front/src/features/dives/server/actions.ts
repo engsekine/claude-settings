@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
+import { buildDivePrefix, DIVE_PHOTOS_BUCKET, type PhotoKind } from '@/features/dives/lib/photoStorage';
 import type { DiveFormValues } from '@/features/dives/schemas/dive.schema';
 import { todayInJst } from '@/shared/lib/date';
 import { createClient } from '@/shared/lib/supabase/server';
@@ -337,6 +338,38 @@ export const setDiveVisibility = async (
     return actionSuccess({ isPublic });
 };
 
+/**
+ * ログ配下の Storage 写真オブジェクトを一括削除する（012 FR-014 / T035）。
+ * メタ行（dive_photos）は FK cascade で消えるため、実体オブジェクトのみ対象。
+ * 削除失敗は本人フォルダ内の孤児残留にとどまる（公開判定は dive 消滅で false）ため、
+ * best-effort としてログ出力のみ行い、ログ削除自体は成功として扱う。
+ */
+const removeDivePhotoObjects = async (
+    supabase: Awaited<ReturnType<typeof createClient>>,
+    userId: string,
+    diveId: string,
+): Promise<void> => {
+    const prefix = buildDivePrefix(userId, diveId);
+    const kinds: PhotoKind[] = ['display', 'thumb', 'orig'];
+
+    const listed = await Promise.all(
+        kinds.map(async (kind) => {
+            const { data, error } = await supabase.storage.from(DIVE_PHOTOS_BUCKET).list(`${prefix}${kind}`);
+            if (error) {
+                console.error(`[deleteDive] storage list error (${kind}):`, error);
+                return [];
+            }
+            return (data ?? []).map((object) => `${prefix}${kind}/${object.name}`);
+        }),
+    );
+
+    const paths = listed.flat();
+    if (paths.length === 0) return;
+
+    const { error } = await supabase.storage.from(DIVE_PHOTOS_BUCKET).remove(paths);
+    if (error) console.error('[deleteDive] storage remove error:', error);
+};
+
 export const deleteDive = async (id: string): Promise<ActionResult> => {
     const supabase = await createClient();
 
@@ -358,6 +391,9 @@ export const deleteDive = async (id: string): Promise<ActionResult> => {
         return actionFailure('ログの削除に失敗しました。時間をおいて再度お試しください');
     }
     if (!deleted || deleted.length === 0) return actionFailure('対象のログが見つかりません');
+
+    // 写真の実体オブジェクトを片付ける（012 FR-014。redirect は throw するためこの位置で行う）
+    await removeDivePhotoObjects(supabase, user.id, id);
 
     revalidatePath('/dives');
     redirect('/dives');

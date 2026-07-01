@@ -23,6 +23,7 @@ import {
     type SignUpInput,
     signInWithGoogle,
     signUp,
+    updatePassword,
 } from './actions';
 
 interface MockOptions {
@@ -36,6 +37,8 @@ interface MockOptions {
     nicknameTaken?: boolean;
     /** auth.resend の戻り error（023）。null は成功 */
     resendError?: { status?: number; message: string } | null;
+    /** auth.updateUser の戻り error（001 / updatePassword）。null は成功 */
+    updateUserError?: { status?: number; message: string } | null;
 }
 
 const buildSupabaseMock = (options: MockOptions = {}) => {
@@ -56,10 +59,13 @@ const buildSupabaseMock = (options: MockOptions = {}) => {
         .mockResolvedValue({ data: { user: { id: 'user-1', identities: [{ id: 'i1' }] } }, error: null });
     /** auth.resend（023 / resendConfirmationEmail）。error を渡すと失敗系を再現する */
     const resend = vi.fn().mockResolvedValue({ data: {}, error: resendError });
+    /** auth.updateUser（001 / updatePassword）。error を渡すと失敗系を再現する */
+    const updateUser = vi.fn().mockResolvedValue({ data: {}, error: options.updateUserError ?? null });
+    const signOut = vi.fn().mockResolvedValue({ error: null });
 
     return {
         client: {
-            auth: { signInWithOAuth, getUser, signUp: supabaseSignUp, resend },
+            auth: { signInWithOAuth, getUser, signUp: supabaseSignUp, resend, updateUser, signOut },
             from: vi.fn().mockReturnValue({ insert }),
             rpc,
         },
@@ -68,6 +74,8 @@ const buildSupabaseMock = (options: MockOptions = {}) => {
         rpc,
         supabaseSignUp,
         resend,
+        updateUser,
+        signOut,
     };
 };
 
@@ -356,5 +364,57 @@ describe('resendConfirmationEmail', () => {
         const result = await resendConfirmationEmail('unknown@example.com');
 
         expect(result.success).toBe(true);
+    });
+});
+
+describe('updatePassword（001 / FR-019）', () => {
+    const VALID_PASSWORD = 'NewPassword123';
+
+    it('パスワードを更新し、サインアウトして /login へリダイレクトする', async () => {
+        const mock = buildSupabaseMock();
+        createClient.mockResolvedValue(mock.client);
+
+        await expect(updatePassword(VALID_PASSWORD)).rejects.toThrow('NEXT_REDIRECT:/login');
+
+        expect(mock.updateUser).toHaveBeenCalledWith({ password: VALID_PASSWORD });
+        expect(mock.signOut).toHaveBeenCalled();
+    });
+
+    it('リカバリーセッションが無い場合は更新せず失敗を返す', async () => {
+        const mock = buildSupabaseMock({ user: null });
+        createClient.mockResolvedValue(mock.client);
+
+        const result = await updatePassword(VALID_PASSWORD);
+
+        expect(result.success).toBe(false);
+        expect(mock.updateUser).not.toHaveBeenCalled();
+    });
+
+    it('パスワード要件（12文字以上・英大小+数字）をサーバー側でも再検証する', async () => {
+        const mock = buildSupabaseMock();
+        createClient.mockResolvedValue(mock.client);
+
+        const result = await updatePassword('short');
+
+        expect(result.success).toBe(false);
+        if (!result.success) {
+            expect(result.error).toContain('12文字以上');
+        }
+        expect(mock.updateUser).not.toHaveBeenCalled();
+    });
+
+    it('現在と同じパスワードは専用メッセージで拒否する', async () => {
+        const mock = buildSupabaseMock({
+            updateUserError: { message: 'New password should be different from the old password.' },
+        });
+        createClient.mockResolvedValue(mock.client);
+
+        const result = await updatePassword(VALID_PASSWORD);
+
+        expect(result.success).toBe(false);
+        if (!result.success) {
+            expect(result.error).toContain('現在と同じパスワード');
+        }
+        expect(mock.signOut).not.toHaveBeenCalled();
     });
 });

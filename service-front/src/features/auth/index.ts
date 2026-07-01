@@ -5,3 +5,4 @@ export { ProfileCompletionForm } from './components/client/ProfileCompletionForm
 export { ResendConfirmationButton } from './components/client/ResendConfirmationButton';
 export { ResetPasswordForm } from './components/client/ResetPasswordForm';
 export { SignupForm } from './components/client/SignupForm';
+export { UpdatePasswordForm } from './components/client/UpdatePasswordForm';

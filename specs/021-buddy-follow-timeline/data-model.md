@@ -88,8 +88,11 @@ create trigger dive_log_buddies_prevent_self_buddy
 alter table public.dive_log_buddies enable row level security;
 
 -- SELECT: 親 dive が閲覧可能（所有者 or 公開・未削除）、または自分宛タグ（本人による管理用）
+-- 20260702120000 で to authenticated に限定（anon の残置面を除去。公開写真の
+-- dive_photos / Storage 読み取りも同マイグレーションで authenticated 限定）
 create policy "read buddies of viewable dives"
     on public.dive_log_buddies for select
+    to authenticated
     using (
         exists (
             select 1 from public.dives d

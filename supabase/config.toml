@@ -353,7 +353,10 @@ client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
 secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
 redirect_uri = ""
 url = ""
-# ローカルで Google サインインするために必須（nonce チェックをスキップ）
+# ローカルで Google サインインするために必須（nonce チェックをスキップ）。
+# ⚠ 本番は必ず false にすること: nonce 検証を外すと OIDC のリプレイ攻撃耐性が落ちる。
+# この config を supabase config push 等で本番へ反映する場合はこの行を false に上書きする
+# （セキュリティ監査 2026-07-02 / specs/016-google-login）
 skip_nonce_check = true
 email_optional = false
 
