@@ -6,6 +6,9 @@ export const E164_PATTERN = /^\+[1-9]\d{7,14}$/;
 /** SMS ワンタイムコードの桁数（config.toml [auth.mfa.phone] otp_length と一致させる） */
 export const OTP_LENGTH = 6;
 
+/** SMS ワンタイムコードの形式（OTP_LENGTH 桁の数字） */
+export const OTP_PATTERN = new RegExp(`^\\d{${OTP_LENGTH}}$`);
+
 export const phoneSchema = yup.object({
     phone: yup
         .string()
@@ -19,7 +22,7 @@ export const otpSchema = yup.object({
     code: yup
         .string()
         .required('確認コードを入力してください')
-        .matches(new RegExp(`^\\d{${OTP_LENGTH}}$`), `${OTP_LENGTH} 桁の数字を入力してください`),
+        .matches(OTP_PATTERN, `${OTP_LENGTH} 桁の数字を入力してください`),
 });
 
 export type OtpFormValues = yup.InferType<typeof otpSchema>;

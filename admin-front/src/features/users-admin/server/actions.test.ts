@@ -91,6 +91,48 @@ describe('removeMfaFactor（FR-016）', () => {
         expect(recordAudit).not.toHaveBeenCalled();
     });
 
+    it('一部だけ削除できて途中で失敗した場合、削除済み要素のみ監査ログに残して失敗を返す', async () => {
+        const deleteFactor = vi
+            .fn()
+            .mockResolvedValueOnce({ data: {}, error: null })
+            .mockResolvedValueOnce({ data: null, error: { message: 'boom' } });
+        const listFactors = vi.fn().mockResolvedValue({
+            data: {
+                factors: [
+                    { id: 'factor-1', status: 'verified' },
+                    { id: 'factor-2', status: 'unverified' },
+                ],
+            },
+            error: null,
+        });
+        createAdminServiceClient.mockReturnValue({ auth: { admin: { mfa: { listFactors, deleteFactor } } } });
+
+        const result = await removeMfaFactor('user-1');
+
+        expect(result.success).toBe(false);
+        /** 削除できた factor-1 のみ証跡として残す（factor-2 は削除失敗のため含めない） */
+        expect(recordAudit).toHaveBeenCalledWith(
+            {},
+            'admin-1',
+            expect.objectContaining({
+                action: 'hard_delete',
+                targetTable: 'mfa_factors',
+                targetId: 'user-1',
+                changes: { removedFactorIds: ['factor-1'] },
+            }),
+        );
+    });
+
+    it('監査ログの記録に失敗しても、削除が成功していれば成功を返す', async () => {
+        const service = buildServiceMock();
+        createAdminServiceClient.mockReturnValue(service.client);
+        recordAudit.mockRejectedValue(new Error('audit down'));
+
+        const result = await removeMfaFactor('user-1');
+
+        expect(result.success).toBe(true);
+    });
+
     it('未認証・非管理者は requireAdmin でリダイレクトされる（ここでは例外）', async () => {
         requireAdmin.mockRejectedValue(new Error('NEXT_REDIRECT:/login'));
 

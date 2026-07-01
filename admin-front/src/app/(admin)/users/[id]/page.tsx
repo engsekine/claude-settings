@@ -44,17 +44,17 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
 
             <section aria-labelledby="mfa-heading" className="flex max-w-xl flex-col gap-2 border-border border-t pt-4">
                 <h2 id="mfa-heading" className="font-semibold text-lg">
-                    2要素認証
+                    2 要素認証
                 </h2>
                 {mfaStatus.enabled ? (
                     <>
                         <p className="text-muted-foreground text-sm">
-                            このユーザーは 2要素認証（電話番号）が有効です。電話紛失時などは下のボタンで解除できます。
+                            このユーザーは 2 要素認証（電話番号）が有効です。電話紛失時などは下のボタンで解除できます。
                         </p>
                         <RemoveMfaButton userId={detail.user_id} />
                     </>
                 ) : (
-                    <p className="text-muted-foreground text-sm">このユーザーは 2要素認証を有効化していません。</p>
+                    <p className="text-muted-foreground text-sm">このユーザーは 2 要素認証を有効化していません。</p>
                 )}
             </section>
         </div>

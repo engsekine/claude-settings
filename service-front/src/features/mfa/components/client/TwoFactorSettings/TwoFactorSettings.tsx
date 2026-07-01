@@ -4,7 +4,7 @@ import { Button } from '@repo/ui/components/button';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
-import { E164_PATTERN, OTP_LENGTH } from '@/features/mfa/schemas';
+import { E164_PATTERN, OTP_LENGTH, OTP_PATTERN } from '@/features/mfa/schemas';
 import { disablePhoneFactor, enrollPhoneFactor, verifyPhoneFactor } from '@/features/mfa/server/actions';
 
 interface TwoFactorSettingsProps {
@@ -13,8 +13,6 @@ interface TwoFactorSettingsProps {
     /** 対象の phone 要素 ID（無効化に使う）。無効時は null */
     initialFactorId: string | null;
 }
-
-const OTP_PATTERN = new RegExp(`^\\d{${OTP_LENGTH}}$`);
 
 /**
  * 設定画面の 2 要素認証セクション（023 / US2 / FR-008・FR-009・FR-014）。

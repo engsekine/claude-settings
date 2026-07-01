@@ -10,6 +10,9 @@ import { type ActionResult, actionFailure, actionSuccess } from '@/shared/types/
 
 import { toUserDetailsInsert } from './mappers/profile-completion';
 
+/** 認証メール・OAuth の戻り先ベース URL（'use server' のため非公開ヘルパーとして共有） */
+const getSiteUrl = (): string => process.env['NEXT_PUBLIC_SITE_URL'] ?? 'https://localhost:3000';
+
 /** signUp の成功ペイロード */
 export interface SignUpPayload {
     /** 確認メールを送信した場合 true（ユーザーはまだログインしていない） */
@@ -91,13 +94,11 @@ export const signUp = async (input: SignUpInput): Promise<ActionResult<SignUpPay
         return actionFailure('このニックネームは既に使われています。別のニックネームをお試しください');
     }
 
-    const siteUrl = process.env['NEXT_PUBLIC_SITE_URL'] ?? 'https://localhost:3000';
-
     const { data, error } = await supabase.auth.signUp({
         email: input.email,
         password: input.password,
         options: {
-            emailRedirectTo: `${siteUrl}/api/auth/callback?next=/dives`,
+            emailRedirectTo: `${getSiteUrl()}/api/auth/callback?next=/dives`,
             /**
              * raw_user_meta_data に格納され、handle_new_user トリガーが
              * user_details への INSERT で参照する。
@@ -171,13 +172,11 @@ export const requestPasswordReset = async (email: string): Promise<ActionResult>
 export const resendConfirmationEmail = async (email: string): Promise<ActionResult> => {
     const supabase = await createClient();
 
-    const siteUrl = process.env['NEXT_PUBLIC_SITE_URL'] ?? 'https://localhost:3000';
-
     const { error } = await supabase.auth.resend({
         type: 'signup',
         email,
         options: {
-            emailRedirectTo: `${siteUrl}/api/auth/callback?next=/dives`,
+            emailRedirectTo: `${getSiteUrl()}/api/auth/callback?next=/dives`,
         },
     });
 
@@ -197,12 +196,10 @@ export const resendConfirmationEmail = async (email: string): Promise<ActionResu
 export const signInWithGoogle = async (): Promise<ActionResult> => {
     const supabase = await createClient();
 
-    const siteUrl = process.env['NEXT_PUBLIC_SITE_URL'] ?? 'https://localhost:3000';
-
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            redirectTo: `${siteUrl}/api/auth/callback?next=/dives`,
+            redirectTo: `${getSiteUrl()}/api/auth/callback?next=/dives`,
         },
     });
 

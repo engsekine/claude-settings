@@ -3,13 +3,11 @@
 import { Button } from '@repo/ui/components/button';
 import { useEffect, useState, useTransition } from 'react';
 
-import { OTP_LENGTH } from '@/features/mfa/schemas';
+import { OTP_LENGTH, OTP_PATTERN } from '@/features/mfa/schemas';
 import { challengeLoginFactor, verifyLogin } from '@/features/mfa/server/actions';
 
 /** 再送のクールダウン秒数（FR-013） */
 const RESEND_COOLDOWN_SECONDS = 30;
-
-const OTP_PATTERN = new RegExp(`^\\d{${OTP_LENGTH}}$`);
 
 interface MfaChallengeFormProps {
     /** 2 段階目で検証する phone 要素 ID（ページ側で listFactors から解決して渡す） */
