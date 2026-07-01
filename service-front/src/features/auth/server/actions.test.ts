@@ -16,7 +16,14 @@ vi.mock('@/shared/lib/supabase/server', () => ({
 
 import { CURRENT_TERMS_VERSION } from '@/shared/constants/terms';
 
-import { type CompleteProfileInput, completeProfile, type SignUpInput, signInWithGoogle, signUp } from './actions';
+import {
+    type CompleteProfileInput,
+    completeProfile,
+    resendConfirmationEmail,
+    type SignUpInput,
+    signInWithGoogle,
+    signUp,
+} from './actions';
 
 interface MockOptions {
     /** signInWithOAuth の戻り */
@@ -27,6 +34,8 @@ interface MockOptions {
     insertError?: { code?: string; message: string } | null;
     /** is_nickname_taken（rpc）の戻り。true は「既に使われている」 */
     nicknameTaken?: boolean;
+    /** auth.resend の戻り error（023）。null は成功 */
+    resendError?: { status?: number; message: string } | null;
 }
 
 const buildSupabaseMock = (options: MockOptions = {}) => {
@@ -35,6 +44,7 @@ const buildSupabaseMock = (options: MockOptions = {}) => {
         user = { id: 'user-1' },
         insertError = null,
         nicknameTaken = false,
+        resendError = null,
     } = options;
 
     const signInWithOAuth = vi.fn().mockResolvedValue(oauth);
@@ -44,10 +54,12 @@ const buildSupabaseMock = (options: MockOptions = {}) => {
     const supabaseSignUp = vi
         .fn()
         .mockResolvedValue({ data: { user: { id: 'user-1', identities: [{ id: 'i1' }] } }, error: null });
+    /** auth.resend（023 / resendConfirmationEmail）。error を渡すと失敗系を再現する */
+    const resend = vi.fn().mockResolvedValue({ data: {}, error: resendError });
 
     return {
         client: {
-            auth: { signInWithOAuth, getUser, signUp: supabaseSignUp },
+            auth: { signInWithOAuth, getUser, signUp: supabaseSignUp, resend },
             from: vi.fn().mockReturnValue({ insert }),
             rpc,
         },
@@ -55,6 +67,7 @@ const buildSupabaseMock = (options: MockOptions = {}) => {
         insert,
         rpc,
         supabaseSignUp,
+        resend,
     };
 };
 
@@ -302,5 +315,46 @@ describe('completeProfile - メール配信許可（022）', () => {
         const payload = mock.insert.mock.calls[0]?.[0];
         expect(payload.is_email_opted_in).toBe(false);
         expect(payload.email_opted_in_at).toBeNull();
+    });
+});
+
+describe('resendConfirmationEmail', () => {
+    it('type=signup と confirmation コールバックの emailRedirectTo で auth.resend を呼ぶ', async () => {
+        const mock = buildSupabaseMock();
+        createClient.mockResolvedValue(mock.client);
+
+        const result = await resendConfirmationEmail('user@example.com');
+
+        expect(result.success).toBe(true);
+        expect(mock.resend).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: 'signup',
+                email: 'user@example.com',
+                options: expect.objectContaining({
+                    emailRedirectTo: expect.stringContaining('/api/auth/callback?next=/dives'),
+                }),
+            }),
+        );
+    });
+
+    it('レート制限（429）のときは失敗メッセージを返す', async () => {
+        createClient.mockResolvedValue(
+            buildSupabaseMock({ resendError: { status: 429, message: 'email rate limit exceeded' } }).client,
+        );
+
+        const result = await resendConfirmationEmail('user@example.com');
+
+        expect(result.success).toBe(false);
+        if (!result.success) {
+            expect(result.error).toContain('しばらく時間をおいて');
+        }
+    });
+
+    it('レート制限以外のエラーは情報漏洩防止のため成功扱いにする（ユーザー列挙回避）', async () => {
+        createClient.mockResolvedValue(buildSupabaseMock({ resendError: { message: 'user not found' } }).client);
+
+        const result = await resendConfirmationEmail('unknown@example.com');
+
+        expect(result.success).toBe(true);
     });
 });

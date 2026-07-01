@@ -8,7 +8,15 @@ import { updateSession } from '@/shared/lib/supabase/middleware';
  */
 const APP_ROUTE_PREFIXES = ['/dives', '/dive-sites', '/plans', '/settings', '/profile-completion'];
 
-/** 未認証ユーザー向けのパス（認証済みなら /dives へ飛ばす） */
+/**
+ * 未認証ユーザー向けのパス（認証済みなら /dives へ飛ばす）。完全一致で判定する。
+ *
+ * 023 / US2 注記: ログイン 2 段階目の `/login/verify` は「完全一致」ではないため
+ * ここには含まれず、AAL1（1 段階目のみ）の認証済みユーザーでも到達できる。
+ * 2 要素認証の AAL2 強制（保護ルートの遮断）はミドルウェアではなく
+ * `(authenticated)/layout.tsx` で一元的に行う（リクエスト毎の AAL 取得コストと
+ * リダイレクトループを避けるための設計判断 / research.md Decision 6）。
+ */
 const AUTH_ROUTES = ['/login', '/signup', '/reset-password'];
 
 export const proxy = async (request: NextRequest) => {
