@@ -1,3 +1,4 @@
+export { UserSearchBar } from './components/client/UserSearchBar';
 export { FollowCounts } from './components/server/FollowCounts';
 export { FollowList } from './components/server/FollowList';
 export { PublicProfile } from './components/server/PublicProfile';
@@ -9,6 +10,7 @@ export {
     fetchPublicProfile,
     fetchTimeline,
     fetchUserPublicDives,
+    searchUsers,
 } from './server/queries';
 export type {
     FollowListKind,

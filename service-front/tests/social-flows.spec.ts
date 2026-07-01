@@ -100,3 +100,31 @@ test('S2: 公開 → 匿名共有で閲覧可 → 非公開化で共有 URL が 
 
     await deleteCurrentDive(page);
 });
+
+test('S7: ユーザー検索から相手を見つけてフォロー/解除できる', async ({ page }) => {
+    await login(page);
+
+    // ニックネームで検索 → seed の admin がヒットする
+    await page.goto('/users/search');
+    await page.getByRole('searchbox', { name: 'ニックネームで探す' }).fill('admin');
+    await page.getByRole('button', { name: '検索' }).click();
+    await page.waitForURL(/\/users\/search\?q=admin/);
+
+    // 結果にプロフィールリンクが出る
+    await expect(page.getByRole('link', { name: 'admin' })).toBeVisible();
+
+    // 再実行耐性: 既にフォロー中なら一旦解除して初期状態へ
+    const followingButton = page.getByRole('button', { name: 'フォロー中' });
+    if (await followingButton.isVisible().catch(() => false)) {
+        await followingButton.click();
+        await expect(page.getByRole('button', { name: 'フォロー', exact: true })).toBeVisible();
+    }
+
+    // フォロー → フォロー中に変わる
+    await page.getByRole('button', { name: 'フォロー', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'フォロー中' })).toBeVisible();
+
+    // 後始末: フォロー解除
+    await page.getByRole('button', { name: 'フォロー中' }).click();
+    await expect(page.getByRole('button', { name: 'フォロー', exact: true })).toBeVisible();
+});

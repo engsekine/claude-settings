@@ -89,4 +89,9 @@ test('タイムライン・プロフィール・フォロー一覧 - WCAG 2.1 AA
     // フォロワー一覧（FollowList）
     await page.goto(`/users/${OTHER_USER_ID}/followers`);
     await expectNoViolations(page);
+
+    // ユーザー検索（UserSearchBar + 検索結果の FollowList）。seed の admin がヒットする
+    await page.goto('/users/search?q=admin');
+    await expect(page.getByRole('searchbox', { name: 'ニックネームで探す' })).toBeVisible();
+    await expectNoViolations(page);
 });

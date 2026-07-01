@@ -124,6 +124,44 @@ export const fetchFollowLists = async (
 };
 
 /**
+ * ユーザー検索（spec 021 / フォロー導線）。nickname 部分一致で他ユーザーを探す。
+ * 呼び出し元自身は DB 関数側で除外。各行に閲覧者のフォロー状態を付与する。
+ * 空クエリは即空配列。
+ */
+export const searchUsers = async (query: string): Promise<FollowUser[]> => {
+    const trimmed = query.trim();
+    if (trimmed.length === 0) return [];
+
+    const supabase = await createClient();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    const { data, error } = await supabase.rpc('search_users_by_nickname', { p_query: trimmed });
+    if (error) throw new Error(`ユーザー検索に失敗しました: ${error.message}`);
+
+    const results = data ?? [];
+    const ids = results.map((row) => row.user_id);
+
+    // 閲覧者が検索結果の誰をフォロー中か（一覧のフォローボタン用）
+    const myFollowing =
+        user && ids.length > 0
+            ? await supabase
+                  .from('user_follows')
+                  .select('followee_id')
+                  .eq('follower_id', user.id)
+                  .in('followee_id', ids)
+            : { data: [] as { followee_id: string }[] };
+    const followingSet = new Set((myFollowing.data ?? []).map((row) => row.followee_id));
+
+    return results.map((row) => ({
+        userId: row.user_id,
+        nickname: row.nickname,
+        isFollowing: followingSet.has(row.user_id),
+    }));
+};
+
+/**
  * 公開プロフィール（spec 021 US3）。nickname を解決し、存在しなければ null（→ 404）。
  * フォロー状態・件数も併せて返す。
  */

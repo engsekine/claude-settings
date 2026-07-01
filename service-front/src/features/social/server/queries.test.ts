@@ -5,7 +5,7 @@ vi.mock('@/shared/lib/supabase/server', () => ({ createClient: vi.fn() }));
 
 import { createClient } from '@/shared/lib/supabase/server';
 
-import { fetchFollowLists, fetchFollowState, fetchTimeline } from './queries';
+import { fetchFollowLists, fetchFollowState, fetchTimeline, searchUsers } from './queries';
 
 const mockedCreateClient = vi.mocked(createClient);
 
@@ -18,14 +18,19 @@ interface QueryResult {
     count?: number;
 }
 
+/** モックのチェーンメソッド名（すべて自身を返す） */
+const CHAIN_METHODS = ['select', 'eq', 'in', 'order', 'limit', 'lt', 'or'] as const;
+
+type MockBuilder = Record<(typeof CHAIN_METHODS)[number], ReturnType<typeof vi.fn>> & {
+    then: (resolve: (value: QueryResult) => void) => void;
+};
+
 /**
  * Supabase クエリビルダーのモック。チェーンメソッドは自身を返し、
  * 最終 await（thenable）で渡した result を解決する（export-query.test.ts と同方針）。
  */
-const makeBuilder = (result: QueryResult) => {
-    const builder: Record<string, ReturnType<typeof vi.fn>> & {
-        then: (resolve: (value: QueryResult) => void) => void;
-    } = {
+const makeBuilder = (result: QueryResult): MockBuilder => {
+    const builder = {
         select: vi.fn(),
         eq: vi.fn(),
         in: vi.fn(),
@@ -35,8 +40,8 @@ const makeBuilder = (result: QueryResult) => {
         or: vi.fn(),
         // biome-ignore lint/suspicious/noThenProperty: Supabase クエリビルダーは thenable のためモックでも then を実装する
         then: (resolve: (value: QueryResult) => void) => resolve(result),
-    };
-    for (const method of ['select', 'eq', 'in', 'order', 'limit', 'lt', 'or'] as const) {
+    } satisfies MockBuilder;
+    for (const method of CHAIN_METHODS) {
         builder[method].mockReturnValue(builder);
     }
     return builder;
@@ -279,5 +284,49 @@ describe('fetchTimeline', () => {
 
         expect(page.items).toHaveLength(2);
         expect(page.nextCursor).toEqual({ diveDate: '2026-06-09', id: 'd2' });
+    });
+});
+
+describe('searchUsers', () => {
+    it('空クエリは即空配列（rpc も from も呼ばない）', async () => {
+        const { rpc, from } = buildClient({});
+
+        const result = await searchUsers('   ');
+
+        expect(result).toEqual([]);
+        expect(rpc).not.toHaveBeenCalled();
+        expect(from).not.toHaveBeenCalled();
+    });
+
+    it('nickname 部分一致の結果に閲覧者のフォロー状態を付与して返す', async () => {
+        const { rpc, from, builders } = buildClient({
+            // rpc = search_users_by_nickname の結果, from = 閲覧者のフォロー集合
+            rpcResult: {
+                data: [
+                    { user_id: 'u1', nickname: 'たろう' },
+                    { user_id: 'u2', nickname: 'たけし' },
+                ],
+                error: null,
+            },
+            fromResults: [{ data: [{ followee_id: 'u2' }], error: null }],
+        });
+
+        const result = await searchUsers('  た  ');
+
+        // trim して DB 関数へ渡す
+        expect(rpc).toHaveBeenCalledWith('search_users_by_nickname', { p_query: 'た' });
+        // フォロー判定は結果 id で user_follows を引く
+        expect(from).toHaveBeenCalledWith('user_follows');
+        expect(builders[0]?.in).toHaveBeenCalledWith('followee_id', ['u1', 'u2']);
+        expect(result).toEqual([
+            { userId: 'u1', nickname: 'たろう', isFollowing: false },
+            { userId: 'u2', nickname: 'たけし', isFollowing: true },
+        ]);
+    });
+
+    it('rpc エラー時は throw する', async () => {
+        buildClient({ rpcResult: { data: null, error: { message: 'boom' } } });
+
+        await expect(searchUsers('た')).rejects.toThrow(/boom/);
     });
 });

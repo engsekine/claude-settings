@@ -290,6 +290,34 @@ grant execute on function public.get_user_public_profiles(uuid[]) to authenticat
 
 > 実装時に判明したギャップ（US1 のバディ表示で他ユーザー nickname が RLS で読めない）への対応。US1/US3/US4 の表示名解決で共用する。registered なバディ/フォロー/タイムラインの nickname はすべてこの関数経由で取得する。
 
+## 4c. ユーザー検索関数（`20260701100000_create_search_users_by_nickname_fn.sql`）
+
+フォロー相手を探す「ユーザー検索」用。`user_details` は本人のみ SELECT 可のため、nickname 部分一致で他ユーザーを引く SECURITY DEFINER 関数を最小公開する（§4b と同方針）。
+
+```sql
+create or replace function public.search_users_by_nickname(p_query text, p_limit integer default 20)
+returns table (user_id uuid, nickname text)
+language sql
+security definer
+set search_path = ''
+stable
+as $$
+    select ud.user_id, ud.nickname
+    from public.user_details ud
+    where length(trim(coalesce(p_query, ''))) > 0
+      and ud.nickname ilike '%' || trim(p_query) || '%'
+      and ud.user_id is distinct from (select auth.uid())
+    order by ud.nickname asc
+    limit least(greatest(coalesce(p_limit, 20), 1), 50);
+$$;
+
+revoke all on function public.search_users_by_nickname(text, integer) from public;
+grant execute on function public.search_users_by_nickname(text, integer) to authenticated;
+```
+
+- 大文字小文字を無視した部分一致（`ilike`）。空クエリは 0 件。呼び出し元自身は除外。nickname 昇順で最大 50 件。
+- アプリ層 `searchUsers(query)`（`social/server/queries.ts`）が結果に閲覧者のフォロー状態を付与し、`/users/search`（`UserSearchBar` + `FollowList`）で表示する。
+
 ## 5. アプリ層の型・表示モデル（service-front）
 
 | 表示モデル | 由来 | 主フィールド |

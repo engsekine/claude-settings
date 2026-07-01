@@ -28,8 +28,10 @@ describe('Timeline', () => {
         expect(link).toHaveAttribute('href', '/dives/1');
     });
 
-    it('所有者の nickname と深度・時間を表示する', () => {
+    it('所有者の nickname はプロフィールへリンクし、深度・時間も表示する', () => {
         render(<Timeline items={[item('1', '2026-06-30')]} />);
-        expect(screen.getByText(/ニック1 ・ 最大 18m ・ 40分/)).toBeInTheDocument();
+        const ownerLink = screen.getByRole('link', { name: 'ニック1' });
+        expect(ownerLink).toHaveAttribute('href', '/users/owner-1');
+        expect(screen.getByText(/最大 18m ・ 40分/, { selector: 'span' })).toBeInTheDocument();
     });
 });

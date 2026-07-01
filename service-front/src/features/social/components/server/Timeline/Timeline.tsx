@@ -35,16 +35,22 @@ export const Timeline = ({ items }: TimelineProps) => {
                     <h3 className="font-medium text-muted-foreground text-sm">{formatDate(group.date)}</h3>
                     <ul className="flex flex-col divide-y divide-border rounded-md border border-border">
                         {group.items.map((dive) => (
-                            <li key={dive.diveId}>
+                            <li key={dive.diveId} className="flex flex-col gap-1 px-4 py-3">
                                 <Link
                                     href={`/dives/${dive.diveId}` as Route}
-                                    className="flex flex-col gap-1 px-4 py-3 hover:bg-muted/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+                                    className="font-medium text-sm hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
                                 >
-                                    <span className="font-medium text-sm">{dive.location}</span>
-                                    <span className="text-muted-foreground text-xs">
-                                        {dive.ownerNickname} ・ 最大 {dive.maxDepthM}m ・ {dive.bottomTimeMin}分
-                                    </span>
+                                    {dive.location}
                                 </Link>
+                                <span className="text-muted-foreground text-xs">
+                                    <Link
+                                        href={`/users/${dive.ownerId}` as Route}
+                                        className="hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+                                    >
+                                        {dive.ownerNickname}
+                                    </Link>
+                                    {' ・ '}最大 {dive.maxDepthM}m ・ {dive.bottomTimeMin}分
+                                </span>
                             </li>
                         ))}
                     </ul>
