@@ -176,6 +176,48 @@ export type Database = {
                     },
                 ];
             };
+            dive_log_buddies: {
+                Row: {
+                    buddy_name: string | null;
+                    buddy_user_id: string | null;
+                    created_at: string;
+                    dive_id: string;
+                    id: string;
+                    removed_by_buddy: boolean;
+                };
+                Insert: {
+                    buddy_name?: string | null;
+                    buddy_user_id?: string | null;
+                    created_at?: string;
+                    dive_id: string;
+                    id?: string;
+                    removed_by_buddy?: boolean;
+                };
+                Update: {
+                    buddy_name?: string | null;
+                    buddy_user_id?: string | null;
+                    created_at?: string;
+                    dive_id?: string;
+                    id?: string;
+                    removed_by_buddy?: boolean;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'dive_log_buddies_buddy_user_id_fkey';
+                        columns: ['buddy_user_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'dive_log_buddies_dive_id_fkey';
+                        columns: ['dive_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'dives';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
             dive_photos: {
                 Row: {
                     caption: string;
@@ -309,48 +351,6 @@ export type Database = {
                     updated_at?: string;
                 };
                 Relationships: [];
-            };
-            dive_log_buddies: {
-                Row: {
-                    buddy_name: string | null;
-                    buddy_user_id: string | null;
-                    created_at: string;
-                    dive_id: string;
-                    id: string;
-                    removed_by_buddy: boolean;
-                };
-                Insert: {
-                    buddy_name?: string | null;
-                    buddy_user_id?: string | null;
-                    created_at?: string;
-                    dive_id: string;
-                    id?: string;
-                    removed_by_buddy?: boolean;
-                };
-                Update: {
-                    buddy_name?: string | null;
-                    buddy_user_id?: string | null;
-                    created_at?: string;
-                    dive_id?: string;
-                    id?: string;
-                    removed_by_buddy?: boolean;
-                };
-                Relationships: [
-                    {
-                        foreignKeyName: 'dive_log_buddies_dive_id_fkey';
-                        columns: ['dive_id'];
-                        isOneToOne: false;
-                        referencedRelation: 'dives';
-                        referencedColumns: ['id'];
-                    },
-                    {
-                        foreignKeyName: 'dive_log_buddies_buddy_user_id_fkey';
-                        columns: ['buddy_user_id'];
-                        isOneToOne: false;
-                        referencedRelation: 'users';
-                        referencedColumns: ['id'];
-                    },
-                ];
             };
             dives: {
                 Row: {
@@ -516,6 +516,86 @@ export type Database = {
                     submitter_user_id?: string | null;
                 };
                 Relationships: [];
+            };
+            notification_preferences: {
+                Row: {
+                    is_enabled: boolean;
+                    type: string;
+                    updated_at: string;
+                    user_id: string;
+                };
+                Insert: {
+                    is_enabled: boolean;
+                    type: string;
+                    updated_at?: string;
+                    user_id: string;
+                };
+                Update: {
+                    is_enabled?: boolean;
+                    type?: string;
+                    updated_at?: string;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'notification_preferences_user_id_fkey';
+                        columns: ['user_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
+            notifications: {
+                Row: {
+                    actor_id: string | null;
+                    created_at: string;
+                    dedup_key: string;
+                    id: string;
+                    occurred_at: string;
+                    read_at: string | null;
+                    recipient_id: string;
+                    resource_id: string | null;
+                    type: string;
+                };
+                Insert: {
+                    actor_id?: string | null;
+                    created_at?: string;
+                    dedup_key?: string;
+                    id?: string;
+                    occurred_at?: string;
+                    read_at?: string | null;
+                    recipient_id: string;
+                    resource_id?: string | null;
+                    type: string;
+                };
+                Update: {
+                    actor_id?: string | null;
+                    created_at?: string;
+                    dedup_key?: string;
+                    id?: string;
+                    occurred_at?: string;
+                    read_at?: string | null;
+                    recipient_id?: string;
+                    resource_id?: string | null;
+                    type?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'notifications_actor_id_fkey';
+                        columns: ['actor_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'notifications_recipient_id_fkey';
+                        columns: ['recipient_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                ];
             };
             plan_packing_items: {
                 Row: {
@@ -697,15 +777,15 @@ export type Database = {
                 };
                 Relationships: [
                     {
-                        foreignKeyName: 'user_follows_follower_id_fkey';
-                        columns: ['follower_id'];
+                        foreignKeyName: 'user_follows_followee_id_fkey';
+                        columns: ['followee_id'];
                         isOneToOne: false;
                         referencedRelation: 'users';
                         referencedColumns: ['id'];
                     },
                     {
-                        foreignKeyName: 'user_follows_followee_id_fkey';
-                        columns: ['followee_id'];
+                        foreignKeyName: 'user_follows_follower_id_fkey';
+                        columns: ['follower_id'];
                         isOneToOne: false;
                         referencedRelation: 'users';
                         referencedColumns: ['id'];
@@ -761,18 +841,6 @@ export type Database = {
                     year: number;
                 }[];
             };
-            get_public_dive: {
-                Args: { p_slug: string };
-                Returns: {
-                    id: string;
-                    dive_date: string;
-                    location: string;
-                    max_depth_m: number;
-                    bottom_time_min: number;
-                    notes: string | null;
-                    owner_nickname: string;
-                }[];
-            };
             get_user_public_profiles: {
                 Args: { p_ids: string[] };
                 Returns: {
@@ -781,14 +849,17 @@ export type Database = {
                 }[];
             };
             is_admin: { Args: never; Returns: boolean };
-            is_nickname_taken: { Args: { p_nickname: string; p_exclude_user_id?: string }; Returns: boolean };
+            is_nickname_taken: {
+                Args: { p_exclude_user_id?: string; p_nickname: string };
+                Returns: boolean;
+            };
             is_public_dive_photo: { Args: { object_name: string }; Returns: boolean };
             is_superadmin: { Args: never; Returns: boolean };
             search_users_by_nickname: {
-                Args: { p_query: string; p_limit?: number };
+                Args: { p_limit?: number; p_query: string };
                 Returns: {
-                    user_id: string;
                     nickname: string;
+                    user_id: string;
                 }[];
             };
             submit_inquiry: {
