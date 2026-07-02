@@ -3,7 +3,7 @@
 import { Button } from '@repo/ui/components/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@repo/ui/components/sheet';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
-import { Award, LogOut, Search, User, UserPlus } from 'lucide-react';
+import { Award, LogOut, Search, Ticket, User, UserPlus } from 'lucide-react';
 import type { Route } from 'next';
 import Link from 'next/link';
 import { useEffect, useState, useTransition } from 'react';
@@ -131,6 +131,14 @@ export const AuthNav = ({ initialUser }: AuthNavProps) => {
                             >
                                 <Award aria-hidden="true" />
                                 保有資格
+                            </Link>
+                            <Link
+                                href="/settings/log-credits"
+                                onClick={() => setIsOpen(false)}
+                                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
+                            >
+                                <Ticket aria-hidden="true" />
+                                ログ枠の購入
                             </Link>
                             <Button
                                 variant="outline"

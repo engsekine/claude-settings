@@ -102,6 +102,9 @@ describe('AuthNav', () => {
         const certificationsLink = screen.getByRole('link', { name: /保有資格/ });
         expect(certificationsLink).toHaveAttribute('href', '/settings/certifications');
 
+        const logCreditsLink = screen.getByRole('link', { name: /ログ枠の購入/ });
+        expect(logCreditsLink).toHaveAttribute('href', '/settings/log-credits');
+
         expect(screen.getByRole('button', { name: /ログアウト/ })).toBeInTheDocument();
         expect(screen.getByText('user@example.com')).toBeInTheDocument();
     });

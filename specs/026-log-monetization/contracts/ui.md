@@ -4,9 +4,14 @@
 
 ## CreditBalanceBadge（server / features/credits/components/server/）
 
-- **配置**: ログ一覧・ログ作成ページの導線近傍 + `/settings/log-credits`（FR-013「作成導線上で常に確認できる」を満たす最小配置。全ページヘッダー常駐は初期スコープ外）
-- **表示**: 「残りログ枠 N」のテキスト + アイコン。色のみに依存せず、残枠 0 でもテキストで判別可能（a11y）
+- **配置**: TOP（ダッシュボード）・ログ一覧・ログ作成ページ + `/settings/log-credits`（FR-013「作成導線上で常に確認できる」）
+- **表示**: 「残りログ枠 N」のテキスト。色のみに依存せず、残枠 0 でもテキストで判別可能（a11y）
+- **導線**: バッジ自体が `/settings/log-credits` へのリンク（`aria-label` に遷移先を含める）。残枠が尽きる前に能動的に購入へ進める常設導線を兼ねる
 - **データ**: Server Component で `getCreditBalance()` を直接呼ぶ
+
+## 購入ページへの常設導線（追補）
+
+- アカウントメニュー（`AuthNav`）に「ログ枠の購入」リンク（`/settings/log-credits`）を追加。「保有資格」の下に配置
 
 ## NoCreditBanner（client / features/credits/components/client/）
 

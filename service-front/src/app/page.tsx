@@ -1,3 +1,4 @@
+import { CreditBalanceBadge } from '@/features/credits/components/server/CreditBalanceBadge';
 import { RecordOverhaulButton, TopDashboard } from '@/features/dashboard';
 import { diveLocationLabel, listDives } from '@/features/dives';
 import { ensureTimedNotifications } from '@/features/notifications/server/queries';
@@ -36,6 +37,10 @@ export default async function Home() {
     return (
         <div className="flex flex-1 flex-col">
             <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-8">
+                {/* 残枠の常時確認 + 購入導線（026 / FR-013） */}
+                <div className="flex justify-end">
+                    <CreditBalanceBadge />
+                </div>
                 <TopDashboard
                     recentDives={recentDives}
                     nextPlanSection={
