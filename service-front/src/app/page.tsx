@@ -1,5 +1,6 @@
 import { RecordOverhaulButton, TopDashboard } from '@/features/dashboard';
 import { diveLocationLabel, listDives } from '@/features/dives';
+import { ensureTimedNotifications } from '@/features/notifications/server/queries';
 import { NextPlanCard } from '@/features/plans';
 import { recordOverhaul } from '@/features/regulators';
 import { fetchTimeline, Timeline } from '@/features/social';
@@ -20,6 +21,9 @@ export const metadata = generatePageMetadata(
  * ここ（app 層）で組み立てて TopDashboard に注入する。
  */
 export default async function Home() {
+    // リマインド通知の遅延生成（025 / FR-009・FR-010。冪等・失敗は内部でログのみ）
+    await ensureTimedNotifications();
+
     const [recentPage, timeline] = await Promise.all([listDives({ limit: 5 }), fetchTimeline({ limit: 20 })]);
     const recentDives = recentPage.items.map((dive) => ({
         id: dive.id,

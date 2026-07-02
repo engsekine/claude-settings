@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 
 import { AuthNav } from '@/features/auth';
 import { COOKIE_CONSENT_NAME, CookieConsentBanner, getCookieConsentServer } from '@/features/consent';
+import { NotificationBell } from '@/features/notifications';
 import { Footer } from '@/shared/components/layout/Footer';
 import { Header } from '@/shared/components/layout/Header';
 import { SITE_METADATA } from '@/shared/config/metadata';
@@ -41,7 +42,14 @@ export default async function RootLayout({
         <html lang="ja" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
             <body className="flex min-h-full flex-col">
                 <Providers>
-                    <Header actions={<AuthNav initialUser={user} />} />
+                    <Header
+                        actions={
+                            <>
+                                {user && <NotificationBell />}
+                                <AuthNav initialUser={user} />
+                            </>
+                        }
+                    />
                     <main className="flex flex-1 justify-center bg-background">{children}</main>
                     <Footer />
                     <CookieConsentBanner initialConsent={consent} />
