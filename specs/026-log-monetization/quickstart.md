@@ -40,7 +40,14 @@ having b.balance <> coalesce(sum(l.amount), 0);
 4. 予定→ログ移動（024 の導線）でも同様に消費・ブロックされること（FR-012）
 5. 既存ログの閲覧・編集・削除が残枠 0 でも行えること（FR-009/010）。削除で残枠が増えないこと（FR-011）
 
-**同時実行**: 残枠 1 の状態で `createDive` を並行 2 発（Vitest 統合テストまたは curl 並列）→ 成功は 1 件のみ、残高 0・マイナスにならない（Edge Case）
+**同時実行**: 残枠 1 の状態で `createDive` を並行 2 発 → 成功は 1 件のみ、残高 0・マイナスにならない（Edge Case）
+
+セクション 1・2 の DB レベルの検証は統合テストで自動化済み:
+
+```bash
+cd service-front
+SUPABASE_DB_TESTS=1 npx vitest run --project=unit src/features/credits/server/creditRules.test.ts
+```
 
 ## 3. 購入フロー（US2 / FR-005・006・007）
 
