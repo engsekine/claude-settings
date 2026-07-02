@@ -48,7 +48,7 @@ const buildSupabase = (options: MockOptions = {}) => {
         for (const method of ['select', 'eq', 'in', 'lte', 'gte']) {
             chain[method] = vi.fn(() => chain);
         }
-            chain['then'] = (resolve: (v: unknown) => unknown) => resolve({ data: rows, error: null });
+        chain['then'] = (resolve: (v: unknown) => unknown) => resolve({ data: rows, error: null });
         return chain;
     };
 
