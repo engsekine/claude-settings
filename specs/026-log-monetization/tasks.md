@@ -76,14 +76,14 @@
 
 **Independent Test**: US1 完了状態で、購入完了 → 残枠 +10、決済失敗 → 付与なし、webhook 再送 → 二重付与なし（quickstart 3・4）
 
-- [ ] T019 [US2] `supabase/migrations/<ts>_add_purchase_functions.sql` を新規作成し、`create_pending_purchase()` / `complete_purchase()` / `apply_refund()` を定義する（contracts/stripe-webhook.md の冪等契約: `credited_at is null` 条件付き更新・`stripe_refund_id` ユニーク・返金は残高 0 で床打ち。execute 権限は data-model.md の権限表どおり）
-- [ ] T020 [P] [US2] `service-front/src/features/credits/lib/stripe/` を新規作成する（stripe.ts: SDK 初期化 + `fulfillCheckoutSession(session)` / `processRefund(charge)` ドメイン関数 + index.ts）。route から分離してテスト可能にする（contracts/stripe-webhook.md）
-- [ ] T021 [P] [US2] `service-front/src/features/credits/lib/stripe/stripe.test.ts` を**先に**作成する: 付与成功 / credited_at 済み no-op / 未払い no-op / purchase レコード補完作成 / 返金の床打ち・重複 no-op（Supabase・Stripe はモック）
-- [ ] T022 [US2] `service-front/src/features/credits/server/actions.ts` を新規作成し、`createCheckoutSession()` を実装する（constants のパック定義のみ使用・`client_reference_id: user.id`・success/cancel URL・pending 購入作成 / contracts/server-actions.md）。同ファイルの Vitest を追加する
-- [ ] T023 [US2] `service-front/src/app/api/stripe/webhook/route.ts` を新規作成する（POST のみ・署名検証 → T020 のドメイン関数へ委譲・応答規約 200/400/500 / contracts/stripe-webhook.md）
-- [ ] T024 [P] [US2] `service-front/src/features/credits/components/client/PurchasePackCard/` を新規作成する（購入ボタン → `createCheckoutSession()` → リダイレクト、送信中 disabled、`checkout_failed` の `role="alert"` / contracts/ui.md）
-- [ ] T025 [US2] `/generate-with-tests service-front/src/features/credits/components/client/PurchasePackCard/PurchasePackCard.tsx` を実行する
-- [ ] T026 [US2] `service-front/src/app/(authenticated)/settings/log-credits/page.tsx` を新規作成する（`generatePageMetadata`・PurchasePackCard 配置・`searchParams.checkout` の success/cancelled 通知 + success 時「ログ作成に戻る」リンク / contracts/ui.md）。NoCreditBanner の購入導線（`showPurchaseLink`）を有効化する
+- [X] T019 [US2] `supabase/migrations/<ts>_add_purchase_functions.sql` を新規作成し、`create_pending_purchase()` / `complete_purchase()` / `apply_refund()` を定義する（contracts/stripe-webhook.md の冪等契約: `credited_at is null` 条件付き更新・`stripe_refund_id` ユニーク・返金は残高 0 で床打ち。execute 権限は data-model.md の権限表どおり）
+- [X] T020 [P] [US2] `service-front/src/features/credits/lib/stripe/` を新規作成する（stripe.ts: SDK 初期化 + `fulfillCheckoutSession(session)` / `processRefund(charge)` ドメイン関数 + index.ts）。route から分離してテスト可能にする（contracts/stripe-webhook.md）
+- [X] T021 [P] [US2] `service-front/src/features/credits/lib/stripe/stripe.test.ts` を**先に**作成する: 付与成功 / credited_at 済み no-op / 未払い no-op / purchase レコード補完作成 / 返金の床打ち・重複 no-op（Supabase・Stripe はモック）
+- [X] T022 [US2] `service-front/src/features/credits/server/actions.ts` を新規作成し、`createCheckoutSession()` を実装する（constants のパック定義のみ使用・`client_reference_id: user.id`・success/cancel URL・pending 購入作成 / contracts/server-actions.md）。同ファイルの Vitest を追加する
+- [X] T023 [US2] `service-front/src/app/api/stripe/webhook/route.ts` を新規作成する（POST のみ・署名検証 → T020 のドメイン関数へ委譲・応答規約 200/400/500 / contracts/stripe-webhook.md）
+- [X] T024 [P] [US2] `service-front/src/features/credits/components/client/PurchasePackCard/` を新規作成する（購入ボタン → `createCheckoutSession()` → リダイレクト、送信中 disabled、`checkout_failed` の `role="alert"` / contracts/ui.md）
+- [X] T025 [US2] `/generate-with-tests service-front/src/features/credits/components/client/PurchasePackCard/PurchasePackCard.tsx` を実行する
+- [X] T026 [US2] `service-front/src/app/(authenticated)/settings/log-credits/page.tsx` を新規作成する（`generatePageMetadata`・PurchasePackCard 配置・`searchParams.checkout` の success/cancelled 通知 + success 時「ログ作成に戻る」リンク / contracts/ui.md）。NoCreditBanner の購入導線（`showPurchaseLink`）を有効化する
 - [ ] T027 [US2] quickstart.md セクション 3・4 を実行する（Stripe CLI + テストカードで購入 / 冪等 / 失敗 / キャンセル / 返金）
 
 **Checkpoint**: 収益フローが機能（購入 → 付与 → 消費の一巡）
@@ -96,11 +96,11 @@
 
 **Independent Test**: ボーナス獲得・消費・購入の各操作後に表示残枠が最新化し、履歴に日時・内容・金額が並ぶ（US3 受け入れシナリオ）
 
-- [ ] T028 [P] [US3] `service-front/src/features/credits/components/server/CreditBalanceBadge/` を新規作成する（Server Component・`getCreditBalance()` 直呼び・「残りログ枠 N」テキスト表示 / contracts/ui.md）
-- [ ] T029 [US3] `/generate-with-tests service-front/src/features/credits/components/server/CreditBalanceBadge/CreditBalanceBadge.tsx` を実行する
-- [ ] T030 [P] [US3] `service-front/src/features/credits/server/queries.ts` に `getPurchaseHistory()` を追加する（pending 除外・created_at desc / contracts/server-actions.md）。Vitest を同期追加する
-- [ ] T031 [US3] `service-front/src/app/(authenticated)/settings/log-credits/page.tsx` を変更し、CreditBalanceBadge と購入履歴一覧（日時 JST・「ログ枠 10」・¥300・状態）を追加する（FR-014 / contracts/ui.md）
-- [ ] T032 [US3] `service-front/src/app/(authenticated)/dives/page.tsx`（ログ一覧）と `dives/new/page.tsx` に CreditBalanceBadge を配置する（FR-013「作成導線上で常に確認」）
+- [X] T028 [P] [US3] `service-front/src/features/credits/components/server/CreditBalanceBadge/` を新規作成する（Server Component・`getCreditBalance()` 直呼び・「残りログ枠 N」テキスト表示 / contracts/ui.md）
+- [X] T029 [US3] `/generate-with-tests service-front/src/features/credits/components/server/CreditBalanceBadge/CreditBalanceBadge.tsx` を実行する
+- [X] T030 [P] [US3] `service-front/src/features/credits/server/queries.ts` に `getPurchaseHistory()` を追加する（pending 除外・created_at desc / contracts/server-actions.md）。Vitest を同期追加する
+- [X] T031 [US3] `service-front/src/app/(authenticated)/settings/log-credits/page.tsx` を変更し、CreditBalanceBadge と購入履歴一覧（日時 JST・「ログ枠 10」・¥300・状態）を追加する（FR-014 / contracts/ui.md）
+- [X] T032 [US3] `service-front/src/app/(authenticated)/dives/page.tsx`（ログ一覧）と `dives/new/page.tsx` に CreditBalanceBadge を配置する（FR-013「作成導線上で常に確認」）
 - [ ] T033 [US3] US3 受け入れシナリオ 3 件（残枠表示 / 履歴 / 操作後の最新化）を手動確認する
 
 **Checkpoint**: 全ストーリー完了
@@ -109,10 +109,10 @@
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T034 [P] `docs/product.md` の将来構想を更新する: 「ログブック追加課金（10 枚 500 円）」を本仕様（10 枠 300 円・実装済み）へ、「広告バナー設置」を廃止（spec Assumptions の明文化）
-- [ ] T035 [P] Playwright + axe-core の E2E を追加する: 残枠 0 ブロック → 購入導線 → （Stripe はモック/テストモード）→ 復帰の一連 + `/settings/log-credits` の a11y 検証
-- [ ] T036 quickstart.md セクション 5（回帰確認）を実行する: 既存機能の非影響・突合クエリ 0 行・広告非表示
-- [ ] T037 `npx biome check .` を実行し、指摘があれば `--write` + 手動修正で解消する
+- [X] T034 [P] `docs/product.md` の将来構想を更新する: 「ログブック追加課金（10 枚 500 円）」を本仕様（10 枠 300 円・実装済み）へ、「広告バナー設置」を廃止（spec Assumptions の明文化）
+- [X] T035 [P] Playwright + axe-core の E2E を追加する: 残枠 0 ブロック → 購入導線 → （Stripe はモック/テストモード）→ 復帰の一連 + `/settings/log-credits` の a11y 検証
+- [X] T036 quickstart.md セクション 5（回帰確認）を実行する: 既存機能の非影響・突合クエリ 0 行・広告非表示
+- [X] T037 `npx biome check .` を実行し、指摘があれば `--write` + 手動修正で解消する
 - [ ] T038 `/sync-spec` を実行し、実装と specs/026（および 002/024 の関連記述: ログ作成が枠を消費する旨）のずれを解消する
 
 ---

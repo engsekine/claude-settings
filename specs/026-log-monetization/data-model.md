@@ -80,8 +80,8 @@
 | 関数 | 責務 | 冪等性 |
 |------|------|--------|
 | `create_pending_purchase(p_session_id, p_quantity, p_amount_jpy)` | `auth.uid()` の pending 購入レコードを作成 | session_id ユニーク |
-| `complete_purchase(p_session_id, p_payment_intent_id)` | status='completed' + `credited_at` 更新 + `apply_credit_ledger_entry(+quantity)` | `where credited_at is null` の条件付き更新で 1 回のみ付与 |
-| `apply_refund(p_purchase_id, p_refund_id)` | `min(付与数, 現在残高)` の負値調整 + status='refunded' | `stripe_refund_id` ユニーク |
+| `complete_purchase(p_session_id, p_payment_intent_id, p_user_id, p_quantity, p_amount_jpy)` | pending 不在時の自己修復作成 → status='completed' + `credited_at` 更新 + `apply_credit_ledger_entry(+quantity)` | `where credited_at is null` の条件付き更新で 1 回のみ付与 |
+| `apply_refund(p_payment_intent_id, p_refund_id)` | payment_intent から購入を特定し `min(付与数, 現在残高)` の負値調整 + status='refunded' | `stripe_refund_id` ユニーク |
 
 いずれも `security definer` / `set search_path = ''`。詳細契約は [contracts/stripe-webhook.md](contracts/stripe-webhook.md)。
 

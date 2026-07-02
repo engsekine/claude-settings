@@ -1,6 +1,7 @@
 import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
 
+import { CreditBalanceBadge } from '@/features/credits/components/server/CreditBalanceBadge';
 import { DiveList, ExportMenu, listDives } from '@/features/dives';
 import { parseDiveFilter, recordToSearchParams } from '@/features/dives/lib/search-params';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
@@ -30,6 +31,7 @@ export default async function DivesPage({ searchParams }: DivesPageProps) {
                 <div className="flex items-center justify-between">
                     <h1 className="font-semibold text-2xl">ダイビングログ</h1>
                     <div className="flex items-center gap-2">
+                        <CreditBalanceBadge />
                         <ExportMenu />
                         <Link href="/dives/new" className={buttonVariants({ variant: 'default' })}>
                             新規作成

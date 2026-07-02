@@ -958,6 +958,24 @@ export type Database = {
                 };
                 Returns: string;
             };
+            apply_refund: {
+                Args: { p_payment_intent_id: string; p_refund_id: string };
+                Returns: boolean;
+            };
+            complete_purchase: {
+                Args: {
+                    p_amount_jpy: number;
+                    p_payment_intent_id: string;
+                    p_quantity: number;
+                    p_session_id: string;
+                    p_user_id: string;
+                };
+                Returns: boolean;
+            };
+            create_pending_purchase: {
+                Args: { p_amount_jpy: number; p_quantity: number; p_session_id: string };
+                Returns: string;
+            };
             discard_recent_inquiry: { Args: { p_id: string }; Returns: undefined };
             get_dive_monthly_stats: {
                 Args: { months_back?: number };

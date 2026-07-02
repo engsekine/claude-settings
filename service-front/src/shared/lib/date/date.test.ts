@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 
-import { formatJstDate, isValidBirthDate, todayInJst } from './date';
+import { formatJstDate, formatJstDateTime, isValidBirthDate, todayInJst } from './date';
 
 describe('todayInJst', () => {
     it('YYYY-MM-DD 形式の文字列を返す', () => {
@@ -50,5 +50,20 @@ describe('isValidBirthDate', () => {
     it('undefined / 空文字は false', () => {
         expect(isValidBirthDate(undefined)).toBe(false);
         expect(isValidBirthDate('')).toBe(false);
+    });
+});
+
+describe('formatJstDateTime', () => {
+    it('UTC の timestamptz を JST の YYYY/MM/DD HH:mm に整形する', () => {
+        // UTC 15:30 = JST 翌日 00:30（日付跨ぎを含めて検証）
+        expect(formatJstDateTime('2026-07-01T15:30:00+00:00')).toBe('2026/07/02 00:30');
+    });
+
+    it('JST オフセット付きの文字列も同じ時刻に整形する', () => {
+        expect(formatJstDateTime('2026-07-02T09:05:00+09:00')).toBe('2026/07/02 09:05');
+    });
+
+    it('解析できない文字列はそのまま返す', () => {
+        expect(formatJstDateTime('not-a-date')).toBe('not-a-date');
     });
 });

@@ -16,6 +16,23 @@ export const formatJstDate = (isoDate: string): string => {
     return `${year}/${month}/${day}`;
 };
 
+/**
+ * timestamptz の ISO 文字列を JST の「YYYY/MM/DD HH:mm」表示に整形する。
+ * 解析できない文字列はそのまま返し、"Invalid Date" 混入を防ぐ。
+ */
+export const formatJstDateTime = (isoDateTime: string): string => {
+    const parsed = new Date(isoDateTime);
+    if (Number.isNaN(parsed.getTime())) return isoDateTime;
+    const date = parsed.toLocaleDateString('en-CA', { timeZone: 'Asia/Tokyo' }).replaceAll('-', '/');
+    const time = parsed.toLocaleTimeString('ja-JP', {
+        timeZone: 'Asia/Tokyo',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+    });
+    return `${date} ${time}`;
+};
+
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 /**
