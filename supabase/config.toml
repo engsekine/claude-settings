@@ -243,9 +243,10 @@ otp_expiry = 3600
 
 # 本番の認証メール送信元（023）。プロジェクト既存の Resend を SMTP として利用し、
 # サインアップ確認・パスワードリセット・メール変更などの全認証メールを実受信箱へ届ける（FR-001/007a）。
-# ローカル開発で Inbucket 捕捉に戻したい場合は enabled=false にする（RESEND_API_KEY 未設定時は送信不可）。
+# 有効/無効は supabase/.env の SMTP_ENABLED で切り替える（未設定だと起動エラーになるので必ず定義する）。
+# ローカルは false 推奨（Mailpit がメールを捕捉。RESEND_API_KEY 不要）、本番反映時は true + RESEND_API_KEY 必須。
 [auth.email.smtp]
-enabled = true
+enabled = "env(SMTP_ENABLED)"
 host = "smtp.resend.com"
 port = 587
 user = "resend"
