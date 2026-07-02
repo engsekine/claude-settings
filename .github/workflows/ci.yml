@@ -106,6 +106,10 @@ jobs:
     db-lint:
         runs-on: ubuntu-latest
         timeout-minutes: 10
+        env:
+            # config.toml の auth.email.smtp.enabled が env(SMTP_ENABLED) を参照するため、
+            # 未定義だと supabase CLI が config パースで失敗する。CI はメール実送信しないので false 固定
+            SMTP_ENABLED: false
         steps:
             - uses: actions/checkout@v4
             - uses: supabase/setup-cli@v1
