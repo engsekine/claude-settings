@@ -517,6 +517,137 @@ export type Database = {
                 };
                 Relationships: [];
             };
+            log_credit_balances: {
+                Row: {
+                    balance: number;
+                    updated_at: string;
+                    user_id: string;
+                };
+                Insert: {
+                    balance?: number;
+                    updated_at?: string;
+                    user_id: string;
+                };
+                Update: {
+                    balance?: number;
+                    updated_at?: string;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'log_credit_balances_user_id_fkey';
+                        columns: ['user_id'];
+                        isOneToOne: true;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
+            log_credit_ledger: {
+                Row: {
+                    amount: number;
+                    created_at: string;
+                    dive_id: string | null;
+                    granted_on: string | null;
+                    id: string;
+                    kind: string;
+                    purchase_id: string | null;
+                    stripe_refund_id: string | null;
+                    user_id: string;
+                };
+                Insert: {
+                    amount: number;
+                    created_at?: string;
+                    dive_id?: string | null;
+                    granted_on?: string | null;
+                    id?: string;
+                    kind: string;
+                    purchase_id?: string | null;
+                    stripe_refund_id?: string | null;
+                    user_id: string;
+                };
+                Update: {
+                    amount?: number;
+                    created_at?: string;
+                    dive_id?: string | null;
+                    granted_on?: string | null;
+                    id?: string;
+                    kind?: string;
+                    purchase_id?: string | null;
+                    stripe_refund_id?: string | null;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'log_credit_ledger_dive_id_fkey';
+                        columns: ['dive_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'dives';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'log_credit_ledger_purchase_id_fkey';
+                        columns: ['purchase_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'log_credit_purchases';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'log_credit_ledger_user_id_fkey';
+                        columns: ['user_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
+            log_credit_purchases: {
+                Row: {
+                    amount_jpy: number;
+                    created_at: string;
+                    credited_at: string | null;
+                    id: string;
+                    quantity: number;
+                    status: string;
+                    stripe_checkout_session_id: string;
+                    stripe_payment_intent_id: string | null;
+                    updated_at: string;
+                    user_id: string;
+                };
+                Insert: {
+                    amount_jpy: number;
+                    created_at?: string;
+                    credited_at?: string | null;
+                    id?: string;
+                    quantity: number;
+                    status?: string;
+                    stripe_checkout_session_id: string;
+                    stripe_payment_intent_id?: string | null;
+                    updated_at?: string;
+                    user_id: string;
+                };
+                Update: {
+                    amount_jpy?: number;
+                    created_at?: string;
+                    credited_at?: string | null;
+                    id?: string;
+                    quantity?: number;
+                    status?: string;
+                    stripe_checkout_session_id?: string;
+                    stripe_payment_intent_id?: string | null;
+                    updated_at?: string;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'log_credit_purchases_user_id_fkey';
+                        columns: ['user_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
             notification_preferences: {
                 Row: {
                     is_enabled: boolean;
@@ -815,6 +946,18 @@ export type Database = {
             [_ in never]: never;
         };
         Functions: {
+            apply_credit_ledger_entry: {
+                Args: {
+                    p_amount: number;
+                    p_dive_id?: string;
+                    p_granted_on?: string;
+                    p_kind: string;
+                    p_purchase_id?: string;
+                    p_stripe_refund_id?: string;
+                    p_user_id: string;
+                };
+                Returns: string;
+            };
             discard_recent_inquiry: { Args: { p_id: string }; Returns: undefined };
             get_dive_monthly_stats: {
                 Args: { months_back?: number };
@@ -848,6 +991,7 @@ export type Database = {
                     user_id: string;
                 }[];
             };
+            grant_daily_bonus: { Args: never; Returns: undefined };
             is_admin: { Args: never; Returns: boolean };
             is_nickname_taken: {
                 Args: { p_exclude_user_id?: string; p_nickname: string };

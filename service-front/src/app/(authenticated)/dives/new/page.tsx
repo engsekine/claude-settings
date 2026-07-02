@@ -1,3 +1,4 @@
+import { getCreditBalance } from '@/features/credits/server/queries';
 import { listDiveSites, siteLabel } from '@/features/dive-sites';
 import { DiveForm, type DiveFormValues, getLatestDiveNumber, planToDiveDefaults } from '@/features/dives';
 import { canMovePlanToLog, getPlan } from '@/features/plans';
@@ -20,7 +21,11 @@ interface NewDivePageProps {
 
 export default async function NewDivePage({ searchParams }: NewDivePageProps) {
     const { fromPlanId } = await searchParams;
-    const [latestDiveNumber, sites] = await Promise.all([getLatestDiveNumber(), listDiveSites()]);
+    const [latestDiveNumber, sites, creditBalance] = await Promise.all([
+        getLatestDiveNumber(),
+        listDiveSites(),
+        getCreditBalance(),
+    ]);
     const nextDiveNumber = (latestDiveNumber ?? 0) + 1;
     const siteOptions = sites.map((site) => ({ value: site.id, label: siteLabel(site) }));
 
@@ -44,6 +49,7 @@ export default async function NewDivePage({ searchParams }: NewDivePageProps) {
                 <DiveForm
                     defaultValues={{ diveNumber: nextDiveNumber, ...planDefaults }}
                     siteOptions={siteOptions}
+                    creditBalance={creditBalance}
                     {...(movingPlanId ? { fromPlanId: movingPlanId } : {})}
                 />
             </div>
