@@ -1,7 +1,6 @@
 import Link from 'next/link';
-
-import { CreditBalanceBadge } from '@/features/credits/components/server/CreditBalanceBadge';
 import { PurchasePackCard } from '@/features/credits/components/client/PurchasePackCard';
+import { CreditBalanceBadge } from '@/features/credits/components/server/CreditBalanceBadge';
 import { getPurchaseHistory } from '@/features/credits/server/queries';
 import type { PurchaseStatus } from '@/features/credits/types';
 import { generatePageMetadata } from '@/shared/config/metadata';
@@ -43,7 +42,8 @@ export default async function LogCreditsPage({ searchParams }: LogCreditsPagePro
                 <div role="status" className="flex flex-col gap-2 rounded-lg border border-green-300 bg-green-50 p-4">
                     <p className="font-semibold text-green-900">ご購入ありがとうございます</p>
                     <p className="text-green-800 text-sm">
-                        残枠への反映まで最大 1 分ほどかかることがあります。反映されない場合はページを再読み込みしてください。
+                        残枠への反映まで最大 1
+                        分ほどかかることがあります。反映されない場合はページを再読み込みしてください。
                     </p>
                     <Link href="/dives/new" className="text-green-900 text-sm underline">
                         ログ作成に戻る
@@ -87,9 +87,7 @@ export default async function LogCreditsPage({ searchParams }: LogCreditsPagePro
                                 <tr key={purchase.id} className="border-border border-b">
                                     <td className="py-2">{formatJstDateTime(purchase.purchasedAt)}</td>
                                     <td className="py-2">ログ枠 {purchase.quantity}</td>
-                                    <td className="py-2 text-right">
-                                        ¥{purchase.amountJpy.toLocaleString('ja-JP')}
-                                    </td>
+                                    <td className="py-2 text-right">¥{purchase.amountJpy.toLocaleString('ja-JP')}</td>
                                     <td className="py-2 text-right">{STATUS_LABELS[purchase.status]}</td>
                                 </tr>
                             ))}

@@ -49,10 +49,7 @@ describe('fulfillCheckoutSession', () => {
     it('未払い（payment_status が paid 以外）は RPC を呼ばず no-op', async () => {
         const { client, rpc } = buildSupabaseMock({ data: true, error: null });
 
-        const result = await fulfillCheckoutSession(
-            client as any,
-            buildSession({ payment_status: 'unpaid' }),
-        );
+        const result = await fulfillCheckoutSession(client as any, buildSession({ payment_status: 'unpaid' }));
 
         expect(result).toEqual({ credited: false, reason: 'unpaid' });
         expect(rpc).not.toHaveBeenCalled();
@@ -61,10 +58,7 @@ describe('fulfillCheckoutSession', () => {
     it('client_reference_id が無いセッションは対象外として no-op', async () => {
         const { client, rpc } = buildSupabaseMock({ data: true, error: null });
 
-        const result = await fulfillCheckoutSession(
-            client as any,
-            buildSession({ client_reference_id: null }),
-        );
+        const result = await fulfillCheckoutSession(client as any, buildSession({ client_reference_id: null }));
 
         expect(result).toEqual({ credited: false, reason: 'missing_user' });
         expect(rpc).not.toHaveBeenCalled();

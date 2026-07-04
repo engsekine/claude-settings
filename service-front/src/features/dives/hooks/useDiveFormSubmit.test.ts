@@ -198,7 +198,11 @@ describe('useDiveFormSubmit', () => {
     });
 
     it("code='no_credit' の失敗は serverError ではなく noCredit を立てる（026 FR-002）", async () => {
-        createDive.mockResolvedValueOnce({ success: false, error: 'ログ枠がないため作成できません', code: 'no_credit' });
+        createDive.mockResolvedValueOnce({
+            success: false,
+            error: 'ログ枠がないため作成できません',
+            code: 'no_credit',
+        });
         const { result } = renderHook(() => useDiveFormSubmit());
 
         act(() => {

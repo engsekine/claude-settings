@@ -41,7 +41,7 @@ export async function POST(request: Request): Promise<Response> {
         switch (event.type) {
             case 'checkout.session.completed': {
                 const result = await fulfillCheckoutSession(supabase, event.data.object);
-                if (!result.credited) console.info(`[stripe webhook] 付与なし: ${result.reason}`);
+                if (!result.credited) console.warn(`[stripe webhook] 付与なし: ${result.reason}`);
                 break;
             }
             case 'checkout.session.expired':

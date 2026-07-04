@@ -76,7 +76,8 @@ export const processRefund = async (
     supabase: ServiceRoleClient,
     charge: Stripe.Charge,
 ): Promise<{ adjusted: boolean }> => {
-    const paymentIntentId = typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id;
+    const paymentIntentId =
+        typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id;
     if (!paymentIntentId) return { adjusted: false };
 
     const refundId = charge.refunds?.data?.[0]?.id ?? charge.id;
