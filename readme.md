@@ -71,14 +71,14 @@ echo ".devcontainer/devcontainer.json" >> .git/info/exclude
 
 ## Web サービス全体の環境構築
 
-このリポジトリはダイビングログアプリのモノレポを兼ねています。構成は以下のとおりです。
+このリポジトリはダイビングログアプリのモノレポを兼ねています。**各サービスの詳細なセットアップ手順はそれぞれのディレクトリの README に集約**されており、ここでは全体像と起動順序だけをまとめます。
 
-| ディレクトリ | 内容 | 起動ポート |
-|-------------|------|-----------|
-| `service-front/` | ユーザー向けアプリ（Next.js App Router）。Docker で起動 | 3000 |
-| `admin-front/` | 運営管理画面（Next.js）。npm で直接起動 | 3001 |
-| `supabase/` | ローカル Supabase（Auth / PostgreSQL / Storage）の設定・マイグレーション・seed | 54321（API）/ 54322（DB）/ 54323（Studio） |
-| `packages/` | 共有パッケージ（`@repo/ui` / `@repo/supabase`） | - |
+| ディレクトリ | 内容 | 起動ポート | セットアップ詳細 |
+|-------------|------|-----------|----------------|
+| `supabase/` | ローカル Supabase（Auth / PostgreSQL / Storage）の設定・マイグレーション・seed | 54321（API）/ 54322（DB）/ 54323（Studio） | [supabase/README.md](supabase/README.md) |
+| `service-front/` | ユーザー向けアプリ（Next.js App Router）。Docker で起動 | 3000 | [service-front/README.md](service-front/README.md) |
+| `admin-front/` | 運営管理画面（Next.js）。npm で直接起動 | 3001 | [admin-front/README.md](admin-front/README.md) |
+| `packages/` | 共有パッケージ（`@repo/ui` / `@repo/supabase`） | - | - |
 
 ### 前提ツール
 
@@ -87,77 +87,36 @@ echo ".devcontainer/devcontainer.json" >> .git/info/exclude
 | Node.js 24 | ランタイム（`package.json` の volta 設定でピン留め） | `curl https://get.volta.sh \| bash` → 自動で 24 系が入る |
 | Docker Desktop | Supabase スタック / service-front の起動 | [公式サイト](https://www.docker.com/products/docker-desktop/) |
 | Supabase CLI | ローカル BaaS の起動・マイグレーション | `brew install supabase/tap/supabase` |
-| mkcert | ローカル HTTPS 証明書（`make front-setup` / `make admin-cert` が使用） | `brew install mkcert` |
-| Stripe CLI | ログ枠購入（026）の webhook 転送。**任意**（決済を触らないなら不要） | `brew install stripe/stripe-cli/stripe` |
+| mkcert | ローカル HTTPS 証明書 | `brew install mkcert` |
+| Stripe CLI | ログ枠購入（026）の webhook 転送。**任意** | `brew install stripe/stripe-cli/stripe` |
 
-### 1. 依存パッケージのインストール
+### 起動順序（クイックスタート）
+
+Supabase → service-front → admin-front の順に立ち上げます。
 
 ```bash
+# 1. 依存パッケージ（ルートで 1 回。workspaces 全体に反映）
 npm install
+
+# 2. Supabase の起動と DB 構築
+#    事前に supabase/.env と supabase/.env.local の作成が必要
+#    → 詳細: supabase/README.md（環境変数 / 初期データ）
+supabase start
+make supabase-reset
+
+# 3. service-front（ユーザー向けアプリ → http://localhost:3000）
+#    事前に service-front/.env の作成が必要 → 詳細: service-front/README.md
+make front-setup   # 初回のみ
+make front-dev
+
+# 4. admin-front（運営管理画面 → http://localhost:3001）
+#    → 詳細: admin-front/README.md
+make admin-cert    # 初回のみ
+make admin-dev
 ```
 
-ルートで 1 回実行すれば、npm workspaces（`packages/*` / `service-front` / `admin-front`）すべてに反映されます。
-
-### 2. 環境変数ファイルの作成
-
-| 作成するファイル | コピー元 | 内容 |
-|-----------------|---------|------|
-| `supabase/.env` | `supabase/.env.example` | `config.toml` の `env()` が読む値。**`SMTP_ENABLED` は未定義だと `supabase start` がエラーになるため必須**（ローカルは `false` 推奨 = メールは Mailpit が捕捉） |
-| `supabase/.env.local` | `supabase/.env.example` | seed 生成（envsubst）用のテストユーザー認証情報（`TEST_USER_*`）と Google OAuth キー |
-| `service-front/.env` | `service-front/.env.example` | Supabase の URL / anon key（`supabase status` で表示される値）、Stripe キー（決済を使う場合のみ） |
-
-### 3. Supabase の起動と DB 構築
-
-```bash
-supabase start        # 全コンテナ起動（初回はイメージ取得で数分）
-make supabase-reset   # seed.sql 生成 + マイグレーション適用 + seed 投入
-```
-
-- `supabase/seed.sql` は **`seed.sql.template` から `make supabase-seed` で生成される成果物**です。seed を変更するときは template 側を編集してください
-- Studio（DB の GUI）: http://127.0.0.1:54323 / 送信メールの確認（Mailpit）: http://127.0.0.1:54324
-- CLI の詳細な操作・マイグレーション運用は [supabase/README.md](supabase/README.md) を参照
-
-### 4. service-front（ユーザー向けアプリ）の起動
-
-```bash
-make front-setup   # 初回のみ: SSL 証明書生成 + Docker 内で npm install
-make front-dev     # 開発サーバー起動 → http://localhost:3000
-```
-
-- HTTPS で起動する場合は `make front-dev-https`
-- ログインは seed のテストユーザー（`supabase/.env.local` の `TEST_USER_EMAIL` / `TEST_USER_PASSWORD`）を使用
-
-### 5. admin-front（運営管理画面）の起動
-
-```bash
-make admin-cert    # 初回のみ: SSL 証明書生成
-make admin-dev     # 開発サーバー起動 → http://localhost:3001
-```
-
-- service-front と同一の Supabase を共有するため、**事前に `make supabase-reset`（管理者 seed 投入）が必要**です
-- ログインは seed の管理者（`admin@example.com` / `admin-password`。local 専用）
-
-### 6. Stripe（ログ枠購入を動かす場合のみ）
-
-```bash
-stripe login
-stripe listen --forward-to localhost:3000/api/stripe/webhook
-```
-
-- 出力される `whsec_...` を `service-front/.env` の `STRIPE_WEBHOOK_SECRET` に、ダッシュボード（テストモード）の `sk_test_...` を `STRIPE_SECRET_KEY` に設定
-- 決済はテストカード `4242 4242 4242 4242` で確認できます
-
-### よく使う開発コマンド
-
-| コマンド | 説明 |
-|---------|------|
-| `make front-test` | service-front の Vitest 単体テスト |
-| `make front-test-e2e` | Playwright E2E テスト |
-| `make front-validate` | lint + 型チェック + テストの一括実行 |
-| `make front-storybook` | Storybook 起動 |
-| `make admin-validate` | admin-front の一括チェック |
-| `make supabase-migration-up` | 未適用マイグレーションのみ適用（データ保持） |
-| `make help` | 全コマンドの一覧 |
+- ログ枠購入（Stripe 決済）を動かす場合の設定・**テスト用カード番号**は [service-front/README.md の「Stripe の設定」](service-front/README.md#stripe-の設定ログ枠購入--026) を参照
+- 各サービスの make コマンド一覧は `make help`（ルート / 各ディレクトリ）で確認できます
 
 ---
 
