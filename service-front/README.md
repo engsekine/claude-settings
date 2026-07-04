@@ -350,12 +350,26 @@ STRIPE_WEBHOOK_SECRET=whsec_xxxxxxxxxxxx
 ```bash
 brew install stripe/stripe-cli/stripe   # 未インストールの場合
 stripe login
-stripe listen --forward-to localhost:3000/api/stripe/webhook
+
+# dev サーバーの起動モードに合わせて転送先のスキームを揃えること
+stripe listen --forward-to https://localhost:3000/api/stripe/webhook --skip-verify  # make dev-https（推奨モード）の場合
+stripe listen --forward-to http://localhost:3000/api/stripe/webhook                 # make dev（HTTP）の場合
 ```
 
-- [Stripe ダッシュボード](https://dashboard.stripe.com/test/apikeys)（**テストモード**）の `sk_test_...` を `.env` の `STRIPE_SECRET_KEY` へ
-- `stripe listen` が出力する `whsec_...` を `STRIPE_WEBHOOK_SECRET` へ
+必要な環境変数（`.env`）:
+
+| 変数 | 値 |
+|------|-----|
+| `STRIPE_SECRET_KEY` | [Stripe ダッシュボード](https://dashboard.stripe.com/test/apikeys)（**テストモード**）の `sk_test_...` |
+| `STRIPE_WEBHOOK_SECRET` | `stripe listen` 起動時に出力される `whsec_...` |
+| `SUPABASE_SERVICE_ROLE_KEY` | `supabase status` の `SERVICE_ROLE_KEY`。**webhook の枠付与処理に必須**（無いと署名検証後に 500） |
+
 - 枠の付与は webhook（`checkout.session.completed`）経由のため、**`stripe listen` を起動していないと決済しても残枠に反映されません**
+- ハマりどころ:
+  - `--forward-to` を付け忘れると転送されない（イベント表示のみ）
+  - dev サーバーが HTTPS（`make dev-https`）なのに `http://` へ転送すると `EOF` エラーになる。`https://` + `--skip-verify` にする
+  - `.env` を変更したら dev サーバーの再起動が必要
+  - 取りこぼしたイベントは `stripe events list` → `stripe events resend <evt_...>` で再送できる（付与は冪等）
 
 ### 2. テスト用カード番号
 

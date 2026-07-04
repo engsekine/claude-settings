@@ -37,9 +37,10 @@
 
 | 変数 | 用途 | 置き場所 |
 |------|------|----------|
-| STRIPE_SECRET_KEY | Session 作成・SDK 初期化 | service-front の env（Vercel 等）。ローカルは service-front/.env.local |
+| STRIPE_SECRET_KEY | Session 作成・SDK 初期化 | service-front の env（Vercel 等）。ローカルは service-front/.env |
 | STRIPE_WEBHOOK_SECRET | 署名検証 | 同上（ローカルは `stripe listen` が発行する値） |
+| SUPABASE_SERVICE_ROLE_KEY | webhook の付与処理（service_role クライアント） | 同上。無いと署名検証後に 500（Stripe がリトライし続ける） |
 
 ## 検証（quickstart 参照）
 
-ローカルは Stripe CLI `stripe listen --forward-to localhost:3000/api/stripe/webhook` + テストカード `4242...` で E2E 確認。`stripe trigger checkout.session.completed` の重複送信で二重付与が起きないことを必ず確認する。
+ローカルは Stripe CLI + テストカード `4242...` で E2E 確認（dev サーバーが HTTPS の場合は `--forward-to https://localhost:3000/api/stripe/webhook --skip-verify`）。`stripe events resend` の重複送信で二重付与が起きないことを必ず確認する。手順の詳細は service-front/README.md の「Stripe の設定」を参照。

@@ -10,9 +10,10 @@ npm run dev --workspace service-front
 
 # Stripe（テストモード）
 stripe login
-stripe listen --forward-to localhost:3000/api/stripe/webhook
-# 出力された whsec_... を service-front/.env.local の STRIPE_WEBHOOK_SECRET へ
-# STRIPE_SECRET_KEY（sk_test_...）も同ファイルに設定
+# dev サーバーのスキームに合わせる（make dev-https なら https + --skip-verify）
+stripe listen --forward-to https://localhost:3000/api/stripe/webhook --skip-verify
+# 出力された whsec_... を service-front/.env の STRIPE_WEBHOOK_SECRET へ
+# STRIPE_SECRET_KEY（sk_test_...）と SUPABASE_SERVICE_ROLE_KEY（supabase status の値）も同ファイルに設定
 ```
 
 seed のテストユーザー（`supabase/.env` の TEST_USER_EMAIL / PASSWORD）でログインする。
