@@ -45,3 +45,13 @@ export const EditMode: Story = {
         },
     },
 };
+
+/**
+ * 残枠 0 の新規作成（026 / FR-002）。
+ * フォーム先頭に NoCreditBanner を先行表示する（送信自体はサーバー側が最終判定）。
+ */
+export const NoCredit: Story = {
+    args: {
+        creditBalance: 0,
+    },
+};

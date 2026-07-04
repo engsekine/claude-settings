@@ -69,9 +69,54 @@ echo ".devcontainer/devcontainer.json" >> .git/info/exclude
 
 ---
 
-## Supabase（ローカル開発）
+## Web サービス全体の環境構築
 
-Supabase CLI を使ったローカルスタックの起動方法・主要エンドポイント・環境変数設定・マイグレーション運用については [supabase/README.md](supabase/README.md) を参照してください。
+このリポジトリはダイビングログアプリのモノレポを兼ねています。**各サービスの詳細なセットアップ手順はそれぞれのディレクトリの README に集約**されており、ここでは全体像と起動順序だけをまとめます。
+
+| ディレクトリ | 内容 | 起動ポート | セットアップ詳細 |
+|-------------|------|-----------|----------------|
+| `supabase/` | ローカル Supabase（Auth / PostgreSQL / Storage）の設定・マイグレーション・seed | 54321（API）/ 54322（DB）/ 54323（Studio） | [supabase/README.md](supabase/README.md) |
+| `service-front/` | ユーザー向けアプリ（Next.js App Router）。Docker で起動 | 3000 | [service-front/README.md](service-front/README.md) |
+| `admin-front/` | 運営管理画面（Next.js）。npm で直接起動 | 3001 | [admin-front/README.md](admin-front/README.md) |
+| `packages/` | 共有パッケージ（`@repo/ui` / `@repo/supabase`） | - | - |
+
+### 前提ツール
+
+| ツール | 用途 | インストール（macOS） |
+|--------|------|----------------------|
+| Node.js 24 | ランタイム（`package.json` の volta 設定でピン留め） | `curl https://get.volta.sh \| bash` → 自動で 24 系が入る |
+| Docker Desktop | Supabase スタック / service-front の起動 | [公式サイト](https://www.docker.com/products/docker-desktop/) |
+| Supabase CLI | ローカル BaaS の起動・マイグレーション | `brew install supabase/tap/supabase` |
+| mkcert | ローカル HTTPS 証明書 | `brew install mkcert` |
+| Stripe CLI | ログ枠購入（026）の webhook 転送。**任意** | `brew install stripe/stripe-cli/stripe` |
+
+### 起動順序（クイックスタート）
+
+Supabase → service-front → admin-front の順に立ち上げます。
+
+```bash
+# 1. 依存パッケージ（ルートで 1 回。workspaces 全体に反映）
+npm install
+
+# 2. Supabase の起動と DB 構築
+#    事前に supabase/.env と supabase/.env.local の作成が必要
+#    → 詳細: supabase/README.md（環境変数 / 初期データ）
+supabase start
+make supabase-reset
+
+# 3. service-front（ユーザー向けアプリ → http://localhost:3000）
+#    事前に service-front/.env の作成が必要 → 詳細: service-front/README.md
+make front-setup   # 初回のみ
+make front-dev
+
+# 4. admin-front（運営管理画面 → http://localhost:3001）
+#    → 詳細: admin-front/README.md
+make admin-cert    # 初回のみ
+make admin-dev
+```
+
+- ログ枠購入（Stripe 決済）を動かす場合の設定・**テスト用カード番号**は [service-front/README.md の「Stripe の設定」](service-front/README.md#stripe-の設定ログ枠購入--026) を参照
+- 各サービスの make コマンド一覧は `make help`（ルート / 各ディレクトリ）で確認できます
 
 ---
 

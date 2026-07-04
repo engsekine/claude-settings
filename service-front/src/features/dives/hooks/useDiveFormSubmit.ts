@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
+import { NO_CREDIT_ACTION_CODE } from '@/features/credits/constants';
 import { uploadDivePhotos } from '@/features/dives/lib/uploadDivePhotos';
 import type { DiveFormValues } from '@/features/dives/schemas/dive.schema';
 import { createDive, createDiveFromPlan, updateDive } from '@/features/dives/server/actions';
@@ -14,6 +15,8 @@ interface UseDiveFormSubmitResult {
     serverError: string | null;
     /** ログ本体は保存できたが、同行バディの同期など一部処理に失敗したときの警告 */
     serverWarning: string | null;
+    /** ログ枠不足で作成が拒否された（026 / FR-002）。フォームは NoCreditBanner を表示する */
+    noCredit: boolean;
     /**
      * react-hook-form の handleSubmit に渡すサブミットハンドラ。
      * - 新規作成時: photos に File[] を渡すと、ログ保存 → dive_id 確定 → アップロードの順で同時添付する。
@@ -33,12 +36,14 @@ export const useDiveFormSubmit = (diveId?: string, fromPlanId?: string): UseDive
     const [isPending, startTransition] = useTransition();
     const [serverError, setServerError] = useState<string | null>(null);
     const [serverWarning, setServerWarning] = useState<string | null>(null);
+    const [noCredit, setNoCredit] = useState(false);
 
     const isEdit = diveId !== undefined;
 
     const submit = (values: DiveFormValues, photos?: File[], photoIdsToDelete?: string[]): void => {
         setServerError(null);
         setServerWarning(null);
+        setNoCredit(false);
         startTransition(async () => {
             if (isEdit) {
                 const result = await updateDive(diveId, values);
@@ -65,6 +70,11 @@ export const useDiveFormSubmit = (diveId?: string, fromPlanId?: string): UseDive
             // 予定→ログ移動（024）なら createDiveFromPlan、通常作成なら createDive。
             const result = fromPlanId ? await createDiveFromPlan(fromPlanId, values) : await createDive(values);
             if (!result.success) {
+                // ログ枠不足（026）はエラー文言ではなく NoCreditBanner で案内する（入力値は保持される）
+                if (result.code === NO_CREDIT_ACTION_CODE) {
+                    setNoCredit(true);
+                    return;
+                }
                 setServerError(result.error);
                 return;
             }
@@ -89,5 +99,5 @@ export const useDiveFormSubmit = (diveId?: string, fromPlanId?: string): UseDive
         });
     };
 
-    return { isPending, serverError, serverWarning, submit };
+    return { isPending, serverError, serverWarning, noCredit, submit };
 };

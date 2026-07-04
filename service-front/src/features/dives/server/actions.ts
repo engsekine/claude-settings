@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
+import { NO_CREDIT_ACTION_CODE, NO_CREDIT_ERROR_DETAIL } from '@/features/credits/constants';
 import { buildDivePrefix, DIVE_PHOTOS_BUCKET, type PhotoKind } from '@/features/dives/lib/photoStorage';
 import type { DiveFormValues } from '@/features/dives/schemas/dive.schema';
 import { requireUser } from '@/shared/lib/auth';
@@ -16,6 +17,17 @@ const PG_UNIQUE_VIOLATION = '23505';
 /** dives_user_id_dive_number_key 違反を判定 */
 const isDiveNumberDuplicate = (error: { code?: string; message?: string } | null): boolean =>
     error?.code === PG_UNIQUE_VIOLATION && (error.message?.includes('dives_user_id_dive_number_key') ?? false);
+
+/**
+ * ログ枠不足（026 / FR-002）を判定。
+ * consume_log_credit トリガーが raise する P0001 + detail = 'no_credit' がセンチネル
+ * （独自 errcode は PostgREST が 500 に握りつぶすため DETAIL で判別する）
+ */
+const isNoCreditError = (error: { code?: string; details?: string | null } | null): boolean =>
+    error?.code === 'P0001' && error.details === NO_CREDIT_ERROR_DETAIL;
+
+/** ログ枠不足のユーザー向けメッセージ（表示本体は NoCreditBanner が担う） */
+const NO_CREDIT_MESSAGE = 'ログ枠がないため作成できません';
 
 type DiveSupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -193,6 +205,8 @@ export const createDive = async (
         if (isDiveNumberDuplicate(error)) {
             return actionFailure(`ダイブ番号 ${input.diveNumber} はすでに使用されています`);
         }
+        // 残枠不足（026）。呼び出し側が NoCreditBanner を出せるよう code で判別可能にする
+        if (isNoCreditError(error)) return actionFailure(NO_CREDIT_MESSAGE, NO_CREDIT_ACTION_CODE);
         console.error('[createDive] supabase error:', error);
         return actionFailure('ログの作成に失敗しました。時間をおいて再度お試しください');
     }

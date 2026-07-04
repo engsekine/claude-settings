@@ -43,6 +43,7 @@ createDiveFromPlan(
 | ログ作成成功・予定削除失敗 | `{ success: true, id: '<diveId>', planDeleteFailed: true }` |
 | 予定が既に存在しない | `{ success: false, error: 'この予定は既に移動済みか削除されています' }` |
 | ログ作成失敗（必須未入力等） | `{ success: false, error: '<createDive のエラー>' }` |
+| ログ枠不足（026 / FR-012。予定は削除されない） | `{ success: false, error: 'ログ枠がないため作成できません', code: 'no_credit' }` |
 | 未認証 | `{ success: false, error: 'ログインが必要です' }` |
 
 ## 既存 Action の再利用（変更なし）

@@ -1,3 +1,5 @@
+import { CreditBalanceBadge } from '@/features/credits/components/server/CreditBalanceBadge';
+import { getCreditBalance } from '@/features/credits/server/queries';
 import { listDiveSites, siteLabel } from '@/features/dive-sites';
 import { DiveForm, type DiveFormValues, getLatestDiveNumber, planToDiveDefaults } from '@/features/dives';
 import { canMovePlanToLog, getPlan } from '@/features/plans';
@@ -20,7 +22,11 @@ interface NewDivePageProps {
 
 export default async function NewDivePage({ searchParams }: NewDivePageProps) {
     const { fromPlanId } = await searchParams;
-    const [latestDiveNumber, sites] = await Promise.all([getLatestDiveNumber(), listDiveSites()]);
+    const [latestDiveNumber, sites, creditBalance] = await Promise.all([
+        getLatestDiveNumber(),
+        listDiveSites(),
+        getCreditBalance(),
+    ]);
     const nextDiveNumber = (latestDiveNumber ?? 0) + 1;
     const siteOptions = sites.map((site) => ({ value: site.id, label: siteLabel(site) }));
 
@@ -40,10 +46,14 @@ export default async function NewDivePage({ searchParams }: NewDivePageProps) {
         <div className="flex flex-1 flex-col">
             <Breadcrumbs breadcrumbs={[{ name: 'ダイビングログ', slug: '/dives' }, { name: '新規作成' }]} />
             <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
-                <h1 className="font-semibold text-2xl">新規ダイビングログ</h1>
+                <div className="flex items-center justify-between">
+                    <h1 className="font-semibold text-2xl">新規ダイビングログ</h1>
+                    <CreditBalanceBadge />
+                </div>
                 <DiveForm
                     defaultValues={{ diveNumber: nextDiveNumber, ...planDefaults }}
                     siteOptions={siteOptions}
+                    creditBalance={creditBalance}
                     {...(movingPlanId ? { fromPlanId: movingPlanId } : {})}
                 />
             </div>

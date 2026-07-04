@@ -63,5 +63,14 @@ export default async function AuthenticatedLayout({
 
     if (!details) redirect('/profile-completion');
 
+    /**
+     * デイリーボーナス（026 / FR-003）。その日（JST）はじめての訪問で
+     * ログ枠を 1 つ自動付与する。RPC は冪等（付与済みなら no-op）なので
+     * 並行リクエスト・リロードで二重付与されない。
+     * 失敗してもレイアウトは落とさない（ボーナスは次回訪問で回復する）。
+     */
+    const { error: bonusError } = await supabase.rpc('grant_daily_bonus');
+    if (bonusError) console.error('[AuthenticatedLayout] デイリーボーナスの付与に失敗しました:', bonusError);
+
     return <>{children}</>;
 }

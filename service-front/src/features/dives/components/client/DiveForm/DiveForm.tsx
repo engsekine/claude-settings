@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { type ChangeEvent, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { NoCreditBanner } from '@/features/credits/components/client/NoCreditBanner';
 import { DIVE_TYPE_OPTIONS, GAS_TYPE_OPTIONS, TANK_TYPE_OPTIONS } from '@/features/dives/constants';
 import { useDiveFormSubmit } from '@/features/dives/hooks/useDiveFormSubmit';
 import { calcBottomTimeMin } from '@/features/dives/lib/calcBottomTime';
@@ -31,6 +32,11 @@ interface DiveFormProps {
     existingPhotos?: DivePhotoView[];
     /** 予定→ログ移動（024）のとき、移動元の予定 ID。保存成功時にその予定が削除される */
     fromPlanId?: string;
+    /**
+     * ログ枠の残数（026）。新規作成時にページ層が getCreditBalance() で渡す。
+     * 0 のときは NoCreditBanner を先行表示する（サーバー側トリガーが最終判定）
+     */
+    creditBalance?: number;
 }
 
 const createDefaultValues = (overrides?: Partial<DiveFormValues>): DiveFormValues => ({
@@ -74,11 +80,16 @@ export const DiveForm = ({
     siteOptions = [],
     existingPhotos = [],
     fromPlanId,
+    creditBalance,
 }: DiveFormProps) => {
     const router = useRouter();
     const isEdit = diveId !== undefined;
 
-    const { isPending, serverError, serverWarning, submit } = useDiveFormSubmit(diveId, fromPlanId);
+    const { isPending, serverError, serverWarning, noCredit, submit } = useDiveFormSubmit(diveId, fromPlanId);
+
+    // 残枠 0 の案内（026 / FR-002）: ページ表示時点で 0、または送信が枠不足で拒否されたとき。
+    // 編集は枠を消費しないため対象外（FR-010）。バナー表示中も入力値は保持される
+    const showNoCreditBanner = !isEdit && (noCredit || creditBalance === 0);
 
     const {
         register,
@@ -166,6 +177,8 @@ export const DiveForm = ({
             className="flex flex-col gap-6"
             noValidate
         >
+            {showNoCreditBanner && <NoCreditBanner />}
+
             <section aria-labelledby="dive-form-basic" className="flex flex-col gap-4">
                 <h2 id="dive-form-basic" className="font-semibold text-lg">
                     基本情報

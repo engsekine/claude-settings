@@ -128,6 +128,45 @@ describe('DiveForm', () => {
         expect(await screen.findByText('失敗しました')).toBeInTheDocument();
     });
 
+    it('creditBalance=0 では NoCreditBanner を先行表示する（026 FR-002）', () => {
+        render(<DiveForm creditBalance={0} />);
+        expect(screen.getByText('ログ枠がありません')).toBeInTheDocument();
+    });
+
+    it('creditBalance が 1 以上ならバナーを表示しない（026）', () => {
+        render(<DiveForm creditBalance={5} />);
+        expect(screen.queryByText('ログ枠がありません')).not.toBeInTheDocument();
+    });
+
+    it('編集モードでは creditBalance=0 でもバナーを表示しない（026 FR-010）', () => {
+        render(<DiveForm diveId="existing-id" creditBalance={0} />);
+        expect(screen.queryByText('ログ枠がありません')).not.toBeInTheDocument();
+    });
+
+    it("送信が code='no_credit' で拒否されると NoCreditBanner を表示し入力値を保持する（026 FR-002）", async () => {
+        createDive.mockResolvedValueOnce({
+            success: false,
+            error: 'ログ枠がないため作成できません',
+            code: 'no_credit',
+        });
+        const user = userEvent.setup();
+        render(<DiveForm creditBalance={1} />);
+
+        await user.clear(screen.getByLabelText(/ポイント名/));
+        await user.type(screen.getByLabelText(/ポイント名/), '伊豆');
+        await user.clear(screen.getByLabelText(/最大水深\(m\)/));
+        await user.type(screen.getByLabelText(/最大水深\(m\)/), '18');
+        await user.clear(screen.getByLabelText(/潜水時間\(分\)/));
+        await user.type(screen.getByLabelText(/潜水時間\(分\)/), '45');
+
+        await user.click(screen.getByRole('button', { name: '作成する' }));
+
+        expect(await screen.findByText('ログ枠がありません')).toBeInTheDocument();
+        // 入力値は保持される（再購入後にそのまま再送信できる）
+        expect(screen.getByLabelText(/ポイント名/)).toHaveValue('伊豆');
+        expect(routerPush).not.toHaveBeenCalled();
+    });
+
     it('予定から引き継いだ初期値を表示し、編集できる（024 US1 / FR-007）', async () => {
         const user = userEvent.setup();
         render(

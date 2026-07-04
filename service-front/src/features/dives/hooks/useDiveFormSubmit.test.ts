@@ -196,4 +196,63 @@ describe('useDiveFormSubmit', () => {
         });
         expect(routerPush).not.toHaveBeenCalled();
     });
+
+    it("code='no_credit' の失敗は serverError ではなく noCredit を立てる（026 FR-002）", async () => {
+        createDive.mockResolvedValueOnce({
+            success: false,
+            error: 'ログ枠がないため作成できません',
+            code: 'no_credit',
+        });
+        const { result } = renderHook(() => useDiveFormSubmit());
+
+        act(() => {
+            result.current.submit(buildValues());
+        });
+
+        await waitFor(() => {
+            expect(result.current.noCredit).toBe(true);
+        });
+        expect(result.current.serverError).toBeNull();
+        expect(routerPush).not.toHaveBeenCalled();
+    });
+
+    it('再 submit で noCredit はリセットされる（026）', async () => {
+        createDive
+            .mockResolvedValueOnce({ success: false, error: 'ログ枠がないため作成できません', code: 'no_credit' })
+            .mockResolvedValueOnce({ success: true, id: 'new-id' });
+        const { result } = renderHook(() => useDiveFormSubmit());
+
+        act(() => {
+            result.current.submit(buildValues());
+        });
+        await waitFor(() => {
+            expect(result.current.noCredit).toBe(true);
+        });
+
+        act(() => {
+            result.current.submit(buildValues());
+        });
+        await waitFor(() => {
+            expect(routerPush).toHaveBeenCalledWith('/dives/new-id');
+        });
+        expect(result.current.noCredit).toBe(false);
+    });
+
+    it('予定→ログ移動でも no_credit を判別する（026 FR-012）', async () => {
+        createDiveFromPlan.mockResolvedValueOnce({
+            success: false,
+            error: 'ログ枠がないため作成できません',
+            code: 'no_credit',
+        });
+        const { result } = renderHook(() => useDiveFormSubmit(undefined, 'plan-1'));
+
+        act(() => {
+            result.current.submit(buildValues());
+        });
+
+        await waitFor(() => {
+            expect(result.current.noCredit).toBe(true);
+        });
+        expect(routerPush).not.toHaveBeenCalled();
+    });
 });
