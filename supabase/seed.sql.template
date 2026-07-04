@@ -164,6 +164,14 @@ insert into public.admin_users (id, display_name, role)
 values ('000000ad-0000-0000-0000-000000000001', '運営管理者', 'superadmin');
 
 -- ========================================
+-- ログ枠の追加付与（026）
+-- handle_new_user の初期枠 10 に加え、テストユーザーへ 20 枠を先に付与する。
+-- 以降の dives insert は consume_log_credit トリガーで 1 件 1 枠を消費するため、
+-- 付与より前に dives を投入すると seed が残枠不足で失敗しうる。順序を変えないこと
+-- ========================================
+select public.apply_credit_ledger_entry('${TEST_USER_ID}', 'initial_grant', 20);
+
+-- ========================================
 -- サンプルダイビングログ
 -- dive_type / gas_type / tank_type の値は features/dives/constants.ts の value と一致させる
 -- ========================================
