@@ -33,9 +33,13 @@ jobs:
             - uses: actions/checkout@v4
             - uses: supabase/setup-cli@v1
               with:
-                  version: latest
+                  # version: latest は実行のたびに GitHub API で最新リリースを解決するため、
+                  # 未認証のレート制限に達して失敗する。バージョンを固定して API 解決を回避する（ci.yml と同方針）
+                  version: 2.107.0
             - name: Link to Supabase project
-              run: supabase link --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"
+              env:
+                  SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+              run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
             - name: Apply migrations
               run: supabase db push
 
@@ -70,12 +74,16 @@ jobs:
             - name: Deploy (prebuilt)
               id: deploy
               run: |
-                  url=$(npx --yes vercel deploy --prebuilt ${PROD_FLAG:+"$PROD_FLAG"} --token="$VERCEL_TOKEN")
+                  # vercel deploy は stdout にデプロイ URL のみを出す仕様だが、
+                  # 将来の CLI 出力変更に備えて最終行だけを取る（防御的）
+                  url=$(npx --yes vercel deploy --prebuilt ${PROD_FLAG:+"$PROD_FLAG"} --token="$VERCEL_TOKEN" | tail -n1)
                   echo "url=$url" >> "$GITHUB_OUTPUT"
                   echo "### service-front (${{ inputs.environment }}): $url" >> "$GITHUB_STEP_SUMMARY"
             - name: Set staging alias
               if: ${{ inputs.environment == 'staging' }}
-              run: npx --yes vercel alias set "${{ steps.deploy.outputs.url }}" "${{ secrets.STG_ALIAS_SERVICE_FRONT }}" --token="$VERCEL_TOKEN"
+              env:
+                  STG_ALIAS: ${{ secrets.STG_ALIAS_SERVICE_FRONT }}
+              run: npx --yes vercel alias set "${{ steps.deploy.outputs.url }}" "$STG_ALIAS" --token="$VERCEL_TOKEN"
 
     # ------------------------------------------------------------
     # 3. admin-front → Vercel（service-front と同型・並列実行）
@@ -104,9 +112,13 @@ jobs:
             - name: Deploy (prebuilt)
               id: deploy
               run: |
-                  url=$(npx --yes vercel deploy --prebuilt ${PROD_FLAG:+"$PROD_FLAG"} --token="$VERCEL_TOKEN")
+                  # vercel deploy は stdout にデプロイ URL のみを出す仕様だが、
+                  # 将来の CLI 出力変更に備えて最終行だけを取る（防御的）
+                  url=$(npx --yes vercel deploy --prebuilt ${PROD_FLAG:+"$PROD_FLAG"} --token="$VERCEL_TOKEN" | tail -n1)
                   echo "url=$url" >> "$GITHUB_OUTPUT"
                   echo "### admin-front (${{ inputs.environment }}): $url" >> "$GITHUB_STEP_SUMMARY"
             - name: Set staging alias
               if: ${{ inputs.environment == 'staging' }}
-              run: npx --yes vercel alias set "${{ steps.deploy.outputs.url }}" "${{ secrets.STG_ALIAS_ADMIN_FRONT }}" --token="$VERCEL_TOKEN"
+              env:
+                  STG_ALIAS: ${{ secrets.STG_ALIAS_ADMIN_FRONT }}
+              run: npx --yes vercel alias set "${{ steps.deploy.outputs.url }}" "$STG_ALIAS" --token="$VERCEL_TOKEN"

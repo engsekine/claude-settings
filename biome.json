@@ -27,7 +27,8 @@
             "!**/dist",
             "!**/build",
             "!**/*.tsbuildinfo",
-            "!**/next-env.d.ts"
+            "!**/next-env.d.ts",
+            "!.specify"
         ]
     },
     "formatter": {

@@ -17,7 +17,9 @@ permissions:
     contents: read
 
 jobs:
-    # 承認だけを担う空ジョブ。ここが承認されるまで prod は一切変更されない（US2-AC2）
+    # 承認だけを担う空ジョブ。ここが承認されるまで prod は一切変更されない（US2-AC2）。
+    # 承認待ちはジョブ開始前に発生するため timeout-minutes は承認待ち時間には適用されない
+    # （承認後の echo 実行にのみ適用。承認の有効期限は GitHub 側の既定 = 30 日）
     approve:
         runs-on: ubuntu-latest
         timeout-minutes: 5

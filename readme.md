@@ -154,18 +154,18 @@ GitHub リポジトリの **Settings > Environments** に 3 つの環境を作�
 | `production-approval` | **✓ 1 名以上** | prod 承認ゲート専用（シークレットは置かない・branch: `main`） |
 | `production` | なし | prod 用シークレット（branch: `main`） |
 
-`staging` / `production` の両方に**同名**で以下を設定します（値は環境ごとに別）:
+シークレットは以下を設定します（値は環境ごとに別）:
 
-| シークレット名 | 用途 | 取得元 |
-|---------------|------|--------|
-| `VERCEL_TOKEN` | Vercel CLI 認証 | Vercel > Account Settings > Tokens |
-| `VERCEL_ORG_ID` | チーム識別 | 各アプリで `npx vercel link` 後の `.vercel/project.json` の `orgId` |
-| `VERCEL_PROJECT_ID_SERVICE_FRONT` | service-front の識別 | 同 `projectId`（service-front で link） |
-| `VERCEL_PROJECT_ID_ADMIN_FRONT` | admin-front の識別 | 同 `projectId`（admin-front で link） |
-| `SUPABASE_ACCESS_TOKEN` | Supabase CLI 認証 | Supabase > Account > Access Tokens |
-| `SUPABASE_PROJECT_REF` | 反映先プロジェクト | 各プロジェクト Settings > General > Reference ID（stg / prod で別値） |
-| `SUPABASE_DB_PASSWORD` | `db push` の接続 | プロジェクト作成時の DB パスワード（stg / prod で別値） |
-| `STG_ALIAS_SERVICE_FRONT` / `STG_ALIAS_ADMIN_FRONT` | stg 固定 URL | 任意のドメイン（**staging のみ**設定） |
+| シークレット名 | 用途 | 取得元 | 設定場所 |
+|---------------|------|--------|---------|
+| `VERCEL_TOKEN` | Vercel CLI 認証 | Vercel > Account Settings > Tokens | `staging` / `production` 両方 |
+| `VERCEL_ORG_ID` | チーム識別 | 各アプリで `npx vercel link` 後の `.vercel/project.json` の `orgId` | 同上 |
+| `VERCEL_PROJECT_ID_SERVICE_FRONT` | service-front の識別 | 同 `projectId`（service-front で link） | 同上 |
+| `VERCEL_PROJECT_ID_ADMIN_FRONT` | admin-front の識別 | 同 `projectId`（admin-front で link） | 同上 |
+| `SUPABASE_ACCESS_TOKEN` | Supabase CLI 認証 | Supabase > Account > Access Tokens | 同上 |
+| `SUPABASE_PROJECT_REF` | 反映先プロジェクト | 各プロジェクト Settings > General > Reference ID（stg / prod で別値） | 同上 |
+| `SUPABASE_DB_PASSWORD` | `db push` の接続 | プロジェクト作成時の DB パスワード（stg / prod で別値） | 同上 |
+| `STG_ALIAS_SERVICE_FRONT` / `STG_ALIAS_ADMIN_FRONT` | stg 固定 URL | 任意のドメイン | **`staging` のみ** |
 
 アプリの環境変数（Supabase URL / Stripe キー等）は GitHub ではなく **Vercel の Environment Variables**（Preview = stg / Production = prod のスコープ別）に設定します。変数の一覧は [specs/028-deploy-pipeline/contracts/secrets-and-envs.md](specs/028-deploy-pipeline/contracts/secrets-and-envs.md) を参照してください。
 
