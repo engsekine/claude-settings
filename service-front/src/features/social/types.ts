@@ -31,6 +31,10 @@ export interface TimelineItem {
     bottomTimeMin: number;
     ownerId: string;
     ownerNickname: string;
+    /** いいね件数（spec 027 FR-004） */
+    likeCount: number;
+    /** 閲覧者がこのログをいいね済みか（spec 027 FR-005） */
+    likedByMe: boolean;
 }
 
 /** キーセットページネーション用カーソル（dive_date desc, id desc） */
@@ -43,6 +47,19 @@ export interface TimelineCursor {
 export interface TimelinePage {
     items: TimelineItem[];
     nextCursor: TimelineCursor | null;
+}
+
+/** いいねしたログ一覧のキーセットカーソル（dive_likes.created_at desc, dive_id desc / spec 027） */
+export interface LikedDivesCursor {
+    /** いいねした日時（ISO 8601） */
+    likedAt: string;
+    diveId: string;
+}
+
+/** いいねしたログ一覧の 1 ページ（spec 027 FR-007） */
+export interface LikedDivesPage {
+    items: TimelineItem[];
+    nextCursor: LikedDivesCursor | null;
 }
 
 /** 公開プロフィール（プロフィールページの表示モデル） */

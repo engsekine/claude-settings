@@ -18,6 +18,8 @@ export const getNotificationTarget = (
             return { href: item.actorId ? `/users/${item.actorId}` : null };
         case 'buddy_tagged':
             return { href: item.resourceId ? `/dives/${item.resourceId}` : null };
+        case 'log_liked':
+            return { href: item.resourceId ? `/dives/${item.resourceId}` : null };
         case 'plan_reminder':
             return { href: item.resourceId ? `/plans/${item.resourceId}` : null };
         case 'overhaul_reminder':

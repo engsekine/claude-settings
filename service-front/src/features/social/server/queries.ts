@@ -3,10 +3,13 @@ import 'server-only';
 import type { Database } from '@repo/supabase';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+import { attachLikeInfo, buildLikeInfo, type LikeRow } from '@/features/social/lib/likes';
 import type {
     FollowListKind,
     FollowState,
     FollowUser,
+    LikedDivesCursor,
+    LikedDivesPage,
     PublicProfile,
     TimelineCursor,
     TimelineItem,
@@ -199,6 +202,50 @@ export const fetchPublicProfile = async (userId: string): Promise<PublicProfile 
     return { userId, nickname, followState };
 };
 
+/**
+ * 表示対象の dive ID 群のいいね行をバッチ 1 クエリで引き、件数 + 閲覧者のいいね済みを集計する
+ * （spec 027 R7。項目ごとの個別クエリ = N+1 を避ける）。
+ * 件数は行を取得して数える（PostgREST の集約が無効な環境でも動く。初期規模ではページ 20 件分で十分軽い）
+ */
+const fetchLikeInfoForDives = async (
+    supabase: Client,
+    diveIds: string[],
+    viewerId: string | null,
+): Promise<Map<string, { likeCount: number; likedByMe: boolean }>> => {
+    if (diveIds.length === 0) return new Map();
+    const { data, error } = await supabase.from('dive_likes').select('dive_id, user_id').in('dive_id', diveIds);
+    if (error) throw new Error(`いいね情報の取得に失敗しました: ${error.message}`);
+    return buildLikeInfo((data ?? []) as LikeRow[], viewerId);
+};
+
+/**
+ * 1 ログ分のいいね件数と閲覧者のいいね済み状態（spec 027 FR-004/005）。
+ * ログ詳細で使う。自分のログでも件数表示のため呼ばれる（US1-AC5）。
+ */
+export const fetchDiveLikeState = async (diveId: string): Promise<{ likeCount: number; likedByMe: boolean }> => {
+    const supabase = await createClient();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    const [countRes, mineRes] = await Promise.all([
+        supabase.from('dive_likes').select('dive_id', { head: true, count: 'exact' }).eq('dive_id', diveId),
+        user
+            ? supabase
+                  .from('dive_likes')
+                  .select('dive_id', { head: true, count: 'exact' })
+                  .eq('dive_id', diveId)
+                  .eq('user_id', user.id)
+            : Promise.resolve({ count: 0, error: null }),
+    ]);
+
+    // 件数はいいね UI の中核（SC-001）。DB エラー時に 0 を誤表示しないよう明示的に失敗させる
+    if (countRes.error) throw new Error(`いいね数の取得に失敗しました: ${countRes.error.message}`);
+    if (mineRes.error) throw new Error(`いいね状態の取得に失敗しました: ${mineRes.error.message}`);
+
+    return { likeCount: countRes.count ?? 0, likedByMe: (mineRes.count ?? 0) > 0 };
+};
+
 /** dives 行（公開一覧用）→ TimelineItem に変換（owner nickname は別途解決） */
 const mapTimelineRow = (
     row: {
@@ -219,6 +266,9 @@ const mapTimelineRow = (
     bottomTimeMin: row.bottom_time_min,
     ownerId: row.user_id,
     ownerNickname: nicknames.get(row.user_id) ?? '（不明なユーザー）',
+    // いいね情報は attachLikeInfo（lib/likes）で後付けする。ここでは未取得の既定値
+    likeCount: 0,
+    likedByMe: false,
 });
 
 /**
@@ -255,6 +305,62 @@ export const fetchUserPublicDives = async (
     const items = pageRows.map((row) => mapTimelineRow(row, nicknames));
     const last = pageRows.at(-1);
     const nextCursor = hasNext && last ? { diveDate: last.dive_date, id: last.id } : null;
+
+    return { items, nextCursor };
+};
+
+/**
+ * 自分がいいねしたログの一覧（spec 027 US2 / FR-007〜009）。
+ * dive_likes を起点に dives を inner join し、いいね日時の新しい順（created_at, dive_id キーセット）で取得する。
+ * 非公開化・削除済みのログは dives の RLS により join で自動的に除外される（FR-009）。
+ */
+export const fetchLikedDives = async (
+    options: { limit?: number; cursor?: LikedDivesCursor | null } = {},
+): Promise<LikedDivesPage> => {
+    const supabase = await createClient();
+    const { limit = DEFAULT_PAGE_SIZE, cursor } = options;
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { items: [], nextCursor: null };
+
+    let query = supabase
+        .from('dive_likes')
+        .select(`created_at, dive_id, dives!inner(${PUBLIC_DIVE_COLUMNS})`)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .order('dive_id', { ascending: false })
+        .limit(limit + 1);
+    if (cursor) {
+        query = query.or(
+            `created_at.lt.${cursor.likedAt},and(created_at.eq.${cursor.likedAt},dive_id.lt.${cursor.diveId})`,
+        );
+    }
+
+    const { data: rows, error } = await query;
+    if (error) throw new Error(`いいねしたログの取得に失敗しました: ${error.message}`);
+
+    const hasNext = (rows?.length ?? 0) > limit;
+    const pageRows = (hasNext ? rows?.slice(0, limit) : rows) ?? [];
+    const dives = pageRows.map((row) => row.dives);
+
+    const [nicknames, likeInfo] = await Promise.all([
+        resolveNicknames(
+            supabase,
+            dives.map((dive) => dive.user_id),
+        ),
+        fetchLikeInfoForDives(
+            supabase,
+            dives.map((dive) => dive.id),
+            user.id,
+        ),
+    ]);
+    const items = attachLikeInfo(
+        dives.map((dive) => mapTimelineRow(dive, nicknames)),
+        likeInfo,
+    );
+    const last = pageRows.at(-1);
+    const nextCursor = hasNext && last ? { likedAt: last.created_at, diveId: last.dive_id } : null;
 
     return { items, nextCursor };
 };
@@ -308,11 +414,21 @@ export const fetchTimeline = async (
 
     const hasNext = (rows?.length ?? 0) > limit;
     const pageRows = (hasNext ? rows?.slice(0, limit) : rows) ?? [];
-    const nicknames = await resolveNicknames(
-        supabase,
-        pageRows.map((row) => row.user_id),
+    const [nicknames, likeInfo] = await Promise.all([
+        resolveNicknames(
+            supabase,
+            pageRows.map((row) => row.user_id),
+        ),
+        fetchLikeInfoForDives(
+            supabase,
+            pageRows.map((row) => row.id),
+            user.id,
+        ),
+    ]);
+    const items = attachLikeInfo(
+        pageRows.map((row) => mapTimelineRow(row, nicknames)),
+        likeInfo,
     );
-    const items = pageRows.map((row) => mapTimelineRow(row, nicknames));
     const last = pageRows.at(-1);
     const nextCursor = hasNext && last ? { diveDate: last.dive_date, id: last.id } : null;
 

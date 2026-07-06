@@ -1,7 +1,10 @@
+import { Heart } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { DiveDetail, diveLocationLabel, getDive, getDiveBuddies, getDivePhotos } from '@/features/dives';
+import { LikeButton } from '@/features/social/components/client/LikeButton';
+import { fetchDiveLikeState } from '@/features/social/server/queries';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
 import { generatePageMetadata } from '@/shared/config/metadata';
 import { createClient } from '@/shared/lib/supabase/server';
@@ -36,8 +39,22 @@ export default async function DivePage({ params, searchParams }: DivePageProps) 
     } = await supabase.auth.getUser();
     const canManage = dive.userId === user?.id;
 
-    const photos = await getDivePhotos(id, `${dive.diveDate} ${dive.location} の写真`);
-    const buddies = await getDiveBuddies(id);
+    const [photos, buddies, likeState] = await Promise.all([
+        getDivePhotos(id, `${dive.diveDate} ${dive.location} の写真`),
+        getDiveBuddies(id),
+        fetchDiveLikeState(id),
+    ]);
+
+    // 他人の公開ログには操作可能な LikeButton、自分のログは件数のみ（spec 027 US1-AC5 / FR-006）
+    const likeAction = canManage ? (
+        <span className="inline-flex items-center gap-1.5 px-2 text-muted-foreground text-sm">
+            <Heart aria-hidden="true" className="size-5" />
+            <span aria-hidden="true">{likeState.likeCount}</span>
+            <span className="sr-only">いいね {likeState.likeCount} 件</span>
+        </span>
+    ) : (
+        <LikeButton diveId={id} initialIsLiked={likeState.likedByMe} initialCount={likeState.likeCount} />
+    );
 
     return (
         <div className="flex flex-1 flex-col">
@@ -58,7 +75,13 @@ export default async function DivePage({ params, searchParams }: DivePageProps) 
                         から手動で削除してください。
                     </div>
                 )}
-                <DiveDetail dive={dive} photos={photos} buddies={buddies} canManage={canManage} />
+                <DiveDetail
+                    dive={dive}
+                    photos={photos}
+                    buddies={buddies}
+                    canManage={canManage}
+                    likeAction={likeAction}
+                />
             </div>
         </div>
     );

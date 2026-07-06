@@ -34,6 +34,14 @@ export const Header = ({ actions }: HeaderProps) => {
                                     ダイビングログ
                                 </Link>
                             </li>
+                            <li>
+                                <Link
+                                    href="/likes"
+                                    className="text-muted-foreground text-sm transition-colors hover:text-foreground"
+                                >
+                                    いいね
+                                </Link>
+                            </li>
                         </ul>
                     </nav>
                     {actions}
