@@ -4,8 +4,9 @@ import { diveLocationLabel, listDives } from '@/features/dives';
 import { ensureTimedNotifications } from '@/features/notifications/server/queries';
 import { NextPlanCard } from '@/features/plans';
 import { recordOverhaul } from '@/features/regulators';
-import { fetchTimeline, Timeline } from '@/features/social';
+import { fetchTimeline, Timeline, TimelineTabs } from '@/features/social';
 import { generatePageMetadata } from '@/shared/config/metadata';
+import { createClient } from '@/shared/lib/supabase/server';
 
 export const metadata = generatePageMetadata(
     {
@@ -24,6 +25,11 @@ export const metadata = generatePageMetadata(
 export default async function Home() {
     // リマインド通知の遅延生成（025 / FR-009・FR-010。冪等・失敗は内部でログのみ）
     await ensureTimedNotifications();
+
+    const supabase = await createClient();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
 
     const [recentPage, timeline] = await Promise.all([listDives({ limit: 5 }), fetchTimeline({ limit: 20 })]);
     const recentDives = recentPage.items.map((dive) => ({
@@ -60,7 +66,9 @@ export default async function Home() {
                     <h2 id="dashboard-timeline" className="font-semibold text-lg">
                         タイムライン
                     </h2>
-                    <Timeline items={timeline.items} />
+                    {/* いいねしたログ一覧（/likes）への切り替え導線（spec 027 FR-008a） */}
+                    <TimelineTabs active="timeline" />
+                    <Timeline items={timeline.items} viewerId={user?.id ?? null} />
                 </section>
             </div>
         </div>

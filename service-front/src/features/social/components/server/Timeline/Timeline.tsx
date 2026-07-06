@@ -1,19 +1,23 @@
+import { Heart } from 'lucide-react';
 import type { Route } from 'next';
 import Link from 'next/link';
 
+import { LikeButton } from '@/features/social/components/client/LikeButton';
 import { groupTimelineByDate, isTimelineEmpty } from '@/features/social/lib/timeline';
 import type { TimelineItem } from '@/features/social/types';
 import { formatJstDate } from '@/shared/lib/date';
 
 interface TimelineProps {
     items: TimelineItem[];
+    /** 閲覧者のユーザー ID。自分のログにはいいね操作を出さない（spec 027 FR-006）。未指定は件数のみ表示 */
+    viewerId?: string | null;
 }
 
 /**
  * TOP タイムライン（spec 021 US4）。フォロー中ユーザーの公開ログを日付ごとに表示する。
  * 空状態（フォロー 0 / 公開ログ 0）はフォローを促すメッセージを出す。
  */
-export const Timeline = ({ items }: TimelineProps) => {
+export const Timeline = ({ items, viewerId = null }: TimelineProps) => {
     if (isTimelineEmpty(items)) {
         return (
             <p className="rounded-md border border-border border-dashed bg-muted/30 px-4 py-6 text-center text-muted-foreground text-sm">
@@ -33,22 +37,38 @@ export const Timeline = ({ items }: TimelineProps) => {
                     <h3 className="font-medium text-muted-foreground text-sm">{formatJstDate(group.date)}</h3>
                     <ul className="flex flex-col divide-y divide-border rounded-md border border-border">
                         {group.items.map((dive) => (
-                            <li key={dive.diveId} className="flex flex-col gap-1 px-4 py-3">
-                                <Link
-                                    href={`/dives/${dive.diveId}` as Route}
-                                    className="font-medium text-sm hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
-                                >
-                                    {dive.location}
-                                </Link>
-                                <span className="text-muted-foreground text-xs">
+                            <li key={dive.diveId} className="flex items-center justify-between gap-2 px-4 py-3">
+                                <div className="flex flex-col gap-1">
                                     <Link
-                                        href={`/users/${dive.ownerId}` as Route}
-                                        className="hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+                                        href={`/dives/${dive.diveId}` as Route}
+                                        className="font-medium text-sm hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
                                     >
-                                        {dive.ownerNickname}
+                                        {dive.location}
                                     </Link>
-                                    {' ・ '}最大 {dive.maxDepthM}m ・ {dive.bottomTimeMin}分
-                                </span>
+                                    <span className="text-muted-foreground text-xs">
+                                        <Link
+                                            href={`/users/${dive.ownerId}` as Route}
+                                            className="hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+                                        >
+                                            {dive.ownerNickname}
+                                        </Link>
+                                        {' ・ '}最大 {dive.maxDepthM}m ・ {dive.bottomTimeMin}分
+                                    </span>
+                                </div>
+                                {viewerId && dive.ownerId !== viewerId ? (
+                                    <LikeButton
+                                        diveId={dive.diveId}
+                                        initialIsLiked={dive.likedByMe}
+                                        initialCount={dive.likeCount}
+                                    />
+                                ) : (
+                                    /* 自分のログ・閲覧者不明時は件数のみ（操作させない / US1-AC5） */
+                                    <span className="inline-flex items-center gap-1.5 px-2 text-muted-foreground text-sm">
+                                        <Heart aria-hidden="true" className="size-5" />
+                                        <span aria-hidden="true">{dive.likeCount}</span>
+                                        <span className="sr-only">いいね {dive.likeCount} 件</span>
+                                    </span>
+                                )}
                             </li>
                         ))}
                     </ul>

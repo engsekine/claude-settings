@@ -64,6 +64,16 @@ describe('DiveDetail', () => {
         expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('伊豆 / 大瀬崎');
     });
 
+    it('likeAction スロットに渡した要素をヘッダーに描画する（spec 027）', () => {
+        render(<DiveDetail dive={baseDive} likeAction={<div data-testid="like-action" />} />);
+        expect(screen.getByTestId('like-action')).toBeInTheDocument();
+    });
+
+    it('likeAction 未指定でも描画が壊れない', () => {
+        render(<DiveDetail dive={baseDive} />);
+        expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+    });
+
     it('作成者本人(canManage)には単一ログの PDF 出力リンクを表示する', () => {
         render(<DiveDetail dive={baseDive} canManage />);
         expect(screen.getByRole('link', { name: 'PDF出力' })).toHaveAttribute(

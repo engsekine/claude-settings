@@ -39,6 +39,18 @@ describe('getNotificationTarget', () => {
         });
     });
 
+    it('log_liked は /dives/{resourceId} を返す（spec 027 US3）', () => {
+        expect(getNotificationTarget({ type: 'log_liked', actorId: 'user-1', resourceId: 'dive-1' })).toEqual({
+            href: '/dives/dive-1',
+        });
+    });
+
+    it('log_liked で resourceId が null（ログ消滅）ならリンク無効', () => {
+        expect(getNotificationTarget({ type: 'log_liked', actorId: 'user-1', resourceId: null })).toEqual({
+            href: null,
+        });
+    });
+
     it('overhaul_reminder は resourceId によらず /settings/equipment を返す', () => {
         expect(getNotificationTarget({ type: 'overhaul_reminder', actorId: null, resourceId: null })).toEqual({
             href: '/settings/equipment',

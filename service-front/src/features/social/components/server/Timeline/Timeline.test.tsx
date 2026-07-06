@@ -1,8 +1,14 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { TimelineItem } from '@/features/social/types';
 import { Timeline } from './Timeline';
+
+// LikeButton が import する Server Action をモック（描画のみで呼ばれない）
+vi.mock('@/features/social/server/actions', () => ({
+    likeDive: vi.fn(),
+    unlikeDive: vi.fn(),
+}));
 
 const item = (id: string, diveDate: string): TimelineItem => ({
     diveId: id,
@@ -12,6 +18,8 @@ const item = (id: string, diveDate: string): TimelineItem => ({
     bottomTimeMin: 40,
     ownerId: `owner-${id}`,
     ownerNickname: `ニック${id}`,
+    likeCount: 0,
+    likedByMe: false,
 });
 
 describe('Timeline', () => {
@@ -33,5 +41,25 @@ describe('Timeline', () => {
         const ownerLink = screen.getByRole('link', { name: 'ニック1' });
         expect(ownerLink).toHaveAttribute('href', '/users/owner-1');
         expect(screen.getByText(/最大 18m ・ 40分/, { selector: 'span' })).toBeInTheDocument();
+    });
+
+    it('閲覧者がいれば他人のログにいいねボタン（件数・状態付き）を表示する', () => {
+        const liked = { ...item('1', '2026-06-30'), likeCount: 3, likedByMe: true };
+        render(<Timeline items={[liked]} viewerId="viewer-1" />);
+        const button = screen.getByRole('button', { name: 'いいね 3 件、いいね済み' });
+        expect(button).toHaveAttribute('aria-pressed', 'true');
+    });
+
+    it('自分のログにはいいねボタンを出さず件数のみ表示する', () => {
+        const mine = { ...item('1', '2026-06-30'), likeCount: 2 };
+        render(<Timeline items={[mine]} viewerId="owner-1" />);
+        expect(screen.queryByRole('button')).not.toBeInTheDocument();
+        expect(screen.getByText('いいね 2 件')).toBeInTheDocument();
+    });
+
+    it('viewerId 未指定なら操作ボタンを出さず件数のみ表示する', () => {
+        render(<Timeline items={[item('1', '2026-06-30')]} />);
+        expect(screen.queryByRole('button')).not.toBeInTheDocument();
+        expect(screen.getByText('いいね 0 件')).toBeInTheDocument();
     });
 });

@@ -23,7 +23,7 @@ describe('NotificationSettings', () => {
         refresh.mockReset();
     });
 
-    it('4 種別のトグルをラベル付きで表示し、行なしの種別は ON になる', () => {
+    it('全種別（5 種）のトグルをラベル付きで表示し、行なしの種別は ON になる', () => {
         render(<NotificationSettings initialPreferences={{}} />);
 
         for (const type of NOTIFICATION_TYPES) {

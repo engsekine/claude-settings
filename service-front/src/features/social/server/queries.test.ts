@@ -5,7 +5,14 @@ vi.mock('@/shared/lib/supabase/server', () => ({ createClient: vi.fn() }));
 
 import { createClient } from '@/shared/lib/supabase/server';
 
-import { fetchFollowLists, fetchFollowState, fetchTimeline, searchUsers } from './queries';
+import {
+    fetchDiveLikeState,
+    fetchFollowLists,
+    fetchFollowState,
+    fetchLikedDives,
+    fetchTimeline,
+    searchUsers,
+} from './queries';
 
 const mockedCreateClient = vi.mocked(createClient);
 
@@ -198,7 +205,7 @@ describe('fetchTimeline', () => {
         expect(from).toHaveBeenCalledWith('user_follows');
     });
 
-    it('フォロー集合 × 公開ログを新しい順で取得し TimelineItem に整形する', async () => {
+    it('フォロー集合 × 公開ログを新しい順で取得し、いいね情報付きの TimelineItem に整形する', async () => {
         const { from, builders } = buildClient({
             fromResults: [
                 // 1: フォロー集合
@@ -217,6 +224,14 @@ describe('fetchTimeline', () => {
                     ],
                     error: null,
                 },
+                // 3: dive_likes（バッチ 1 クエリ。件数 + 閲覧者のいいね済み判定の両方に使う）
+                {
+                    data: [
+                        { dive_id: 'd1', user_id: VIEWER_ID },
+                        { dive_id: 'd1', user_id: TARGET_ID },
+                    ],
+                    error: null,
+                },
             ],
             rpcResult: { data: [{ user_id: TARGET_ID, nickname: 'はなこ' }], error: null },
         });
@@ -225,12 +240,15 @@ describe('fetchTimeline', () => {
 
         expect(from).toHaveBeenNthCalledWith(1, 'user_follows');
         expect(from).toHaveBeenNthCalledWith(2, 'dives');
+        expect(from).toHaveBeenNthCalledWith(3, 'dive_likes');
         // フォロー集合で絞り、公開のみ
         expect(builders[1]?.in).toHaveBeenCalledWith('user_id', [TARGET_ID]);
         expect(builders[1]?.eq).toHaveBeenCalledWith('is_public', true);
         // dive_date desc, id desc のキーセット順
         expect(builders[1]?.order).toHaveBeenNthCalledWith(1, 'dive_date', { ascending: false });
         expect(builders[1]?.order).toHaveBeenNthCalledWith(2, 'id', { ascending: false });
+        // いいねは表示対象の dive ID 群でバッチ取得（N+1 にしない）
+        expect(builders[2]?.in).toHaveBeenCalledWith('dive_id', ['d1']);
         expect(page.items).toEqual([
             {
                 diveId: 'd1',
@@ -240,9 +258,38 @@ describe('fetchTimeline', () => {
                 bottomTimeMin: 45,
                 ownerId: TARGET_ID,
                 ownerNickname: 'はなこ',
+                likeCount: 2,
+                likedByMe: true,
             },
         ]);
         expect(page.nextCursor).toBeNull();
+    });
+
+    it('いいねが 1 件も無いログは likeCount=0 / likedByMe=false になる', async () => {
+        buildClient({
+            fromResults: [
+                { data: [{ followee_id: TARGET_ID }], error: null },
+                {
+                    data: [
+                        {
+                            id: 'd1',
+                            user_id: TARGET_ID,
+                            dive_date: '2026-06-10',
+                            location: '大瀬崎',
+                            max_depth_m: 10,
+                            bottom_time_min: 30,
+                        },
+                    ],
+                    error: null,
+                },
+                { data: [], error: null },
+            ],
+            rpcResult: { data: [{ user_id: TARGET_ID, nickname: 'はなこ' }], error: null },
+        });
+
+        const page = await fetchTimeline();
+
+        expect(page.items[0]).toMatchObject({ likeCount: 0, likedByMe: false });
     });
 
     it('limit+1 件取れたら (dive_date, id) カーソルを返す', async () => {
@@ -284,6 +331,141 @@ describe('fetchTimeline', () => {
 
         expect(page.items).toHaveLength(2);
         expect(page.nextCursor).toEqual({ diveDate: '2026-06-09', id: 'd2' });
+    });
+});
+
+describe('fetchLikedDives', () => {
+    const likedRow = (diveId: string, likedAt: string) => ({
+        created_at: likedAt,
+        dive_id: diveId,
+        dives: {
+            id: diveId,
+            user_id: TARGET_ID,
+            dive_date: '2026-06-10',
+            location: '大瀬崎',
+            max_depth_m: 18.5,
+            bottom_time_min: 45,
+        },
+    });
+
+    it('未ログインなら空ページを返す', async () => {
+        const { from } = buildClient({ user: null });
+
+        const page = await fetchLikedDives();
+
+        expect(page).toEqual({ items: [], nextCursor: null });
+        expect(from).not.toHaveBeenCalled();
+    });
+
+    it('自分のいいねを新しい順で取得し、いいね情報付きの TimelineItem に整形する', async () => {
+        const { from, builders } = buildClient({
+            fromResults: [
+                // 1: dive_likes（dives を inner join で embed）
+                { data: [likedRow('d1', '2026-07-01T10:00:00Z')], error: null },
+                // 2: dive_likes（件数集計のバッチ）
+                {
+                    data: [
+                        { dive_id: 'd1', user_id: VIEWER_ID },
+                        { dive_id: 'd1', user_id: TARGET_ID },
+                    ],
+                    error: null,
+                },
+            ],
+            rpcResult: { data: [{ user_id: TARGET_ID, nickname: 'はなこ' }], error: null },
+        });
+
+        const page = await fetchLikedDives();
+
+        expect(from).toHaveBeenNthCalledWith(1, 'dive_likes');
+        // 本人のいいねのみ・いいね日時の新しい順（keyset）
+        expect(builders[0]?.eq).toHaveBeenCalledWith('user_id', VIEWER_ID);
+        expect(builders[0]?.order).toHaveBeenNthCalledWith(1, 'created_at', { ascending: false });
+        expect(builders[0]?.order).toHaveBeenNthCalledWith(2, 'dive_id', { ascending: false });
+        expect(page.items).toEqual([
+            {
+                diveId: 'd1',
+                diveDate: '2026-06-10',
+                location: '大瀬崎',
+                maxDepthM: 18.5,
+                bottomTimeMin: 45,
+                ownerId: TARGET_ID,
+                ownerNickname: 'はなこ',
+                likeCount: 2,
+                likedByMe: true,
+            },
+        ]);
+        expect(page.nextCursor).toBeNull();
+    });
+
+    it('limit+1 件取れたら (likedAt, diveId) カーソルを返す', async () => {
+        buildClient({
+            fromResults: [
+                {
+                    data: [
+                        likedRow('d3', '2026-07-03T00:00:00Z'),
+                        likedRow('d2', '2026-07-02T00:00:00Z'),
+                        likedRow('d1', '2026-07-01T00:00:00Z'),
+                    ],
+                    error: null,
+                },
+                { data: [], error: null },
+            ],
+            rpcResult: { data: [{ user_id: TARGET_ID, nickname: 'はなこ' }], error: null },
+        });
+
+        const page = await fetchLikedDives({ limit: 2 });
+
+        expect(page.items).toHaveLength(2);
+        expect(page.nextCursor).toEqual({ likedAt: '2026-07-02T00:00:00Z', diveId: 'd2' });
+    });
+
+    it('いいねが 1 件も無ければ空ページを返す', async () => {
+        buildClient({ fromResults: [{ data: [], error: null }] });
+
+        const page = await fetchLikedDives();
+
+        expect(page).toEqual({ items: [], nextCursor: null });
+    });
+
+    it('取得エラー時は throw する', async () => {
+        buildClient({ fromResults: [{ data: null, error: { message: 'boom' } }] });
+
+        await expect(fetchLikedDives()).rejects.toThrow(/boom/);
+    });
+});
+
+describe('fetchDiveLikeState', () => {
+    it('件数と閲覧者のいいね済み状態を返す', async () => {
+        // 1: 件数 count, 2: 閲覧者の行 count
+        const { from } = buildClient({ fromResults: [{ count: 3 }, { count: 1 }] });
+
+        const state = await fetchDiveLikeState('d1');
+
+        expect(from).toHaveBeenCalledWith('dive_likes');
+        expect(state).toEqual({ likeCount: 3, likedByMe: true });
+    });
+
+    it('いいねが無ければ 0 件・未いいね', async () => {
+        buildClient({ fromResults: [{ count: 0 }, { count: 0 }] });
+
+        const state = await fetchDiveLikeState('d1');
+
+        expect(state).toEqual({ likeCount: 0, likedByMe: false });
+    });
+
+    it('未ログインでも件数は返し likedByMe=false（判定クエリは走らない）', async () => {
+        const { from } = buildClient({ user: null, fromResults: [{ count: 5 }] });
+
+        const state = await fetchDiveLikeState('d1');
+
+        expect(state).toEqual({ likeCount: 5, likedByMe: false });
+        expect(from).toHaveBeenCalledTimes(1);
+    });
+
+    it('件数取得エラー時は throw する', async () => {
+        buildClient({ fromResults: [{ error: { message: 'boom' } }, { count: 0 }] });
+
+        await expect(fetchDiveLikeState('d1')).rejects.toThrow(/boom/);
     });
 });
 

@@ -176,6 +176,39 @@ export type Database = {
                     },
                 ];
             };
+            dive_likes: {
+                Row: {
+                    created_at: string;
+                    dive_id: string;
+                    user_id: string;
+                };
+                Insert: {
+                    created_at?: string;
+                    dive_id: string;
+                    user_id: string;
+                };
+                Update: {
+                    created_at?: string;
+                    dive_id?: string;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'dive_likes_dive_id_fkey';
+                        columns: ['dive_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'dives';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'dive_likes_user_id_fkey';
+                        columns: ['user_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
             dive_log_buddies: {
                 Row: {
                     buddy_name: string | null;

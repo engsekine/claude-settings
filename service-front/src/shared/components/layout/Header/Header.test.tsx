@@ -10,7 +10,7 @@ describe('Header', () => {
         expect(siteNameLink).toHaveAttribute('href', '/');
     });
 
-    it('メインナビゲーションのリンク（ホーム, ダイビングログ）を表示する', () => {
+    it('メインナビゲーションのリンク（ホーム, ダイビングログ, いいね）を表示する', () => {
         render(<Header />);
 
         const nav = screen.getByRole('navigation', { name: 'メインナビゲーション' });
@@ -24,6 +24,10 @@ describe('Header', () => {
 
         const dives = screen.getByRole('link', { name: 'ダイビングログ' });
         expect(dives).toHaveAttribute('href', '/dives');
+
+        // いいねしたログ一覧への導線（spec 027 FR-008a）
+        const likes = screen.getByRole('link', { name: 'いいね' });
+        expect(likes).toHaveAttribute('href', '/likes');
     });
 
     it('actions プロパティで渡された要素を表示する', () => {
