@@ -71,7 +71,7 @@
 
 コード（特に schema・component・migration・route）を編集した場合、`specs/` 配下の関連仕様書（spec-kit 形式）に **必ず同期確認をかける**。実装が真実なので、ズレを見つけたら仕様書側を実装に合わせて更新する。
 
-同期対象の主なマッピング:
+同期対象の主なマッピング（`src/...` はワークスペースプレフィックス `service-front/` / `admin-front/` を除いた相対パス。[rules/diff-scope.md](rules/diff-scope.md) 参照）:
 
 | 編集したコード | 確認する仕様書 |
 |---|---|
@@ -140,6 +140,7 @@ npx biome check .
 | ファイル | 内容 |
 |---------|------|
 | `rules/folder-structure.md` | フォルダ構成規約（コンポーネント / lib ユーティリティ・両プロジェクト共通） |
+| `rules/diff-scope.md` | 変更差分の収集規約（ベースブランチ検出・3 層統合・除外 pathspec・import 逆引き。差分を扱うスキル共通） |
 | `rules/react.md` | React コーディング規約 |
 | `rules/typescript.md` | TypeScript コーディング規約 |
 | `rules/html.md` | HTML コーディング規約 |
