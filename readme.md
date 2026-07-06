@@ -120,3 +120,78 @@ make admin-dev
 
 ---
 
+## デプロイ（stg / prod）
+
+GitHub Actions によるデプロイパイプライン（028-deploy-pipeline）。マージをトリガーに、DB マイグレーション → アプリの順で自動反映されます。
+
+### 全体像
+
+```text
+develop にマージ ──▶ Deploy (staging)     : 自動で stg へ反映
+main にマージ    ──▶ Deploy (production)  : 承認者の承認 1 回 → prod へ反映
+
+各デプロイの流れ（_deploy.yml）:
+  migrate（supabase db push）──成功後──▶ service-front / admin-front を並列デプロイ（Vercel）
+  ※ マイグレーションが失敗したらアプリは反映されない（新アプリ + 旧スキーマの不整合防止）
+```
+
+| ブランチ | 環境 | Vercel | Supabase | 承認 |
+|---------|------|--------|----------|:---:|
+| `develop` | stg | Preview デプロイ + 固定エイリアス URL | stg プロジェクト | なし |
+| `main` | prod | Production | prod プロジェクト | ✓ 1 回 |
+
+- ワークフロー: [`_deploy.yml`](.github/workflows/_deploy.yml)（実体・reusable）/ [`deploy-stg.yml`](.github/workflows/deploy-stg.yml) / [`deploy-prod.yml`](.github/workflows/deploy-prod.yml)
+- テスト成功の前提はブランチ保護（PR 必須 + CI required checks）で担保。デプロイ内でテストは再実行しません
+- 同一環境への連続マージは直列化されます（実行中デプロイは完走・後続はキュー待ち）
+
+### 必要なシークレット（GitHub Environments）
+
+GitHub リポジトリの **Settings > Environments** に 3 つの環境を作成します。
+
+| Environment | required reviewers | 用途 |
+|-------------|:---:|------|
+| `staging` | なし | stg 用シークレット（deployment branch: `develop`） |
+| `production-approval` | **✓ 1 名以上** | prod 承認ゲート専用（シークレットは置かない・branch: `main`） |
+| `production` | なし | prod 用シークレット（branch: `main`） |
+
+`staging` / `production` の両方に**同名**で以下を設定します（値は環境ごとに別）:
+
+| シークレット名 | 用途 | 取得元 |
+|---------------|------|--------|
+| `VERCEL_TOKEN` | Vercel CLI 認証 | Vercel > Account Settings > Tokens |
+| `VERCEL_ORG_ID` | チーム識別 | 各アプリで `npx vercel link` 後の `.vercel/project.json` の `orgId` |
+| `VERCEL_PROJECT_ID_SERVICE_FRONT` | service-front の識別 | 同 `projectId`（service-front で link） |
+| `VERCEL_PROJECT_ID_ADMIN_FRONT` | admin-front の識別 | 同 `projectId`（admin-front で link） |
+| `SUPABASE_ACCESS_TOKEN` | Supabase CLI 認証 | Supabase > Account > Access Tokens |
+| `SUPABASE_PROJECT_REF` | 反映先プロジェクト | 各プロジェクト Settings > General > Reference ID（stg / prod で別値） |
+| `SUPABASE_DB_PASSWORD` | `db push` の接続 | プロジェクト作成時の DB パスワード（stg / prod で別値） |
+| `STG_ALIAS_SERVICE_FRONT` / `STG_ALIAS_ADMIN_FRONT` | stg 固定 URL | 任意のドメイン（**staging のみ**設定） |
+
+アプリの環境変数（Supabase URL / Stripe キー等）は GitHub ではなく **Vercel の Environment Variables**（Preview = stg / Production = prod のスコープ別）に設定します。変数の一覧は [specs/028-deploy-pipeline/contracts/secrets-and-envs.md](specs/028-deploy-pipeline/contracts/secrets-and-envs.md) を参照してください。
+
+### 初期セットアップ（一度だけ）
+
+1. **Supabase**: stg / prod の 2 プロジェクトを作成し、Reference ID・DB パスワード・API キーを控える。Auth の Site URL / Redirect URLs に各環境の URL を登録（`supabase config push` は使わない・手動運用）
+2. **Vercel**: service-front / admin-front の 2 プロジェクトを作成。Root Directory をそれぞれ `service-front` / `admin-front` に設定し、**Git 連携の自動デプロイを無効化**（有効のままだと push で二重デプロイされ順序保証が壊れる）。Environment Variables を Preview / Production スコープで設定
+3. **Stripe**: テストモード（stg URL）/ 本番モード（prod URL）それぞれに webhook エンドポイント `https://<env-url>/api/stripe/webhook` を登録し、`whsec_...` を Vercel の該当スコープへ
+4. **GitHub Environments**: 上記 3 環境を作成し、シークレットと required reviewers を設定
+5. **ブランチ保護**: develop / main に PR 必須 + CI（lint / type-check / test 等）を required checks に設定
+
+### リリースの流れ
+
+1. 機能ブランチ → `develop` へ PR・マージ → stg に自動反映 → stg URL で動作確認
+2. `develop` → `main` へ PR・マージ → Actions の `Deploy (production)` が**承認待ちで停止**
+3. 承認者が Actions の Review deployments から承認 → DB → アプリの順で prod へ反映
+
+### トラブルシューティング
+
+| 症状 | 対処 |
+|------|------|
+| migrate が失敗した | アプリは未反映のまま止まる（正常な安全動作）。マイグレーションを修正する場合は**逆方向の新規マイグレーション**を追加して再マージ（down は書かない / sql.md） |
+| アプリのデプロイだけ失敗した | Actions の「Re-run failed jobs」で該当ジョブのみ再実行（`db push` は適用済みをスキップするため再実行しても安全） |
+| 手動で再デプロイしたい | 対象ワークフローの実行履歴から「Re-run all jobs」（コードの再ビルド + 再デプロイ。DB は no-op） |
+| 承認依頼が来ない | Environment `production-approval` の required reviewers 設定を確認 |
+| デプロイ URL を知りたい | 各ジョブの Summary に出力される |
+
+---
+

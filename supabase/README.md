@@ -4,6 +4,7 @@
 
 > リポジトリ全体の構成・サービスの起動順序は [ルートの readme](../readme.md#web-サービス全体の環境構築) を参照してください。
 > service-front / admin-front はどちらもこのローカル Supabase を共有します。
+> stg / prod へのマイグレーション反映は CI/CD が行います（[ルート readme の「デプロイ」章](../readme.md#デプロイstg--prod)。手動の `db push` は不要）。
 
 ## 前提
 

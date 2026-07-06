@@ -4,6 +4,7 @@ Next.js 16を使用したフロントエンドアプリケーション（ユー�
 
 > リポジトリ全体の構成・サービスの起動順序は [ルートの readme](../readme.md#web-サービス全体の環境構築) を参照してください。
 > 起動には **ローカル Supabase が先に立ち上がっていること**が前提です（[supabase/README.md](../supabase/README.md)）。
+> stg / prod へのデプロイは [ルート readme の「デプロイ」章](../readme.md#デプロイstg--prod) を参照（develop → stg / main → prod の自動反映）。
 
 ## 技術スタック
 
