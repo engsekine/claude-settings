@@ -49,8 +49,9 @@ main     ──────▶  production-approval（承認）
 |------|:---:|:---:|------|
 | `NEXT_PUBLIC_SUPABASE_URL` | ✓ | ✓ | stg / prod の Supabase プロジェクト URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✓ | ✓ | 同・anon（Publishable）key |
-| `SUPABASE_SERVICE_ROLE_KEY` | ✓ | - | Stripe webhook の枠付与（026）。**Preview スコープには stg の値**を設定 |
-| `NEXT_PUBLIC_SITE_URL` | ✓ | ✓ | 各環境の公開 URL（認証リダイレクト・Checkout の戻り先） |
+| `SUPABASE_SERVICE_ROLE_KEY` | ✓ | ✓ | service-front は Stripe webhook の枠付与（026）。admin-front は管理操作。**Preview スコープには stg の値**を設定 |
+| `NEXT_PUBLIC_SITE_URL` | ✓ | - | service-front の公開 URL（認証リダイレクト・Checkout の戻り先） |
+| `NEXT_PUBLIC_ADMIN_SITE_URL` | - | ✓ | admin-front の公開 URL |
 | `STRIPE_SECRET_KEY` | ✓ | - | stg = テストモード / prod = 本番モードのキー（FR-015） |
 | `STRIPE_WEBHOOK_SECRET` | ✓ | - | 各環境の webhook エンドポイント登録時に発行される値 |
 | `RESEND_API_KEY` ほかメール系 | ✓ | - | 実送信を行う環境のみ |

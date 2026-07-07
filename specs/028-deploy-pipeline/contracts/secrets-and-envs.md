@@ -49,7 +49,8 @@ Preview スコープ = stg、Production スコープ = prod として**別値**�
 | 変数 | Preview（stg） | Production（prod） |
 |------|---------------|-------------------|
 | `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` | stg の値 | prod の値 |
-| `NEXT_PUBLIC_SITE_URL` | stg 固定 URL | 本番 URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | stg の service_role key | prod の同 key |
+| `NEXT_PUBLIC_ADMIN_SITE_URL` | stg 固定 URL | 本番 URL |
 
 ## 外部サービス側の付随設定（初期セットアップに含める）
 
