@@ -1,10 +1,5 @@
-/**
- * 日本時間の今日を YYYY-MM-DD で返す。
- *
- * UTC 基準だと JST 早朝（UTC では前日）に「今日」が未来日扱いになるため、
- * 日付入力の上限判定はこの値と文字列比較する（ISO 形式は辞書順 = 時系列順）。
- */
-export const todayInJst = (): string => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Tokyo' });
+/** 日本時間の今日（YYYY-MM-DD）。実体は @repo/core（029 でモバイルと共有化） */
+export { todayInJst } from '@repo/core';
 
 /**
  * YYYY-MM-DD の日付文字列を YYYY/MM/DD 表示に整形する純粋関数。
