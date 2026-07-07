@@ -1,0 +1,23 @@
+# stg デプロイ（028-deploy-pipeline / US1）
+# develop へのマージ（push）で stg 環境（Supabase stg プロジェクト + Vercel Preview 固定 URL）へ自動反映する。
+# テスト成功の前提（FR-007）は develop のブランチ保護（PR 必須 + CI required checks）で担保する。
+name: Deploy (staging)
+
+on:
+    push:
+        branches: [develop]
+
+# 同一環境への実行は直列化し、実行中デプロイは完走させる（追い越し防止 / FR-009）
+concurrency:
+    group: deploy-staging
+    cancel-in-progress: false
+
+permissions:
+    contents: read
+
+jobs:
+    deploy:
+        uses: ./.github/workflows/_deploy.yml
+        with:
+            environment: staging
+        secrets: inherit

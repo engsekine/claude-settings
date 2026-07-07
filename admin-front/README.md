@@ -62,6 +62,7 @@ seed（`supabase/seed.sql.template`）が投入する管理者でログインし
 ## 関連ドキュメント
 
 - リポジトリ全体の環境構築: [../readme.md](../readme.md#web-サービス全体の環境構築)
+- stg / prod へのデプロイ: [../readme.md のデプロイ章](../readme.md#デプロイstg--prod)
 - Supabase（マイグレーション・seed 運用）: [../supabase/README.md](../supabase/README.md)
 - ユーザー向けアプリ: [../service-front/README.md](../service-front/README.md)
 - アーキテクチャ / コーディング規約: `.claude/rules/`（Feature-based + shared/ 構成は service-front と共通）
