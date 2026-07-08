@@ -4,7 +4,7 @@ import { calcBlankDays } from '@/features/dashboard/lib/blankDays';
 import { calcOverhaulStatus } from '@/features/dashboard/lib/overhaul';
 import { fillMonthlyGaps, fillYearlyGaps } from '@/features/dashboard/lib/trends';
 import type {
-    DashboardHero,
+    DashboardHeroData,
     DiveStats,
     MonthlyDiveStat,
     PrimaryRegulatorStatus,
@@ -135,7 +135,7 @@ export const getPrimaryRegulatorStatus = async (): Promise<PrimaryRegulatorStatu
 };
 
 /** ヒーロー用データ（表示名 + ブランク日数）を取得する（FR-002） */
-export const getDashboardHero = async (): Promise<DashboardHero> => {
+export const getDashboardHero = async (): Promise<DashboardHeroData> => {
     const supabase = await createClient();
 
     // 最終ダイブ日は本人のログから求める。公開読み取り RLS で他人の公開ログを拾わないよう user_id で絞る
@@ -166,5 +166,6 @@ export const getDashboardHero = async (): Promise<DashboardHero> => {
     return {
         nickname: detailsResult.data?.nickname ?? null,
         blankDays: calcBlankDays(lastDiveOn, todayInJst()),
+        lastDiveOn,
     };
 };
