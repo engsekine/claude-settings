@@ -18,6 +18,11 @@ describe('Heading', () => {
             render(<Heading level={3}>サブセクション見出し</Heading>);
             expect(screen.getByRole('heading', { level: 3 })).toBeInTheDocument();
         });
+
+        it('level=4 のとき h4 要素としてレンダリングされる', () => {
+            render(<Heading level={4}>小見出し</Heading>);
+            expect(screen.getByRole('heading', { level: 4 })).toBeInTheDocument();
+        });
     });
 
     describe('アクセシブルネームへの装飾バーの影響', () => {
@@ -47,6 +52,11 @@ describe('Heading', () => {
         it('level=3 のとき aria-hidden="true" の装飾 span が存在する', () => {
             const { container } = render(<Heading level={3}>サブセクション見出し</Heading>);
             expect(container.querySelector('span[aria-hidden="true"]')).not.toBeNull();
+        });
+
+        it('level=4 のとき aria-hidden の装飾 span が存在しない（小見出しはバーなし）', () => {
+            const { container } = render(<Heading level={4}>小見出し</Heading>);
+            expect(container.querySelector('span[aria-hidden="true"]')).toBeNull();
         });
     });
 

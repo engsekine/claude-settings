@@ -40,6 +40,14 @@ export const Level3: Story = {
     },
 };
 
+/** h4: カード内の小見出し。バーなし・text-sm font-medium */
+export const Level4: Story = {
+    args: {
+        level: 4,
+        children: '小見出し',
+    },
+};
+
 /** 3レベルを縦に並べた比較用 story。level ごとのタイポグラフィとバーの差を一覧で確認できる */
 export const AllLevels: Story = {
     args: { level: 1 },
@@ -48,6 +56,7 @@ export const AllLevels: Story = {
             <Heading level={1}>ページタイトル（level 1）</Heading>
             <Heading level={2}>セクション見出し（level 2）</Heading>
             <Heading level={3}>サブセクション見出し（level 3）</Heading>
+            <Heading level={4}>小見出し（level 4）</Heading>
         </div>
     ),
 };

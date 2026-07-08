@@ -122,7 +122,9 @@ const PlanCard = ({ plan, daysLabel, today }: PlanCardProps) => {
                         <span className="font-medium text-primary text-sm">{daysLabel}</span>
                     )}
                 </div>
-                <h3 className="font-semibold text-base text-foreground">{plan.location}</h3>
+                <Heading level={3} className="text-foreground">
+                    {plan.location}
+                </Heading>
             </Link>
             {canMove && (
                 <div className="flex">

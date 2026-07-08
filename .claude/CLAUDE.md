@@ -195,6 +195,7 @@ npx biome check .
 - データフェッチは Server Components で行う
 - ページ作成時は必ず `generatePageMetadata`（`@/shared/config/metadata`）を使用して `metadata` をエクスポートする
 - ページには基本的に `Header` と `Footer`（`@/shared/components/layout`）を含める
+- 見出し（h1〜h4）は生の `hN` タグではなく共通の `Heading`（`@/shared/components/typography/Heading`）を使用する。見た目の統一に加え、生タグと混在すると markuplint の単独解析で heading-levels の誤検知が起きるため（既定スタイルが合わない場合は `className` で上書き）
 
 ## spec-kit agent context（自動管理セクション）
 

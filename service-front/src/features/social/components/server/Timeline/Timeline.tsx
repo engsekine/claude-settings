@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { LikeButton } from '@/features/social/components/client/LikeButton';
 import { groupTimelineByDate, isTimelineEmpty } from '@/features/social/lib/timeline';
 import type { TimelineItem } from '@/features/social/types';
+import { Heading } from '@/shared/components/typography/Heading';
 import { formatJstDate } from '@/shared/lib/date';
 
 interface TimelineProps {
@@ -32,9 +33,11 @@ export const Timeline = ({ items, viewerId = null }: TimelineProps) => {
         <ol className="flex flex-col gap-5">
             {groups.map((group) => (
                 <li key={group.date} className="flex flex-col gap-2">
-                    {/* page.tsx の h2「タイムライン」配下に置かれるため h3 が正しい階層。
-                        markuplint のコンポーネント単独解析による見出しスキップ誤検知は .markuplintrc で抑止 */}
-                    <h3 className="font-medium text-muted-foreground text-sm">{formatJstDate(group.date)}</h3>
+                    {/* page.tsx のタブ配下に置かれる日付グループ見出し（h3 が正しい階層）。
+                        日付は控えめに出したいので Heading の既定スタイルを className で上書きする */}
+                    <Heading level={3} className="font-medium text-muted-foreground text-sm">
+                        {formatJstDate(group.date)}
+                    </Heading>
                     <ul className="flex flex-col divide-y divide-border rounded-md border border-border">
                         {group.items.map((dive) => (
                             <li key={dive.diveId} className="flex items-center justify-between gap-2 px-4 py-3">

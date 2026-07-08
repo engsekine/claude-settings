@@ -2,6 +2,7 @@ import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
 
 import type { NextPlanSummary } from '@/features/plans/types';
+import { Heading } from '@/shared/components/typography/Heading';
 import { formatJstDateWithWeekday } from '@/shared/lib/date';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
 
@@ -24,11 +25,10 @@ export const NextPlanCardView = ({ summary }: NextPlanCardViewProps) => {
                 aria-labelledby="next-plan-empty-heading"
                 className="flex flex-col items-start gap-3 rounded-lg border border-border bg-background p-4"
             >
-                {/* app/page.tsx の h2「次のダイビング予定」配下に置かれるため h3 が正しい階層。
-                    markuplint のコンポーネント単独解析による見出しスキップ誤検知は .markuplintrc で抑止 */}
-                <h3 id="next-plan-empty-heading" className="font-semibold text-base text-foreground">
+                {/* app/page.tsx の h2「次のダイビング予定」配下に置かれるため h3 が正しい階層 */}
+                <Heading level={3} id="next-plan-empty-heading" className="text-foreground">
                     次の予定
-                </h3>
+                </Heading>
                 <p className="text-muted-foreground text-sm">次のダイビングを計画しよう</p>
                 <Link href="/plans/new" className={buttonVariants()}>
                     予定を作成する
@@ -64,9 +64,9 @@ export const NextPlanCardView = ({ summary }: NextPlanCardViewProps) => {
                                     </span>
                                 )}
                             </p>
-                            <h3 id={headingId} className="font-semibold text-2xl text-foreground">
+                            <Heading level={3} id={headingId} className="text-2xl text-foreground">
                                 {summary.location}
-                            </h3>
+                            </Heading>
                         </div>
                         <span className="shrink-0 rounded-full bg-primary px-3 py-1 font-semibold text-primary-foreground text-sm">
                             <span className="sr-only">残り日数: </span>
@@ -88,7 +88,9 @@ export const NextPlanCardView = ({ summary }: NextPlanCardViewProps) => {
 
                 {/* 右ペイン: 持ち物の準備状況 */}
                 <div className="flex flex-col gap-3 border-border border-t bg-muted/40 p-5 sm:border-t-0 sm:border-l">
-                    <h4 className="font-medium text-foreground text-sm">持ち物の準備</h4>
+                    <Heading level={4} className="text-foreground">
+                        持ち物の準備
+                    </Heading>
                     <p className="font-semibold text-2xl text-foreground">
                         {checkedCount}{' '}
                         <span className="font-normal text-muted-foreground text-sm">/ {totalCount} 準備済み</span>
