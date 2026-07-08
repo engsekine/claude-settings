@@ -11,6 +11,7 @@ import { TANK_TYPE_LABEL_MAP, type TankTypeValue } from '@/features/dives/consta
 import { diveLocationLabel } from '@/features/dives/lib/diveLabel';
 import { calcSacRate, formatSacRate, SAC_INPUT_FIELD_LABELS } from '@/features/dives/lib/sacRate';
 import type { Dive, DiveBuddy, DivePhotoView } from '@/features/dives/types';
+import { Heading } from '@/shared/components/typography/Heading';
 import { formatJstDate } from '@/shared/lib/date';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
 
@@ -108,7 +109,7 @@ export const DiveDetail = ({ dive, photos = [], buddies = [], canManage = false,
                     </div>
                     {likeAction}
                 </div>
-                <h1 className="flex items-baseline gap-2 font-semibold text-2xl">
+                <Heading level={1} className="items-baseline gap-2">
                     {dive.diveSite ? (
                         <Link href={`/dive-sites/${dive.diveSite.id}` as Route} className="text-primary underline">
                             {diveLocationLabel(dive)}
@@ -119,7 +120,7 @@ export const DiveDetail = ({ dive, photos = [], buddies = [], canManage = false,
                     {dive.diveNumber !== null && (
                         <span className="font-normal text-muted-foreground text-xl">#{dive.diveNumber}</span>
                     )}
-                </h1>
+                </Heading>
                 {dive.certificationDive && (
                     <span className="inline-block w-fit rounded-md bg-primary/10 px-2 py-0.5 text-primary text-xs">
                         講習ダイブ

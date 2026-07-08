@@ -22,7 +22,7 @@ const formatDaysUntil = (daysUntil: number): string => {
 
 /**
  * TOP のファーストビュー（design/req.md TOP-1）。
- * 全幅の背景写真（public/hero.jpg）の上に、挨拶 + 主要統計 4 項目
+ * 全幅の背景写真（public/whale1.jpg）の上に、挨拶 + 主要統計 4 項目
  * （総ダイブ数 / 今年のダイブ / 最大深度 / ブランク）を 2 カラムのすりガラスパネルで重ね、
  * 直近の次のダイビング予定 1 件と予定作成ボタン（常時表示）を続ける。
  * 写真の上に固定の白文字を置くため、ダークモードでもスクリムの濃さだけを変える。
@@ -58,12 +58,12 @@ export const DashboardHero = async ({ badge, nextPlan }: DashboardHeroProps) => 
     return (
         <section aria-labelledby="dashboard-hero" className="relative isolate overflow-hidden">
             {/* 背景写真 + 可読性スクリム（ダーク時は濃く沈める） */}
-            <div aria-hidden="true" className="absolute inset-0 -z-20 bg-[url('/hero.jpg')] bg-center bg-cover" />
+            <div aria-hidden="true" className="absolute inset-0 -z-20 bg-[url('/whale1.jpg')] bg-center bg-cover" />
             <div
                 aria-hidden="true"
                 className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,oklch(0.20_0.06_255/0.40)_0%,oklch(0.20_0.06_255/0.15)_45%,oklch(0.16_0.06_255/0.45)_100%)] dark:bg-[linear-gradient(180deg,oklch(0.10_0.04_255/0.60)_0%,oklch(0.10_0.04_255/0.40)_45%,oklch(0.08_0.04_255/0.65)_100%)]"
             />
-            <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 pt-10 pb-12">
+            <div className="mx-auto flex w-full max-w-5xl flex-col gap-20 px-4 pt-10 pb-12">
                 <div className="flex flex-col gap-1">
                     <p className="text-sm text-white/70 tracking-wide">
                         {SITE_NAME} — あなたのダイビングのすべてを 1 冊に

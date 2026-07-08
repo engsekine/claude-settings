@@ -44,6 +44,8 @@ export interface RecentDiveItem {
     location: string;
     maxDepthM: number;
     bottomTimeMin: number;
+    /** 代表写真（cover 優先）のサムネイル署名 URL。写真がなければ null（カード側でダミー画像にフォールバック） */
+    coverThumbUrl: string | null;
 }
 
 /** 年別本数（get_dive_yearly_counts RPC + 歯抜け年 0 埋め後） */

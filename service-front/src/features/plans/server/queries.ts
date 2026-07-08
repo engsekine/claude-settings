@@ -47,21 +47,24 @@ export const getPlan = async (id: string): Promise<PlanWithPacking | null> => {
 };
 
 /**
- * TOP「次の予定」用: 今日以降（今日含む）の予定 + 持ち物全件を近い順に最大 limit 件取得する（FR-007 / FR-009)。
- * 同日複数は作成日時が新しい方を優先（spec Edge Case）。予定なしは []。
+ * 今日以降（今日含む）の予定 + 持ち物全件を近い順に取得する（FR-007 / FR-009)。
+ * TOP「次の予定」は limit で件数を絞り、予定一覧（/plans）の「これからの予定」は
+ * limit 省略で全件取得する。同日複数は作成日時が新しい方を優先（spec Edge Case）。予定なしは []。
  * 持ち物はカード上でチェック操作するため全件返す（進捗は表示側で集計する）。
  */
-export const listNextPlansWithProgress = async (limit: number): Promise<NextPlanSummary[]> => {
+export const listNextPlansWithProgress = async (limit?: number): Promise<NextPlanSummary[]> => {
     const supabase = await createClient();
     const today = todayInJst();
 
-    const { data, error } = await supabase
+    const query = supabase
         .from('dive_plans')
         .select('id, planned_on, location, notes, plan_packing_items(*)')
         .gte('planned_on', today)
         .order('planned_on', { ascending: true })
-        .order('created_at', { ascending: false })
-        .limit(limit);
+        .order('created_at', { ascending: false });
+
+    // limit 省略時は全件（/plans の「これからの予定」用）
+    const { data, error } = await (limit === undefined ? query : query.limit(limit));
 
     if (error || !data) {
         throw new Error(`[listNextPlansWithProgress] supabase error: ${error?.message ?? 'no data'}`);

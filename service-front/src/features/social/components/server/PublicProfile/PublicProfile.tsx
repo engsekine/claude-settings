@@ -2,6 +2,7 @@ import type { Route } from 'next';
 import Link from 'next/link';
 
 import type { PublicProfile as PublicProfileData, TimelineItem } from '@/features/social/types';
+import { Heading } from '@/shared/components/typography/Heading';
 import { formatJstDate } from '@/shared/lib/date';
 
 import { FollowButton } from '../../client/FollowButton';
@@ -20,7 +21,7 @@ export const PublicProfile = ({ profile, publicDives, isSelf }: PublicProfilePro
     <div className="flex flex-col gap-6">
         <header className="flex flex-col gap-3">
             <div className="flex items-center justify-between gap-3">
-                <h1 className="font-semibold text-2xl">{profile.nickname}</h1>
+                <Heading level={1}>{profile.nickname}</Heading>
                 {!isSelf && (
                     <FollowButton targetUserId={profile.userId} initialIsFollowing={profile.followState.isFollowing} />
                 )}

@@ -65,16 +65,25 @@ export const TopDashboard = async ({
         <div className="flex flex-col gap-20">
             {nextPlanSection}
 
-            <section aria-labelledby="dashboard-recent" className="flex flex-col gap-3">
-                <Heading level={2} id="dashboard-recent">
-                    最近のダイブログ
-                </Heading>
-                <RecentDives dives={recentDives} />
+            {/* 背景写真を見せるため max-w コンテナを突き抜けてビューポート全幅にする（FV と同じ full-bleed） */}
+            <section
+                aria-labelledby="dashboard-recent"
+                className="-translate-x-1/2 relative isolate left-1/2 w-screen overflow-hidden py-12"
+            >
+                {/* 背景写真 + 可読性スクリム（ダーク時は濃く沈める） */}
+                <div aria-hidden="true" className="absolute inset-0 -z-20 bg-[url('/whale2.jpg')] bg-center bg-cover" />
+                <div aria-hidden="true" className="absolute inset-0 -z-10 bg-black/45 dark:bg-black/60" />
+                <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4">
+                    <Heading level={2} id="dashboard-recent" className="text-white">
+                        最近のダイブログ
+                    </Heading>
+                    <RecentDives dives={recentDives} />
+                </div>
             </section>
 
             {timelineSection}
 
-            <section aria-labelledby="dashboard-regulator" className="flex flex-col gap-3">
+            <section aria-labelledby="dashboard-regulator" className="flex flex-col gap-8">
                 <Heading level={2} id="dashboard-regulator">
                     レギュレーター OH 状況
                 </Heading>
@@ -99,7 +108,7 @@ export const TopDashboard = async ({
                 )}
             </section>
 
-            <section aria-labelledby="dashboard-trends" className="flex flex-col gap-3">
+            <section aria-labelledby="dashboard-trends" className="flex flex-col gap-8">
                 <Heading level={2} id="dashboard-trends">
                     統計の推移
                 </Heading>

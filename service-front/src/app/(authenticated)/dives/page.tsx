@@ -5,6 +5,7 @@ import { CreditBalanceBadge } from '@/features/credits/components/server/CreditB
 import { DiveList, ExportMenu, listDives } from '@/features/dives';
 import { parseDiveFilter, recordToSearchParams } from '@/features/dives/lib/search-params';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
+import { Heading } from '@/shared/components/typography/Heading';
 import { generatePageMetadata } from '@/shared/config/metadata';
 
 export const metadata = generatePageMetadata(
@@ -29,7 +30,7 @@ export default async function DivesPage({ searchParams }: DivesPageProps) {
             <Breadcrumbs breadcrumbs={[{ name: 'ダイビングログ' }]} />
             <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8">
                 <div className="flex items-center justify-between">
-                    <h1 className="font-semibold text-2xl">ダイビングログ</h1>
+                    <Heading level={1}>ダイビングログ</Heading>
                     <div className="flex items-center gap-2">
                         <CreditBalanceBadge />
                         <ExportMenu />

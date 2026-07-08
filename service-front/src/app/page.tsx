@@ -3,11 +3,11 @@ import Link from 'next/link';
 
 import { CreditBalanceBadge } from '@/features/credits/components/server/CreditBalanceBadge';
 import { DashboardHero, RecordOverhaulButton, TopDashboard } from '@/features/dashboard';
-import { diveLocationLabel, listDives } from '@/features/dives';
+import { diveLocationLabel, getCoverThumbUrls, listDives } from '@/features/dives';
 import { ensureTimedNotifications } from '@/features/notifications/server/queries';
 import { listNextPlansWithProgress, NextPlanCardView } from '@/features/plans';
 import { recordOverhaul } from '@/features/regulators';
-import { fetchTimeline, Timeline, TimelineTabs } from '@/features/social';
+import { fetchLikedDives, fetchTimeline, LikedDivesList, Timeline, TimelineTabsSwitcher } from '@/features/social';
 import { Heading } from '@/shared/components/typography/Heading';
 import { generatePageMetadata } from '@/shared/config/metadata';
 import { createClient } from '@/shared/lib/supabase/server';
@@ -36,29 +36,34 @@ export default async function Home() {
         data: { user },
     } = await supabase.auth.getUser();
 
-    // 次の予定は FV（先頭 1 件）と「次のダイビング予定」セクション（最大 3 件）で共有する
-    const [recentPage, timeline, nextPlans] = await Promise.all([
-        listDives({ limit: 5 }),
+    // 次の予定は FV（先頭 1 件）と「次のダイビング予定」セクション（最大 3 件）で共有する。
+    // タイムラインといいねしたログは TOP 内タブで切り替えるため、両方をここで取得する
+    const [recentPage, timeline, likedDives, nextPlans] = await Promise.all([
+        listDives({ limit: 3 }),
         fetchTimeline({ limit: 20 }),
+        fetchLikedDives(),
         listNextPlansWithProgress(3),
     ]);
+    // 最近のログのカードに代表写真を出すため、対象ダイブのカバーサムネイルをまとめて解決する
+    const coverThumbByDive = await getCoverThumbUrls(recentPage.items.map((dive) => dive.id));
     const recentDives = recentPage.items.map((dive) => ({
         id: dive.id,
         diveDate: dive.diveDate,
         location: diveLocationLabel(dive),
         maxDepthM: dive.maxDepthM,
         bottomTimeMin: dive.bottomTimeMin,
+        coverThumbUrl: coverThumbByDive.get(dive.id) ?? null,
     }));
 
     return (
         <div className="flex flex-1 flex-col">
             {/* FV は全幅（コンテナ外）。残枠バッジ（026 / FR-013）はログ作成ボタンの上に注入 */}
             <DashboardHero badge={<CreditBalanceBadge variant="hero" />} nextPlan={nextPlans[0] ?? null} />
-            <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 pt-20 pb-12">
+            <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 pt-20 pb-20">
                 <TopDashboard
                     recentDives={recentDives}
                     nextPlanSection={
-                        <section aria-labelledby="dashboard-next-plan" className="flex flex-col gap-3">
+                        <section aria-labelledby="dashboard-next-plan" className="flex flex-col gap-8">
                             <div className="flex items-center justify-between gap-4">
                                 <Heading level={2} id="dashboard-next-plan">
                                     次のダイビング予定
@@ -68,7 +73,10 @@ export default async function Home() {
                                     <Link href="/plans" className="text-primary text-sm underline underline-offset-4">
                                         すべての予定
                                     </Link>
-                                    <Link href="/plans/new" className={buttonVariants({ variant: 'outline' })}>
+                                    <Link
+                                        href="/plans/new"
+                                        className={buttonVariants({ variant: 'default', size: 'lg' })}
+                                    >
                                         予定を作成する
                                     </Link>
                                 </div>
@@ -81,13 +89,18 @@ export default async function Home() {
                         </section>
                     }
                     timelineSection={
-                        <section aria-labelledby="dashboard-timeline" className="flex flex-col gap-3">
-                            <Heading level={2} id="dashboard-timeline">
-                                タイムライン
-                            </Heading>
-                            {/* いいねしたログ一覧（/likes）への切り替え導線（spec 027 FR-008a） */}
-                            <TimelineTabs active="timeline" />
-                            <Timeline items={timeline.items} viewerId={user?.id ?? null} />
+                        <section aria-label="タイムライン・いいねしたログ" className="flex flex-col gap-8">
+                            {/* タイムラインといいねしたログを遷移なしで切り替える（spec 027 FR-008a）。
+                                内容は Server で用意して panel として注入する */}
+                            <TimelineTabsSwitcher
+                                timelinePanel={<Timeline items={timeline.items} viewerId={user?.id ?? null} />}
+                                likesPanel={
+                                    <LikedDivesList
+                                        initialItems={likedDives.items}
+                                        initialCursor={likedDives.nextCursor}
+                                    />
+                                }
+                            />
                         </section>
                     }
                     renderRecordButton={(regulatorId) => (

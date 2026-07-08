@@ -1,5 +1,6 @@
 import { ContactForm, getContactDefaultValues, PAGE_DATA } from '@/features/contact';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
+import { Heading } from '@/shared/components/typography/Heading';
 import { generatePageMetadata } from '@/shared/config/metadata';
 
 export const metadata = generatePageMetadata(PAGE_DATA);
@@ -12,7 +13,9 @@ export default async function ContactPage() {
         <div className="flex flex-1 flex-col">
             <Breadcrumbs breadcrumbs={[{ name: PAGE_DATA.title }]} />
             <main className="mx-auto w-full max-w-2xl px-4 py-6">
-                <h1 className="mb-2 font-semibold text-2xl text-foreground">{PAGE_DATA.title}</h1>
+                <Heading level={1} className="mb-2">
+                    {PAGE_DATA.title}
+                </Heading>
                 <p className="mb-6 text-muted-foreground text-sm">
                     ご質問・ご要望・不具合のご連絡はこちらのフォームからお送りください。
                 </p>
