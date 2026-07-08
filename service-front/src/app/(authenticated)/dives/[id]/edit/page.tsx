@@ -9,6 +9,7 @@ import {
     mapDiveToFormValues,
 } from '@/features/dives';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
+import { Heading } from '@/shared/components/typography/Heading';
 import { generatePageMetadata } from '@/shared/config/metadata';
 import { createClient } from '@/shared/lib/supabase/server';
 
@@ -63,7 +64,7 @@ export default async function EditDivePage({ params }: EditDivePageProps) {
                 ]}
             />
             <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
-                <h1 className="font-semibold text-2xl">ダイビングログ編集</h1>
+                <Heading level={1}>ダイビングログ編集</Heading>
                 <DiveForm diveId={id} defaultValues={defaultValues} siteOptions={siteOptions} existingPhotos={photos} />
             </div>
         </div>

@@ -82,7 +82,8 @@ service-front/src/
 │   │   │   └── LikedDivesList/               # 新規: いいね一覧本体（追加読み込み付き）
 │   │   └── server/
 │   │       ├── Timeline/                     # 変更: 各項目に LikeButton + 件数を表示
-│   │       └── TimelineTabs/                 # 新規: 「タイムライン / いいねしたログ」タブ導線
+│   │       └── TimelineTabs/                 # 新規: 「タイムライン / いいねしたログ」タブ導線（/likes ページ用に残置）
+│   │   ├── client/TimelineTabsSwitcher/      # feat/design-change で追加: TOP 内のインライン切替タブ（WAI-ARIA Tabs）
 │   ├── server/
 │   │   ├── actions.ts                        # 追加: likeDive / unlikeDive / loadMoreLikedDives
 │   │   └── queries.ts                        # 追加: fetchLikedDives（keyset）/ fetchDiveLikeState
@@ -93,7 +94,7 @@ service-front/src/
 │   ├── constants.ts                          # 変更: NotificationType に 'log_liked' + ラベル / 文言
 │   └── lib/notificationTarget/               # 変更: log_liked → /dives/[id]（消滅時フォールバック）
 ├── features/dives/components/server/DiveDetail/  # 変更: likeAction スロット（ReactNode）を追加
-├── app/page.tsx                              # 変更: TimelineTabs を設置
+├── app/page.tsx                              # 変更: TimelineTabsSwitcher を設置（feat/design-change で TimelineTabs から置き換え。いいね一覧もその場に表示）
 ├── app/(authenticated)/likes/page.tsx        # 新規: いいねしたログ一覧ページ
 ├── app/(authenticated)/dives/[id]/page.tsx   # 変更: 他人の公開ログに LikeButton を注入
 └── shared/components/layout/Header/          # 変更: ナビに「いいね」項目を追加

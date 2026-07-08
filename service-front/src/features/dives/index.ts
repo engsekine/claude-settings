@@ -18,7 +18,7 @@ export type { DiveFormValues, DiveSearchValues } from './schemas/dive.schema';
 export { diveSchema, diveSearchSchema } from './schemas/dive.schema';
 export { createDive, createDiveFromPlan, deleteDive, setDiveVisibility, updateDive } from './server/actions';
 export { addDivePhoto, deleteDivePhoto } from './server/photoActions';
-export { getDivePhotos } from './server/photoQueries';
+export { getCoverThumbUrls, getDivePhotos } from './server/photoQueries';
 export {
     type DiveOption,
     getDive,

@@ -69,9 +69,10 @@ service-front/src/features/dashboard/
 ├── components/
 │   ├── server/
 │   │   ├── TopDashboard/          # TOP のエントリ。子セクションを Server Component で組み立て
-│   │   ├── StatsCards/            # 累計統計 4 種
+│   │   ├── StatsCards/            # 累計統計 4 種 ※feat/design-change で削除（DashboardHero の FV 統計に統合）
+│   │   ├── DashboardHero/         # FV ヒーロー（feat/design-change で追加。挨拶 + FV 統計 + 次の予定 + CTA）
 │   │   ├── RegulatorPanel/        # OH 状況
-│   │   └── RecentDives/           # 最近のログ
+│   │   └── RecentDives/           # 最近のログ（feat/design-change で 3 件 3 カラム + 代表写真に変更）
 │   └── client/
 │       └── RecordOverhaulButton/  # メンテ完了記録ボタン（Server Action 呼び出し）
 ├── server/

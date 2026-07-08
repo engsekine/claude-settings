@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 
 import { canMovePlanToLog, DeletePlanButton, daysUntil, getPlan, PackingList } from '@/features/plans';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
+import { Heading } from '@/shared/components/typography/Heading';
 import { generatePageMetadata } from '@/shared/config/metadata';
 import { formatJstDate, todayInJst } from '@/shared/lib/date';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
@@ -63,7 +64,7 @@ export default async function PlanPage({ params }: PlanPageProps) {
                             </span>
                         )}
                     </div>
-                    <h1 className="font-semibold text-2xl text-foreground">{plan.location}</h1>
+                    <Heading level={1}>{plan.location}</Heading>
                     {plan.notes && <p className="whitespace-pre-wrap text-muted-foreground text-sm">{plan.notes}</p>}
                     <div className="flex flex-wrap items-center gap-2">
                         {/* 当日以前の予定のみ「ログに記録する」を表示（未来日は非表示 / 024 FR-001,002） */}

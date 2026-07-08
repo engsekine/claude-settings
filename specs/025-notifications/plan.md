@@ -86,9 +86,11 @@ service-front/src/
 │   │   │                                     # ensureTimedNotifications（リマインド upsert + 90 日清掃）
 │   │   └── actions.ts                        # markNotificationRead / markAllNotificationsRead /
 │   │                                         # setNotificationPreference
+│   ├── lib/notificationDisplay/              # 表示ヘルパー（メッセージ組み立て・JST 日付・退会判定。feat/design-change で切り出し）
 │   └── components/
-│       ├── server/NotificationBell/          # ヘッダーの通知アイコン + 未読バッジ
+│       ├── server/NotificationBell/          # ヘッダーの通知アイコン。未読件数 + 最新ページを取得しパネルに注入（feat/design-change で変更）
 │       └── client/
+│           ├── NotificationBellPanel/        # ベル + シートパネル（feat/design-change で追加。タップ既読 → 遷移）
 │           ├── NotificationList/             # 一覧（タップ既読 + すべて既読 + 追加読み込み）
 │           └── NotificationSettings/         # 種別ごとの ON/OFF
 ├── app/(authenticated)/notifications/page.tsx           # 通知一覧ページ（新規）
@@ -116,7 +118,9 @@ service-front/src/
 
 ### 未読バッジ
 
-`AuthNav`（Header の actions として各ページに渡る）に `NotificationBell`（Server Component）を追加。部分インデックス `where read_at is null` 付きの count クエリ 1 本で全認証ページのコストを最小化する。10 件以上は「9+」表示（FR-004）。
+`AuthNav`（Header の actions として各ページに渡る）に `NotificationBell`（Server Component）を追加。部分インデックス `where read_at is null` 付きの count クエリで未読件数を取得し、10 件以上は「9+」表示（FR-004）。
+
+**feat/design-change（2026-07-08）**: ベルは `/notifications` へのリンクから、押すとシートで通知を確認できる `NotificationBellPanel`（Client）に変更。`NotificationBell` は未読件数に加えて `listNotifications()` の最初のページも取得してパネルに注入する（全認証ページで count + 一覧クエリの 2 本）。シート内の通知タップは `markNotificationRead` → 遷移（NotificationList と同方針）、全件・すべて既読は `/notifications` に残置。表示ヘルパーは `lib/notificationDisplay` に切り出して両者で共用。
 
 ### 既読操作と一覧
 

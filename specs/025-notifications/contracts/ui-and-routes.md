@@ -9,12 +9,14 @@
 
 両ページとも `generatePageMetadata` で metadata をエクスポートする（noIndex 不要。認証内ページ）。
 
-## ヘッダー導線（NotificationBell / Server Component）
+## ヘッダー導線（NotificationBell / Server Component + NotificationBellPanel / Client Component）
 
 - 設置場所: `AuthNav`（Header の actions として全認証ページに渡る）
 - 表示: ベルアイコン + 未読件数バッジ。`aria-label="通知（未読 N 件）"`（0 件時は「通知」）
 - 件数は `getUnreadNotificationCount()`。10 件以上は「9+」（FR-004）
-- クリックで `/notifications` へ遷移（ドロップダウンは設けない / Clarification Q2）
+- クリックでシート（`NotificationBellPanel`）が開き最新の通知（`listNotifications()` の最初のページ）を表示（feat/design-change で `/notifications` への直接遷移から変更。Clarification Q2 の変更注記を参照）
+  - 通知タップは `markNotificationRead` → シートを閉じて対象へ遷移（既読化失敗でも遷移は妨げない）
+  - シート下部の「すべての通知を見る」で `/notifications` へ遷移
 - 未認証時は表示しない（AuthNav の既存の出し分けに従う）
 
 ## 通知一覧ページ（/notifications）
@@ -54,7 +56,8 @@
 
 | コンポーネント | 種別 | テスト |
 |---------------|------|--------|
-| `components/server/NotificationBell/` | Server | Vitest（バッジ表示分岐: 0 / 1-9 / 9+） |
+| `components/server/NotificationBell/` | Server | Vitest（バッジ表示分岐: 0 / 1-9 / 9+ + シート開閉・タップ既読） |
+| `components/client/NotificationBellPanel/` | Client | Vitest（バッジ・シート開閉・クリッカブル判定・既読化失敗時も遷移）+ stories + a11y（シート開状態） |
 | `components/client/NotificationList/` | Client | Vitest（既読操作・退会表示・追加読み込み）+ stories + a11y |
 | `components/client/NotificationSettings/` | Client | Vitest（トグル・失敗表示）+ stories + a11y |
 

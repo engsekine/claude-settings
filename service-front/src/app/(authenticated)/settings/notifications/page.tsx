@@ -1,5 +1,6 @@
 import { NotificationSettings } from '@/features/notifications';
 import { listNotificationPreferences } from '@/features/notifications/server/queries';
+import { Heading } from '@/shared/components/typography/Heading';
 import { generatePageMetadata } from '@/shared/config/metadata';
 
 export const metadata = generatePageMetadata(
@@ -17,7 +18,7 @@ export default async function NotificationSettingsPage() {
 
     return (
         <div className="mx-auto flex w-full max-w-xl flex-col gap-6 px-4 py-8">
-            <h1 className="font-semibold text-2xl">通知設定</h1>
+            <Heading level={1}>通知設定</Heading>
             <NotificationSettings initialPreferences={preferences} />
         </div>
     );

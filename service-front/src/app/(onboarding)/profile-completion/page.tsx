@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 
 import { ProfileCompletionForm } from '@/features/auth/components/client/ProfileCompletionForm';
+import { Heading } from '@/shared/components/typography/Heading';
 import { generatePageMetadata } from '@/shared/config/metadata';
 import { createClient } from '@/shared/lib/supabase/server';
 
@@ -32,7 +33,7 @@ export default async function ProfileCompletionPage() {
     return (
         <div className="mx-auto flex w-full max-w-md flex-col gap-6 px-4 py-12">
             <div className="flex flex-col gap-2">
-                <h1 className="font-semibold text-2xl">プロフィール登録</h1>
+                <Heading level={1}>プロフィール登録</Heading>
                 <p className="text-muted-foreground text-sm">
                     ダイビングログを始める前に、プロフィールを登録してください。
                 </p>
