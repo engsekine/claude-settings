@@ -91,9 +91,10 @@ export const RecentDives = ({ dives }: RecentDivesProps) => {
                     );
                 })}
             </ul>
+            {/* FV「予定を作成する」と同じ透明ボタン（暗い背景写真の上に白ボーダー + 白文字） */}
             <Link
                 href="/dives"
-                className={`${buttonVariants({ variant: 'default', size: 'lg' })} self-center px-10 shadow-md transition-transform hover:scale-105`}
+                className="inline-flex h-9 items-center justify-center self-center rounded-lg border border-white/40 px-4 font-bold text-sm text-white transition-colors hover:bg-white/10"
             >
                 すべてのログを見る
             </Link>
