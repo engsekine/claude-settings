@@ -12,7 +12,7 @@ describe('Header', () => {
         expect(logoLink).not.toHaveTextContent(SITE_NAME);
     });
 
-    it('メインナビゲーションのリンク（ダイビングログ, いいね）を表示し、ホームのリンクは表示しない', () => {
+    it('メインナビゲーションのリンク（ダイビングログ, いいね, 使い方）を表示し、ホームのリンクは表示しない', () => {
         render(<Header />);
 
         const nav = screen.getByRole('navigation', { name: 'メインナビゲーション' });
@@ -26,6 +26,10 @@ describe('Header', () => {
         // いいねしたログ一覧への導線（spec 027 FR-008a）
         const likes = screen.getByRole('link', { name: 'いいね' });
         expect(likes).toHaveAttribute('href', '/likes');
+
+        // 使い方ページへの導線（spec 030 FR-006）
+        const guide = screen.getByRole('link', { name: '使い方' });
+        expect(guide).toHaveAttribute('href', '/guide');
     });
 
     it('SP 用のハンバーガーメニューを開くとナビゲーションリンクを表示する', async () => {
@@ -38,6 +42,8 @@ describe('Header', () => {
         const sheet = await screen.findByRole('dialog', { name: 'メニュー' });
         expect(within(sheet).getByRole('link', { name: 'ダイビングログ' })).toHaveAttribute('href', '/dives');
         expect(within(sheet).getByRole('link', { name: 'いいね' })).toHaveAttribute('href', '/likes');
+        // 使い方ページへの導線（spec 030 FR-006。モバイルはメニュー内に表示）
+        expect(within(sheet).getByRole('link', { name: '使い方' })).toHaveAttribute('href', '/guide');
     });
 
     it('actions プロパティで渡された要素を表示する', () => {
