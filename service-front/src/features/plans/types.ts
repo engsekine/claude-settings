@@ -31,12 +31,12 @@ export interface NextPlanSummary {
     id: string;
     plannedOn: string;
     location: string;
+    /** 予定メモ。未入力は null */
+    notes: string | null;
     /** 今日 = 0、未来 = 正の値 */
     daysUntil: number;
-    /** チェック済み持ち物件数 */
-    checkedCount: number;
-    /** 持ち物全件数 */
-    totalCount: number;
+    /** 持ち物（表示順）。カード上でチェック操作するため全件持つ */
+    packingItems: PackingItem[];
 }
 
 /** DB row → Plan 変換 */

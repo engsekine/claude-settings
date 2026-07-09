@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { CookieSettingsButton } from '@/features/consent';
 import { COPYRIGHT_HOLDER, SITE_NAME } from '@/shared/constants/site';
 
 const FOOTER_LINKS = [
@@ -9,6 +10,7 @@ const FOOTER_LINKS = [
     { href: '/settings/certifications', label: '保有資格' },
     { href: '/terms', label: '利用規約' },
     { href: '/privacy-policy', label: 'プライバシーポリシー' },
+    { href: '/contact', label: 'お問い合わせ' },
 ] as const;
 
 export const Footer = () => {
@@ -29,6 +31,9 @@ export const Footer = () => {
                                 </Link>
                             </li>
                         ))}
+                        <li>
+                            <CookieSettingsButton />
+                        </li>
                     </ul>
                 </nav>
                 <p className="mt-4 text-center text-muted-foreground text-sm">

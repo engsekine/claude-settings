@@ -101,7 +101,7 @@
 ### Implementation for User Story 4
 
 - [x] T010 [US4] `/reset-password` ページ実装 in `service-front/src/app/(auth)/reset-password/page.tsx` + `service-front/src/features/auth/components/client/ResetPasswordForm/`（旧 T6）
-- [ ] T011 [US4] パスワード再設定ページ（リセットリンクから飛ぶページ）実装 — 後続で対応（旧 T7）
+- [X] T011 [US4] パスワード再設定ページ（リセットリンクから飛ぶページ）実装（2026-07-02 完了: `/update-password` + `UpdatePasswordForm` + `updatePassword`。旧 T7）
 
 **Checkpoint**: パスワードリセットが単独で検証可能（T011 完了後）
 
@@ -154,7 +154,7 @@
 
 1. Phase 1〜2（Setup + Foundational）を完了させる — 完了済み
 2. US1（サインアップ）を MVP として単独検証 — 完了済み
-3. US2 / US3 / US4 を順次追加 — T011（パスワード再設定ページ）のみ残
+3. US2 / US3 / US4 を順次追加 — 完了（T011 は 2026-07-02 対応）
 4. Phase 7 のテスト（T012〜T014）と受け入れ確認を実施 — 未着手
 
 ---

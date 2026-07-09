@@ -90,11 +90,20 @@ describe('AuthNav', () => {
 
         await userEventInstance.click(screen.getByRole('button', { name: 'アカウントメニューを開く' }));
 
-        const profileLink = await screen.findByRole('link', { name: /会員情報/ });
+        const myProfileLink = await screen.findByRole('link', { name: /マイプロフィール/ });
+        expect(myProfileLink).toHaveAttribute('href', '/users/user-1');
+
+        const userSearchLink = screen.getByRole('link', { name: /ユーザーを探す/ });
+        expect(userSearchLink).toHaveAttribute('href', '/users/search');
+
+        const profileLink = screen.getByRole('link', { name: /会員情報/ });
         expect(profileLink).toHaveAttribute('href', '/settings/profile');
 
         const certificationsLink = screen.getByRole('link', { name: /保有資格/ });
         expect(certificationsLink).toHaveAttribute('href', '/settings/certifications');
+
+        const logCreditsLink = screen.getByRole('link', { name: /ログ枠の購入/ });
+        expect(logCreditsLink).toHaveAttribute('href', '/settings/log-credits');
 
         expect(screen.getByRole('button', { name: /ログアウト/ })).toBeInTheDocument();
         expect(screen.getByText('user@example.com')).toBeInTheDocument();

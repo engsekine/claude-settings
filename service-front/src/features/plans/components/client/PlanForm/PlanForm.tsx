@@ -1,15 +1,14 @@
 'use client';
 
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button, buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
-
 import { type PlanFormValues, planSchema } from '@/features/plans/schemas/plan.schema';
 import { createPlan, updatePlan } from '@/features/plans/server/actions';
 import { FormField, FormTextarea } from '@/shared/components/form';
+import { Button, buttonVariants } from '@/shared/components/ui/Button';
 import { todayInJst } from '@/shared/lib/date';
 
 interface PlanFormProps {

@@ -1,9 +1,9 @@
-import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
-
 import type { MonthlyDiveStat, YearlyDiveCount } from '@/features/dashboard/types';
 import { BarChart } from '@/shared/components/chart/BarChart';
 import { LineChart } from '@/shared/components/chart/LineChart';
+import { Heading } from '@/shared/components/typography/Heading';
+import { buttonVariants } from '@/shared/components/ui/Button';
 
 import { TrendChartCard } from '../TrendChartCard';
 
@@ -134,7 +134,7 @@ export const DiveTrends = ({ yearlyCounts, monthlyStats }: DiveTrendsProps) => {
             ) : (
                 <section className="flex flex-col gap-3 rounded-lg border border-border bg-background p-4">
                     {/* TopDashboard の h2「統計の推移」配下のため h3 が正しい階層（誤検知は .markuplintrc で抑止） */}
-                    <h3 className="font-semibold text-base text-foreground">月別平均水温（直近 12 ヶ月）</h3>
+                    <Heading level={3}>月別平均水温（直近 12 ヶ月）</Heading>
                     <p className="text-muted-foreground text-sm">水温を記録すると傾向が表示されます。</p>
                 </section>
             )}

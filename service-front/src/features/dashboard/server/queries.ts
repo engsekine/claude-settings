@@ -4,7 +4,7 @@ import { calcBlankDays } from '@/features/dashboard/lib/blankDays';
 import { calcOverhaulStatus } from '@/features/dashboard/lib/overhaul';
 import { fillMonthlyGaps, fillYearlyGaps } from '@/features/dashboard/lib/trends';
 import type {
-    DashboardHero,
+    DashboardHeroData,
     DiveStats,
     MonthlyDiveStat,
     PrimaryRegulatorStatus,
@@ -101,9 +101,16 @@ export const getPrimaryRegulatorStatus = async (): Promise<PrimaryRegulatorStatu
     }
     if (!regulator) return null;
 
+    // 公開読み取り RLS で他人の公開ログを数えないよう本人に限定する
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return null;
+
     const { count, error: countError } = await supabase
         .from('dives')
         .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
         .gte('dive_date', regulator.last_overhauled_on);
 
     if (countError) {
@@ -128,12 +135,23 @@ export const getPrimaryRegulatorStatus = async (): Promise<PrimaryRegulatorStatu
 };
 
 /** ヒーロー用データ（表示名 + ブランク日数）を取得する（FR-002） */
-export const getDashboardHero = async (): Promise<DashboardHero> => {
+export const getDashboardHero = async (): Promise<DashboardHeroData> => {
     const supabase = await createClient();
+
+    // 最終ダイブ日は本人のログから求める。公開読み取り RLS で他人の公開ログを拾わないよう user_id で絞る
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
 
     const [detailsResult, lastDiveResult] = await Promise.all([
         supabase.from('user_details').select('nickname').maybeSingle(),
-        supabase.from('dives').select('dive_date').order('dive_date', { ascending: false }).limit(1).maybeSingle(),
+        supabase
+            .from('dives')
+            .select('dive_date')
+            .eq('user_id', user?.id ?? '')
+            .order('dive_date', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
     ]);
 
     if (detailsResult.error) {
@@ -148,5 +166,6 @@ export const getDashboardHero = async (): Promise<DashboardHero> => {
     return {
         nickname: detailsResult.data?.nickname ?? null,
         blankDays: calcBlankDays(lastDiveOn, todayInJst()),
+        lastDiveOn,
     };
 };

@@ -18,12 +18,19 @@ describe('Footer', () => {
             { label: '保有資格', href: '/settings/certifications' },
             { label: '利用規約', href: '/terms' },
             { label: 'プライバシーポリシー', href: '/privacy-policy' },
+            { label: 'お問い合わせ', href: '/contact' },
         ];
 
         for (const { label, href } of expectedLinks) {
             const link = screen.getByRole('link', { name: label });
             expect(link).toHaveAttribute('href', href);
         }
+    });
+
+    it('「Cookie 設定」ボタンを表示する', () => {
+        render(<Footer />);
+
+        expect(screen.getByRole('button', { name: 'Cookie 設定' })).toBeInTheDocument();
     });
 
     it('現在年の著作権表記を表示する', () => {

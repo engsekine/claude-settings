@@ -37,7 +37,7 @@ export const GET = async (request: NextRequest): Promise<Response> => {
     const { format, ids, filter } = parsed;
 
     try {
-        const dives = await fetchDivesForExport(supabase, { ids, filter });
+        const dives = await fetchDivesForExport(supabase, { ids, filter, ownerId: user.id });
         const filename = buildExportFilename({ format, date: new Date(), single: singleFilenameInput(ids, dives) });
 
         if (format === 'csv') {

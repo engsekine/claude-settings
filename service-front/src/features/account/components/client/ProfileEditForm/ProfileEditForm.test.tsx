@@ -21,6 +21,9 @@ const defaultValues: ProfileFormValues = {
     gender: 'male',
     heightCm: null,
     weightKg: null,
+    diverType: null,
+    diverNumber: null,
+    emailOptIn: false,
 };
 
 describe('ProfileEditForm', () => {
@@ -44,6 +47,43 @@ describe('ProfileEditForm', () => {
         expect(screen.getByLabelText<HTMLInputElement>('ニックネーム').value).toBe('たろちゃん');
     });
 
+    it('ダイバー種別の初期値がインストラクターのとき番号欄に初期値が反映される（019）', () => {
+        render(
+            <ProfileEditForm
+                email="user@example.com"
+                defaultValues={{ ...defaultValues, diverType: 'instructor', diverNumber: 'PADI-12345' }}
+            />,
+        );
+
+        expect(screen.getByLabelText<HTMLInputElement>('ダイバー番号').value).toBe('PADI-12345');
+    });
+
+    it('種別が未設定のときは番号欄を表示しない（019）', () => {
+        render(<ProfileEditForm email="user@example.com" defaultValues={defaultValues} />);
+
+        expect(screen.queryByLabelText('ダイバー番号')).not.toBeInTheDocument();
+    });
+
+    it('更新時に diverType / diverNumber が updateProfile に渡る（019）', async () => {
+        updateProfile.mockResolvedValueOnce({ success: true });
+        const user = userEvent.setup();
+        render(
+            <ProfileEditForm
+                email="user@example.com"
+                defaultValues={{ ...defaultValues, diverType: 'instructor', diverNumber: 'PADI-12345' }}
+            />,
+        );
+
+        await user.clear(screen.getByLabelText('ニックネーム'));
+        await user.type(screen.getByLabelText('ニックネーム'), 'newnick');
+        await user.click(screen.getByRole('button', { name: '更新する' }));
+
+        await screen.findByRole('status');
+        expect(updateProfile).toHaveBeenCalledWith(
+            expect.objectContaining({ diverType: 'instructor', diverNumber: 'PADI-12345' }),
+        );
+    });
+
     it('初期状態（未編集）では更新ボタンが無効化される', () => {
         render(<ProfileEditForm email="user@example.com" defaultValues={defaultValues} />);
 
@@ -60,6 +100,21 @@ describe('ProfileEditForm', () => {
 
         expect(screen.getByLabelText<HTMLInputElement>('身長（cm）').value).toBe('170.5');
         expect(screen.getByLabelText<HTMLInputElement>('体重（kg）').value).toBe('65');
+    });
+
+    it('メール配信許可（022）の初期値が反映され、切り替えると更新できる', async () => {
+        updateProfile.mockResolvedValueOnce({ success: true });
+        const user = userEvent.setup();
+        render(<ProfileEditForm email="user@example.com" defaultValues={{ ...defaultValues, emailOptIn: true }} />);
+
+        const optIn = screen.getByRole('checkbox', { name: /お知らせメールを受け取る/ });
+        expect(optIn).toBeChecked();
+
+        await user.click(optIn); // ON → OFF（撤回）
+        await user.click(screen.getByRole('button', { name: '更新する' }));
+
+        await screen.findByRole('status');
+        expect(updateProfile).toHaveBeenCalledWith(expect.objectContaining({ emailOptIn: false }));
     });
 
     it('updateProfile が成功すると status メッセージを表示する', async () => {

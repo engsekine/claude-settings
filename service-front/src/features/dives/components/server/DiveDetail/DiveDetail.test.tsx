@@ -10,6 +10,15 @@ vi.mock('@/features/dives/components/client/DeleteDiveButton', () => ({
     DeleteDiveButton: () => <button type="button">削除</button>,
 }));
 
+// canManage 時に描画されるクライアント子要素は useRouter / Server Action に依存するためモックする
+vi.mock('@/features/dives/components/client/DivePhotoUploader', () => ({
+    DivePhotoUploader: () => <div data-testid="dive-photo-uploader" />,
+}));
+
+vi.mock('@/features/dives/components/client/DiveVisibilityToggle', () => ({
+    DiveVisibilityToggle: () => <div data-testid="dive-visibility-toggle" />,
+}));
+
 const baseDive: Dive = {
     id: 'dive-1',
     userId: 'user-1',
@@ -55,8 +64,18 @@ describe('DiveDetail', () => {
         expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('伊豆 / 大瀬崎');
     });
 
-    it('単一ログの PDF 出力リンクを表示する', () => {
+    it('likeAction スロットに渡した要素をヘッダーに描画する（spec 027）', () => {
+        render(<DiveDetail dive={baseDive} likeAction={<div data-testid="like-action" />} />);
+        expect(screen.getByTestId('like-action')).toBeInTheDocument();
+    });
+
+    it('likeAction 未指定でも描画が壊れない', () => {
         render(<DiveDetail dive={baseDive} />);
+        expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+    });
+
+    it('作成者本人(canManage)には単一ログの PDF 出力リンクを表示する', () => {
+        render(<DiveDetail dive={baseDive} canManage />);
         expect(screen.getByRole('link', { name: 'PDF出力' })).toHaveAttribute(
             'href',
             '/dives/export?format=pdf&ids=dive-1',
@@ -130,9 +149,16 @@ describe('DiveDetail', () => {
         expect(screen.queryByText(/エア消費率/)).not.toBeInTheDocument();
     });
 
-    it('編集ページへのリンクを表示する', () => {
-        render(<DiveDetail dive={baseDive} />);
+    it('作成者本人(canManage)には編集ページへのリンクを表示する', () => {
+        render(<DiveDetail dive={baseDive} canManage />);
         expect(screen.getByRole('link', { name: '編集' })).toHaveAttribute('href', '/dives/dive-1/edit');
+    });
+
+    it('作成者以外(canManage=false)には編集・削除・PDF出力を表示しない', () => {
+        render(<DiveDetail dive={baseDive} />);
+        expect(screen.queryByRole('link', { name: '編集' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: '削除' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('link', { name: 'PDF出力' })).not.toBeInTheDocument();
     });
 
     it('講習ダイブのときはバッジを表示する', () => {
