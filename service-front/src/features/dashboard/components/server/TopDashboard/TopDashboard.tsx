@@ -75,9 +75,18 @@ export const TopDashboard = async ({
                 <div aria-hidden="true" className="absolute inset-0 -z-20 bg-[url('/whale2.jpg')] bg-center bg-cover" />
                 <div aria-hidden="true" className="absolute inset-0 -z-10 bg-black/45 dark:bg-black/60" />
                 <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4">
-                    <Heading level={2} id="dashboard-recent" className="text-white">
-                        最近のダイブログ
-                    </Heading>
+                    <div className="flex items-center justify-between gap-4">
+                        <Heading level={2} id="dashboard-recent" className="text-white">
+                            最近のダイブログ
+                        </Heading>
+                        {/* 暗い背景写真の上に置くため FV「予定を作成する」と同じ透明ボタンにする */}
+                        <Link
+                            href="/dives/new"
+                            className="inline-flex h-9 shrink-0 items-center justify-center rounded-lg border border-white/40 px-4 font-bold text-sm text-white transition-colors hover:bg-white/10"
+                        >
+                            ログを作成
+                        </Link>
+                    </div>
                     <RecentDives dives={recentDives} />
                 </div>
             </section>
