@@ -83,9 +83,9 @@
 
 ## Phase 5: User Story 3 - 既存ユーザーが特定機能の使い方を調べる (Priority: P3)
 
-**Goal**: 目次（ページ内アンカーナビ）とページ先頭へ戻る導線で、目的セクションへ直接移動できるようにする
+**Goal**: 目次（ページ内アンカーナビ）と「目次に戻る」導線で、目的セクションへ直接移動できるようにする
 
-**Independent Test**: 目次から任意のセクションを選択して該当セクション先頭へ移動し、「ページ先頭へ戻る」で目次に戻れる（quickstart.md 手順 3）
+**Independent Test**: 目次から任意のセクションを選択して該当セクション先頭へ移動し、「目次に戻る」で目次に戻れる（quickstart.md 手順 3）
 
 ### Tests for User Story 3（実装前に書き、FAIL を確認する）⚠️
 
@@ -93,7 +93,7 @@
 
 ### Implementation for User Story 3
 
-- [X] T019 [US3] `GuideView` にページ先頭の目次 nav と各セクション末尾の「ページ先頭へ戻る」導線（`#` アンカー）を実装する（service-front/src/features/guide/components/GuideView/GuideView.tsx。JS 不要のアンカーのみ・research.md Decision 3。T018 がパスすること。stories も同期更新）
+- [X] T019 [US3] `GuideView` にページ先頭の目次 nav と各セクション末尾の「目次に戻る」導線（`#guide-toc` アンカー）を実装する（service-front/src/features/guide/components/GuideView/GuideView.tsx。JS 不要のアンカーのみ・research.md Decision 3。T018 がパスすること。stories も同期更新）
 - [X] T020 [US3] service-front/tests/a11y/guide.spec.ts に目次アンカーの動作検証を追加する（目次リンククリックで URL ハッシュが変化し該当セクションが表示される / キーボード（Tab + Enter）でも操作できる）
 
 **Checkpoint**: 全ストーリーが独立して機能する
