@@ -31,17 +31,20 @@ npm run dev --workspace=service-front
 ## 2. 自動テスト
 
 ```bash
-# 単体テスト（GuideView / GuideSectionCard / Header / Footer）
-npx vitest run src/features/guide src/shared/components/layout --root service-front
+# 単体テスト（GuideView / GuideSectionCard / Header / Footer。service-front で実行）
+cd service-front
+npx vitest run --project=unit src/features/guide src/shared/components/layout
 
-# a11y テスト（Playwright + axe。dev サーバー自動起動）
-npx playwright test tests/a11y/guide.spec.ts --config service-front/playwright.config.ts
+# a11y / E2E テスト（Playwright + axe。dev サーバー自動起動・ローカル Supabase 必須）
+npx playwright test tests/a11y/guide.spec.ts
 ```
 
 期待結果:
 
 - Vitest: 全件パス（目次とセクションの対応・手順の番号付きリスト・導線リンク・「使い方」ナビ項目）
-- Playwright: `/guide` で axe-core 違反 0 件（FR-007）
+- Playwright: 6 件パス（未ログイン表示 + axe 違反 0 / noindex なし / 登録導線 / ログイン済み表示 / モバイル横スクロールなし / 目次アンカー）
+
+手動検証 9 手順は上記の自動テストですべてカバーされる（手順 1→E2E 未ログイン表示、2→6 セクション、3→目次、4→unit 導線 + E2E、5→E2E 登録導線、6→Header / Footer unit、7→E2E SC-004、8→E2E noindex、9→E2E ログイン済み表示）。
 
 ## 3. リグレッション確認
 

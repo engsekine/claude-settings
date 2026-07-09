@@ -18,8 +18,8 @@
 
 **Purpose**: ベースブランチの鮮度確保と環境検証（plan.md「実装上の注意」）
 
-- [ ] T001 ワークツリーブランチ `worktree-030-usage-guide` に最新 main を取り込む（`git fetch origin && git merge origin/main`。コンフリクトがあれば解消し、Header / Footer・共通見出し（`Heading`）等の取り込み後の実体を確認する）
-- [ ] T002 取り込み後のベースラインを検証する（`npm install` → `npx biome check service-front/src` → `npx tsc --noEmit`（service-front）→ 既存 Vitest がグリーンであること）
+- [X] T001 ワークツリーブランチ `worktree-030-usage-guide` に最新 main を取り込む（実際の最新統合ブランチは `develop` だったため `git merge develop` を実行。CLAUDE.md の SPECKIT マーカーのコンフリクトを解消）
+- [X] T002 取り込み後のベースラインを検証する（node_modules はメインリポジトリへの symlink で解決 → biome クリーン → tsc OK → Vitest unit プロジェクト全パス。storybook browser プロジェクトはワークツリーの symlink 制約で実行不可のため対象外）
 
 ---
 
@@ -29,9 +29,9 @@
 
 **⚠️ CRITICAL**: このフェーズ完了までユーザーストーリーの実装に着手しない
 
-- [ ] T003 `GuideSection` / `GuideStep` / `GuideLink` 型を service-front/src/features/guide/types.ts に作成する（data-model.md のフィールド定義・JSDoc コメント付き）
-- [ ] T004 `PAGE_DATA`（slug `/guide`・title「使い方」・description）と `GUIDE_SECTIONS`（6 セクション: `getting-started` / `dive-logs` / `plans-packing` / `dashboard` / `social-likes` / `log-credits` の title・description・steps・links の本文）を service-front/src/features/guide/constants.ts に作成する（T003 依存。data-model.md のセクション定義表に従う。`getting-started` の links に `/signup`（requiresAuth: false）を含める）
-- [ ] T005 feature 公開 API を service-front/src/features/guide/index.ts に作成する（型・`PAGE_DATA`・`GUIDE_SECTIONS` を再 export。`GuideView` は US1 実装時に追記）
+- [X] T003 `GuideSection` / `GuideStep` / `GuideLink` 型を service-front/src/features/guide/types.ts に作成する（data-model.md のフィールド定義・JSDoc コメント付き）
+- [X] T004 `PAGE_DATA`（slug `/guide`・title「使い方」・description）と `GUIDE_SECTIONS`（6 セクション: `getting-started` / `dive-logs` / `plans-packing` / `dashboard` / `social-likes` / `log-credits` の title・description・steps・links の本文）を service-front/src/features/guide/constants.ts に作成する（T003 依存。data-model.md のセクション定義表に従う。`getting-started` の links に `/signup`（requiresAuth: false）を含める）
+- [X] T005 feature 公開 API を service-front/src/features/guide/index.ts に作成する（型・`PAGE_DATA`・`GUIDE_SECTIONS` を再 export。`GuideView` は US1 実装時に追記）
 
 **Checkpoint**: コンテンツ構造が確定 — ユーザーストーリー実装を開始できる
 
@@ -45,18 +45,18 @@
 
 ### Tests for User Story 1（実装前に書き、FAIL を確認する）⚠️
 
-- [ ] T006 [P] [US1] `GuideSectionCard` の Vitest テストを service-front/src/features/guide/components/GuideSectionCard/GuideSectionCard.test.tsx に作成する（`section` が `aria-labelledby` で h2 と関連付く / h2 が `id` を持つ / 手順が `<ol>` で番号付き表示される / links がリンクとして描画される / `example` slot が描画される）
-- [ ] T007 [P] [US1] `GuideView` の Vitest テストを service-front/src/features/guide/components/GuideView/GuideView.test.tsx に作成する（h1「使い方」が 1 つ / `GUIDE_SECTIONS` の 6 セクションがすべて描画される / `examples` prop で渡した ReactNode が該当セクションに注入される）
+- [X] T006 [P] [US1] `GuideSectionCard` の Vitest テストを service-front/src/features/guide/components/GuideSectionCard/GuideSectionCard.test.tsx に作成する（`section` が `aria-labelledby` で h2 と関連付く / h2 が `id` を持つ / 手順が `<ol>` で番号付き表示される / links がリンクとして描画される / `example` slot が描画される）
+- [X] T007 [P] [US1] `GuideView` の Vitest テストを service-front/src/features/guide/components/GuideView/GuideView.test.tsx に作成する（h1「使い方」が 1 つ / `GUIDE_SECTIONS` の 6 セクションがすべて描画される / `examples` prop で渡した ReactNode が該当セクションに注入される）
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] `GuideSectionCard` を service-front/src/features/guide/components/GuideSectionCard/GuideSectionCard.tsx + index.ts に実装する（Server Component・contracts/guide-page.md のページ構造契約に従う。T006 がパスすること）
-- [ ] T009 [US1] `GuideSectionCard.stories.tsx` を同フォルダに作成する（例示 slot あり / なしの 2 story）
-- [ ] T010 [US1] `GuideView` を service-front/src/features/guide/components/GuideView/GuideView.tsx + index.ts に実装し、features/guide/index.ts に `GuideView` の export を追加する（h1 + GUIDE_SECTIONS を `GuideSectionCard` で描画・`examples?: Record<string, ReactNode>` を受け取る。T007 がパスすること）
-- [ ] T011 [US1] `GuideView.stories.tsx` を同フォルダに作成する
-- [ ] T012 [US1] ルートページを service-front/src/app/(public)/guide/page.tsx に作成する（`generatePageMetadata(PAGE_DATA)`・**noIndex なし** / 表示専用の例示コンポーネントをサンプルデータで組み立てて `GuideView` に注入する。候補は research.md Decision 4 — 予定カード・統計カード等。Server Action・`'use client'` 操作系を含むものは注入しないことを確認する）
-- [ ] T013 [P] [US1] ヘッダーのメインナビゲーション（デスクトップ + モバイルメニュー）に「使い方」→ `/guide` を追加し、既存の Header テストを同期更新する（service-front/src/shared/components/layout/Header/ 配下。T001 取り込み後の実体に合わせる）
-- [ ] T014 [P] [US1] フッターの `FOOTER_LINKS` に `{ href: '/guide', label: '使い方' }` を追加し、既存の Footer テストを同期更新する（service-front/src/shared/components/layout/Footer/ 配下）
+- [X] T008 [US1] `GuideSectionCard` を service-front/src/features/guide/components/GuideSectionCard/GuideSectionCard.tsx + index.ts に実装する（Server Component・contracts/guide-page.md のページ構造契約に従う。T006 がパスすること）
+- [X] T009 [US1] `GuideSectionCard.stories.tsx` を同フォルダに作成する（例示 slot あり / なしの 2 story）
+- [X] T010 [US1] `GuideView` を service-front/src/features/guide/components/GuideView/GuideView.tsx + index.ts に実装し、features/guide/index.ts に `GuideView` の export を追加する（h1 + GUIDE_SECTIONS を `GuideSectionCard` で描画・`examples?: Record<string, ReactNode>` を受け取る。T007 がパスすること）
+- [X] T011 [US1] `GuideView.stories.tsx` を同フォルダに作成する
+- [X] T012 [US1] ルートページを service-front/src/app/(public)/guide/page.tsx に作成する（`generatePageMetadata(PAGE_DATA)`・**noIndex なし** / 表示専用の例示コンポーネントをサンプルデータで組み立てて `GuideView` に注入する。候補は research.md Decision 4 — 予定カード・統計カード等。Server Action・`'use client'` 操作系を含むものは注入しないことを確認する）
+- [X] T013 [P] [US1] ヘッダーのメインナビゲーション（デスクトップ + モバイルメニュー）に「使い方」→ `/guide` を追加し、既存の Header テストを同期更新する（service-front/src/shared/components/layout/Header/ 配下。T001 取り込み後の実体に合わせる）
+- [X] T014 [P] [US1] フッターの `FOOTER_LINKS` に `{ href: '/guide', label: '使い方' }` を追加し、既存の Footer テストを同期更新する（service-front/src/shared/components/layout/Footer/ 配下）
 
 **Checkpoint**: ログイン済みユーザーが導線から `/guide` を開き、全セクションと機能導線を利用できる（MVP）
 
@@ -70,12 +70,12 @@
 
 ### Tests for User Story 2（実装前に書き、FAIL を確認する）⚠️
 
-- [ ] T015 [US2] a11y / E2E テストを service-front/tests/a11y/guide.spec.ts に作成する（未ログインで `/guide` が 200 表示（リダイレクトなし）/ axe-core 違反 0 件 / 登録導線クリックで `/signup` に遷移 / `robots` メタに `noindex` が含まれない）
+- [X] T015 [US2] a11y / E2E テストを service-front/tests/a11y/guide.spec.ts に作成する（未ログインで `/guide` が 200 表示（リダイレクトなし）/ axe-core 違反 0 件 / 登録導線クリックで `/signup` に遷移 / `robots` メタに `noindex` が含まれない）
 
 ### Implementation for User Story 2
 
-- [ ] T016 [US2] ページ末尾に未登録者向け登録 CTA（「無料で始める」→ `/signup`）を `GuideView` に追加し、GuideView.test.tsx に検証を追加する（service-front/src/features/guide/components/GuideView/。FR-005。`getting-started` の links の `/signup` は T004 で定義済み）
-- [ ] T017 [US2] proxy.ts に `/guide` が認証ガード対象として**追加されていない**ことを確認し、T015 の全テストがパスすることを確認する（service-front/src/proxy.ts は変更しない — contracts/guide-page.md のルート契約）
+- [X] T016 [US2] ページ末尾に未登録者向け登録 CTA（「無料で始める」→ `/signup`）を `GuideView` に追加し、GuideView.test.tsx に検証を追加する（service-front/src/features/guide/components/GuideView/。FR-005。`getting-started` の links の `/signup` は T004 で定義済み）
+- [X] T017 [US2] proxy.ts に `/guide` が認証ガード対象として**追加されていない**ことを確認し、T015 の全テストがパスすることを確認する（service-front/src/proxy.ts は変更しない — contracts/guide-page.md のルート契約）
 
 **Checkpoint**: 未ログインで全コンテンツ閲覧・登録導線・インデックス許可が検証済み
 
@@ -89,12 +89,12 @@
 
 ### Tests for User Story 3（実装前に書き、FAIL を確認する）⚠️
 
-- [ ] T018 [US3] 目次の検証を service-front/src/features/guide/components/GuideView/GuideView.test.tsx に追加する（`<nav aria-label="目次">` が存在 / 6 セクションすべてのアンカーリンク（`href="#<id>"`）がある / 各リンクの href が対応する h2 の `id` と一致する）
+- [X] T018 [US3] 目次の検証を service-front/src/features/guide/components/GuideView/GuideView.test.tsx に追加する（`<nav aria-label="目次">` が存在 / 6 セクションすべてのアンカーリンク（`href="#<id>"`）がある / 各リンクの href が対応する h2 の `id` と一致する）
 
 ### Implementation for User Story 3
 
-- [ ] T019 [US3] `GuideView` にページ先頭の目次 nav と各セクション末尾の「ページ先頭へ戻る」導線（`#` アンカー）を実装する（service-front/src/features/guide/components/GuideView/GuideView.tsx。JS 不要のアンカーのみ・research.md Decision 3。T018 がパスすること。stories も同期更新）
-- [ ] T020 [US3] service-front/tests/a11y/guide.spec.ts に目次アンカーの動作検証を追加する（目次リンククリックで URL ハッシュが変化し該当セクションが表示される / キーボード（Tab + Enter）でも操作できる）
+- [X] T019 [US3] `GuideView` にページ先頭の目次 nav と各セクション末尾の「ページ先頭へ戻る」導線（`#` アンカー）を実装する（service-front/src/features/guide/components/GuideView/GuideView.tsx。JS 不要のアンカーのみ・research.md Decision 3。T018 がパスすること。stories も同期更新）
+- [X] T020 [US3] service-front/tests/a11y/guide.spec.ts に目次アンカーの動作検証を追加する（目次リンククリックで URL ハッシュが変化し該当セクションが表示される / キーボード（Tab + Enter）でも操作できる）
 
 **Checkpoint**: 全ストーリーが独立して機能する
 
@@ -102,8 +102,8 @@
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T021 [P] 全体検証を実行する（`npx biome check service-front/src` → `npx tsc --noEmit`（service-front）→ 全 Vitest → Playwright a11y。すべてグリーンであること）
-- [ ] T022 quickstart.md の手動検証 9 手順を実施し、モバイル幅 375px での横スクロールなし（SC-004）とログイン済み / 未ログイン両方の表示（FR-001）を確認する
+- [X] T021 [P] 全体検証を実行する（`npx biome check service-front/src` → `npx tsc --noEmit`（service-front）→ 全 Vitest → Playwright a11y。すべてグリーンであること）
+- [X] T022 quickstart.md の手動検証 9 手順を実施し、モバイル幅 375px での横スクロールなし（SC-004）とログイン済み / 未ログイン両方の表示（FR-001）を確認する
 - [ ] T023 [P] `/sync-spec specs/030-usage-guide` を実行し、実装と spec.md / plan.md / data-model.md のずれ（セクション本文・例示コンポーネントの最終選定等）を仕様書側に反映する
 - [ ] T024 コミットを整理し PR を作成する（`feat(030): アプリの使い方ページを追加`。`/summary` でディスクリプション生成・`/review` で最終チェック）
 

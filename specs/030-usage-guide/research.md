@@ -33,7 +33,10 @@ Technical Context に NEEDS CLARIFICATION はなし。設計判断が必要な�
 - **Rationale**:
   - feature 間 import 禁止（アーキテクチャ規約）のため、guide feature から plans / dives / dashboard のコンポーネントを直接 import できない。TOP の `TopDashboard`（`nextPlanSection` / `timelineSection` slot）で確立済みの注入パターンを踏襲する
   - 操作系コンポーネント（チェック操作・Server Action 付き）を未ログインページに置くと認証前提の動作が壊れるため、表示専用に限定する
-- **候補（実装時に表示専用性を確認して選定）**: plans の予定カード（サンプル予定）、ダッシュボードの統計カード / チャート（サンプル統計）。流用が難しいセクションはテキストのみ（FR-009 のフォールバック）
+- **確定した選定（実装時に表示専用性を確認済み）**:
+  - `dive-logs`: dashboard feature の `RecentDives`（サンプルログ 3 件）。カードがログ詳細へのリンクを持ちサンプル id では実在しないため、`inert` 属性でフォーカス・操作対象から外す（axe の aria-hidden-focus 違反も回避）
+  - `dashboard`: shared の `BarChart`（サンプル年別本数）。非対話 SVG・`aria-label` 付きでそのまま利用可
+  - `plans-packing`: 候補だった plans の `NextPlanCardView` は操作系（Server Action 付き `PackingChecklist`）を内包するため対象外 → テキストのみ（FR-009 のフォールバック）
 - **Alternatives considered**:
   - guide feature から直接 import — 規約違反のため不可
   - 静的スクリーンショット — clarify Q3 で不採用が確定
