@@ -1,7 +1,7 @@
 'use client';
 
-import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
+import { buttonVariants } from '@/shared/components/ui/Button';
 
 interface NoCreditBannerProps {
     /**

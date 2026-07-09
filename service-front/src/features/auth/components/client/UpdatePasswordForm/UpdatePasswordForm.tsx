@@ -1,13 +1,12 @@
 'use client';
 
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button } from '@repo/ui/components/button';
 import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
-
 import { type ResetPasswordFormValues, resetPasswordSchema } from '@/features/auth/schemas/reset.schema';
 import { updatePassword } from '@/features/auth/server/actions';
 import { FormField } from '@/shared/components/form';
+import { Button } from '@/shared/components/ui/Button';
 
 /**
  * リセットリンク経由の新パスワード設定フォーム（001 / US4-3 / FR-019）。

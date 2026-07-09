@@ -1,10 +1,8 @@
 'use client';
 
-import { Button } from '@repo/ui/components/button';
 import type { Route } from 'next';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-
 import {
     buildNotificationMessage,
     formatOccurredAtJst,
@@ -17,6 +15,7 @@ import {
     markNotificationRead,
 } from '@/features/notifications/server/actions';
 import type { NotificationCursor, NotificationItem } from '@/features/notifications/server/queries';
+import { Button } from '@/shared/components/ui/Button';
 
 interface NotificationListProps {
     /** Server Component（listNotifications）で取得した初回ページ */

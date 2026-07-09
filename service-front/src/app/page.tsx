@@ -1,6 +1,4 @@
-import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
-
 import { CreditBalanceBadge } from '@/features/credits/components/server/CreditBalanceBadge';
 import { DashboardHero, RecordOverhaulButton, TopDashboard } from '@/features/dashboard';
 import { diveLocationLabel, getCoverThumbUrls, listDives } from '@/features/dives';
@@ -9,6 +7,7 @@ import { listNextPlansWithProgress, NextPlanCardView } from '@/features/plans';
 import { recordOverhaul } from '@/features/regulators';
 import { fetchLikedDives, fetchTimeline, LikedDivesList, Timeline, TimelineTabsSwitcher } from '@/features/social';
 import { Heading } from '@/shared/components/typography/Heading';
+import { buttonVariants } from '@/shared/components/ui/Button';
 import { generatePageMetadata } from '@/shared/config/metadata';
 import { createClient } from '@/shared/lib/supabase/server';
 

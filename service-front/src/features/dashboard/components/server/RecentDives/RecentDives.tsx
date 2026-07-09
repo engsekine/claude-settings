@@ -1,8 +1,7 @@
-import { buttonVariants } from '@repo/ui/components/button';
 import Image from 'next/image';
 import Link from 'next/link';
-
 import type { RecentDiveItem } from '@/features/dashboard/types';
+import { buttonVariants } from '@/shared/components/ui/Button';
 import { formatJstDate } from '@/shared/lib/date';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
 
@@ -23,7 +22,7 @@ export const RecentDives = ({ dives }: RecentDivesProps) => {
                 <p className="text-muted-foreground">ログがまだありません</p>
                 <Link
                     href="/dives/new"
-                    className="rounded-md bg-primary px-4 py-2 text-primary-foreground text-sm transition-opacity hover:opacity-90"
+                    className="rounded-md bg-primary px-4 py-2 font-bold text-primary-foreground text-sm transition-opacity hover:opacity-90"
                 >
                     最初のログを記録しよう
                 </Link>
@@ -97,7 +96,7 @@ export const RecentDives = ({ dives }: RecentDivesProps) => {
             </ul>
             <Link
                 href="/dives"
-                className={`${buttonVariants({ variant: 'default', size: 'lg' })} self-center px-10 font-semibold shadow-md transition-transform hover:scale-105`}
+                className={`${buttonVariants({ variant: 'default', size: 'lg' })} self-center px-10 shadow-md transition-transform hover:scale-105`}
             >
                 すべてのログを見る
             </Link>

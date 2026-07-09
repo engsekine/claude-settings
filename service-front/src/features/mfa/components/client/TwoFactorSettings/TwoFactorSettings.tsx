@@ -1,11 +1,10 @@
 'use client';
 
-import { Button } from '@repo/ui/components/button';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-
 import { E164_PATTERN, OTP_LENGTH, OTP_PATTERN } from '@/features/mfa/schemas';
 import { disablePhoneFactor, enrollPhoneFactor, verifyPhoneFactor } from '@/features/mfa/server/actions';
+import { Button } from '@/shared/components/ui/Button';
 
 interface TwoFactorSettingsProps {
     /** 現在 2 要素認証が有効か（verified な phone 要素があるか） */

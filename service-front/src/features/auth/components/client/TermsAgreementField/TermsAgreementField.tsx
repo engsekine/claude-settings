@@ -1,6 +1,10 @@
 'use client';
 
-import { buttonVariants } from '@repo/ui/components/button';
+import { FileText } from 'lucide-react';
+import { type ComponentPropsWithRef, type UIEvent, useState } from 'react';
+import { TermsContent } from '@/features/terms';
+import { FormCheckbox } from '@/shared/components/form';
+import { buttonVariants } from '@/shared/components/ui/Button';
 import {
     Dialog,
     DialogContent,
@@ -9,12 +13,7 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-} from '@repo/ui/components/dialog';
-import { FileText } from 'lucide-react';
-import { type ComponentPropsWithRef, type UIEvent, useState } from 'react';
-
-import { TermsContent } from '@/features/terms';
-import { FormCheckbox } from '@/shared/components/form';
+} from '@/shared/components/ui/Dialog';
 
 import { isScrolledToBottom } from './isScrolledToBottom';
 
@@ -49,7 +48,7 @@ export const TermsAgreementField = ({ id, error, ...inputProps }: TermsAgreement
     return (
         <div className="flex flex-col gap-2">
             <Dialog>
-                <DialogTrigger className={buttonVariants({ variant: 'secondary', className: 'w-full font-semibold' })}>
+                <DialogTrigger className={buttonVariants({ variant: 'secondary', className: 'w-full' })}>
                     <FileText aria-hidden="true" />
                     利用規約を読む
                 </DialogTrigger>

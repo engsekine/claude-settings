@@ -1,12 +1,11 @@
 'use client';
 
-import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
-
 import { canMovePlanToLog } from '@/features/plans/lib/canMovePlanToLog';
 import { daysUntil } from '@/features/plans/lib/days-until';
 import type { Plan } from '@/features/plans/types';
 import { Heading } from '@/shared/components/typography/Heading';
+import { buttonVariants } from '@/shared/components/ui/Button';
 import { formatJstDate } from '@/shared/lib/date';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
 
@@ -39,7 +38,7 @@ export const PlanList = ({ plans, today }: PlanListProps) => {
                 <p className="text-muted-foreground">予定がまだありません</p>
                 <Link
                     href="/plans/new"
-                    className="rounded-md bg-primary px-4 py-2 text-primary-foreground text-sm transition-opacity hover:opacity-90"
+                    className="rounded-md bg-primary px-4 py-2 font-bold text-primary-foreground text-sm transition-opacity hover:opacity-90"
                 >
                     次のダイビングを計画しよう
                 </Link>

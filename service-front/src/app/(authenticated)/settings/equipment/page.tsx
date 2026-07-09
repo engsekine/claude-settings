@@ -1,9 +1,8 @@
-import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
-
 import { DeleteRegulatorButton, listRegulators, RegulatorList } from '@/features/regulators';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
 import { Heading } from '@/shared/components/typography/Heading';
+import { buttonVariants } from '@/shared/components/ui/Button';
 import { generatePageMetadata } from '@/shared/config/metadata';
 
 export const metadata = generatePageMetadata(

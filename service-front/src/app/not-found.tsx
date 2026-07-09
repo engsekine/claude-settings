@@ -18,7 +18,7 @@ export default function NotFound() {
             <p className="text-lg text-muted-foreground">お探しのページが見つかりませんでした</p>
             <Link
                 href="/"
-                className="rounded-lg bg-primary px-6 py-2.5 font-medium text-primary-foreground text-sm hover:bg-primary/80"
+                className="rounded-lg bg-primary px-6 py-2.5 font-bold text-primary-foreground text-sm hover:bg-primary/80"
             >
                 ホームに戻る
             </Link>

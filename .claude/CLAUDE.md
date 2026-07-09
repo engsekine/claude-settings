@@ -34,6 +34,7 @@
 - コンポーネント・lib ユーティリティとも **専用フォルダ**に配置し、フォルダ内に本体・テスト・`index.ts`（再 export）を並べる
 - 外部からは `index.ts` 経由で import し、フォルダ内の中身を直接指さない
 - `*.stories.tsx` は Storybook 採用プロジェクト（service-front）のみの任意ファイル
+- **shadcn / `@repo/ui` は直接編集・直接 import しない**。`src/shared/components/ui/<Name>/` のラッパー経由で使う（詳細は [rules/react.md](rules/react.md) の「UI ライブラリのラップ」）
 
 ## テスト生成ルール
 

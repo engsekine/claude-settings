@@ -1,10 +1,9 @@
-import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-
 import { canMovePlanToLog, DeletePlanButton, daysUntil, getPlan, PackingList } from '@/features/plans';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
 import { Heading } from '@/shared/components/typography/Heading';
+import { buttonVariants } from '@/shared/components/ui/Button';
 import { generatePageMetadata } from '@/shared/config/metadata';
 import { formatJstDate, todayInJst } from '@/shared/lib/date';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';

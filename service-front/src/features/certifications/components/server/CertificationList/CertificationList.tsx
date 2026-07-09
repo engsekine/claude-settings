@@ -88,7 +88,7 @@ export const CertificationList = ({ certifications, today, renderActions }: Cert
                 <p className="text-muted-foreground">保有資格が登録されていません</p>
                 <Link
                     href="/settings/certifications/new"
-                    className="rounded-md bg-primary px-4 py-2 text-primary-foreground text-sm transition-opacity hover:opacity-90"
+                    className="rounded-md bg-primary px-4 py-2 font-bold text-primary-foreground text-sm transition-opacity hover:opacity-90"
                 >
                     資格を登録する
                 </Link>

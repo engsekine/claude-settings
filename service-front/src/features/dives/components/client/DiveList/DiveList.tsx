@@ -1,17 +1,16 @@
 'use client';
 
-import { Button } from '@repo/ui/components/button';
 import type { Route } from 'next';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
-
 import { DiveCard } from '@/features/dives/components/client/DiveCard';
 import { DiveSearchBar } from '@/features/dives/components/client/DiveSearchBar';
 import { ExportMenu } from '@/features/dives/components/client/ExportMenu';
 import { useDives } from '@/features/dives/hooks/useDives';
 import { filterToSearchParams, isSameFilter } from '@/features/dives/lib/search-params';
 import type { DiveListFilter, DiveListPage } from '@/features/dives/types';
+import { Button } from '@/shared/components/ui/Button';
 
 interface DiveListProps {
     /** SSR で取得した初回データ（initialFilter に対応） */
@@ -121,7 +120,7 @@ export const DiveList = ({ initialPage, initialFilter = {} }: DiveListProps) => 
                     <p className="text-muted-foreground">ログがまだありません</p>
                     <Link
                         href="/dives/new"
-                        className="rounded-md bg-primary px-4 py-2 text-primary-foreground text-sm transition-opacity hover:opacity-90"
+                        className="rounded-md bg-primary px-4 py-2 font-bold text-primary-foreground text-sm transition-opacity hover:opacity-90"
                     >
                         最初のログを記録しよう
                     </Link>

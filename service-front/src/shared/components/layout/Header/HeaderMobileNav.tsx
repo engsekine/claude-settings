@@ -1,11 +1,11 @@
 'use client';
 
-import { Button } from '@repo/ui/components/button';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@repo/ui/components/sheet';
 import { Menu } from 'lucide-react';
 import type { Route } from 'next';
 import Link from 'next/link';
 import { useState } from 'react';
+import { Button } from '@/shared/components/ui/Button';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/shared/components/ui/Sheet';
 
 interface HeaderMobileNavProps {
     /** ハンバーガーメニューに表示するナビゲーション項目 */

@@ -56,7 +56,7 @@ export const RegulatorList = ({ regulators, renderActions }: RegulatorListProps)
                 <p className="text-muted-foreground">レギュレーターを登録すると OH 期限をお知らせします</p>
                 <Link
                     href="/settings/equipment/new"
-                    className="rounded-md bg-primary px-4 py-2 text-primary-foreground text-sm transition-opacity hover:opacity-90"
+                    className="rounded-md bg-primary px-4 py-2 font-bold text-primary-foreground text-sm transition-opacity hover:opacity-90"
                 >
                     レギュレーターを登録する
                 </Link>

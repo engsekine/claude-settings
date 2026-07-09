@@ -1,13 +1,12 @@
 'use client';
 
-import { Button } from '@repo/ui/components/button';
 import { Heart } from 'lucide-react';
 import type { Route } from 'next';
 import Link from 'next/link';
 import { useState, useTransition } from 'react';
-
 import { loadMoreLikedDives } from '@/features/social/server/actions';
 import type { LikedDivesCursor, TimelineItem } from '@/features/social/types';
+import { Button } from '@/shared/components/ui/Button';
 import { formatJstDate } from '@/shared/lib/date';
 
 interface LikedDivesListProps {

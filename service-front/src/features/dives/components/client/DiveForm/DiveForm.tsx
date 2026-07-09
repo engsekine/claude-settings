@@ -1,13 +1,11 @@
 'use client';
 
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button } from '@repo/ui/components/button';
 import { XIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { type ChangeEvent, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-
 import { NoCreditBanner } from '@/features/credits/components/client/NoCreditBanner';
 import { DIVE_TYPE_OPTIONS, GAS_TYPE_OPTIONS, TANK_TYPE_OPTIONS } from '@/features/dives/constants';
 import { useDiveFormSubmit } from '@/features/dives/hooks/useDiveFormSubmit';
@@ -18,6 +16,7 @@ import { type DiveFormValues, diveSchema } from '@/features/dives/schemas/dive.s
 import type { DivePhotoView } from '@/features/dives/types';
 import { FormField, FormSelect, type FormSelectOption, FormTextarea, SearchSelect } from '@/shared/components/form';
 import { PhotoThumbnail } from '@/shared/components/media/PhotoThumbnail';
+import { Button } from '@/shared/components/ui/Button';
 import { todayInJst } from '@/shared/lib/date';
 
 import { DiveBuddyField } from '../DiveBuddyField';

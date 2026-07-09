@@ -1,10 +1,9 @@
-import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-
 import type { OverhaulLevel } from '@/features/dashboard/lib/overhaul';
 import type { PrimaryRegulatorStatus } from '@/features/dashboard/types';
 import { Heading } from '@/shared/components/typography/Heading';
+import { buttonVariants } from '@/shared/components/ui/Button';
 import { formatJstDate } from '@/shared/lib/date';
 
 interface RegulatorPanelProps {

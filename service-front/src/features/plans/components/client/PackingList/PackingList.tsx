@@ -1,15 +1,14 @@
 'use client';
 
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button } from '@repo/ui/components/button';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
-
 import { type PackingItemFormValues, packingItemSchema } from '@/features/plans/schemas/plan.schema';
 import { addPackingItem, deletePackingItem, togglePackingItem } from '@/features/plans/server/actions';
 import type { PackingItem } from '@/features/plans/types';
 import { FormField } from '@/shared/components/form';
+import { Button } from '@/shared/components/ui/Button';
 import type { ActionResult } from '@/shared/types/action-result';
 
 interface PackingListProps {

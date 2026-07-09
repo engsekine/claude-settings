@@ -1,8 +1,6 @@
-import { buttonVariants } from '@repo/ui/components/button';
 import type { Route } from 'next';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-
 import { DeleteDiveButton } from '@/features/dives/components/client/DeleteDiveButton';
 import { DivePhotoGallery } from '@/features/dives/components/client/DivePhotoGallery';
 import { DivePhotoUploader } from '@/features/dives/components/client/DivePhotoUploader';
@@ -12,6 +10,7 @@ import { diveLocationLabel } from '@/features/dives/lib/diveLabel';
 import { calcSacRate, formatSacRate, SAC_INPUT_FIELD_LABELS } from '@/features/dives/lib/sacRate';
 import type { Dive, DiveBuddy, DivePhotoView } from '@/features/dives/types';
 import { Heading } from '@/shared/components/typography/Heading';
+import { buttonVariants } from '@/shared/components/ui/Button';
 import { formatJstDate } from '@/shared/lib/date';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
 

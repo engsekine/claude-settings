@@ -1,6 +1,4 @@
-import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
-
 import {
     AGENCY_LABELS,
     CertificationList,
@@ -9,6 +7,7 @@ import {
 } from '@/features/certifications';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
 import { Heading } from '@/shared/components/typography/Heading';
+import { buttonVariants } from '@/shared/components/ui/Button';
 import { generatePageMetadata } from '@/shared/config/metadata';
 import { todayInJst } from '@/shared/lib/date';
 

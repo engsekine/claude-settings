@@ -1,11 +1,10 @@
-import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
-
 import { CreditBalanceBadge } from '@/features/credits/components/server/CreditBalanceBadge';
 import { DiveList, ExportMenu, listDives } from '@/features/dives';
 import { parseDiveFilter, recordToSearchParams } from '@/features/dives/lib/search-params';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
 import { Heading } from '@/shared/components/typography/Heading';
+import { buttonVariants } from '@/shared/components/ui/Button';
 import { generatePageMetadata } from '@/shared/config/metadata';
 
 export const metadata = generatePageMetadata(

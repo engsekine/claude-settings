@@ -1,13 +1,10 @@
 'use client';
 
-import { Button } from '@repo/ui/components/button';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@repo/ui/components/sheet';
 import { Bell } from 'lucide-react';
 import type { Route } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-
 import { UNREAD_BADGE_MAX } from '@/features/notifications/constants';
 import {
     buildNotificationMessage,
@@ -17,6 +14,8 @@ import {
 import { getNotificationTarget } from '@/features/notifications/lib/notificationTarget';
 import { markNotificationRead } from '@/features/notifications/server/actions';
 import type { NotificationItem } from '@/features/notifications/server/queries';
+import { Button } from '@/shared/components/ui/Button';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/shared/components/ui/Sheet';
 
 interface NotificationBellPanelProps {
     /** 未読件数（バッジ表示 + aria-label に使用） */

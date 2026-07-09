@@ -1,10 +1,9 @@
-import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
-
 import type { MonthlyDiveStat, YearlyDiveCount } from '@/features/dashboard/types';
 import { BarChart } from '@/shared/components/chart/BarChart';
 import { LineChart } from '@/shared/components/chart/LineChart';
 import { Heading } from '@/shared/components/typography/Heading';
+import { buttonVariants } from '@/shared/components/ui/Button';
 
 import { TrendChartCard } from '../TrendChartCard';
 

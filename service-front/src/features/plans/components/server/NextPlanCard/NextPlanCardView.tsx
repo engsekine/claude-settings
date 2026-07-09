@@ -1,8 +1,7 @@
-import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
-
 import type { NextPlanSummary } from '@/features/plans/types';
 import { Heading } from '@/shared/components/typography/Heading';
+import { buttonVariants } from '@/shared/components/ui/Button';
 import { formatJstDateWithWeekday } from '@/shared/lib/date';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
 

@@ -96,7 +96,7 @@ export const DashboardHero = async ({ badge, nextPlan }: DashboardHeroProps) => 
                         </Heading>
                         <Link
                             href="/plans/new"
-                            className="inline-flex h-9 shrink-0 items-center justify-center rounded-lg border border-white/40 px-4 font-medium text-sm text-white transition-colors hover:bg-white/10"
+                            className="inline-flex h-9 shrink-0 items-center justify-center rounded-lg border border-white/40 px-4 font-bold text-sm text-white transition-colors hover:bg-white/10"
                         >
                             予定を作成する
                         </Link>
@@ -128,7 +128,7 @@ export const DashboardHero = async ({ badge, nextPlan }: DashboardHeroProps) => 
                     {badge}
                     <Link
                         href="/dives/new"
-                        className="inline-flex h-12 items-center justify-center rounded-lg bg-white px-8 font-semibold text-[oklch(0.28_0.08_255)] text-base transition-colors hover:bg-white/90"
+                        className="inline-flex h-12 items-center justify-center rounded-lg bg-white px-8 font-bold text-[oklch(0.28_0.08_255)] text-base transition-colors hover:bg-white/90"
                     >
                         ログを作成
                     </Link>
