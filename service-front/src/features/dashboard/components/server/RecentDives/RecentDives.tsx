@@ -20,10 +20,7 @@ export const RecentDives = ({ dives }: RecentDivesProps) => {
         return (
             <div className="flex flex-col items-center gap-3 rounded-lg border border-border border-dashed bg-background p-8 text-center">
                 <p className="text-muted-foreground">ログがまだありません</p>
-                <Link
-                    href="/dives/new"
-                    className="rounded-md bg-primary px-4 py-2 font-bold text-primary-foreground text-sm transition-opacity hover:opacity-90"
-                >
+                <Link href="/dives/new" className={buttonVariants({ variant: 'default' })}>
                     最初のログを記録しよう
                 </Link>
             </div>

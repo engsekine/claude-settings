@@ -36,10 +36,7 @@ export const PlanList = ({ plans, today }: PlanListProps) => {
         return (
             <div className="flex flex-col items-center gap-3 rounded-lg border border-border border-dashed bg-background p-12 text-center">
                 <p className="text-muted-foreground">予定がまだありません</p>
-                <Link
-                    href="/plans/new"
-                    className="rounded-md bg-primary px-4 py-2 font-bold text-primary-foreground text-sm transition-opacity hover:opacity-90"
-                >
+                <Link href="/plans/new" className={buttonVariants({ variant: 'default' })}>
                     次のダイビングを計画しよう
                 </Link>
             </div>
@@ -118,7 +115,7 @@ const PlanCard = ({ plan, daysLabel, today }: PlanCardProps) => {
                             終了済み
                         </span>
                     ) : (
-                        <span className="font-medium text-primary text-sm">{daysLabel}</span>
+                        <span className="font-medium text-[#1a73cc] text-sm">{daysLabel}</span>
                     )}
                 </div>
                 <Heading level={3} className="text-foreground">

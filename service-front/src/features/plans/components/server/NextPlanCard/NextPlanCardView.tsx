@@ -67,7 +67,7 @@ export const NextPlanCardView = ({ summary }: NextPlanCardViewProps) => {
                                 {summary.location}
                             </Heading>
                         </div>
-                        <span className="shrink-0 rounded-full bg-primary px-3 py-1 font-semibold text-primary-foreground text-sm">
+                        <span className="shrink-0 rounded-full bg-[#1a73cc] px-3 py-1 font-semibold text-white text-sm">
                             <span className="sr-only">残り日数: </span>
                             {formatDaysUntil(summary.daysUntil)}
                         </span>

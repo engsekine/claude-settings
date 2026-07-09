@@ -4,16 +4,3 @@
 @import '@repo/ui/styles/globals.css';
 
 @source '../../../packages/ui/src';
-
-/* ブランドカラー: プライマリボタン（bg-primary / buttonVariants の default）を
-   @repo/ui 既定の黒系から #1649B1（青）に上書きする。foreground は白でコントラスト AA を満たす。
-   ライト / ダーク共通のブランド色として同じ青を使う。 */
-:root {
-    --primary: #1649b1;
-    --primary-foreground: #ffffff;
-}
-
-.dark {
-    --primary: #1649b1;
-    --primary-foreground: #ffffff;
-}

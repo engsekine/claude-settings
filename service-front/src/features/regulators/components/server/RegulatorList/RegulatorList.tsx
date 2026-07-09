@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import type { Regulator } from '@/features/regulators/types';
+import { buttonVariants } from '@/shared/components/ui/Button';
 import { formatJstDate } from '@/shared/lib/date';
 
 interface RegulatorListProps {
@@ -54,10 +55,7 @@ export const RegulatorList = ({ regulators, renderActions }: RegulatorListProps)
         return (
             <div className="flex flex-col items-center gap-3 rounded-lg border border-border border-dashed bg-background p-12 text-center">
                 <p className="text-muted-foreground">レギュレーターを登録すると OH 期限をお知らせします</p>
-                <Link
-                    href="/settings/equipment/new"
-                    className="rounded-md bg-primary px-4 py-2 font-bold text-primary-foreground text-sm transition-opacity hover:opacity-90"
-                >
+                <Link href="/settings/equipment/new" className={buttonVariants({ variant: 'default' })}>
                     レギュレーターを登録する
                 </Link>
             </div>

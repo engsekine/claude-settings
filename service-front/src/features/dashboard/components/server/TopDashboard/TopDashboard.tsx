@@ -16,6 +16,7 @@ import type {
     YearlyDiveCount,
 } from '@/features/dashboard/types';
 import { Heading } from '@/shared/components/typography/Heading';
+import { buttonVariants } from '@/shared/components/ui/Button';
 
 interface TopDashboardProps {
     /** 最近のダイブログ（dives 機能のデータはページ側で変換して渡す） */
@@ -106,6 +107,13 @@ export const TopDashboard = async ({
                         }
                     />
                 )}
+                {/* コンテンツの下に機材登録への導線を中央配置で常設する（「すべてのログを見る」と同テイスト） */}
+                <Link
+                    href="/settings/equipment"
+                    className={`${buttonVariants({ variant: 'default', size: 'lg' })} self-center px-10 shadow-md transition-transform hover:scale-105`}
+                >
+                    機材を登録
+                </Link>
             </section>
 
             <section aria-labelledby="dashboard-trends" className="flex flex-col gap-8">

@@ -113,7 +113,7 @@ export const DashboardHero = async ({ badge, nextPlan }: DashboardHeroProps) => 
                                 <span className="sr-only">行き先: </span>
                                 {nextPlan.location}
                             </span>
-                            <span className="shrink-0 rounded-full bg-white px-3 py-1 font-semibold text-[oklch(0.28_0.08_255)] text-sm">
+                            <span className="shrink-0 rounded-full bg-[#1a73cc] px-3 py-1 font-semibold text-white text-sm">
                                 <span className="sr-only">残り日数: </span>
                                 {formatDaysUntil(nextPlan.daysUntil)}
                             </span>

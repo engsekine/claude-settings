@@ -55,10 +55,10 @@ export default async function PlanPage({ params }: PlanPageProps) {
                             <span className="rounded-md bg-muted px-2 py-0.5 text-foreground text-xs">終了済み</span>
                         )}
                         {remaining === 0 && (
-                            <span className="rounded-md bg-primary/10 px-2 py-0.5 text-primary text-xs">今日</span>
+                            <span className="rounded-md bg-[#1a73cc]/10 px-2 py-0.5 text-[#1a73cc] text-xs">今日</span>
                         )}
                         {remaining > 0 && (
-                            <span className="rounded-md bg-primary/10 px-2 py-0.5 text-primary text-xs">
+                            <span className="rounded-md bg-[#1a73cc]/10 px-2 py-0.5 text-[#1a73cc] text-xs">
                                 あと{remaining}日
                             </span>
                         )}
