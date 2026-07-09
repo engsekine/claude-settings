@@ -34,12 +34,14 @@ UI アプリケーションのため、ページ・ナビゲーション・コ�
 | ヘッダー（デスクトップ） | メインナビゲーションに「使い方」→ `/guide` を追加 |
 | ヘッダー（モバイル） | モバイルメニュー内に「使い方」→ `/guide` を追加 |
 | フッター | `FOOTER_LINKS` に `{ href: '/guide', label: '使い方' }` を追加 |
+| TOP ダッシュボード（FR-011） | 末尾に `GuideIntroSection`（見出し「使い方ガイド」+ 紹介文（`PAGE_DATA.description` を流用）+ 「使い方を見る」→ `/guide`） |
 
 ## feature 公開 API 契約（`features/guide/index.ts`）
 
 | エクスポート | 種別 | 用途 |
 |---|---|---|
 | `GuideView` | Server Component | ページ本体（目次 + セクション描画）。`examples?: Record<string, ReactNode>` を受け取る |
+| `GuideIntroSection` | Server Component | TOP ダッシュボード末尾に置く導入バナー（FR-011） |
 | `PAGE_DATA` | 定数 | metadata 生成用（slug / title / description） |
 | `GUIDE_SECTIONS` | 定数 | セクション定義（data-model.md の型に従う） |
 

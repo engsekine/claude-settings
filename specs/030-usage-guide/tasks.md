@@ -109,6 +109,12 @@
 
 ---
 
+## Phase 7: 追加対応（レビュー後の要望）
+
+- [X] T025 TOP ダッシュボード末尾に使い方の導入セクション `GuideIntroSection` を追加する（FR-011。service-front/src/features/guide/components/GuideIntroSection/ + src/app/page.tsx。見出し「使い方ガイド」+ 紹介文（PAGE_DATA.description 流用）+ 「使い方を見る」→ /guide。テスト・story 同梱）
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { CreditBalanceBadge } from '@/features/credits/components/server/CreditBalanceBadge';
 import { DashboardHero, RecordOverhaulButton, TopDashboard } from '@/features/dashboard';
 import { diveLocationLabel, getCoverThumbUrls, listDives } from '@/features/dives';
+import { GuideIntroSection } from '@/features/guide';
 import { ensureTimedNotifications } from '@/features/notifications/server/queries';
 import { listNextPlansWithProgress, NextPlanCardView } from '@/features/plans';
 import { recordOverhaul } from '@/features/regulators';
@@ -106,6 +107,8 @@ export default async function Home() {
                         <RecordOverhaulButton regulatorId={regulatorId} onRecord={recordOverhaul} />
                     )}
                 />
+                {/* 使い方ページへの導入（030）。既存の日常動線を圧迫しないよう末尾に置く */}
+                <GuideIntroSection />
             </div>
         </div>
     );
