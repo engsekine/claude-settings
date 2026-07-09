@@ -104,8 +104,8 @@
 
 - [X] T021 [P] 全体検証を実行する（`npx biome check service-front/src` → `npx tsc --noEmit`（service-front）→ 全 Vitest → Playwright a11y。すべてグリーンであること）
 - [X] T022 quickstart.md の手動検証 9 手順を実施し、モバイル幅 375px での横スクロールなし（SC-004）とログイン済み / 未ログイン両方の表示（FR-001）を確認する
-- [ ] T023 [P] `/sync-spec specs/030-usage-guide` を実行し、実装と spec.md / plan.md / data-model.md のずれ（セクション本文・例示コンポーネントの最終選定等）を仕様書側に反映する
-- [ ] T024 コミットを整理し PR を作成する（`feat(030): アプリの使い方ページを追加`。`/summary` でディスクリプション生成・`/review` で最終チェック）
+- [X] T023 [P] `/sync-spec specs/030-usage-guide` を実行し、実装と spec.md / plan.md / data-model.md のずれ（セクション本文・例示コンポーネントの最終選定等）を仕様書側に反映する
+- [X] T024 コミットを整理し PR を作成する（`feat(030): アプリの使い方ページを追加`。`/summary` でディスクリプション生成・`/review` で最終チェック）
 
 ---
 
