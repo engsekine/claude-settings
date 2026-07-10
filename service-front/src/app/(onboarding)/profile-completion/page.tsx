@@ -22,13 +22,13 @@ export default async function ProfileCompletionPage() {
     } = await supabase.auth.getUser();
     if (!user) redirect('/login');
 
-    /** 補完済み（user_details 行あり）なら本ページは不要なので /dives へ戻す */
+    /** 補完済み（user_details 行あり）なら本ページは不要なので TOP へ戻す */
     const { data: details } = await supabase
         .from('user_details')
         .select('user_id')
         .eq('user_id', user.id)
         .maybeSingle();
-    if (details) redirect('/dives');
+    if (details) redirect('/');
 
     return (
         <div className="mx-auto flex w-full max-w-md flex-col gap-6 px-4 py-12">

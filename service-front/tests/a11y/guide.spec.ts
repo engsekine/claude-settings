@@ -61,7 +61,7 @@ test('使い方ページ - ログイン済みでも同一コンテンツが表�
     await page.getByLabel('メールアドレス').fill(TEST_EMAIL);
     await page.getByLabel('パスワード').fill(TEST_PASSWORD);
     await page.getByRole('button', { name: 'ログイン', exact: true }).click();
-    await page.waitForURL(/\/dives/);
+    await page.waitForURL((url) => url.pathname === '/');
 
     await page.goto('/guide');
     await expect(page).toHaveURL(/\/guide$/);

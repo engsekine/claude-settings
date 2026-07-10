@@ -14,13 +14,13 @@ Google OAuth 認証フローを開始する。
 |------|------|
 | 入力 | なし |
 | 副作用 | `supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } })` を呼び、`data.url`（Google 同意画面）へ `redirect()` |
-| `redirectTo` | `{NEXT_PUBLIC_SITE_URL}/api/auth/callback?next=/dives` |
+| `redirectTo` | `{NEXT_PUBLIC_SITE_URL}/api/auth/callback?next=/` |
 | 成功時 | Google 同意画面へリダイレクト（関数は戻らない） |
 | 失敗時 | `actionFailure('Google ログインを開始できませんでした。時間をおいて再度お試しください')` |
 
 **契約条件**:
 - 成功時の `data.url` が空の場合は失敗として差し戻す。
-- `next` は `/dives` 固定（オープンリダイレクト防止のため外部入力を受けない）。
+- `next` は `/` 固定（オープンリダイレクト防止のため外部入力を受けない）。
 
 **受け入れ対応**: FR-001 / FR-002 / FR-003。
 
@@ -52,8 +52,8 @@ OAuth 初回ログインユーザーのプロフィールを補完し、`public.
 |------|------|
 | 未認証で呼ばれた | `actionFailure`（認証必須）。実質は `(authenticated)` レイアウト + proxy で到達不可 |
 | 入力が yup 検証に失敗 | `actionFailure`（フィールド単位のメッセージはクライアント側 RHF で表示。Action はサーバ再検証で防御） |
-| `user_details` 行が既に存在（補完済み再送） | 一意制約違反 → `actionFailure` せず `/dives` へ `redirect()`（冪等に扱う） |
-| 正常 | `public.user_details` に INSERT（`user_id = (select auth.uid())`）→ `/dives` へ `redirect()` |
+| `user_details` 行が既に存在（補完済み再送） | 一意制約違反 → `actionFailure` せず TOP（`/`）へ `redirect()`（冪等に扱う） |
+| 正常 | `public.user_details` に INSERT（`user_id = (select auth.uid())`）→ TOP（`/`）へ `redirect()` |
 
 **契約条件**:
 - INSERT は RLS `users can insert own details`（`with check ((select auth.uid()) = user_id)`）に依存。`user_id` はクライアント入力ではなくサーバの `auth.uid()` を使う。
@@ -75,7 +75,7 @@ OAuth 初回ログインユーザーのプロフィールを補完し、`public.
 
 | 受信 | リダイレクト先 |
 |------|----------------|
-| `code` あり・交換成功 | `next`（既定 `/dives`） |
+| `code` あり・交換成功 | `next`（既定 `/`） |
 | `code` あり・交換失敗 | `/login?error=auth_callback_failed`（既存） |
 | `code` 無し・`error` あり（キャンセル等） | `/login?error=oauth_cancelled`（★追加） |
 | `code` 無し・`error` 無し | `/login`（既存） |

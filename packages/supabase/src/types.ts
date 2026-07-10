@@ -93,6 +93,107 @@ export type Database = {
                 };
                 Relationships: [];
             };
+            application_sheets: {
+                Row: {
+                    age: number | null;
+                    birth_on: string | null;
+                    contact_lens_type: string | null;
+                    created_at: string;
+                    dive_count: number | null;
+                    dry_suit_dive_count: number | null;
+                    emergency_contact_phone: string;
+                    emergency_contact_relation: string;
+                    foot_size_cm: number | null;
+                    full_name: string;
+                    gender: string | null;
+                    has_contact_lens: boolean | null;
+                    has_dry_suit_experience: boolean | null;
+                    has_rental: boolean | null;
+                    height_cm: number | null;
+                    id: string;
+                    kind: string;
+                    last_dive_year_month: string | null;
+                    license_rank: string;
+                    name: string;
+                    nearest_station: string;
+                    needs_prescription_mask: boolean | null;
+                    omit_rental_block: boolean;
+                    phone: string;
+                    rental_items: Json;
+                    updated_at: string;
+                    user_id: string;
+                    weight_kg: number | null;
+                };
+                Insert: {
+                    age?: number | null;
+                    birth_on?: string | null;
+                    contact_lens_type?: string | null;
+                    created_at?: string;
+                    dive_count?: number | null;
+                    dry_suit_dive_count?: number | null;
+                    emergency_contact_phone?: string;
+                    emergency_contact_relation?: string;
+                    foot_size_cm?: number | null;
+                    full_name?: string;
+                    gender?: string | null;
+                    has_contact_lens?: boolean | null;
+                    has_dry_suit_experience?: boolean | null;
+                    has_rental?: boolean | null;
+                    height_cm?: number | null;
+                    id?: string;
+                    kind?: string;
+                    last_dive_year_month?: string | null;
+                    license_rank?: string;
+                    name: string;
+                    nearest_station?: string;
+                    needs_prescription_mask?: boolean | null;
+                    omit_rental_block?: boolean;
+                    phone?: string;
+                    rental_items?: Json;
+                    updated_at?: string;
+                    user_id: string;
+                    weight_kg?: number | null;
+                };
+                Update: {
+                    age?: number | null;
+                    birth_on?: string | null;
+                    contact_lens_type?: string | null;
+                    created_at?: string;
+                    dive_count?: number | null;
+                    dry_suit_dive_count?: number | null;
+                    emergency_contact_phone?: string;
+                    emergency_contact_relation?: string;
+                    foot_size_cm?: number | null;
+                    full_name?: string;
+                    gender?: string | null;
+                    has_contact_lens?: boolean | null;
+                    has_dry_suit_experience?: boolean | null;
+                    has_rental?: boolean | null;
+                    height_cm?: number | null;
+                    id?: string;
+                    kind?: string;
+                    last_dive_year_month?: string | null;
+                    license_rank?: string;
+                    name?: string;
+                    nearest_station?: string;
+                    needs_prescription_mask?: boolean | null;
+                    omit_rental_block?: boolean;
+                    phone?: string;
+                    rental_items?: Json;
+                    updated_at?: string;
+                    user_id?: string;
+                    weight_kg?: number | null;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'application_sheets_user_id_fkey';
+                        columns: ['user_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
             certification_tags: {
                 Row: {
                     certification_id: string;

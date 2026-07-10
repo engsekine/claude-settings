@@ -24,7 +24,7 @@ test('TOP（ダッシュボード）- 累計ダイビング本数を含めて WC
     await page.getByLabel('メールアドレス').fill(TEST_EMAIL);
     await page.getByLabel('パスワード').fill(TEST_PASSWORD);
     await page.getByRole('button', { name: 'ログイン', exact: true }).click();
-    await page.waitForURL(/\/dives/);
+    await page.waitForURL((url) => url.pathname === '/');
 
     // TOP（累計ダイビング本数セクションを含む）
     await page.goto('/');

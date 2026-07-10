@@ -43,7 +43,7 @@
 
 | 概念 | 意味 | 属性 |
 |------|------|------|
-| サインアップ確認メール | 新規登録の本人確認 | 差出人（`sender_name`/`admin_email`）・件名・本文（確認リンク `emailRedirectTo=/api/auth/callback?next=/dives`）・有効期限（`[auth.email] otp_expiry`、既定 3600 秒） |
+| サインアップ確認メール | 新規登録の本人確認 | 差出人（`sender_name`/`admin_email`）・件名・本文（確認リンク `emailRedirectTo=/api/auth/callback?next=/`）・有効期限（`[auth.email] otp_expiry`、既定 3600 秒） |
 | パスワードリセット / メール変更メール | 同じ送信基盤で配信 | Clarify Q2=A により到達性は本フィーチャーの対象 |
 
 ## C. 設定・資産（本フィーチャーで変更するファイル）

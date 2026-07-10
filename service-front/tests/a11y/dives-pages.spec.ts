@@ -24,7 +24,7 @@ test('/dives 系 2 画面 - WCAG 2.1 AA 違反なし（要認証）', async ({ p
     await page.getByLabel('メールアドレス').fill(TEST_EMAIL);
     await page.getByLabel('パスワード').fill(TEST_PASSWORD);
     await page.getByRole('button', { name: 'ログイン', exact: true }).click();
-    await page.waitForURL(/\/dives/);
+    await page.waitForURL((url) => url.pathname === '/');
 
     // 一覧（潮回りラベル付きカード）
     await page.goto('/dives');
@@ -51,7 +51,7 @@ test('/dives 検索フィルタ詳細条件パネル展開時 - WCAG 2.1 AA 違�
     await page.getByLabel('メールアドレス').fill(TEST_EMAIL);
     await page.getByLabel('パスワード').fill(TEST_PASSWORD);
     await page.getByRole('button', { name: 'ログイン', exact: true }).click();
-    await page.waitForURL(/\/dives/);
+    await page.waitForURL((url) => url.pathname === '/');
 
     await page.goto('/dives');
     // 折りたたみ「詳細条件」を展開して期間・深度・ダイブタイプ入力を表示した状態を検証

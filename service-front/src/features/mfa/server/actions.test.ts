@@ -165,11 +165,11 @@ describe('challengeLoginFactor', () => {
 });
 
 describe('verifyLogin', () => {
-    it('verify 成功で /dives へ redirect する', async () => {
+    it('verify 成功で TOP へ redirect する', async () => {
         const mock = buildMfaMock();
         createClient.mockResolvedValue(mock.client);
 
-        await expect(verifyLogin('factor-1', 'challenge-1', '123456')).rejects.toThrow('NEXT_REDIRECT:/dives');
+        await expect(verifyLogin('factor-1', 'challenge-1', '123456')).rejects.toThrow('NEXT_REDIRECT:/');
     });
 
     it('誤コードは redirect せず失敗を返す', async () => {
