@@ -93,6 +93,68 @@ export type Database = {
                 };
                 Relationships: [];
             };
+            application_profiles: {
+                Row: {
+                    contact_lens_type: string | null;
+                    created_at: string;
+                    dry_suit_dive_count: number | null;
+                    emergency_contact_phone: string;
+                    emergency_contact_relation: string;
+                    foot_size_cm: number | null;
+                    has_boat_experience: boolean | null;
+                    has_contact_lens: boolean | null;
+                    has_dry_suit_experience: boolean | null;
+                    has_izu_chiba_experience: boolean | null;
+                    nearest_station: string;
+                    needs_prescription_mask: boolean | null;
+                    phone: string;
+                    updated_at: string;
+                    user_id: string;
+                };
+                Insert: {
+                    contact_lens_type?: string | null;
+                    created_at?: string;
+                    dry_suit_dive_count?: number | null;
+                    emergency_contact_phone?: string;
+                    emergency_contact_relation?: string;
+                    foot_size_cm?: number | null;
+                    has_boat_experience?: boolean | null;
+                    has_contact_lens?: boolean | null;
+                    has_dry_suit_experience?: boolean | null;
+                    has_izu_chiba_experience?: boolean | null;
+                    nearest_station?: string;
+                    needs_prescription_mask?: boolean | null;
+                    phone?: string;
+                    updated_at?: string;
+                    user_id: string;
+                };
+                Update: {
+                    contact_lens_type?: string | null;
+                    created_at?: string;
+                    dry_suit_dive_count?: number | null;
+                    emergency_contact_phone?: string;
+                    emergency_contact_relation?: string;
+                    foot_size_cm?: number | null;
+                    has_boat_experience?: boolean | null;
+                    has_contact_lens?: boolean | null;
+                    has_dry_suit_experience?: boolean | null;
+                    has_izu_chiba_experience?: boolean | null;
+                    nearest_station?: string;
+                    needs_prescription_mask?: boolean | null;
+                    phone?: string;
+                    updated_at?: string;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'application_profiles_user_id_fkey';
+                        columns: ['user_id'];
+                        isOneToOne: true;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
             certification_tags: {
                 Row: {
                     certification_id: string;

@@ -15,6 +15,7 @@ const APP_ROUTE_PREFIXES = [
     '/profile-completion',
     '/update-password',
     '/notifications',
+    '/application-sheet',
 ];
 
 /**

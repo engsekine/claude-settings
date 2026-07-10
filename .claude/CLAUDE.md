@@ -205,5 +205,5 @@ npx biome check .
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at specs/030-usage-guide/plan.md
+at specs/032-dive-application-form/plan.md
 <!-- SPECKIT END -->
