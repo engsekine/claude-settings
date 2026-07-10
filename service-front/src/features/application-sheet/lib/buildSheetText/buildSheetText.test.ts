@@ -196,12 +196,21 @@ describe('buildSheetText', () => {
             '',
             '・レンタル器材（無）',
             '',
-            '・コンタクトレンズ有無（ ）',
-            '有りの方 → ハード or ソフト or 使い捨て（ ）',
-            '',
             '・度付きのマスクレンタル必要の有無（ ）',
         ].join('\n');
         expect(text).toBe(expected);
+    });
+
+    it('省略トグル ON ではコンタクトレンズの有無・種類もレンタルブロックとして省略される', () => {
+        const text = buildSheetText({
+            ...emptyValues,
+            hasRental: 'no',
+            omitRentalBlock: true,
+            hasContactLens: 'yes',
+            contactLensType: 'soft',
+        });
+        expect(text).not.toContain('・コンタクトレンズ有無');
+        expect(text).not.toContain('有りの方 → ハード or ソフト or 使い捨て');
     });
 
     it('レンタル「有」ではトグル ON でもブロックを省略しない（省略は「無」時のみ）', () => {
