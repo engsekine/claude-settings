@@ -24,7 +24,7 @@ test('/plans 系 3 画面 - WCAG 2.1 AA 違反なし（要認証）', async ({ p
     await page.getByLabel('メールアドレス').fill(TEST_EMAIL);
     await page.getByLabel('パスワード').fill(TEST_PASSWORD);
     await page.getByRole('button', { name: 'ログイン', exact: true }).click();
-    await page.waitForURL(/\/dives/);
+    await page.waitForURL((url) => url.pathname === '/');
 
     // 一覧
     await page.goto('/plans');

@@ -109,7 +109,7 @@ export const challengeLoginFactor = async (factorId: string): Promise<ActionResu
 };
 
 /**
- * ログイン 2 段階目のコードを検証し、成功したら AAL2 に昇格して /dives へ進む（FR-010/011）。
+ * ログイン 2 段階目のコードを検証し、成功したら AAL2 に昇格して TOP（`/`）へ進む（FR-010/011）。
  * 誤り・期限切れコードは拒否して再入力させる。
  */
 export const verifyLogin = async (factorId: string, challengeId: string, code: string): Promise<ActionResult> => {
@@ -120,5 +120,5 @@ export const verifyLogin = async (factorId: string, challengeId: string, code: s
         return actionFailure('確認コードが正しくありません。もう一度お試しください');
     }
 
-    redirect('/dives');
+    redirect('/');
 };

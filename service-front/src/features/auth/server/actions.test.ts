@@ -129,7 +129,7 @@ describe('signInWithGoogle', () => {
             expect.objectContaining({
                 provider: 'google',
                 options: expect.objectContaining({
-                    redirectTo: expect.stringContaining('/api/auth/callback?next=/dives'),
+                    redirectTo: expect.stringContaining('/api/auth/callback?next=/'),
                 }),
             }),
         );
@@ -175,22 +175,22 @@ describe('completeProfile', () => {
         expect(result.success).toBe(false);
     });
 
-    it('INSERT 成功で /dives へ redirect する', async () => {
+    it('INSERT 成功で TOP へ redirect する', async () => {
         const mock = buildSupabaseMock();
         createClient.mockResolvedValue(mock.client);
 
-        await expect(completeProfile(profileInput)).rejects.toThrow('NEXT_REDIRECT:/dives');
+        await expect(completeProfile(profileInput)).rejects.toThrow('NEXT_REDIRECT:/');
         expect(mock.insert).toHaveBeenCalledWith(
             expect.objectContaining({ user_id: 'user-1', nickname: 'たろちゃん' }),
         );
     });
 
-    it('PK 重複（補完済み再送）は冪等に /dives へ redirect する', async () => {
+    it('PK 重複（補完済み再送）は冪等に TOP へ redirect する', async () => {
         createClient.mockResolvedValue(
             buildSupabaseMock({ insertError: { code: '23505', message: 'duplicate' } }).client,
         );
 
-        await expect(completeProfile(profileInput)).rejects.toThrow('NEXT_REDIRECT:/dives');
+        await expect(completeProfile(profileInput)).rejects.toThrow('NEXT_REDIRECT:/');
     });
 
     it('その他の INSERT エラーは失敗を返す', async () => {
@@ -201,7 +201,7 @@ describe('completeProfile', () => {
         expect(result.success).toBe(false);
     });
 
-    it('nickname が既に使われている場合は INSERT せず失敗を返す（/dives へ流さない）', async () => {
+    it('nickname が既に使われている場合は INSERT せず失敗を返す（TOP へ流さない）', async () => {
         const mock = buildSupabaseMock({ nicknameTaken: true });
         createClient.mockResolvedValue(mock.client);
 
@@ -307,7 +307,7 @@ describe('completeProfile - メール配信許可（022）', () => {
         const mock = buildSupabaseMock();
         createClient.mockResolvedValue(mock.client);
 
-        await expect(completeProfile({ ...profileInput, emailOptIn: true })).rejects.toThrow('NEXT_REDIRECT:/dives');
+        await expect(completeProfile({ ...profileInput, emailOptIn: true })).rejects.toThrow('NEXT_REDIRECT:/');
 
         const payload = mock.insert.mock.calls[0]?.[0];
         expect(payload.is_email_opted_in).toBe(true);
@@ -318,7 +318,7 @@ describe('completeProfile - メール配信許可（022）', () => {
         const mock = buildSupabaseMock();
         createClient.mockResolvedValue(mock.client);
 
-        await expect(completeProfile({ ...profileInput, emailOptIn: false })).rejects.toThrow('NEXT_REDIRECT:/dives');
+        await expect(completeProfile({ ...profileInput, emailOptIn: false })).rejects.toThrow('NEXT_REDIRECT:/');
 
         const payload = mock.insert.mock.calls[0]?.[0];
         expect(payload.is_email_opted_in).toBe(false);
@@ -339,7 +339,7 @@ describe('resendConfirmationEmail', () => {
                 type: 'signup',
                 email: 'user@example.com',
                 options: expect.objectContaining({
-                    emailRedirectTo: expect.stringContaining('/api/auth/callback?next=/dives'),
+                    emailRedirectTo: expect.stringContaining('/api/auth/callback?next=/'),
                 }),
             }),
         );

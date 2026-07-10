@@ -62,7 +62,7 @@ test('HeaderMobileNav - 認証済みページでの Sheet 開状態 - WCAG 2.1 A
     await page.getByLabel('メールアドレス').fill(TEST_EMAIL);
     await page.getByLabel('パスワード').fill(TEST_PASSWORD);
     await page.getByRole('button', { name: 'ログイン', exact: true }).click();
-    await page.waitForURL(/\/dives/);
+    await page.waitForURL((url) => url.pathname === '/');
 
     // 認証済みページ（ダッシュボード）でモバイルメニューを開く
     await page.goto('/');

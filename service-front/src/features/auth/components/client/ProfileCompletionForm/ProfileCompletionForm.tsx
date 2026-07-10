@@ -16,7 +16,7 @@ import { DEFAULT_GENDER, GENDER_OPTIONS } from '@/shared/constants/gender';
 
 /**
  * Google ログイン初回ユーザーのプロフィール補完フォーム（016-google-login）。
- * 成功時は completeProfile 内で /dives へ redirect されるため、戻り値は失敗時のみ受け取る。
+ * 成功時は completeProfile 内で TOP（`/`）へ redirect されるため、戻り値は失敗時のみ受け取る。
  */
 export const ProfileCompletionForm = () => {
     const [isPending, startTransition] = useTransition();

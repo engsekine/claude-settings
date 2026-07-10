@@ -84,7 +84,7 @@ description: "Task list for 018-terms-agreement implementation"
 
 **Goal**: `/profile-completion` に利用規約同意チェックを追加し、未チェックでは利用開始できず、同意して補完すると同意情報が記録される
 
-**Independent Test**: 未登録 Google で初回ログイン → 補完画面で未チェック送信→進めない、チェック→ `/dives` 到達＋記録（quickstart シナリオ C）
+**Independent Test**: 未登録 Google で初回ログイン → 補完画面で未チェック送信→進めない、チェック→ TOP（`/`）到達＋記録（quickstart シナリオ C）
 
 ### Tests for User Story 2 ⚠️（実装前に書き、FAIL を確認）
 
@@ -92,7 +92,7 @@ description: "Task list for 018-terms-agreement implementation"
 - [X] T018 [P] [US2] `completeProfile` の Vitest（未同意ガード / 同意で INSERT に terms 列を含む）in `service-front/src/features/auth/server/actions.test.ts`
 - [X] T019 [P] [US2] `toUserDetailsInsert` の Vitest（`terms_version` / `terms_agreed_at` が INSERT ペイロードにマップされる）in `service-front/src/features/auth/server/mappers/profile-completion.test.ts`
 - [X] T020 [P] [US2] `ProfileCompletionForm` の Vitest（同意チェック表示・未チェックで `completeProfile` 未呼び出し＋エラー）
-- [ ] T021 [P] [US2] Playwright E2E（要ローカル Supabase + Google 設定）: Google 初回で未チェック不可・チェックで `/dives` 到達＋記録（quickstart シナリオ C）
+- [ ] T021 [P] [US2] Playwright E2E（要ローカル Supabase + Google 設定）: Google 初回で未チェック不可・チェックで TOP（`/`）到達＋記録（quickstart シナリオ C）
 
 ### Implementation for User Story 2
 

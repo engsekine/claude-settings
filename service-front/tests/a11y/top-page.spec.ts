@@ -24,7 +24,7 @@ test('TOP ダッシュボード - WCAG 2.1 AA 違反なし（要認証）', asyn
     await page.getByLabel('メールアドレス').fill(TEST_EMAIL);
     await page.getByLabel('パスワード').fill(TEST_PASSWORD);
     await page.getByRole('button', { name: 'ログイン', exact: true }).click();
-    await page.waitForURL(/\/dives/);
+    await page.waitForURL((url) => url.pathname === '/');
 
     // TOP（「次の予定」カードの潮回りラベル含む）
     await page.goto('/');

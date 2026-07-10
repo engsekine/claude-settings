@@ -24,7 +24,7 @@ test('ダイブサイト詳細 - WCAG 2.1 AA 違反なし（要認証）', async
     await page.getByLabel('メールアドレス').fill(TEST_EMAIL);
     await page.getByLabel('パスワード').fill(TEST_PASSWORD);
     await page.getByRole('button', { name: 'ログイン', exact: true }).click();
-    await page.waitForURL(/\/dives/);
+    await page.waitForURL((url) => url.pathname === '/');
 
     // マスタ（seed の「大瀬崎」）を検索選択してログを作成
     await page.goto('/dives/new');

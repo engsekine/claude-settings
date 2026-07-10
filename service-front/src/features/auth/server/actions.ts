@@ -60,7 +60,7 @@ export const signIn = async (email: string, password: string): Promise<ActionRes
         return actionFailure('メールアドレスまたはパスワードが間違っています');
     }
 
-    redirect('/dives');
+    redirect('/');
 };
 
 export const signUp = async (input: SignUpInput): Promise<ActionResult<SignUpPayload>> => {
@@ -81,7 +81,7 @@ export const signUp = async (input: SignUpInput): Promise<ActionResult<SignUpPay
         email: input.email,
         password: input.password,
         options: {
-            emailRedirectTo: `${getSiteUrl()}/api/auth/callback?next=/dives`,
+            emailRedirectTo: `${getSiteUrl()}/api/auth/callback?next=/`,
             /**
              * raw_user_meta_data に格納され、handle_new_user トリガーが
              * user_details への INSERT で参照する。
@@ -199,7 +199,7 @@ export const resendConfirmationEmail = async (email: string): Promise<ActionResu
         type: 'signup',
         email,
         options: {
-            emailRedirectTo: `${getSiteUrl()}/api/auth/callback?next=/dives`,
+            emailRedirectTo: `${getSiteUrl()}/api/auth/callback?next=/`,
         },
     });
 
@@ -222,7 +222,7 @@ export const signInWithGoogle = async (): Promise<ActionResult> => {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            redirectTo: `${getSiteUrl()}/api/auth/callback?next=/dives`,
+            redirectTo: `${getSiteUrl()}/api/auth/callback?next=/`,
         },
     });
 
@@ -258,7 +258,7 @@ const toBrowserReachableAuthorizeUrl = (authorizeUrl: string): string => {
 /**
  * Google ログイン初回ユーザーのプロフィールを補完し、user_details に本人行を INSERT する。
  * user_id はクライアント入力ではなく auth.uid()（セッションユーザー）を使う。
- * 補完済みユーザーの再送（一意制約違反）は冪等に /dives へ流す。
+ * 補完済みユーザーの再送（一意制約違反）は冪等に TOP（`/`）へ流す。
  */
 export const completeProfile = async (input: CompleteProfileInput): Promise<ActionResult> => {
     /** クライアントの無効化に依存せず、サーバー側でも未同意を拒否する（018 / FR-008） */
@@ -287,9 +287,9 @@ export const completeProfile = async (input: CompleteProfileInput): Promise<Acti
         if (error.code === '23505' && error.message.includes('user_details_nickname_key')) {
             return actionFailure('このニックネームは既に使われています。別のニックネームをお試しください');
         }
-        /** 既に補完済み（PK user_id 重複）の場合は冪等に成功扱いとし /dives へ */
+        /** 既に補完済み（PK user_id 重複）の場合は冪等に成功扱いとし TOP へ */
         if (error.code === '23505') {
-            redirect('/dives');
+            redirect('/');
         }
         console.error('[completeProfile] supabase error:', {
             message: error.message,
@@ -298,5 +298,5 @@ export const completeProfile = async (input: CompleteProfileInput): Promise<Acti
         return actionFailure('プロフィールの保存に失敗しました。時間をおいて再度お試しください');
     }
 
-    redirect('/dives');
+    redirect('/');
 };

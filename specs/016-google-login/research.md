@@ -8,7 +8,7 @@
 
 ## Decision 1: OAuth フローと既存コールバックの再利用
 
-- **Decision**: ログイン開始は Server Action `signInWithGoogle()` で `supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: '{site_url}/api/auth/callback?next=/dives' } })` を呼び、返却された `data.url` へリダイレクトする。Google からの戻りは既存の `/api/auth/callback`（`exchangeCodeForSession`）でそのまま処理する。
+- **Decision**: ログイン開始は Server Action `signInWithGoogle()` で `supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: '{site_url}/api/auth/callback?next=/' } })` を呼び、返却された `data.url` へリダイレクトする。Google からの戻りは既存の `/api/auth/callback`（`exchangeCodeForSession`）でそのまま処理する。
 - **Rationale**: 既存コールバック（`service-front/src/app/api/auth/callback/route.ts`）は PKCE の `code` を受けて `exchangeCodeForSession` する汎用実装で、メール確認・パスワードリセット・OAuth のすべてに使える。コメントにも「メール認証 / OAuth コールバック」と明記済み。エラー時は `/login?error=auth_callback_failed`、`code` 欠落時は `/login` に戻すため、spec の FR-009 / FR-010 をそのまま満たす。
 - **Alternatives considered**:
   - クライアント側 `signInWithOAuth` 直呼び → Server Components First（憲章 II）に反し、リダイレクト URL 構築をクライアントに散らすため不採用。
@@ -43,8 +43,8 @@
 ## Decision 4: 補完未完了ユーザーのゲーティング（リダイレクト境界）
 
 - **Decision**: 認証必須ルートのゲートを 2 段にする。
-  1. **proxy（middleware）**: 従来どおり「未認証 → `/login`」「認証済みで `/login` `/signup` → `/dives`」を担う。DB 参照は増やさない。
-  2. **`(authenticated)` レイアウト（Server Component）**: ログインユーザーに `user_details` 行が無ければ `/profile-completion` へ `redirect()`。`/profile-completion` は認証必須だがプロフィール未補完を許容する例外ルートとする。補完済みユーザーが `/profile-completion` を開いたら `/dives` へ戻す。
+  1. **proxy（middleware）**: 従来どおり「未認証 → `/login`」「認証済みで `/login` `/signup` → TOP（`/`）」を担う。DB 参照は増やさない。
+  2. **`(authenticated)` レイアウト（Server Component）**: ログインユーザーに `user_details` 行が無ければ `/profile-completion` へ `redirect()`。`/profile-completion` は認証必須だがプロフィール未補完を許容する例外ルートとする。補完済みユーザーが `/profile-completion` を開いたら TOP（`/`）へ戻す。
 - **Rationale**: middleware で毎リクエスト DB 参照すると Edge での遅延・コストが増える。補完判定は「行の有無」を `(authenticated)` レイアウトで 1 回 SELECT すれば足り、Server Components First とも整合する。
 - **Alternatives considered**:
   - middleware で毎回 `user_details` を SELECT → Edge ランタイムの DB 往復が全保護ルートで発生するため不採用。

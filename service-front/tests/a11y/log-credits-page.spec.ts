@@ -30,7 +30,7 @@ const login = async (page: Page) => {
     await page.getByLabel('メールアドレス').fill(TEST_EMAIL);
     await page.getByLabel('パスワード').fill(TEST_PASSWORD);
     await page.getByRole('button', { name: 'ログイン', exact: true }).click();
-    await page.waitForURL(/\/dives/);
+    await page.waitForURL((url) => url.pathname === '/');
 };
 
 test('/settings/log-credits - 購入カードと残枠を表示し WCAG 2.1 AA 違反なし（要認証）', async ({ page }) => {

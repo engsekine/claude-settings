@@ -17,7 +17,7 @@ interface MfaChallengeFormProps {
 /**
  * ログイン 2 段階目の SMS コード入力フォーム（023 / US2 / FR-010〜013）。
  * まず「送信」で SMS を送り、届いたコードを入力して verifyLogin で AAL2 へ昇格する。
- * 検証成功時はサーバーアクションが /dives へ redirect するため、このフォームには戻らない。
+ * 検証成功時はサーバーアクションが TOP（`/`）へ redirect するため、このフォームには戻らない。
  */
 export const MfaChallengeForm = ({ factorId }: MfaChallengeFormProps) => {
     const [isPending, startTransition] = useTransition();

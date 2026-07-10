@@ -13,8 +13,8 @@ import { createClient } from '@/shared/lib/supabase/server';
  * `/` 始まりの相対パスに限定し、`//`（プロトコル相対）・`\` を含むものは既定に落とす。
  */
 const toSafeNextPath = (next: string | null): string => {
-    if (!next) return '/dives';
-    if (!next.startsWith('/') || next.startsWith('//') || next.includes('\\')) return '/dives';
+    if (!next) return '/';
+    if (!next.startsWith('/') || next.startsWith('//') || next.includes('\\')) return '/';
     return next;
 };
 

@@ -56,9 +56,9 @@ description: "Task list for 016-google-login implementation"
 
 ## Phase 3: User Story 1 - Google でログイン (Priority: P1) 🎯 MVP
 
-**Goal**: `/login` `/signup` から「Google でログイン」で認証フローを開始し、既存（補完済み）ユーザーがパスワード入力なしで `/dives` に到達できる
+**Goal**: `/login` `/signup` から「Google でログイン」で認証フローを開始し、既存（補完済み）ユーザーがパスワード入力なしで TOP（`/`）に到達できる
 
-**Independent Test**: 補完済みの Google アカウントでログアウト → `/login` の「Google でログイン」→ 同意 → 補完を挟まず `/dives` に到達（quickstart シナリオ B）
+**Independent Test**: 補完済みの Google アカウントでログアウト → `/login` の「Google でログイン」→ 同意 → 補完を挟まず TOP（`/`）に到達（quickstart シナリオ B）
 
 ### Tests for User Story 1 ⚠️（実装前に書き、FAIL を確認）
 
@@ -66,11 +66,11 @@ description: "Task list for 016-google-login implementation"
 - [X] T006 [P] [US1] `GoogleAuthButton` の Vitest 単体テスト in `service-front/src/features/auth/components/client/GoogleAuthButton/GoogleAuthButton.test.tsx`
 - [X] T007 [P] [US1] `GoogleAuthButton` の Storybook story in `service-front/src/features/auth/components/client/GoogleAuthButton/GoogleAuthButton.stories.tsx`
 - [ ] T008 [P] [US1] `GoogleAuthButton` の Playwright a11y テスト（アクセシブル名・アイコン `aria-hidden`）
-- [ ] T009 [P] [US1] Playwright E2E: 既存 Google ユーザーのログイン → `/dives` 到達（quickstart シナリオ B / SC-001）
+- [ ] T009 [P] [US1] Playwright E2E: 既存 Google ユーザーのログイン → TOP（`/`）到達（quickstart シナリオ B / SC-001）
 
 ### Implementation for User Story 1
 
-- [X] T010 [US1] `signInWithGoogle()` Server Action 実装 in `service-front/src/features/auth/server/actions.ts`（`signInWithOAuth({ provider: 'google', options: { redirectTo: '{SITE_URL}/api/auth/callback?next=/dives' } })` → `data.url` へ `redirect()`、`url` 空は `actionFailure`）。contracts/server-actions.md 準拠
+- [X] T010 [US1] `signInWithGoogle()` Server Action 実装 in `service-front/src/features/auth/server/actions.ts`（`signInWithOAuth({ provider: 'google', options: { redirectTo: '{SITE_URL}/api/auth/callback?next=/' } })` → `data.url` へ `redirect()`、`url` 空は `actionFailure`）。contracts/server-actions.md 準拠
 - [X] T011 [P] [US1] `GoogleAuthButton` コンポーネント実装 in `service-front/src/features/auth/components/client/GoogleAuthButton/GoogleAuthButton.tsx` + `index.ts`（`signInWithGoogle` を呼ぶ最小 Client、`aria-busy` 対応）
 - [X] T012 [US1] `/login` ページ / `LoginForm` に `GoogleAuthButton` を配置 in `service-front/src/features/auth/components/client/LoginForm/LoginForm.tsx`
 - [X] T013 [US1] `/signup` ページ / `SignupForm` に `GoogleAuthButton`（「Google で続行」）を配置 in `service-front/src/features/auth/components/client/SignupForm/SignupForm.tsx`
@@ -82,28 +82,28 @@ description: "Task list for 016-google-login implementation"
 
 ## Phase 4: User Story 2 - Google で新規アカウント作成（初回ログイン） (Priority: P1)
 
-**Goal**: 未登録 Google アカウントの初回ログインでアカウントが作成され、`/profile-completion` で全プロフィール項目を必須入力してから `/dives` に到達できる
+**Goal**: 未登録 Google アカウントの初回ログインでアカウントが作成され、`/profile-completion` で全プロフィール項目を必須入力してから TOP（`/`）に到達できる
 
-**Independent Test**: 未登録 Google アカウントでログイン → `/profile-completion` にリダイレクト → 全項目入力で送信 → `/dives` 到達。必須未入力では進めない（quickstart シナリオ A / US2-2・US2-3）
+**Independent Test**: 未登録 Google アカウントでログイン → `/profile-completion` にリダイレクト → 全項目入力で送信 → TOP（`/`）到達。必須未入力では進めない（quickstart シナリオ A / US2-2・US2-3）
 
 ### Tests for User Story 2 ⚠️（実装前に書き、FAIL を確認）
 
 - [X] T014 [P] [US2] `profile-completion.schema` の Vitest（必須未入力・ローマ字バリデーション・生年月日範囲・性別 3 値・身長体重 null 正規化）in `service-front/src/features/auth/schemas/profile-completion.schema.test.ts`（contracts/profile-completion-schema.md）
-- [X] T015 [P] [US2] `completeProfile` の Vitest（yup 再検証・`user_details` INSERT 引数・成功で `/dives`・補完済み再送の冪等扱い）in `service-front/src/features/auth/server/actions.test.ts`
+- [X] T015 [P] [US2] `completeProfile` の Vitest（yup 再検証・`user_details` INSERT 引数・成功で TOP（`/`）・補完済み再送の冪等扱い）in `service-front/src/features/auth/server/actions.test.ts`
 - [X] T016 [P] [US2] `ProfileCompletionForm` の Vitest 単体テスト
 - [X] T017 [P] [US2] `ProfileCompletionForm` の Storybook story
 - [ ] T018 [P] [US2] `ProfileCompletionForm` の Playwright a11y テスト（label 関連付け・`role="alert"`・`aria-invalid`・`aria-required`）
-- [ ] T019 [P] [US2] Playwright E2E: 初回 Google ログイン → 補完 → `/dives`、および必須未入力で拒否（quickstart シナリオ A）
+- [ ] T019 [P] [US2] Playwright E2E: 初回 Google ログイン → 補完 → TOP（`/`）、および必須未入力で拒否（quickstart シナリオ A）
 - [ ] T019a [P] [US2] Playwright E2E: メール未確認の Google アカウントでログインが拒否され、メール確認が必要である旨が表示されることを検証（FR-006 / US2-4 / C1 対応）
 
 ### Implementation for User Story 2
 
 - [X] T020 [US2] `profile-completion.schema.ts` 実装 in `service-front/src/features/auth/schemas/profile-completion.schema.ts`（`signup.schema.ts` からメール/パスワードを除く共通プロフィール項目を抽出・共有。`CompleteProfileInput` 型を `InferType` で導出）
-- [X] T021 [US2] `completeProfile(input)` Server Action 実装 in `service-front/src/features/auth/server/actions.ts`（サーバ側 yup 再検証 → `public.user_details` に `user_id = (select auth.uid())` で INSERT → `/dives`。一意制約違反時は `/dives` へ redirect）。contracts/server-actions.md 準拠
+- [X] T021 [US2] `completeProfile(input)` Server Action 実装 in `service-front/src/features/auth/server/actions.ts`（サーバ側 yup 再検証 → `public.user_details` に `user_id = (select auth.uid())` で INSERT → TOP（`/`）。一意制約違反時は TOP（`/`）へ redirect）。contracts/server-actions.md 準拠
 - [X] T022 [P] [US2] `ProfileCompletionForm` コンポーネント実装 in `service-front/src/features/auth/components/client/ProfileCompletionForm/ProfileCompletionForm.tsx` + `index.ts`（React Hook Form + `profile-completion.schema`、`gender` は `GENDER_OPTIONS`）
-- [X] T023 [US2] `/profile-completion` ページ実装 in `service-front/src/app/(onboarding)/profile-completion/page.tsx`（補完ゲートのループ回避のため (authenticated) ではなく (onboarding) グループに配置。ページ内で「未認証→/login」「補完済み→/dives」を自前ガード。`ProfileCompletionForm` を表示）
+- [X] T023 [US2] `/profile-completion` ページ実装 in `service-front/src/app/(onboarding)/profile-completion/page.tsx`（補完ゲートのループ回避のため (authenticated) ではなく (onboarding) グループに配置。ページ内で「未認証→/login」「補完済み→TOP（/）」を自前ガード。`ProfileCompletionForm` を表示）
 - [X] T024 [US2] `service-front/src/proxy.ts` に `/profile-completion` を認証必須ルートとして追加（未認証 → `/login`）
-- [X] T025 [US2] `service-front/src/app/(authenticated)/layout.tsx` に補完ゲート実装（ログインユーザーの `user_details` 行を 1 回 SELECT → 無ければ `/profile-completion` へ `redirect()`。補完済みが `/profile-completion` を開いたら `/dives` へ戻す）。FR-005 / FR-015 / research.md Decision 4
+- [X] T025 [US2] `service-front/src/app/(authenticated)/layout.tsx` に補完ゲート実装（ログインユーザーの `user_details` 行を 1 回 SELECT → 無ければ `/profile-completion` へ `redirect()`。補完済みが `/profile-completion` を開いたら TOP（`/`）へ戻す）。FR-005 / FR-015 / research.md Decision 4
 - [X] T025a [US2] メール未確認 Google アカウントのログイン拒否（FR-006 / C1 対応）: callback または `(authenticated)/layout.tsx` でセッションユーザーの `email_confirmed_at` / provider のメール確認状態を判定し、未確認なら `signOut()` のうえ `/login?error=email_not_verified` へ誘導する。Supabase が Google を常に確認済み扱いする場合は、その挙動を T004 で確認のうえ本タスクを「確認済み前提の防御的ガード + 検証」に縮小してよい（spec Assumptions 参照）
 
 **Checkpoint**: Google 初回ユーザーが補完を経て利用開始でき、未確認メールは拒否される（US1 + US2 で Google ログインの主動線が完成）
@@ -135,12 +135,12 @@ description: "Task list for 016-google-login implementation"
 
 **Goal**: Google ログインのセッションが既存の認証ガード・ログアウトと矛盾なく動く
 
-**Independent Test**: Google ログイン → ログアウト → `/login`、未認証で `/dives` → `/login`、Google ログイン済みで `/login` `/signup` → `/dives`（quickstart シナリオ E / SC-005）
+**Independent Test**: Google ログイン → ログアウト → `/login`、未認証で `/dives` → `/login`、Google ログイン済みで `/login` `/signup` → TOP（`/`）（quickstart シナリオ E / SC-005）
 
 ### Tests for User Story 4 ⚠️
 
 - [ ] T028 [P] [US4] Playwright E2E: Google ログイン → ログアウト → `/login` リダイレクト（FR-011）
-- [ ] T029 [P] [US4] Playwright E2E: Google ログイン済みで `/login` `/signup` → `/dives`、未認証で `/dives` 配下 → `/login`、未認証で `/profile-completion` → `/login`（FR-012 / FR-013 / T024）
+- [ ] T029 [P] [US4] Playwright E2E: Google ログイン済みで `/login` `/signup` → TOP（`/`）、未認証で `/dives` 配下 → `/login`、未認証で `/profile-completion` → `/login`（FR-012 / FR-013 / T024）
 
 ### Implementation for User Story 4
 

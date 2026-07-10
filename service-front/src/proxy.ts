@@ -19,7 +19,7 @@ const APP_ROUTE_PREFIXES = [
 ];
 
 /**
- * 未認証ユーザー向けのパス（認証済みなら /dives へ飛ばす）。完全一致で判定する。
+ * 未認証ユーザー向けのパス（認証済みなら TOP（`/`）へ飛ばす）。完全一致で判定する。
  *
  * 023 / US2 注記: ログイン 2 段階目の `/login/verify` は「完全一致」ではないため
  * ここには含まれず、AAL1（1 段階目のみ）の認証済みユーザーでも到達できる。
@@ -44,7 +44,7 @@ export const proxy = async (request: NextRequest) => {
     }
 
     if (isAuthRoute && user) {
-        return NextResponse.redirect(new URL('/dives', request.url));
+        return NextResponse.redirect(new URL('/', request.url));
     }
 
     return response;
