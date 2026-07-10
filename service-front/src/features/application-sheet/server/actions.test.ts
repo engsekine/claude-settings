@@ -33,13 +33,14 @@ const buildSupabaseMock = (options: SupabaseMockOptions = {}) => {
         deleteError = null,
     } = options;
 
-    // insert(): シート新規は .select().single()、基本情報は直接 await（thenable）
+    // insert(): シート新規は .select().single() で解決する。
+    // 基本情報の insert は builder を直接 await するが、モックは非 thenable のため
+    // await は同じオブジェクトを返し、error プロパティが undefined = 成功として扱われる
     const insertResolved = insertError
         ? { data: null, error: insertError }
         : { data: { id: 'sheet-new' }, error: null };
     const insert = vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue({ single: vi.fn().mockResolvedValue(insertResolved) }),
-        then: (resolve: (value: { error: unknown }) => void) => resolve({ error: insertError ?? null }),
     });
 
     // update(): eq を可変長でチェーンし .select().maybeSingle() で解決する
