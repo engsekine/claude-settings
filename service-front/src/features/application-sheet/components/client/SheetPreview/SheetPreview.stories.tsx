@@ -24,12 +24,12 @@ const SAMPLE_TEXT = [
 
 export const Default: Story = {
     args: {
-        text: SAMPLE_TEXT,
+        generatedText: SAMPLE_TEXT,
     },
 };
 
 export const EmptyValues: Story = {
     args: {
-        text: '・お名前（ ）\n・年齢（ 歳）\n・性別（ ）',
+        generatedText: '・お名前（ ）\n・年齢（ 歳）\n・性別（ ）',
     },
 };

@@ -268,7 +268,7 @@ export const ApplicationSheetForm = ({ defaultValues }: ApplicationSheetFormProp
 
             <section className="flex flex-col gap-4">
                 <Heading level={2}>出力</Heading>
-                <SheetPreview text={sheetText} />
+                <SheetPreview generatedText={sheetText} />
             </section>
 
             <div className="flex flex-col items-start gap-2">

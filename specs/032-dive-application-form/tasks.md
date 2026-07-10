@@ -110,6 +110,7 @@
 - [X] T026 [P] quickstart.md の全シナリオ（1〜4）を手動検証し、結果を記録する
 - [X] T027 `npx biome check .` と対象テスト一式（`npx vitest run src/features/application-sheet` ほか）を実行し、すべてクリーンにする
 - [X] T028 `/sync-spec` で実装と specs/032-dive-application-form/ のずれを確認し、必要なら仕様書を実装に合わせて更新する
+- [X] T029 生成テキストの直接編集（FR-013）を追加する: SheetPreview を編集可能にし、手動編集後はフォーム変更で上書きしない・「フォームの内容から再生成」で復帰・コピーは編集後の内容を対象（テスト先行で SheetPreview.test.tsx に 6 ケース追加。spec.md / contracts へ FR-013 を追記）
 
 ---
 
