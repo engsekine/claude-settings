@@ -178,10 +178,6 @@ export const ApplicationSheetForm = ({ defaultValues, sheetId, initialSheetName 
                     error={errors.nearestStation?.message}
                     {...register('nearestStation')}
                 />
-            </section>
-
-            <section className="flex flex-col gap-4">
-                <Heading level={2}>経験</Heading>
                 <FormField
                     id="licenseRank"
                     label="ライセンスランク"
@@ -225,7 +221,7 @@ export const ApplicationSheetForm = ({ defaultValues, sheetId, initialSheetName 
                 )}
                 <div className="flex flex-col items-start gap-2">
                     <p className="text-muted-foreground text-sm">
-                        基本情報と経験を保存すると、新しいシートを作るときに自動で入力されます
+                        基本情報を保存すると、新しいシートを作るときに自動で入力されます
                     </p>
                     <Button
                         type="button"
