@@ -1,6 +1,7 @@
 'use client';
 
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { useController, useForm } from 'react-hook-form';
 
@@ -18,24 +19,33 @@ import {
 } from '../../../constants';
 import { buildSheetText } from '../../../lib/buildSheetText';
 import { applicationSheetSchema } from '../../../schemas/application-sheet.schema';
-import { saveApplicationProfile } from '../../../server/actions';
+import { saveApplicationSheet } from '../../../server/actions';
 import type { SheetFormValues } from '../../../types';
 import { RentalItemsField } from '../RentalItemsField';
 import { SheetPreview } from '../SheetPreview';
 
 interface ApplicationSheetFormProps {
-    /** 自動入力・保存値から組み立てた初期値（上書き修正可能・FR-008） */
+    /** 自動入力・保存シートから組み立てた初期値（上書き修正可能・FR-008） */
     defaultValues?: Partial<SheetFormValues>;
+    /** 開いている保存済みシートの ID（新規作成中は null / 未指定） */
+    sheetId?: string | null;
+    /** 開いている保存済みシートの名前 */
+    initialSheetName?: string;
 }
 
 /**
  * 申し込みシート作成フォーム。入力のたびに buildSheetText でプレビューを更新する。
  * 全項目任意（FR-005）のため必須マークは付けない。
+ * 保存はシート名付きのスナップショット（新規 or 開いているシートへの上書き・FR-010）。
  */
-export const ApplicationSheetForm = ({ defaultValues }: ApplicationSheetFormProps) => {
+export const ApplicationSheetForm = ({ defaultValues, sheetId, initialSheetName }: ApplicationSheetFormProps) => {
+    const router = useRouter();
     const [isSaving, startSaving] = useTransition();
     const [saveState, setSaveState] = useState<'idle' | 'saved'>('idle');
     const [serverError, setServerError] = useState<string | null>(null);
+    const [sheetName, setSheetName] = useState(initialSheetName ?? '');
+    // 新規保存に成功したら以降は同じシートへの上書きにする
+    const [currentSheetId, setCurrentSheetId] = useState<string | null>(sheetId ?? null);
 
     const {
         register,
@@ -55,17 +65,19 @@ export const ApplicationSheetForm = ({ defaultValues }: ApplicationSheetFormProp
 
     const sheetText = buildSheetText(watch());
 
-    // 保存対象の絞り込み（個人属性のみ・FR-010）はサーバー側で行う
     const onSave = handleSubmit((values) => {
         setSaveState('idle');
         setServerError(null);
         startSaving(async () => {
-            const result = await saveApplicationProfile(values);
+            const result = await saveApplicationSheet({ sheetId: currentSheetId, name: sheetName, values });
             if (!result.success) {
                 setServerError(result.error);
                 return;
             }
+            setCurrentSheetId(result.id);
             setSaveState('saved');
+            // サーバーが持つ保存済みシート一覧を更新する
+            router.refresh();
         });
     });
 
@@ -273,12 +285,24 @@ export const ApplicationSheetForm = ({ defaultValues }: ApplicationSheetFormProp
                 <SheetPreview generatedText={sheetText} />
             </section>
 
-            <div className="flex flex-col items-start gap-2">
+            <section className="flex flex-col items-start gap-4">
+                <Heading level={2}>シートの保存</Heading>
                 <p className="text-muted-foreground text-sm">
-                    携帯電話・緊急連絡先などの手入力項目を保存すると、次回から自動で復元されます（レンタル品目の選択は保存されません）
+                    シートは名前を付けて複数保存でき、次回から一覧で選んで再利用できます
                 </p>
+                <div className="w-full sm:max-w-sm">
+                    <FormField
+                        id="sheetName"
+                        label="シート名"
+                        name="sheetName"
+                        type="text"
+                        placeholder="例: 〇〇ショップ用"
+                        value={sheetName}
+                        onChange={(event) => setSheetName(event.target.value)}
+                    />
+                </div>
                 <Button type="submit" variant="outline" disabled={isSaving} aria-busy={isSaving}>
-                    {isSaving ? '保存中...' : '入力内容を保存する'}
+                    {isSaving ? '保存中...' : currentSheetId ? '上書き保存する' : 'シートを保存する'}
                 </Button>
                 {/* aria-live 領域は常設して更新を通知する */}
                 <span role="status" aria-live="polite" className="text-sky-700 text-sm">
@@ -289,7 +313,7 @@ export const ApplicationSheetForm = ({ defaultValues }: ApplicationSheetFormProp
                         {serverError}
                     </span>
                 )}
-            </div>
+            </section>
         </form>
     );
 };

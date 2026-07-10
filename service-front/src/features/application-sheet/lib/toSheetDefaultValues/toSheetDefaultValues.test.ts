@@ -13,7 +13,6 @@ const emptyPrefill: SheetPrefill = {
     licenseRank: null,
     diveCount: null,
     lastDiveYearMonth: null,
-    savedProfile: null,
 };
 
 describe('toSheetDefaultValues', () => {
@@ -50,61 +49,5 @@ describe('toSheetDefaultValues', () => {
 
     it('prefill が null でも空の初期値を返す', () => {
         expect(toSheetDefaultValues(null)).toEqual({});
-    });
-
-    it('保存済みプロフィールがあれば手入力項目を復元する（FR-010）', () => {
-        const defaults = toSheetDefaultValues({
-            ...emptyPrefill,
-            savedProfile: {
-                phone: '090-1234-5678',
-                emergencyContactRelation: '妻',
-                emergencyContactPhone: '080-9876-5432',
-                nearestStation: '横浜駅',
-                footSizeCm: 26.5,
-                hasIzuChibaExperience: true,
-                hasBoatExperience: false,
-                hasDrySuitExperience: null,
-                drySuitDiveCount: 10,
-                hasContactLens: true,
-                contactLensType: 'soft',
-                needsPrescriptionMask: false,
-            },
-        });
-
-        expect(defaults).toEqual({
-            phone: '090-1234-5678',
-            emergencyContactRelation: '妻',
-            emergencyContactPhone: '080-9876-5432',
-            nearestStation: '横浜駅',
-            footSizeCm: '26.5',
-            hasIzuChibaExperience: 'yes',
-            hasBoatExperience: 'no',
-            drySuitDiveCount: '10',
-            hasContactLens: 'yes',
-            contactLensType: 'soft',
-            needsPrescriptionMask: 'no',
-        });
-    });
-
-    it('保存済みプロフィールの空文字・null 項目は初期値に含めない', () => {
-        const defaults = toSheetDefaultValues({
-            ...emptyPrefill,
-            savedProfile: {
-                phone: '',
-                emergencyContactRelation: '',
-                emergencyContactPhone: '',
-                nearestStation: '',
-                footSizeCm: null,
-                hasIzuChibaExperience: null,
-                hasBoatExperience: null,
-                hasDrySuitExperience: null,
-                drySuitDiveCount: null,
-                hasContactLens: null,
-                contactLensType: null,
-                needsPrescriptionMask: null,
-            },
-        });
-
-        expect(defaults).toEqual({});
     });
 });

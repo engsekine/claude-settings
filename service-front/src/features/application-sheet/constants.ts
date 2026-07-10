@@ -75,3 +75,9 @@ export const LICENSE_RANK_MAX_LENGTH = 60;
 
 /** 足のサイズの上限（cm。DB CHECK 制約と同期） */
 export const MAX_FOOT_SIZE_CM = 50;
+
+/** シート名の最大文字数（DB CHECK 制約と同期） */
+export const SHEET_NAME_MAX_LENGTH = 50;
+
+/** 1 ユーザーが保存できるシートの上限件数（無制限な行増加を防ぐアプリ側の制限） */
+export const MAX_APPLICATION_SHEETS = 20;

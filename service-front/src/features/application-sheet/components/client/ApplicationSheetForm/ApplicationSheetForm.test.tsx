@@ -4,10 +4,15 @@ import { beforeEach, vi } from 'vitest';
 
 import { ApplicationSheetForm } from './ApplicationSheetForm';
 
-const saveApplicationProfile = vi.fn();
+const saveApplicationSheet = vi.fn();
+const refresh = vi.fn();
 
 vi.mock('../../../server/actions', () => ({
-    saveApplicationProfile: (...args: unknown[]) => saveApplicationProfile(...args),
+    saveApplicationSheet: (...args: unknown[]) => saveApplicationSheet(...args),
+}));
+
+vi.mock('next/navigation', () => ({
+    useRouter: () => ({ refresh }),
 }));
 
 /** プレビュー textarea の現在値を返す */
@@ -16,7 +21,7 @@ const previewValue = (): string => (screen.getByLabelText('生成テキスト') 
 describe('ApplicationSheetForm', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        saveApplicationProfile.mockResolvedValue({ success: true });
+        saveApplicationSheet.mockResolvedValue({ success: true, id: 'sheet-new' });
     });
 
     it('全入力項目が label 関連付けで存在する', () => {
@@ -24,6 +29,7 @@ describe('ApplicationSheetForm', () => {
 
         // テキスト・数値・日付入力
         for (const label of [
+            'シート名',
             'お名前',
             '年齢',
             '生年月日',
@@ -137,29 +143,64 @@ describe('ApplicationSheetForm', () => {
         expect(screen.queryByRole('group', { name: '度付きマスクレンタルの要否' })).not.toBeInTheDocument();
     });
 
-    it('保存ボタンで saveApplicationProfile が呼ばれ、完了が role="status" で通知される（FR-010）', async () => {
+    it('シート名を付けて保存すると saveApplicationSheet が呼ばれ、完了が role="status" で通知される（FR-010）', async () => {
         const user = userEvent.setup();
         render(<ApplicationSheetForm defaultValues={{ phone: '090-1234-5678' }} />);
 
-        await user.click(screen.getByRole('button', { name: '入力内容を保存する' }));
+        await user.type(screen.getByLabelText('シート名'), '〇〇ショップ用');
+        await user.click(screen.getByRole('button', { name: 'シートを保存する' }));
 
-        expect(saveApplicationProfile).toHaveBeenCalledTimes(1);
-        expect(saveApplicationProfile).toHaveBeenCalledWith(expect.objectContaining({ phone: '090-1234-5678' }));
+        expect(saveApplicationSheet).toHaveBeenCalledTimes(1);
+        expect(saveApplicationSheet).toHaveBeenCalledWith({
+            sheetId: null,
+            name: '〇〇ショップ用',
+            values: expect.objectContaining({ phone: '090-1234-5678' }),
+        });
         expect(await screen.findByText('保存しました')).toBeInTheDocument();
         expect(screen.getByText('保存しました').closest('[role="status"]')).not.toBeNull();
+        expect(refresh).toHaveBeenCalled();
+    });
+
+    it('保存済みシートを開いた場合は上書き保存になり、シート名が初期表示される', async () => {
+        const user = userEvent.setup();
+        render(<ApplicationSheetForm sheetId="sheet-1" initialSheetName="〇〇ショップ用" />);
+
+        expect(screen.getByLabelText('シート名')).toHaveValue('〇〇ショップ用');
+
+        await user.click(screen.getByRole('button', { name: '上書き保存する' }));
+
+        expect(saveApplicationSheet).toHaveBeenCalledWith({
+            sheetId: 'sheet-1',
+            name: '〇〇ショップ用',
+            values: expect.anything(),
+        });
+    });
+
+    it('新規保存に成功すると以降は上書き保存になる', async () => {
+        const user = userEvent.setup();
+        render(<ApplicationSheetForm />);
+
+        await user.type(screen.getByLabelText('シート名'), '新しいシート');
+        await user.click(screen.getByRole('button', { name: 'シートを保存する' }));
+
+        expect(await screen.findByRole('button', { name: '上書き保存する' })).toBeInTheDocument();
+
+        await user.click(screen.getByRole('button', { name: '上書き保存する' }));
+
+        expect(saveApplicationSheet).toHaveBeenLastCalledWith(expect.objectContaining({ sheetId: 'sheet-new' }));
     });
 
     it('保存に失敗するとエラーメッセージが role="alert" で表示される', async () => {
         const user = userEvent.setup();
-        saveApplicationProfile.mockResolvedValue({
+        saveApplicationSheet.mockResolvedValue({
             success: false,
-            error: '保存に失敗しました。時間をおいて再度お試しください',
+            error: 'シート名を入力してください',
         });
         render(<ApplicationSheetForm />);
 
-        await user.click(screen.getByRole('button', { name: '入力内容を保存する' }));
+        await user.click(screen.getByRole('button', { name: 'シートを保存する' }));
 
         const alert = await screen.findByRole('alert');
-        expect(alert).toHaveTextContent('保存に失敗しました。時間をおいて再度お試しください');
+        expect(alert).toHaveTextContent('シート名を入力してください');
     });
 });

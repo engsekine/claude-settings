@@ -3,7 +3,8 @@ import 'server-only';
 import { todayInJst } from '@/shared/lib/date';
 import { createClient } from '@/shared/lib/supabase/server';
 
-import { mapSavedApplicationProfile, type SheetPrefill } from '../types';
+import { sheetToFormValues } from '../lib/sheetToFormValues';
+import type { SavedApplicationSheet, SavedSheetSummary, SheetPrefill } from '../types';
 
 const EMPTY_PREFILL: SheetPrefill = {
     fullName: null,
@@ -15,7 +16,6 @@ const EMPTY_PREFILL: SheetPrefill = {
     licenseRank: null,
     diveCount: null,
     lastDiveYearMonth: null,
-    savedProfile: null,
 };
 
 /** 生年月日（YYYY-MM-DD）から JST 基準の満年齢を算出する */
@@ -37,6 +37,7 @@ const toPrefillGender = (gender: string): SheetPrefill['gender'] => {
 /**
  * 申し込みシートの自動入力データを取得する（FR-007）。
  * user_details / certifications / dives を並列参照し、未登録のソースは null を返す（FR-009）。
+ * 新規シートの初期値にのみ使う（保存済みシートは getApplicationSheet でスナップショットを復元）。
  */
 export const getApplicationSheetPrefill = async (): Promise<SheetPrefill> => {
     const supabase = await createClient();
@@ -47,7 +48,7 @@ export const getApplicationSheetPrefill = async (): Promise<SheetPrefill> => {
     // 認証は proxy.ts で担保されるが、未認証時も安全に空を返す
     if (!user) return EMPTY_PREFILL;
 
-    const [detailsResult, certificationResult, divesResult, profileResult] = await Promise.all([
+    const [detailsResult, certificationResult, divesResult] = await Promise.all([
         supabase
             .from('user_details')
             .select('last_name, first_name, birth_on, gender, height_cm, weight_kg')
@@ -67,13 +68,6 @@ export const getApplicationSheetPrefill = async (): Promise<SheetPrefill> => {
             .eq('user_id', user.id)
             .order('dive_date', { ascending: false })
             .limit(1),
-        // 保存済みの手入力項目（RLS で本人の 1 件のみ・FR-010）
-        supabase
-            .from('application_profiles')
-            .select(
-                'user_id, phone, emergency_contact_relation, emergency_contact_phone, nearest_station, foot_size_cm, has_izu_chiba_experience, has_boat_experience, has_dry_suit_experience, dry_suit_dive_count, has_contact_lens, contact_lens_type, needs_prescription_mask, created_at, updated_at',
-            )
-            .maybeSingle(),
     ]);
 
     if (detailsResult.error) {
@@ -84,9 +78,6 @@ export const getApplicationSheetPrefill = async (): Promise<SheetPrefill> => {
     }
     if (divesResult.error) {
         throw new Error(`[getApplicationSheetPrefill] supabase error: ${divesResult.error.message}`);
-    }
-    if (profileResult.error) {
-        throw new Error(`[getApplicationSheetPrefill] supabase error: ${profileResult.error.message}`);
     }
 
     const details = detailsResult.data;
@@ -104,6 +95,40 @@ export const getApplicationSheetPrefill = async (): Promise<SheetPrefill> => {
         // ログ 0 件は空欄扱い（spec Edge Cases）
         diveCount: diveCount > 0 ? diveCount : null,
         lastDiveYearMonth: lastDiveDate ? lastDiveDate.slice(0, 7) : null,
-        savedProfile: profileResult.data ? mapSavedApplicationProfile(profileResult.data) : null,
     };
+};
+
+/** 保存済みシートの一覧（本人分のみ・更新日時の降順） */
+export const listApplicationSheets = async (): Promise<SavedSheetSummary[]> => {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+        .from('application_sheets')
+        .select('id, name, updated_at')
+        .order('updated_at', { ascending: false });
+
+    if (error || !data) {
+        throw new Error(`[listApplicationSheets] supabase error: ${error?.message ?? 'no data'}`);
+    }
+
+    return data.map((row) => ({ id: row.id, name: row.name, updatedAt: row.updated_at }));
+};
+
+/** UUID 形式の簡易チェック（URL 直打ちの不正値で DB エラーにしない） */
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** 保存済みシート 1 件をフォーム値のスナップショットとして取得する（RLS で本人分のみ・無ければ null） */
+export const getApplicationSheet = async (sheetId: string): Promise<SavedApplicationSheet | null> => {
+    if (!UUID_PATTERN.test(sheetId)) return null;
+
+    const supabase = await createClient();
+
+    const { data, error } = await supabase.from('application_sheets').select('*').eq('id', sheetId).maybeSingle();
+
+    if (error) {
+        throw new Error(`[getApplicationSheet] supabase error: ${error.message}`);
+    }
+    if (!data) return null;
+
+    return { id: data.id, name: data.name, values: sheetToFormValues(data) };
 };
