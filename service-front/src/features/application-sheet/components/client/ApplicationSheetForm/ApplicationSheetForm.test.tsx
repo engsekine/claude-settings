@@ -5,10 +5,12 @@ import { beforeEach, vi } from 'vitest';
 import { ApplicationSheetForm } from './ApplicationSheetForm';
 
 const saveApplicationSheet = vi.fn();
+const saveApplicationBaseProfile = vi.fn();
 const refresh = vi.fn();
 
 vi.mock('../../../server/actions', () => ({
     saveApplicationSheet: (...args: unknown[]) => saveApplicationSheet(...args),
+    saveApplicationBaseProfile: (...args: unknown[]) => saveApplicationBaseProfile(...args),
 }));
 
 vi.mock('next/navigation', () => ({
@@ -22,6 +24,7 @@ describe('ApplicationSheetForm', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         saveApplicationSheet.mockResolvedValue({ success: true, id: 'sheet-new' });
+        saveApplicationBaseProfile.mockResolvedValue({ success: true });
     });
 
     it('全入力項目が label 関連付けで存在する（レンタル依存の項目は「有」選択で表示）', async () => {
@@ -41,21 +44,19 @@ describe('ApplicationSheetForm', () => {
             'ライセンスランク',
             '経験本数',
             '最終ダイブ年月',
-            'ドライスーツの経験本数',
             '性別',
         ]) {
             expect(screen.getByLabelText(label)).toBeInTheDocument();
         }
 
         // 有無系ラジオグループ（fieldset legend）
-        for (const legend of [
-            '伊豆・千葉でのダイビング経験',
-            'ボートダイビングの経験',
-            'ドライスーツの経験',
-            'レンタル器材の有無',
-        ]) {
+        for (const legend of ['ドライスーツの経験', 'レンタル器材の有無']) {
             expect(screen.getByRole('group', { name: legend })).toBeInTheDocument();
         }
+
+        // 伊豆・千葉/ボートダイビング経験は廃止済み（2026-07-11）
+        expect(screen.queryByRole('group', { name: '伊豆・千葉でのダイビング経験' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('group', { name: 'ボートダイビングの経験' })).not.toBeInTheDocument();
 
         // デフォルトはレンタル「無」のため、「有」を選ぶと残りの項目が表示される（FR-011）
         const rentalGroup = screen.getByRole('group', { name: 'レンタル器材の有無' });
@@ -143,6 +144,41 @@ describe('ApplicationSheetForm', () => {
         expect(screen.queryByRole('group', { name: 'コンタクトレンズの有無' })).not.toBeInTheDocument();
         expect(screen.queryByLabelText('コンタクトレンズの種類')).not.toBeInTheDocument();
         expect(screen.queryByRole('group', { name: '度付きマスクレンタルの要否' })).not.toBeInTheDocument();
+    });
+
+    it('ドライスーツの経験「有」を選んだときだけ経験本数の入力欄が表示される', async () => {
+        const user = userEvent.setup();
+        render(<ApplicationSheetForm />);
+
+        expect(screen.queryByLabelText('ドライスーツの経験本数')).not.toBeInTheDocument();
+
+        const drySuitGroup = screen.getByRole('group', { name: 'ドライスーツの経験' });
+        await user.click(within(drySuitGroup).getByLabelText('有'));
+        expect(screen.getByLabelText('ドライスーツの経験本数')).toBeInTheDocument();
+
+        await user.click(within(drySuitGroup).getByLabelText('無'));
+        expect(screen.queryByLabelText('ドライスーツの経験本数')).not.toBeInTheDocument();
+    });
+
+    it('最終ダイブ年月は「2026年7月」形式で入力してプレビューに反映される', async () => {
+        const user = userEvent.setup();
+        render(<ApplicationSheetForm />);
+
+        await user.type(screen.getByLabelText('最終ダイブ年月'), '2026年7月');
+
+        expect(previewValue()).toContain('・最終ダイブ年月（2026 年 7 月）');
+    });
+
+    it('「基本情報を保存」で saveApplicationBaseProfile が呼ばれ、完了が通知される', async () => {
+        const user = userEvent.setup();
+        render(<ApplicationSheetForm defaultValues={{ phone: '090-1234-5678' }} />);
+
+        await user.click(screen.getByRole('button', { name: '基本情報を保存する' }));
+
+        expect(saveApplicationBaseProfile).toHaveBeenCalledTimes(1);
+        expect(saveApplicationBaseProfile).toHaveBeenCalledWith(expect.objectContaining({ phone: '090-1234-5678' }));
+        expect(await screen.findByText('基本情報を保存しました')).toBeInTheDocument();
+        expect(screen.getByText('基本情報を保存しました').closest('[role="status"]')).not.toBeNull();
     });
 
     it('「無」を選ぶと省略トグルに自動でチェックが入る（FR-012）', async () => {

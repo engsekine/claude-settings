@@ -8,6 +8,7 @@ import { validateWithSchema } from '@/shared/lib/validation';
 import { type ActionResult, actionFailure, actionSuccess } from '@/shared/types/action-result';
 
 import { MAX_APPLICATION_SHEETS, SHEET_NAME_MAX_LENGTH } from '../constants';
+import { displayToYearMonth } from '../lib/yearMonth';
 import { applicationSheetSchema } from '../schemas/application-sheet.schema';
 import type { SheetFormValues, YesNoValue } from '../types';
 
@@ -41,9 +42,8 @@ const toDbRow = (name: string, values: SheetFormValues) => ({
     nearest_station: values.nearestStation,
     license_rank: values.licenseRank,
     dive_count: toNullableNumber(values.diveCount),
-    has_izu_chiba_experience: toNullableBoolean(values.hasIzuChibaExperience),
-    has_boat_experience: toNullableBoolean(values.hasBoatExperience),
-    last_dive_year_month: values.lastDiveYearMonth === '' ? null : values.lastDiveYearMonth,
+    // フォームの表示形式「2026年7月」→ DB の YYYY-MM
+    last_dive_year_month: displayToYearMonth(values.lastDiveYearMonth),
     has_dry_suit_experience: toNullableBoolean(values.hasDrySuitExperience),
     dry_suit_dive_count: toNullableNumber(values.drySuitDiveCount),
     has_rental: toNullableBoolean(values.hasRental),
@@ -124,6 +124,44 @@ export const saveApplicationSheet = async (input: SaveApplicationSheetInput): Pr
 
     revalidatePath('/application-sheet');
     return actionSuccess({ id: data.id });
+};
+
+/** 基本情報セクションの値を DB カラムへマッピングする */
+const toBaseProfileDbRow = (values: SheetFormValues) => ({
+    full_name: values.fullName,
+    age: toNullableNumber(values.age),
+    birth_on: values.birthOn === '' ? null : values.birthOn,
+    gender: values.gender === '' ? null : values.gender,
+    phone: values.phone,
+    emergency_contact_relation: values.emergencyContactRelation,
+    emergency_contact_phone: values.emergencyContactPhone,
+    nearest_station: values.nearestStation,
+});
+
+/**
+ * 基本情報（1 ユーザー 1 件）を保存する。新規シート作成時の自動入力に使う。
+ * 個人情報を扱うため、エラーログに入力値は含めない。
+ */
+export const saveApplicationBaseProfile = async (input: SheetFormValues): Promise<ActionResult> => {
+    const supabase = await createClient();
+
+    const { user, failure } = await requireUser(supabase);
+    if (failure) return failure;
+
+    const validation = await validateWithSchema(applicationSheetSchema, input);
+    if (validation.error !== undefined) return actionFailure(validation.error);
+
+    const { error } = await supabase
+        .from('application_base_profiles')
+        .upsert({ ...toBaseProfileDbRow(validation.values), user_id: user.id });
+
+    if (error) {
+        console.error('[saveApplicationBaseProfile] supabase error code:', error.code);
+        return actionFailure('基本情報の保存に失敗しました。時間をおいて再度お試しください');
+    }
+
+    revalidatePath('/application-sheet');
+    return actionSuccess();
 };
 
 /** 保存済みシートを削除する（本人のシートのみ） */

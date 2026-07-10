@@ -7,6 +7,7 @@ import type {
     SheetGenderValue,
     YesNoValue,
 } from '../../types';
+import { yearMonthToDisplay } from '../yearMonth';
 
 /** boolean | null（DB 値）→ 有無ラジオの値。null は未選択 */
 const toYesNoValue = (value: boolean | null): YesNoValue => {
@@ -39,9 +40,7 @@ export const sheetToFormValues = (row: ApplicationSheetRow): SheetFormValues => 
     nearestStation: row.nearest_station,
     licenseRank: row.license_rank,
     diveCount: toNumberText(row.dive_count),
-    hasIzuChibaExperience: toYesNoValue(row.has_izu_chiba_experience),
-    hasBoatExperience: toYesNoValue(row.has_boat_experience),
-    lastDiveYearMonth: row.last_dive_year_month ?? '',
+    lastDiveYearMonth: yearMonthToDisplay(row.last_dive_year_month),
     hasDrySuitExperience: toYesNoValue(row.has_dry_suit_experience),
     drySuitDiveCount: toNumberText(row.dry_suit_dive_count),
     hasRental: toYesNoValue(row.has_rental),

@@ -16,6 +16,10 @@ const EMPTY_PREFILL: SheetPrefill = {
     licenseRank: null,
     diveCount: null,
     lastDiveYearMonth: null,
+    phone: null,
+    emergencyContactRelation: null,
+    emergencyContactPhone: null,
+    nearestStation: null,
 };
 
 /** 生年月日（YYYY-MM-DD）から JST 基準の満年齢を算出する */
@@ -36,7 +40,8 @@ const toPrefillGender = (gender: string): SheetPrefill['gender'] => {
 
 /**
  * 申し込みシートの自動入力データを取得する（FR-007）。
- * user_details / certifications / dives を並列参照し、未登録のソースは null を返す（FR-009）。
+ * user_details / certifications / dives / application_base_profiles（保存済み基本情報）を並列参照し、
+ * 未登録のソースは null を返す（FR-009）。保存済み基本情報はプロフィール由来の値より優先する。
  * 新規シートの初期値にのみ使う（保存済みシートは getApplicationSheet でスナップショットを復元）。
  */
 export const getApplicationSheetPrefill = async (): Promise<SheetPrefill> => {
@@ -48,7 +53,7 @@ export const getApplicationSheetPrefill = async (): Promise<SheetPrefill> => {
     // 認証は proxy.ts で担保されるが、未認証時も安全に空を返す
     if (!user) return EMPTY_PREFILL;
 
-    const [detailsResult, certificationResult, divesResult] = await Promise.all([
+    const [detailsResult, certificationResult, divesResult, baseProfileResult] = await Promise.all([
         supabase
             .from('user_details')
             .select('last_name, first_name, birth_on, gender, height_cm, weight_kg')
@@ -68,6 +73,13 @@ export const getApplicationSheetPrefill = async (): Promise<SheetPrefill> => {
             .eq('user_id', user.id)
             .order('dive_date', { ascending: false })
             .limit(1),
+        // 保存済みの基本情報（RLS で本人の 1 件のみ）
+        supabase
+            .from('application_base_profiles')
+            .select(
+                'full_name, age, birth_on, gender, phone, emergency_contact_relation, emergency_contact_phone, nearest_station',
+            )
+            .maybeSingle(),
     ]);
 
     if (detailsResult.error) {
@@ -79,22 +91,35 @@ export const getApplicationSheetPrefill = async (): Promise<SheetPrefill> => {
     if (divesResult.error) {
         throw new Error(`[getApplicationSheetPrefill] supabase error: ${divesResult.error.message}`);
     }
+    if (baseProfileResult.error) {
+        throw new Error(`[getApplicationSheetPrefill] supabase error: ${baseProfileResult.error.message}`);
+    }
 
     const details = detailsResult.data;
+    const baseProfile = baseProfileResult.data;
     const diveCount = divesResult.count ?? 0;
     const lastDiveDate = divesResult.data?.[0]?.dive_date ?? null;
 
     return {
-        fullName: details ? `${details.last_name} ${details.first_name}` : null,
-        birthOn: details?.birth_on ?? null,
-        age: details ? calculateAge(details.birth_on, todayInJst()) : null,
-        gender: details ? toPrefillGender(details.gender) : null,
+        // 基本情報の保存値をプロフィール由来の値より優先し、空欄はプロフィールで補完する
+        fullName: baseProfile?.full_name || (details ? `${details.last_name} ${details.first_name}` : null),
+        birthOn: baseProfile?.birth_on ?? details?.birth_on ?? null,
+        age: baseProfile?.age ?? (details ? calculateAge(details.birth_on, todayInJst()) : null),
+        gender: baseProfile?.gender
+            ? toPrefillGender(baseProfile.gender)
+            : details
+              ? toPrefillGender(details.gender)
+              : null,
         heightCm: details?.height_cm ?? null,
         weightKg: details?.weight_kg ?? null,
         licenseRank: certificationResult.data?.rank ?? null,
         // ログ 0 件は空欄扱い（spec Edge Cases）
         diveCount: diveCount > 0 ? diveCount : null,
         lastDiveYearMonth: lastDiveDate ? lastDiveDate.slice(0, 7) : null,
+        phone: baseProfile?.phone || null,
+        emergencyContactRelation: baseProfile?.emergency_contact_relation || null,
+        emergencyContactPhone: baseProfile?.emergency_contact_phone || null,
+        nearestStation: baseProfile?.nearest_station || null,
     };
 };
 

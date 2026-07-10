@@ -60,10 +60,10 @@ test('/application-sheet - キーボード操作で入力とコピーができ�
     await expect(page.getByLabel('生成テキスト')).toHaveValue(/・お名前（山田 太郎）/);
 
     // Tab / Space でラジオを操作できる（ネイティブ要素）
-    const izuChibaYes = page.getByRole('group', { name: '伊豆・千葉でのダイビング経験' }).getByLabel('有');
-    await izuChibaYes.focus();
+    const drySuitYes = page.getByRole('group', { name: 'ドライスーツの経験' }).getByLabel('有');
+    await drySuitYes.focus();
     await page.keyboard.press('Space');
-    await expect(page.getByLabel('生成テキスト')).toHaveValue(/・伊豆 千葉でのダイビング経験（有）/);
+    await expect(page.getByLabel('生成テキスト')).toHaveValue(/・ドライスーツの経験（有）/);
 
     // Enter でコピーが実行され role="status" の完了通知が出る（FR-006）
     await page.getByRole('button', { name: 'コピーする' }).focus();

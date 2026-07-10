@@ -13,6 +13,10 @@ const emptyPrefill: SheetPrefill = {
     licenseRank: null,
     diveCount: null,
     lastDiveYearMonth: null,
+    phone: null,
+    emergencyContactRelation: null,
+    emergencyContactPhone: null,
+    nearestStation: null,
 };
 
 describe('toSheetDefaultValues', () => {
@@ -28,6 +32,8 @@ describe('toSheetDefaultValues', () => {
             licenseRank: 'Advanced Open Water Diver',
             diveCount: 52,
             lastDiveYearMonth: '2026-05',
+            phone: '090-1234-5678',
+            nearestStation: '横浜駅',
         });
 
         expect(defaults).toEqual({
@@ -39,7 +45,9 @@ describe('toSheetDefaultValues', () => {
             weightKg: '65',
             licenseRank: 'Advanced Open Water Diver',
             diveCount: '52',
-            lastDiveYearMonth: '2026-05',
+            lastDiveYearMonth: '2026年5月',
+            phone: '090-1234-5678',
+            nearestStation: '横浜駅',
         });
     });
 

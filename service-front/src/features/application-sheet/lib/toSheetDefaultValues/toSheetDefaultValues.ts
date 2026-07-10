@@ -1,4 +1,5 @@
 import type { SheetFormValues, SheetPrefill } from '../../types';
+import { yearMonthToDisplay } from '../yearMonth';
 
 /** null / 空文字を取り除き、値のあるキーだけ残す */
 const compact = (entries: Partial<SheetFormValues>): Partial<SheetFormValues> =>
@@ -23,6 +24,10 @@ export const toSheetDefaultValues = (prefill: SheetPrefill | null): Partial<Shee
         weightKg: prefill.weightKg !== null ? String(prefill.weightKg) : '',
         licenseRank: prefill.licenseRank ?? '',
         diveCount: prefill.diveCount !== null ? String(prefill.diveCount) : '',
-        lastDiveYearMonth: prefill.lastDiveYearMonth ?? '',
+        lastDiveYearMonth: yearMonthToDisplay(prefill.lastDiveYearMonth),
+        phone: prefill.phone ?? '',
+        emergencyContactRelation: prefill.emergencyContactRelation ?? '',
+        emergencyContactPhone: prefill.emergencyContactPhone ?? '',
+        nearestStation: prefill.nearestStation ?? '',
     });
 };

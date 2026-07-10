@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { SheetFormValues } from '../types';
-import { deleteApplicationSheet, saveApplicationSheet } from './actions';
+import { deleteApplicationSheet, saveApplicationBaseProfile, saveApplicationSheet } from './actions';
 
 const revalidatePath = vi.fn();
 const createClient = vi.fn();
@@ -21,6 +21,7 @@ interface SupabaseMockOptions {
     updatedRow?: { id: string } | null;
     updateError?: { code?: string; message: string } | null;
     deleteError?: { code?: string; message: string } | null;
+    upsertError?: { code?: string; message: string } | null;
 }
 
 const buildSupabaseMock = (options: SupabaseMockOptions = {}) => {
@@ -31,6 +32,7 @@ const buildSupabaseMock = (options: SupabaseMockOptions = {}) => {
         updatedRow = { id: 'sheet-1' },
         updateError = null,
         deleteError = null,
+        upsertError = null,
     } = options;
 
     // insert().select().single()
@@ -65,13 +67,16 @@ const buildSupabaseMock = (options: SupabaseMockOptions = {}) => {
     // select(count)
     const select = vi.fn().mockResolvedValue({ count: sheetCount, error: null });
 
-    const from = vi.fn().mockReturnValue({ insert, update, delete: deleteFn, select });
+    // 基本情報の upsert
+    const upsert = vi.fn().mockResolvedValue({ error: upsertError });
+
+    const from = vi.fn().mockReturnValue({ insert, update, delete: deleteFn, select, upsert });
     const supabase = {
         auth: { getUser: vi.fn().mockResolvedValue({ data: { user } }) },
         from,
     };
     createClient.mockResolvedValue(supabase);
-    return { from, insert, update, updateEqId, updateEqUser, deleteFn, deleteEqId, deleteEqUser };
+    return { from, insert, update, updateEqId, updateEqUser, deleteFn, deleteEqId, deleteEqUser, upsert };
 };
 
 const validValues: SheetFormValues = {
@@ -85,9 +90,7 @@ const validValues: SheetFormValues = {
     nearestStation: '横浜駅',
     licenseRank: 'Open Water Diver',
     diveCount: '52',
-    hasIzuChibaExperience: 'yes',
-    hasBoatExperience: 'no',
-    lastDiveYearMonth: '2026-05',
+    lastDiveYearMonth: '2026年5月',
     hasDrySuitExperience: '',
     drySuitDiveCount: '10',
     hasRental: 'yes',
@@ -113,8 +116,6 @@ const expectedDbRow = {
     nearest_station: '横浜駅',
     license_rank: 'Open Water Diver',
     dive_count: 52,
-    has_izu_chiba_experience: true,
-    has_boat_experience: false,
     last_dive_year_month: '2026-05',
     has_dry_suit_experience: null,
     dry_suit_dive_count: 10,
@@ -252,6 +253,71 @@ describe('saveApplicationSheet', () => {
             .join(' ');
         expect(loggedText).not.toContain('090-1234-5678');
         expect(loggedText).not.toContain('080-9876-5432');
+        expect(loggedText).not.toContain('横浜駅');
+    });
+});
+
+describe('saveApplicationBaseProfile', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    });
+
+    it('基本情報セクションの値を本人 user_id で upsert する', async () => {
+        const { from, upsert } = buildSupabaseMock();
+
+        const result = await saveApplicationBaseProfile(validValues);
+
+        expect(result).toEqual({ success: true });
+        expect(from).toHaveBeenCalledWith('application_base_profiles');
+        expect(upsert).toHaveBeenCalledWith({
+            user_id: 'user-1',
+            full_name: '山田 太郎',
+            age: 36,
+            birth_on: '1990-05-03',
+            gender: 'male',
+            phone: '090-1234-5678',
+            emergency_contact_relation: '妻',
+            emergency_contact_phone: '080-9876-5432',
+            nearest_station: '横浜駅',
+        });
+        expect(revalidatePath).toHaveBeenCalledWith('/application-sheet');
+    });
+
+    it('不正な入力はエラーを返し保存しない', async () => {
+        const { upsert } = buildSupabaseMock();
+
+        const result = await saveApplicationBaseProfile({ ...validValues, phone: '090-abcd' });
+
+        expect(result).toEqual({ success: false, error: '携帯電話は数字とハイフンで入力してください' });
+        expect(upsert).not.toHaveBeenCalled();
+    });
+
+    it('未ログインなら失敗を返す', async () => {
+        const { upsert } = buildSupabaseMock({ user: null });
+
+        const result = await saveApplicationBaseProfile(validValues);
+
+        expect(result).toEqual({ success: false, error: 'ログインが必要です' });
+        expect(upsert).not.toHaveBeenCalled();
+    });
+
+    it('DB エラー時は失敗を返し、ログに個人情報の値を含めない', async () => {
+        buildSupabaseMock({ upsertError: { message: 'db error' } });
+
+        const result = await saveApplicationBaseProfile(validValues);
+
+        expect(result).toEqual({
+            success: false,
+            error: '基本情報の保存に失敗しました。時間をおいて再度お試しください',
+        });
+
+        const loggedText = vi
+            .mocked(console.error)
+            .mock.calls.flat()
+            .map((arg) => JSON.stringify(arg) ?? String(arg))
+            .join(' ');
+        expect(loggedText).not.toContain('090-1234-5678');
         expect(loggedText).not.toContain('横浜駅');
     });
 });

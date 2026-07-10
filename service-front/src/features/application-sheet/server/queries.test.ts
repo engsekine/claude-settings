@@ -25,8 +25,6 @@ const sampleSheetRow: ApplicationSheetRow = {
     nearest_station: '横浜駅',
     license_rank: 'Open Water Diver',
     dive_count: 52,
-    has_izu_chiba_experience: true,
-    has_boat_experience: false,
     last_dive_year_month: '2026-05',
     has_dry_suit_experience: null,
     dry_suit_dive_count: 10,
@@ -58,6 +56,7 @@ interface SupabaseMockOptions {
     lastDiveDate?: string | null;
     sheetSummaries?: { id: string; name: string; updated_at: string }[];
     sheetRow?: ApplicationSheetRow | null;
+    baseProfile?: Record<string, unknown> | null;
 }
 
 const buildSupabaseMock = (options: SupabaseMockOptions = {}) => {
@@ -69,6 +68,7 @@ const buildSupabaseMock = (options: SupabaseMockOptions = {}) => {
         lastDiveDate = null,
         sheetSummaries = [],
         sheetRow = null,
+        baseProfile = null,
     } = options;
 
     const divesEq = vi.fn().mockReturnValue({
@@ -113,6 +113,13 @@ const buildSupabaseMock = (options: SupabaseMockOptions = {}) => {
         }
         if (table === 'application_sheets') {
             return { select: sheetsSelect };
+        }
+        if (table === 'application_base_profiles') {
+            return {
+                select: vi.fn().mockReturnValue({
+                    maybeSingle: vi.fn().mockResolvedValue({ data: baseProfile, error: null }),
+                }),
+            };
         }
         throw new Error(`unexpected table: ${table}`);
     });
@@ -216,7 +223,47 @@ describe('getApplicationSheetPrefill', () => {
             licenseRank: null,
             diveCount: null,
             lastDiveYearMonth: null,
+            phone: null,
+            emergencyContactRelation: null,
+            emergencyContactPhone: null,
+            nearestStation: null,
         });
+    });
+
+    it('保存済みの基本情報はプロフィール由来の値より優先され、空欄はプロフィールで補完される', async () => {
+        buildSupabaseMock({
+            details: {
+                last_name: '山田',
+                first_name: '太郎',
+                birth_on: '1990-05-03',
+                gender: 'male',
+                height_cm: 172.5,
+                weight_kg: 65,
+            },
+            baseProfile: {
+                full_name: '山田 太郎（改名後）',
+                age: null,
+                birth_on: null,
+                gender: null,
+                phone: '090-1234-5678',
+                emergency_contact_relation: '妻',
+                emergency_contact_phone: '080-9876-5432',
+                nearest_station: '横浜駅',
+            },
+        });
+
+        const prefill = await getApplicationSheetPrefill();
+
+        // 保存値が優先される
+        expect(prefill.fullName).toBe('山田 太郎（改名後）');
+        expect(prefill.phone).toBe('090-1234-5678');
+        expect(prefill.emergencyContactRelation).toBe('妻');
+        expect(prefill.emergencyContactPhone).toBe('080-9876-5432');
+        expect(prefill.nearestStation).toBe('横浜駅');
+        // 保存値が空の項目はプロフィールで補完される
+        expect(prefill.birthOn).toBe('1990-05-03');
+        expect(prefill.age).toBe(36);
+        expect(prefill.gender).toBe('male');
     });
 
     it('公開読み取り RLS で他人のログを数えないよう dives は本人 user_id で絞る', async () => {
