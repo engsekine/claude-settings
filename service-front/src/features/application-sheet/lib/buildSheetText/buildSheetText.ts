@@ -72,7 +72,7 @@ export const buildSheetText = (values: SheetFormValues): string => {
         `・レンタル器材${paren(yesNoLabel(values.hasRental))}`,
     ];
 
-    // レンタル「無」+ 省略トグル ON のときだけ品目〜コンタクトレンズのブロックを省く（FR-012）
+    // レンタル「無」+ 省略トグル ON のときだけ品目〜度付きマスクのブロックを省く（FR-012）
     const shouldOmitRentalBlock = values.hasRental === 'no' && values.omitRentalBlock;
     if (!shouldOmitRentalBlock) {
         lines.push(
@@ -88,10 +88,10 @@ export const buildSheetText = (values: SheetFormValues): string => {
             '',
             `・コンタクトレンズ有無${paren(yesNoLabel(values.hasContactLens))}`,
             `有りの方 → ハード or ソフト or 使い捨て${paren(contactLensTypeLabel(values))}`,
+            '',
+            `・度付きのマスクレンタル必要の有無${paren(needsMaskLabel(values.needsPrescriptionMask))}`,
         );
     }
-
-    lines.push('', `・度付きのマスクレンタル必要の有無${paren(needsMaskLabel(values.needsPrescriptionMask))}`);
 
     return lines.join('\n');
 };

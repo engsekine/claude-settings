@@ -195,13 +195,11 @@ describe('buildSheetText', () => {
             '・ドライの経験本数 約（ 本）',
             '',
             '・レンタル器材（無）',
-            '',
-            '・度付きのマスクレンタル必要の有無（ ）',
         ].join('\n');
         expect(text).toBe(expected);
     });
 
-    it('省略トグル ON ではコンタクトレンズの有無・種類もレンタルブロックとして省略される', () => {
+    it('省略トグル ON ではコンタクトレンズの有無・種類・度付きマスクもレンタルブロックとして省略される', () => {
         const text = buildSheetText({
             ...emptyValues,
             hasRental: 'no',
@@ -211,6 +209,7 @@ describe('buildSheetText', () => {
         });
         expect(text).not.toContain('・コンタクトレンズ有無');
         expect(text).not.toContain('有りの方 → ハード or ソフト or 使い捨て');
+        expect(text).not.toContain('・度付きのマスクレンタル必要の有無');
     });
 
     it('レンタル「有」ではトグル ON でもブロックを省略しない（省略は「無」時のみ）', () => {

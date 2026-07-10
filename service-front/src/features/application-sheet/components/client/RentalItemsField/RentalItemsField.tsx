@@ -82,7 +82,7 @@ export const RentalItemsField = ({
                         onChange={(event) => onOmitRentalBlockChange(event.target.checked)}
                     />
                     <label htmlFor="omit-rental-block" className="text-sm">
-                        未該当ブロックを省略する（品目一覧・サイズ欄・コンタクトレンズを出力しない）
+                        未該当ブロックを省略する（品目一覧・サイズ欄・コンタクトレンズ・度付きマスクを出力しない）
                     </label>
                 </div>
             )}
