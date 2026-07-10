@@ -210,60 +210,62 @@ export const ApplicationSheetForm = ({ defaultValues }: ApplicationSheetFormProp
                     omitRentalBlock={omitRentalBlockField.field.value}
                     onOmitRentalBlockChange={omitRentalBlockField.field.onChange}
                 />
-                {/* レンタル「無」ではサイズ欄の入力を求めない（FR-011） */}
+                {/* レンタル「無」ではサイズ欄・コンタクトレンズ・度付きマスクの入力を求めない（FR-011） */}
                 {hasRentalField.field.value !== 'no' && (
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                        <FormField
-                            id="heightCm"
-                            label="身長"
-                            type="text"
-                            inputMode="decimal"
-                            placeholder="cm"
-                            error={errors.heightCm?.message}
-                            {...register('heightCm')}
+                    <>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                            <FormField
+                                id="heightCm"
+                                label="身長"
+                                type="text"
+                                inputMode="decimal"
+                                placeholder="cm"
+                                error={errors.heightCm?.message}
+                                {...register('heightCm')}
+                            />
+                            <FormField
+                                id="weightKg"
+                                label="体重"
+                                type="text"
+                                inputMode="decimal"
+                                placeholder="kg"
+                                error={errors.weightKg?.message}
+                                {...register('weightKg')}
+                            />
+                            <FormField
+                                id="footSizeCm"
+                                label="足のサイズ"
+                                type="text"
+                                inputMode="decimal"
+                                placeholder="cm"
+                                error={errors.footSizeCm?.message}
+                                {...register('footSizeCm')}
+                            />
+                        </div>
+                        <FormRadioGroup
+                            legend="コンタクトレンズの有無"
+                            {...register('hasContactLens')}
+                            name="hasContactLens"
+                            options={YES_NO_OPTIONS}
+                            error={errors.hasContactLens?.message}
                         />
-                        <FormField
-                            id="weightKg"
-                            label="体重"
-                            type="text"
-                            inputMode="decimal"
-                            placeholder="kg"
-                            error={errors.weightKg?.message}
-                            {...register('weightKg')}
+                        <FormSelect
+                            id="contactLensType"
+                            label="コンタクトレンズの種類"
+                            options={CONTACT_LENS_TYPE_OPTIONS}
+                            placeholder="選択してください"
+                            error={errors.contactLensType?.message}
+                            {...register('contactLensType')}
                         />
-                        <FormField
-                            id="footSizeCm"
-                            label="足のサイズ"
-                            type="text"
-                            inputMode="decimal"
-                            placeholder="cm"
-                            error={errors.footSizeCm?.message}
-                            {...register('footSizeCm')}
+                        <FormRadioGroup
+                            legend="度付きマスクレンタルの要否"
+                            {...register('needsPrescriptionMask')}
+                            name="needsPrescriptionMask"
+                            options={NEEDS_MASK_OPTIONS}
+                            error={errors.needsPrescriptionMask?.message}
                         />
-                    </div>
+                    </>
                 )}
-                <FormRadioGroup
-                    legend="コンタクトレンズの有無"
-                    {...register('hasContactLens')}
-                    name="hasContactLens"
-                    options={YES_NO_OPTIONS}
-                    error={errors.hasContactLens?.message}
-                />
-                <FormSelect
-                    id="contactLensType"
-                    label="コンタクトレンズの種類"
-                    options={CONTACT_LENS_TYPE_OPTIONS}
-                    placeholder="選択してください"
-                    error={errors.contactLensType?.message}
-                    {...register('contactLensType')}
-                />
-                <FormRadioGroup
-                    legend="度付きマスクレンタルの要否"
-                    {...register('needsPrescriptionMask')}
-                    name="needsPrescriptionMask"
-                    options={NEEDS_MASK_OPTIONS}
-                    error={errors.needsPrescriptionMask?.message}
-                />
             </section>
 
             <section className="flex flex-col gap-4">

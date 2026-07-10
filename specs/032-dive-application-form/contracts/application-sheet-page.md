@@ -22,7 +22,7 @@
 
 | コンポーネント | 種別 | 責務 |
 |---|---|---|
-| `ApplicationSheetForm` | Client Component | フォーム全体（RHF + yup）・プレビュー・保存の統括。レンタル「無」時は身長・体重・足のサイズ欄を非表示にする（FR-011） |
+| `ApplicationSheetForm` | Client Component | フォーム全体（RHF + yup）・プレビュー・保存の統括。レンタル「無」時は身長・体重・足のサイズ・コンタクトレンズの有無と種類・度付きマスクの入力欄を非表示にする（FR-011） |
 | `RentalItemsField` | Client Component | レンタル有無 + 品目 14 種の選択（「有」時のみ品目を表示・「無」時は省略トグルを表示。FR-011/012） |
 | `SheetPreview` | Client Component | 生成テキストの全文表示 + 直接編集（FR-013）+ コピーボタン + `role="status"` の完了通知。手動編集後はフォーム由来の再生成に追従せず、「フォームの内容から再生成」ボタンで戻せる |
 | `buildSheetText` | 純関数（lib） | フォーム値 → 定型テキスト生成（FR-004/005/012） |

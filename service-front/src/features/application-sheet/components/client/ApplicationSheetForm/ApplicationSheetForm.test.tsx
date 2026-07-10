@@ -121,6 +121,22 @@ describe('ApplicationSheetForm', () => {
         expect(screen.queryByLabelText('足のサイズ')).not.toBeInTheDocument();
     });
 
+    it('レンタル「無」を選ぶとコンタクトレンズの有無・種類・度付きマスクの入力欄も表示されない（FR-011）', async () => {
+        const user = userEvent.setup();
+        render(<ApplicationSheetForm />);
+
+        expect(screen.getByRole('group', { name: 'コンタクトレンズの有無' })).toBeInTheDocument();
+        expect(screen.getByLabelText('コンタクトレンズの種類')).toBeInTheDocument();
+        expect(screen.getByRole('group', { name: '度付きマスクレンタルの要否' })).toBeInTheDocument();
+
+        const rentalGroup = screen.getByRole('group', { name: 'レンタル器材の有無' });
+        await user.click(within(rentalGroup).getByLabelText('無'));
+
+        expect(screen.queryByRole('group', { name: 'コンタクトレンズの有無' })).not.toBeInTheDocument();
+        expect(screen.queryByLabelText('コンタクトレンズの種類')).not.toBeInTheDocument();
+        expect(screen.queryByRole('group', { name: '度付きマスクレンタルの要否' })).not.toBeInTheDocument();
+    });
+
     it('保存ボタンで saveApplicationProfile が呼ばれ、完了が role="status" で通知される（FR-010）', async () => {
         const user = userEvent.setup();
         render(<ApplicationSheetForm defaultValues={{ phone: '090-1234-5678' }} />);
