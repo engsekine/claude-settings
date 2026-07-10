@@ -3,6 +3,9 @@ import { expect, type Page, test } from '@playwright/test';
 
 import { presetConsent } from './_helpers';
 
+/** コピー機能（navigator.clipboard.writeText）の検証に clipboard-write 権限が必要 */
+test.use({ permissions: ['clipboard-write'] });
+
 /** a11y スイープでバナーが重ならないよう同意済み Cookie をプリセット（017-cookie-consent） */
 test.beforeEach(async ({ context }) => {
     await presetConsent(context);
@@ -23,7 +26,7 @@ const login = async (page: Page) => {
     await page.getByLabel('メールアドレス').fill(TEST_EMAIL);
     await page.getByLabel('パスワード').fill(TEST_PASSWORD);
     await page.getByRole('button', { name: 'ログイン', exact: true }).click();
-    await page.waitForURL(/\/dives/);
+    await page.waitForURL((url) => url.pathname === '/');
 };
 
 test('/application-sheet - WCAG 2.1 AA 違反なし（要認証）', async ({ page }) => {
@@ -49,7 +52,9 @@ test('/application-sheet - キーボード操作で入力とコピーができ�
 
     await page.goto('/application-sheet');
 
-    // キーボードのみで入力できる（label 関連付け + フォーカス移動）
+    // キーボードのみで入力できる（label 関連付け + フォーカス移動）。
+    // お名前はプロフィールから自動入力されるため、いったん空にしてから打ち直す（FR-008 の上書きも兼ねる）
+    await page.getByLabel('お名前').fill('');
     await page.getByLabel('お名前').click();
     await page.keyboard.type('山田 太郎');
     await expect(page.getByLabel('生成テキスト')).toHaveValue(/・お名前（山田 太郎）/);

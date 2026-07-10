@@ -107,7 +107,7 @@
 ## Phase 6: Polish & Cross-Cutting Concerns
 
 - [X] T025 [P] Playwright + axe の a11y テストを service-front/tests/a11y/application-sheet.spec.ts に作成する（フォーム全項目のラベル・キーボード操作・axe 違反 0 件。WCAG 2.1 AA）
-- [ ] T026 [P] quickstart.md の全シナリオ（1〜4）を手動検証し、結果を記録する
+- [X] T026 [P] quickstart.md の全シナリオ（1〜4）を手動検証し、結果を記録する
 - [X] T027 `npx biome check .` と対象テスト一式（`npx vitest run src/features/application-sheet` ほか）を実行し、すべてクリーンにする
 - [X] T028 `/sync-spec` で実装と specs/032-dive-application-form/ のずれを確認し、必要なら仕様書を実装に合わせて更新する
 
