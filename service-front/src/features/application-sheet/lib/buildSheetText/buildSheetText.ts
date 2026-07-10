@@ -36,9 +36,8 @@ const formatYearMonth = (yearMonth: string): string => {
     return `（${year} 年 ${stripLeadingZero(month)} 月）`;
 };
 
-/** 「身長 172.5 cm」のような単位付き記入欄（未入力はラベルと単位のみ） */
-const measureLine = (prefix: string, value: string, unit: string): string =>
-    `${prefix}${value === '' ? '' : ` ${value}`} ${unit}`;
+/** 「身長:172.5 cm」のような単位付き記入欄（未入力は「身長: cm」とラベル・単位のみ） */
+const measureLine = (label: string, value: string, unit: string): string => `${label}:${value} ${unit}`;
 
 const genderLabel = (gender: SheetFormValues['gender']): string =>
     SHEET_GENDER_OPTIONS.find((option) => option.value === gender)?.label ?? '';
@@ -84,8 +83,8 @@ export const buildSheetText = (values: SheetFormValues): string => {
             '',
             '・ウェット・ドライスーツレンタルの方',
             measureLine('身長', values.heightCm, 'cm'),
-            measureLine('　体重', values.weightKg, 'kg'),
-            measureLine('　足のサイズ', values.footSizeCm, 'cm'),
+            measureLine('体重', values.weightKg, 'kg'),
+            measureLine('足のサイズ', values.footSizeCm, 'cm'),
         );
     }
 

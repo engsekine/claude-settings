@@ -95,9 +95,9 @@ const expectedEmptyText = [
     '水中カメラ:',
     '',
     '・ウェット・ドライスーツレンタルの方',
-    '身長 cm',
-    '　体重 kg',
-    '　足のサイズ cm',
+    '身長: cm',
+    '体重: kg',
+    '足のサイズ: cm',
     '',
     '・コンタクトレンズ有無（ ）',
     '有りの方 → ハード or ソフト or 使い捨て（ ）',
@@ -142,9 +142,9 @@ const expectedFilledText = [
     '水中カメラ:',
     '',
     '・ウェット・ドライスーツレンタルの方',
-    '身長 172.5 cm',
-    '　体重 65 kg',
-    '　足のサイズ 26.5 cm',
+    '身長:172.5 cm',
+    '体重:65 kg',
+    '足のサイズ:26.5 cm',
     '',
     '・コンタクトレンズ有無（有）',
     '有りの方 → ハード or ソフト or 使い捨て（ソフト）',
@@ -173,7 +173,7 @@ describe('buildSheetText', () => {
         const text = buildSheetText({ ...emptyValues, hasRental: 'no', omitRentalBlock: false });
         expect(text).toContain('・レンタル器材（無）');
         expect(text).toContain('ありの場合レンタルしたいものに○を付けてください');
-        expect(text).toContain('　足のサイズ cm');
+        expect(text).toContain('足のサイズ: cm');
     });
 
     it('レンタル「無」+ トグル ON では品目〜サイズ欄ブロックを省略する（FR-012）', () => {
