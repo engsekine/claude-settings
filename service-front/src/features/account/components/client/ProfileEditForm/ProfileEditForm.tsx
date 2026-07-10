@@ -1,14 +1,13 @@
 'use client';
 
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button } from '@repo/ui/components/button';
-import { Input } from '@repo/ui/components/input';
 import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
-
 import { type ProfileFormValues, profileSchema } from '@/features/account/schemas/profile.schema';
 import { updateProfile } from '@/features/account/server/actions';
 import { EmailOptInField, FormField, FormRadioGroup } from '@/shared/components/form';
+import { Button } from '@/shared/components/ui/Button';
+import { Input } from '@/shared/components/ui/Input';
 import { DIVER_TYPE_OPTIONS } from '@/shared/constants/diver-type';
 import { GENDER_OPTIONS } from '@/shared/constants/gender';
 

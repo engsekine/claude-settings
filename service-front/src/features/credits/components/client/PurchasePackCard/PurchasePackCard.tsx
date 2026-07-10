@@ -1,10 +1,9 @@
 'use client';
 
-import { Button } from '@repo/ui/components/button';
 import { useState, useTransition } from 'react';
-
 import { LOG_CREDIT_PACK } from '@/features/credits/constants';
 import { createCheckoutSession } from '@/features/credits/server/actions';
+import { Button } from '@/shared/components/ui/Button';
 
 /**
  * ログパックの購入カード（026 / FR-005）。

@@ -1,11 +1,13 @@
 import { Geist, Geist_Mono } from 'next/font/google';
 import { cookies } from 'next/headers';
+import Script from 'next/script';
 
 import { AuthNav } from '@/features/auth';
 import { COOKIE_CONSENT_NAME, CookieConsentBanner, getCookieConsentServer } from '@/features/consent';
 import { NotificationBell } from '@/features/notifications';
 import { Footer } from '@/shared/components/layout/Footer';
 import { Header } from '@/shared/components/layout/Header';
+import { ThemeToggle } from '@/shared/components/theme/ThemeToggle';
 import { SITE_METADATA } from '@/shared/config/metadata';
 import { createClient } from '@/shared/lib/supabase/server';
 
@@ -39,12 +41,26 @@ export default async function RootLayout({
     const consent = getCookieConsentServer(cookieStore.get(COOKIE_CONSENT_NAME)?.value);
 
     return (
-        <html lang="ja" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+        <html
+            lang="ja"
+            suppressHydrationWarning
+            className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+        >
             <body className="flex min-h-full flex-col">
+                <Script id="theme-init" strategy="beforeInteractive">
+                    {`(function () {
+                        try {
+                            var saved = localStorage.getItem('theme');
+                            var prefersDark = matchMedia('(prefers-color-scheme: dark)').matches;
+                            if (saved === 'dark' || (!saved && prefersDark)) document.documentElement.classList.add('dark');
+                        } catch (e) {}
+                    })();`}
+                </Script>
                 <Providers>
                     <Header
                         actions={
                             <>
+                                <ThemeToggle />
                                 {user && <NotificationBell />}
                                 <AuthNav initialUser={user} />
                             </>

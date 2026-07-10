@@ -34,6 +34,7 @@
 - コンポーネント・lib ユーティリティとも **専用フォルダ**に配置し、フォルダ内に本体・テスト・`index.ts`（再 export）を並べる
 - 外部からは `index.ts` 経由で import し、フォルダ内の中身を直接指さない
 - `*.stories.tsx` は Storybook 採用プロジェクト（service-front）のみの任意ファイル
+- **shadcn / `@repo/ui` は直接編集・直接 import しない**。`src/shared/components/ui/<Name>/` のラッパー経由で使う（詳細は [rules/react.md](rules/react.md) の「UI ライブラリのラップ」）
 
 ## テスト生成ルール
 
@@ -195,6 +196,7 @@ npx biome check .
 - データフェッチは Server Components で行う
 - ページ作成時は必ず `generatePageMetadata`（`@/shared/config/metadata`）を使用して `metadata` をエクスポートする
 - ページには基本的に `Header` と `Footer`（`@/shared/components/layout`）を含める
+- 見出し（h1〜h4）は生の `hN` タグではなく共通の `Heading`（`@/shared/components/typography/Heading`）を使用する。見た目の統一に加え、生タグと混在すると markuplint の単独解析で heading-levels の誤検知が起きるため（既定スタイルが合わない場合は `className` で上書き）
 
 ## spec-kit agent context（自動管理セクション）
 

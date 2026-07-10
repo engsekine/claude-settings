@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 
-import { formatJstDate, formatJstDateTime, isValidBirthDate, todayInJst } from './date';
+import { formatJstDate, formatJstDateTime, formatJstDateWithWeekday, isValidBirthDate, todayInJst } from './date';
 
 describe('todayInJst', () => {
     it('YYYY-MM-DD 形式の文字列を返す', () => {
@@ -65,5 +65,16 @@ describe('formatJstDateTime', () => {
 
     it('解析できない文字列はそのまま返す', () => {
         expect(formatJstDateTime('not-a-date')).toBe('not-a-date');
+    });
+});
+
+describe('formatJstDateWithWeekday', () => {
+    it('YYYY/MM/DD（曜）形式に整形する', () => {
+        expect(formatJstDateWithWeekday('2026-07-12')).toBe('2026/07/12（日）');
+        expect(formatJstDateWithWeekday('2026-07-07')).toBe('2026/07/07（火）');
+    });
+
+    it('不正な形式はそのまま返す', () => {
+        expect(formatJstDateWithWeekday('invalid')).toBe('invalid');
     });
 });

@@ -1,8 +1,8 @@
-import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
-
 import { COMPLETE_PAGE_DATA, PAGE_DATA } from '@/features/contact';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
+import { Heading } from '@/shared/components/typography/Heading';
+import { buttonVariants } from '@/shared/components/ui/Button';
 import { generatePageMetadata } from '@/shared/config/metadata';
 
 export const metadata = generatePageMetadata(COMPLETE_PAGE_DATA);
@@ -14,7 +14,9 @@ export default function ContactCompletePage() {
                 breadcrumbs={[{ slug: PAGE_DATA.slug, name: PAGE_DATA.title }, { name: COMPLETE_PAGE_DATA.title }]}
             />
             <main className="mx-auto w-full max-w-2xl px-4 py-10">
-                <h1 className="mb-4 font-semibold text-2xl text-foreground">お問い合わせを受け付けました</h1>
+                <Heading level={1} className="mb-4">
+                    お問い合わせを受け付けました
+                </Heading>
                 <p className="mb-2 text-muted-foreground text-sm">
                     お問い合わせいただきありがとうございます。内容を確認のうえ、ご入力のメールアドレス宛にご連絡いたします。
                 </p>

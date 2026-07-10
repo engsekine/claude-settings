@@ -1,10 +1,9 @@
 'use client';
 
-import { Button } from '@repo/ui/components/button';
 import { useState, useTransition } from 'react';
-
 import { OTP_LENGTH, OTP_PATTERN } from '@/features/mfa/schemas';
 import { challengeLoginFactor, verifyLogin } from '@/features/mfa/server/actions';
+import { Button } from '@/shared/components/ui/Button';
 import { useCooldown } from '@/shared/hooks/useCooldown';
 
 /** 再送のクールダウン秒数（FR-013） */

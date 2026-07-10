@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 
 import { getMfaStatus, MfaChallengeForm } from '@/features/mfa';
 import { isMfaChallengePending } from '@/features/mfa/lib/aalGuard';
+import { Heading } from '@/shared/components/typography/Heading';
 import { generatePageMetadata } from '@/shared/config/metadata';
 import { createClient } from '@/shared/lib/supabase/server';
 
@@ -39,7 +40,7 @@ export default async function MfaVerifyPage() {
 
     return (
         <div className="mx-auto flex w-full max-w-sm flex-col gap-6 px-4 py-12">
-            <h1 className="font-semibold text-2xl">2 段階認証</h1>
+            <Heading level={1}>2 段階認証</Heading>
             <MfaChallengeForm factorId={status.factorId} />
         </div>
     );

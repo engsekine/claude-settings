@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 
 import { UpdatePasswordForm } from '@/features/auth';
+import { Heading } from '@/shared/components/typography/Heading';
 import { generatePageMetadata } from '@/shared/config/metadata';
 import { createClient } from '@/shared/lib/supabase/server';
 
@@ -28,7 +29,7 @@ export default async function UpdatePasswordPage() {
 
     return (
         <div className="mx-auto flex w-full max-w-sm flex-col gap-6 px-4 py-12">
-            <h1 className="font-semibold text-2xl">新しいパスワードの設定</h1>
+            <Heading level={1}>新しいパスワードの設定</Heading>
             <p className="text-muted-foreground text-sm">
                 新しいパスワードを入力してください。設定後、新しいパスワードでログインし直します。
             </p>

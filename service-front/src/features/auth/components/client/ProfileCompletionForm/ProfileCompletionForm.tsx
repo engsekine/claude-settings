@@ -1,7 +1,6 @@
 'use client';
 
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button } from '@repo/ui/components/button';
 import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { TermsAgreementField } from '@/features/auth/components/client/TermsAgreementField';
@@ -11,6 +10,7 @@ import {
 } from '@/features/auth/schemas/profile-completion.schema';
 import { completeProfile } from '@/features/auth/server/actions';
 import { EmailOptInField, FormField, FormRadioGroup } from '@/shared/components/form';
+import { Button } from '@/shared/components/ui/Button';
 import { DIVER_TYPE_OPTIONS } from '@/shared/constants/diver-type';
 import { DEFAULT_GENDER, GENDER_OPTIONS } from '@/shared/constants/gender';
 

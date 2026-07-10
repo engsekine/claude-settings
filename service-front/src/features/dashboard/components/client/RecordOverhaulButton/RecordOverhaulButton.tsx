@@ -1,10 +1,9 @@
 'use client';
 
-import { Button } from '@repo/ui/components/button';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-
 import { ConfirmDialog } from '@/shared/components/feedback/ConfirmDialog';
+import { Button } from '@/shared/components/ui/Button';
 
 interface RecordOverhaulButtonProps {
     regulatorId: string;

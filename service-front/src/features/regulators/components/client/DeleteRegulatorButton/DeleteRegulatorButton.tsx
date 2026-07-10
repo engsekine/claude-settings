@@ -1,11 +1,10 @@
 'use client';
 
-import { Button } from '@repo/ui/components/button';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-
 import { deleteRegulator } from '@/features/regulators/server/actions';
 import { ConfirmDialog } from '@/shared/components/feedback/ConfirmDialog';
+import { Button } from '@/shared/components/ui/Button';
 
 interface DeleteRegulatorButtonProps {
     regulatorId: string;

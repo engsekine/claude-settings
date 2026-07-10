@@ -16,6 +16,7 @@ describe('Footer', () => {
             { label: 'ホーム', href: '/' },
             { label: 'ダイビングログ', href: '/dives' },
             { label: '保有資格', href: '/settings/certifications' },
+            { label: '使い方', href: '/guide' },
             { label: '利用規約', href: '/terms' },
             { label: 'プライバシーポリシー', href: '/privacy-policy' },
             { label: 'お問い合わせ', href: '/contact' },

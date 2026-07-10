@@ -1,9 +1,9 @@
-import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-
 import { canMovePlanToLog, DeletePlanButton, daysUntil, getPlan, PackingList } from '@/features/plans';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
+import { Heading } from '@/shared/components/typography/Heading';
+import { buttonVariants } from '@/shared/components/ui/Button';
 import { generatePageMetadata } from '@/shared/config/metadata';
 import { formatJstDate, todayInJst } from '@/shared/lib/date';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
@@ -55,15 +55,15 @@ export default async function PlanPage({ params }: PlanPageProps) {
                             <span className="rounded-md bg-muted px-2 py-0.5 text-foreground text-xs">終了済み</span>
                         )}
                         {remaining === 0 && (
-                            <span className="rounded-md bg-primary/10 px-2 py-0.5 text-primary text-xs">今日</span>
+                            <span className="rounded-md bg-[#1a73cc]/10 px-2 py-0.5 text-[#1a73cc] text-xs">今日</span>
                         )}
                         {remaining > 0 && (
-                            <span className="rounded-md bg-primary/10 px-2 py-0.5 text-primary text-xs">
+                            <span className="rounded-md bg-[#1a73cc]/10 px-2 py-0.5 text-[#1a73cc] text-xs">
                                 あと{remaining}日
                             </span>
                         )}
                     </div>
-                    <h1 className="font-semibold text-2xl text-foreground">{plan.location}</h1>
+                    <Heading level={1}>{plan.location}</Heading>
                     {plan.notes && <p className="whitespace-pre-wrap text-muted-foreground text-sm">{plan.notes}</p>}
                     <div className="flex flex-wrap items-center gap-2">
                         {/* 当日以前の予定のみ「ログに記録する」を表示（未来日は非表示 / 024 FR-001,002） */}

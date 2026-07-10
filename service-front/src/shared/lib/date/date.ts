@@ -16,6 +16,20 @@ export const formatJstDate = (isoDate: string): string => {
     return `${year}/${month}/${day}`;
 };
 
+/** 曜日の表示ラベル（getUTCDay の並び） */
+const WEEKDAY_LABELS = ['日', '月', '火', '水', '木', '金', '土'] as const;
+
+/**
+ * YYYY-MM-DD の日付文字列を「YYYY/MM/DD（曜）」表示に整形する純粋関数。
+ * 想定外の形式・不正な日付はそのまま返し、"undefined" 混入を防ぐ。
+ */
+export const formatJstDateWithWeekday = (isoDate: string): string => {
+    const parsed = Date.parse(`${isoDate}T00:00:00Z`);
+    if (Number.isNaN(parsed)) return isoDate;
+    const weekday = WEEKDAY_LABELS[new Date(parsed).getUTCDay()];
+    return `${formatJstDate(isoDate)}（${weekday}）`;
+};
+
 /**
  * timestamptz の ISO 文字列を JST の「YYYY/MM/DD HH:mm」表示に整形する。
  * 解析できない文字列はそのまま返し、"Invalid Date" 混入を防ぐ。

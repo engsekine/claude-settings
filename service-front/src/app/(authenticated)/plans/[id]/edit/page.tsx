@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 
 import { getPlan, PlanForm } from '@/features/plans';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
+import { Heading } from '@/shared/components/typography/Heading';
 import { generatePageMetadata } from '@/shared/config/metadata';
 
 interface EditPlanPageProps {
@@ -35,7 +36,7 @@ export default async function EditPlanPage({ params }: EditPlanPageProps) {
                 ]}
             />
             <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
-                <h1 className="font-semibold text-2xl">ダイビング予定の編集</h1>
+                <Heading level={1}>ダイビング予定の編集</Heading>
                 <PlanForm
                     planId={id}
                     defaultValues={{ plannedOn: plan.plannedOn, location: plan.location, notes: plan.notes }}

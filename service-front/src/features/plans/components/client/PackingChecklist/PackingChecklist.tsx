@@ -1,0 +1,69 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { useState, useTransition } from 'react';
+
+import { togglePackingItem } from '@/features/plans/server/actions';
+import type { PackingItem } from '@/features/plans/types';
+
+interface PackingChecklistProps {
+    /** 持ち物（表示順）。チェック済み・未チェックの全件を渡す */
+    items: PackingItem[];
+}
+
+/**
+ * TOP「次の予定」カード用の持ち物チェックリスト。
+ * 全項目をスクロール可能なリストで表示し、その場でチェック状態を切り替えられる。
+ * 追加・削除は予定詳細（PackingList）に任せ、ここではトグルのみ提供する。
+ */
+export const PackingChecklist = ({ items }: PackingChecklistProps) => {
+    const router = useRouter();
+    const [isPending, startTransition] = useTransition();
+    const [serverError, setServerError] = useState<string | null>(null);
+
+    const handleToggle = (item: PackingItem) => {
+        setServerError(null);
+        startTransition(async () => {
+            const result = await togglePackingItem(item.id, !item.isChecked);
+            if (!result.success) {
+                setServerError(result.error);
+                return;
+            }
+            router.refresh();
+        });
+    };
+
+    if (items.length === 0) {
+        return <p className="text-muted-foreground">持ち物はまだありません</p>;
+    }
+
+    return (
+        <div className="flex flex-col gap-2">
+            {serverError && (
+                <p role="alert" className="text-red-600">
+                    {serverError}
+                </p>
+            )}
+            <ul className="flex max-h-40 flex-col gap-1.5 overflow-y-auto pr-1">
+                {items.map((item) => {
+                    const checkboxId = `next-plan-packing-${item.id}`;
+                    return (
+                        <li key={item.id} className="flex items-center gap-2">
+                            <input
+                                id={checkboxId}
+                                type="checkbox"
+                                checked={item.isChecked}
+                                disabled={isPending}
+                                onChange={() => handleToggle(item)}
+                                className="size-4 shrink-0"
+                            />
+                            <label htmlFor={checkboxId} className="flex-1 text-foreground">
+                                {item.name}
+                            </label>
+                        </li>
+                    );
+                })}
+            </ul>
+        </div>
+    );
+};

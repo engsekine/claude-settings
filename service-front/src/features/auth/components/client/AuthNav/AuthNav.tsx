@@ -1,14 +1,13 @@
 'use client';
 
-import { Button } from '@repo/ui/components/button';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@repo/ui/components/sheet';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { Award, LogOut, Search, Ticket, User, UserPlus } from 'lucide-react';
 import type { Route } from 'next';
 import Link from 'next/link';
 import { useEffect, useState, useTransition } from 'react';
-
 import { signOut } from '@/features/auth/server/actions';
+import { Button } from '@/shared/components/ui/Button';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/shared/components/ui/Sheet';
 import { createClient } from '@/shared/lib/supabase/browser';
 import { useUserStore } from '@/shared/stores/user-store';
 

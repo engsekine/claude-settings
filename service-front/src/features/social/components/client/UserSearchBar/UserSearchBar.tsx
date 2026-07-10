@@ -1,9 +1,9 @@
 'use client';
 
-import { Button } from '@repo/ui/components/button';
 import type { Route } from 'next';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
+import { Button } from '@/shared/components/ui/Button';
 
 /**
  * ユーザー検索フォーム（spec 021 / フォロー導線）。

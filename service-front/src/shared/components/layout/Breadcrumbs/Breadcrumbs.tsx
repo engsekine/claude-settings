@@ -1,3 +1,5 @@
+import type { Route } from 'next';
+import Link from 'next/link';
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -5,9 +7,7 @@ import {
     BreadcrumbList,
     BreadcrumbPage,
     BreadcrumbSeparator,
-} from '@repo/ui/components/breadcrumb';
-import type { Route } from 'next';
-import Link from 'next/link';
+} from '@/shared/components/ui/Breadcrumb';
 
 import { SITE_NAME, SITE_URL } from '@/shared/constants/site';
 

@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 
 import { FollowList, fetchFollowLists, fetchPublicProfile } from '@/features/social';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
+import { Heading } from '@/shared/components/typography/Heading';
 import { generatePageMetadata } from '@/shared/config/metadata';
 import { createClient } from '@/shared/lib/supabase/server';
 
@@ -37,7 +38,7 @@ export default async function FollowingPage({ params }: FollowingPageProps) {
         <div className="flex flex-1 flex-col">
             <Breadcrumbs breadcrumbs={[{ name: profile.nickname, slug: `/users/${id}` }, { name: 'フォロー中' }]} />
             <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-8">
-                <h1 className="font-semibold text-xl">{profile.nickname} さんのフォロー中</h1>
+                <Heading level={1}>{profile.nickname} さんのフォロー中</Heading>
                 <FollowList items={items} currentUserId={user?.id} emptyMessage="まだ誰もフォローしていません。" />
             </div>
         </div>

@@ -1,10 +1,9 @@
 'use client';
 
-import { Button } from '@repo/ui/components/button';
 import { useState, useTransition } from 'react';
-
 import { deleteDive } from '@/features/dives/server/actions';
 import { ConfirmDialog } from '@/shared/components/feedback/ConfirmDialog';
+import { Button } from '@/shared/components/ui/Button';
 
 interface DeleteDiveButtonProps {
     diveId: string;

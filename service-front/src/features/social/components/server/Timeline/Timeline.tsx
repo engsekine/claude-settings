@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { LikeButton } from '@/features/social/components/client/LikeButton';
 import { groupTimelineByDate, isTimelineEmpty } from '@/features/social/lib/timeline';
 import type { TimelineItem } from '@/features/social/types';
+import { Heading } from '@/shared/components/typography/Heading';
 import { formatJstDate } from '@/shared/lib/date';
 
 interface TimelineProps {
@@ -20,7 +21,7 @@ interface TimelineProps {
 export const Timeline = ({ items, viewerId = null }: TimelineProps) => {
     if (isTimelineEmpty(items)) {
         return (
-            <p className="rounded-md border border-border border-dashed bg-muted/30 px-4 py-6 text-center text-muted-foreground text-sm">
+            <p className="rounded-md border border-border border-dashed bg-muted/30 px-4 py-6 text-center text-muted-foreground">
                 フォロー中のユーザーの公開ログがここに表示されます。気になるダイバーをフォローしてみましょう。
             </p>
         );
@@ -32,16 +33,18 @@ export const Timeline = ({ items, viewerId = null }: TimelineProps) => {
         <ol className="flex flex-col gap-5">
             {groups.map((group) => (
                 <li key={group.date} className="flex flex-col gap-2">
-                    {/* page.tsx の h2「タイムライン」配下に置かれるため h3 が正しい階層。
-                        markuplint のコンポーネント単独解析による見出しスキップ誤検知は .markuplintrc で抑止 */}
-                    <h3 className="font-medium text-muted-foreground text-sm">{formatJstDate(group.date)}</h3>
+                    {/* page.tsx のタブ配下に置かれる日付グループ見出し（h3 が正しい階層）。
+                        日付は控えめに出したいので Heading の既定スタイルを className で上書きする */}
+                    <Heading level={3} className="font-medium text-muted-foreground">
+                        {formatJstDate(group.date)}
+                    </Heading>
                     <ul className="flex flex-col divide-y divide-border rounded-md border border-border">
                         {group.items.map((dive) => (
                             <li key={dive.diveId} className="flex items-center justify-between gap-2 px-4 py-3">
                                 <div className="flex flex-col gap-1">
                                     <Link
                                         href={`/dives/${dive.diveId}` as Route}
-                                        className="font-medium text-sm hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+                                        className="font-medium hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
                                     >
                                         {dive.location}
                                     </Link>
@@ -63,7 +66,7 @@ export const Timeline = ({ items, viewerId = null }: TimelineProps) => {
                                     />
                                 ) : (
                                     /* 自分のログ・閲覧者不明時は件数のみ（操作させない / US1-AC5） */
-                                    <span className="inline-flex items-center gap-1.5 px-2 text-muted-foreground text-sm">
+                                    <span className="inline-flex items-center gap-1.5 px-2 text-muted-foreground">
                                         <Heart aria-hidden="true" className="size-5" />
                                         <span aria-hidden="true">{dive.likeCount}</span>
                                         <span className="sr-only">いいね {dive.likeCount} 件</span>
