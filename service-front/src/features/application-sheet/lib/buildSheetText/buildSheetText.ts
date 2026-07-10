@@ -36,7 +36,7 @@ const formatYearMonth = (yearMonth: string): string => {
     return `（${year} 年 ${stripLeadingZero(month)} 月）`;
 };
 
-/** 「→ 身長 172.5 cm」のような単位付き記入欄（未入力はラベルと単位のみ） */
+/** 「身長 172.5 cm」のような単位付き記入欄（未入力はラベルと単位のみ） */
 const measureLine = (prefix: string, value: string, unit: string): string =>
     `${prefix}${value === '' ? '' : ` ${value}`} ${unit}`;
 
@@ -83,7 +83,7 @@ export const buildSheetText = (values: SheetFormValues): string => {
             ...RENTAL_ITEMS.map(({ key, label }) => `${label}:${values.rentalItems.includes(key) ? ' ○' : ''}`),
             '',
             '・ウェット・ドライスーツレンタルの方',
-            measureLine('→ 身長', values.heightCm, 'cm'),
+            measureLine('身長', values.heightCm, 'cm'),
             measureLine('　体重', values.weightKg, 'kg'),
             measureLine('　足のサイズ', values.footSizeCm, 'cm'),
         );
