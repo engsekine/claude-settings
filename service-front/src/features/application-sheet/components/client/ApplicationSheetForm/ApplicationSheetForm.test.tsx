@@ -24,10 +24,11 @@ describe('ApplicationSheetForm', () => {
         saveApplicationSheet.mockResolvedValue({ success: true, id: 'sheet-new' });
     });
 
-    it('全入力項目が label 関連付けで存在する', () => {
+    it('全入力項目が label 関連付けで存在する（レンタル依存の項目は「有」選択で表示）', async () => {
+        const user = userEvent.setup();
         render(<ApplicationSheetForm />);
 
-        // テキスト・数値・日付入力
+        // テキスト・数値・日付入力（レンタル選択に依存しない項目）
         for (const label of [
             'シート名',
             'お名前',
@@ -41,10 +42,6 @@ describe('ApplicationSheetForm', () => {
             '経験本数',
             '最終ダイブ年月',
             'ドライスーツの経験本数',
-            '身長',
-            '体重',
-            '足のサイズ',
-            'コンタクトレンズの種類',
             '性別',
         ]) {
             expect(screen.getByLabelText(label)).toBeInTheDocument();
@@ -56,9 +53,18 @@ describe('ApplicationSheetForm', () => {
             'ボートダイビングの経験',
             'ドライスーツの経験',
             'レンタル器材の有無',
-            'コンタクトレンズの有無',
-            '度付きマスクレンタルの要否',
         ]) {
+            expect(screen.getByRole('group', { name: legend })).toBeInTheDocument();
+        }
+
+        // デフォルトはレンタル「無」のため、「有」を選ぶと残りの項目が表示される（FR-011）
+        const rentalGroup = screen.getByRole('group', { name: 'レンタル器材の有無' });
+        await user.click(within(rentalGroup).getByLabelText('有'));
+
+        for (const label of ['身長', '体重', '足のサイズ', 'コンタクトレンズの種類']) {
+            expect(screen.getByLabelText(label)).toBeInTheDocument();
+        }
+        for (const legend of ['コンタクトレンズの有無', '度付きマスクレンタルの要否']) {
             expect(screen.getByRole('group', { name: legend })).toBeInTheDocument();
         }
     });
@@ -72,10 +78,22 @@ describe('ApplicationSheetForm', () => {
         expect(previewValue()).toContain('・お名前（山田 太郎）');
     });
 
-    it('未入力のままでもプレビューは空欄付きの全文を表示する（FR-005）', () => {
+    it('デフォルトはレンタル「無」+ 省略で、プレビューが「・レンタル器材（無）」で終わる', () => {
         render(<ApplicationSheetForm />);
 
         expect(previewValue()).toContain('・お名前（ ）');
+        expect(previewValue()).toContain('・レンタル器材（無）');
+        expect(previewValue()).not.toContain('ありの場合レンタルしたいものに○を付けてください');
+        expect(previewValue()).not.toContain('・度付きのマスクレンタル必要の有無');
+    });
+
+    it('省略トグルを外すと空欄付きの全文が出力される（FR-005 / FR-012）', async () => {
+        const user = userEvent.setup();
+        render(<ApplicationSheetForm />);
+
+        await user.click(screen.getByLabelText(/未該当ブロックを省略する/));
+
+        expect(previewValue()).toContain('ありの場合レンタルしたいものに○を付けてください');
         expect(previewValue()).toContain('・度付きのマスクレンタル必要の有無（ ）');
     });
 
@@ -113,34 +131,37 @@ describe('ApplicationSheetForm', () => {
         expect(previewValue()).toContain('・経験本数（80 本）');
     });
 
-    it('レンタル「無」を選ぶと身長・体重・足のサイズの入力欄が表示されない（FR-011）', async () => {
-        const user = userEvent.setup();
+    it('デフォルトはレンタル「無」が選択され、サイズ欄・コンタクト・度付きマスクの入力欄が表示されない（FR-011）', () => {
         render(<ApplicationSheetForm />);
 
-        expect(screen.getByLabelText('身長')).toBeInTheDocument();
-
         const rentalGroup = screen.getByRole('group', { name: 'レンタル器材の有無' });
-        await user.click(within(rentalGroup).getByLabelText('無'));
+        expect(within(rentalGroup).getByLabelText('無')).toBeChecked();
 
         expect(screen.queryByLabelText('身長')).not.toBeInTheDocument();
         expect(screen.queryByLabelText('体重')).not.toBeInTheDocument();
         expect(screen.queryByLabelText('足のサイズ')).not.toBeInTheDocument();
-    });
-
-    it('レンタル「無」を選ぶとコンタクトレンズの有無・種類・度付きマスクの入力欄も表示されない（FR-011）', async () => {
-        const user = userEvent.setup();
-        render(<ApplicationSheetForm />);
-
-        expect(screen.getByRole('group', { name: 'コンタクトレンズの有無' })).toBeInTheDocument();
-        expect(screen.getByLabelText('コンタクトレンズの種類')).toBeInTheDocument();
-        expect(screen.getByRole('group', { name: '度付きマスクレンタルの要否' })).toBeInTheDocument();
-
-        const rentalGroup = screen.getByRole('group', { name: 'レンタル器材の有無' });
-        await user.click(within(rentalGroup).getByLabelText('無'));
-
         expect(screen.queryByRole('group', { name: 'コンタクトレンズの有無' })).not.toBeInTheDocument();
         expect(screen.queryByLabelText('コンタクトレンズの種類')).not.toBeInTheDocument();
         expect(screen.queryByRole('group', { name: '度付きマスクレンタルの要否' })).not.toBeInTheDocument();
+    });
+
+    it('「無」を選ぶと省略トグルに自動でチェックが入る（FR-012）', async () => {
+        const user = userEvent.setup();
+        render(<ApplicationSheetForm />);
+
+        // デフォルト（無）でチェック済み
+        const toggle = screen.getByLabelText(/未該当ブロックを省略する/);
+        expect(toggle).toBeChecked();
+
+        // 手動で外せる
+        await user.click(toggle);
+        expect(toggle).not.toBeChecked();
+
+        // 有 → 無 と選び直すと再びチェックされる
+        const rentalGroup = screen.getByRole('group', { name: 'レンタル器材の有無' });
+        await user.click(within(rentalGroup).getByLabelText('有'));
+        await user.click(within(rentalGroup).getByLabelText('無'));
+        expect(screen.getByLabelText(/未該当ブロックを省略する/)).toBeChecked();
     });
 
     it('シート名を付けて保存すると saveApplicationSheet が呼ばれ、完了が role="status" で通知される（FR-010）', async () => {

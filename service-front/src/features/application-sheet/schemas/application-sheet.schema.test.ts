@@ -58,6 +58,12 @@ const filledInput = {
 };
 
 describe('applicationSheetSchema', () => {
+    it('スキーマのデフォルトはレンタル「無」+ 省略トグル ON（FR-012）', () => {
+        const defaults = applicationSheetSchema.getDefault();
+        expect(defaults.hasRental).toBe('no');
+        expect(defaults.omitRentalBlock).toBe(true);
+    });
+
     it('全項目未入力でも通る（全項目任意・FR-005）', async () => {
         const result = await applicationSheetSchema.validate(emptyInput);
         expect(result.fullName).toBe('');

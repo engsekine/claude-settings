@@ -63,6 +63,12 @@ export const ApplicationSheetForm = ({ defaultValues, sheetId, initialSheetName 
     const rentalItemsField = useController({ control, name: 'rentalItems' });
     const omitRentalBlockField = useController({ control, name: 'omitRentalBlock' });
 
+    // 「無」を選んだら未該当ブロックの省略を既定で有効にする（FR-012。手動で解除可能）
+    const handleHasRentalChange = (value: SheetFormValues['hasRental']) => {
+        hasRentalField.field.onChange(value);
+        if (value === 'no') omitRentalBlockField.field.onChange(true);
+    };
+
     const sheetText = buildSheetText(watch());
 
     const onSave = handleSubmit((values) => {
@@ -216,7 +222,7 @@ export const ApplicationSheetForm = ({ defaultValues, sheetId, initialSheetName 
                 <Heading level={2}>レンタル器材</Heading>
                 <RentalItemsField
                     hasRental={hasRentalField.field.value}
-                    onHasRentalChange={hasRentalField.field.onChange}
+                    onHasRentalChange={handleHasRentalChange}
                     selectedItems={rentalItemsField.field.value}
                     onSelectedItemsChange={rentalItemsField.field.onChange}
                     omitRentalBlock={omitRentalBlockField.field.value}

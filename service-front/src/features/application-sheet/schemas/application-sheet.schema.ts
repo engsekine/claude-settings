@@ -64,9 +64,10 @@ export const applicationSheetSchema: yup.ObjectSchema<SheetFormValues> = yup.obj
         .default(''),
     hasDrySuitExperience: yesNoValue(),
     drySuitDiveCount: countText('ドライスーツの経験本数', 5),
-    hasRental: yesNoValue(),
+    // レンタルは「無」+ 省略 ON をデフォルトにする（FR-012。「有」を選ぶと品目・サイズ欄等が現れる）
+    hasRental: yup.string().oneOf<YesNoValue>(['', 'yes', 'no']).default('no'),
     rentalItems: yup.array().of(yup.string().oneOf<RentalItemKey>(RENTAL_ITEM_KEYS).required()).default([]),
-    omitRentalBlock: yup.boolean().default(false),
+    omitRentalBlock: yup.boolean().default(true),
     heightCm: bodyMeasureText('身長'),
     weightKg: bodyMeasureText('体重'),
     footSizeCm: yup
