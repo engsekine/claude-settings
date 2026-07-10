@@ -41,7 +41,7 @@ export const RegulatorPanel = ({ status, recordButton }: RegulatorPanelProps) =>
                 <Heading level={3} id="regulator-panel-empty-heading" className="text-foreground">
                     OH ステータス
                 </Heading>
-                <p className="text-muted-foreground text-sm">レギュレーターを登録すると OH 期限をお知らせします</p>
+                <p className="text-muted-foreground">レギュレーターを登録すると OH 期限をお知らせします</p>
                 <Link href="/settings/equipment" className={buttonVariants()}>
                     レギュレーターを登録する
                 </Link>
@@ -74,14 +74,14 @@ export const RegulatorPanel = ({ status, recordButton }: RegulatorPanelProps) =>
                 <span className="sr-only">機材名: </span>
                 {`${status.brand} ${status.model}`}
             </p>
-            <p className="text-muted-foreground text-sm">{`次回 OH 期限: ${formatJstDate(nextOverhaulDate)}`}</p>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted-foreground">{`次回 OH 期限: ${formatJstDate(nextOverhaulDate)}`}</p>
+            <p className="text-muted-foreground">
                 {`${formatRemainingDays(remainingDays)} / ${formatRemainingDives(remainingDives)}`}
             </p>
 
             <div className="flex items-center justify-between gap-2 pt-2">
                 {recordButton}
-                <Link href="/settings/equipment" className="text-primary text-sm underline underline-offset-4">
+                <Link href="/settings/equipment" className="text-primary underline underline-offset-4">
                     機材を管理
                 </Link>
             </div>

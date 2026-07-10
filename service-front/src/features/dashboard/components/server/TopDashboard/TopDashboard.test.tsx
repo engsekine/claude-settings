@@ -22,9 +22,7 @@ const renderTopDashboard = async (props: Parameters<typeof TopDashboard>[0] = { 
 
 const mockHappyPath = () => {
     vi.mocked(getYearlyDiveCounts).mockResolvedValue([{ year: 2026, diveCount: 11 }]);
-    vi.mocked(getMonthlyDiveStats).mockResolvedValue([
-        { month: '2026-06', diveCount: 2, avgWaterTempC: 23.0, maxDepthM: 28.0 },
-    ]);
+    vi.mocked(getMonthlyDiveStats).mockResolvedValue([{ month: '2026-06', diveCount: 2 }]);
     vi.mocked(getPrimaryRegulatorStatus).mockResolvedValue(null);
 };
 
@@ -34,7 +32,7 @@ describe('TopDashboard', () => {
         mockHappyPath();
     });
 
-    it('design/req.md の順（次の予定 → 最近のログ → タイムライン → OH → 統計の推移）でセクションを表示する', async () => {
+    it('design/req.md の順（次の予定 → 最近のログ → タイムライン → OH → 累計ダイビング本数）でセクションを表示する', async () => {
         await renderTopDashboard({
             recentDives: [],
             nextPlanSection: <section aria-label="next-plan-slot">次の予定スロット</section>,
@@ -42,7 +40,7 @@ describe('TopDashboard', () => {
         });
 
         const headings = screen.getAllByRole('heading', { level: 2 }).map((el) => el.textContent);
-        expect(headings).toEqual(['最近のダイブログ', 'レギュレーター OH 状況', '統計の推移']);
+        expect(headings).toEqual(['最近のダイブログ', 'レギュレーター OH 状況', '累計ダイビング本数']);
 
         const html = document.body.innerHTML;
         const order = [
@@ -50,7 +48,7 @@ describe('TopDashboard', () => {
             html.indexOf('最近のダイブログ'),
             html.indexOf('タイムラインスロット'),
             html.indexOf('レギュレーター OH 状況'),
-            html.indexOf('統計の推移'),
+            html.indexOf('累計ダイビング本数'),
         ];
         expect([...order].every((v, i) => v >= 0 && (i === 0 || v > (order[i - 1] ?? 0)))).toBe(true);
     });
@@ -69,7 +67,7 @@ describe('TopDashboard', () => {
 
         await renderTopDashboard();
 
-        expect(screen.getByRole('heading', { level: 2, name: '統計の推移' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { level: 2, name: '累計ダイビング本数' })).toBeInTheDocument();
         expect(screen.getByText(/集計に失敗しました/)).toBeInTheDocument();
         consoleError.mockRestore();
     });

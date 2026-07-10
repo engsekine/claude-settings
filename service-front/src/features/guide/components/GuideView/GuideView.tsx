@@ -17,7 +17,7 @@ interface GuideViewProps {
  */
 export const GuideView = ({ examples }: GuideViewProps) => {
     return (
-        <div className="mx-auto flex w-full max-w-3xl flex-col gap-12 px-4 py-10">
+        <div className="mx-auto flex w-full max-w-3xl flex-col gap-16 px-4 py-16">
             <div className="flex flex-col gap-2">
                 <Heading level={1}>使い方</Heading>
                 <p className="text-muted-foreground">{PAGE_DATA.description}</p>
@@ -38,7 +38,7 @@ export const GuideView = ({ examples }: GuideViewProps) => {
                 </ol>
             </nav>
             {GUIDE_SECTIONS.map((section) => (
-                <div key={section.id} className="flex flex-col gap-3">
+                <div key={section.id} className="flex flex-col gap-4">
                     <GuideSectionCard section={section} example={examples?.[section.id]} />
                     <a
                         href="#guide-toc"

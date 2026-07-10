@@ -32,7 +32,7 @@ interface TopDashboardProps {
 /**
  * TOP ダッシュボードの組み立て（FR-002 / 並び順は design/req.md TOP-2〜6）。
  * ヒーロー（FV）と統計は DashboardHero が担当し、ここは FV 以下のセクション
- * （次の予定 → 最近のログ → タイムライン → OH → 統計の推移）を組み立てる。
+ * （次の予定 → 最近のログ → タイムライン → OH → 累計ダイビング本数）を組み立てる。
  * 他 feature 由来のデータ・コンポーネントは props / slot で受け取る（feature 間 import 禁止のため）。
  */
 export const TopDashboard = async ({
@@ -63,13 +63,14 @@ export const TopDashboard = async ({
     }
 
     return (
-        <div className="flex flex-col gap-20">
+        // セクション間の余白は各セクション側（pt-20 / mt-20）で取る（full-bleed セクションは背景が伸びないよう margin を使う）
+        <div className="flex flex-col">
             {nextPlanSection}
 
             {/* 背景写真を見せるため max-w コンテナを突き抜けてビューポート全幅にする（FV と同じ full-bleed） */}
             <section
                 aria-labelledby="dashboard-recent"
-                className="-translate-x-1/2 relative isolate left-1/2 w-screen overflow-hidden py-12"
+                className="-translate-x-1/2 relative isolate left-1/2 mt-20 w-screen overflow-hidden py-12"
             >
                 {/* 背景写真 + 可読性スクリム（ダーク時は濃く沈める） */}
                 <div aria-hidden="true" className="absolute inset-0 -z-20 bg-[url('/whale2.jpg')] bg-center bg-cover" />
@@ -93,16 +94,16 @@ export const TopDashboard = async ({
 
             {timelineSection}
 
-            <section aria-labelledby="dashboard-regulator" className="flex flex-col gap-8">
+            <section aria-labelledby="dashboard-regulator" className="flex flex-col gap-8 pt-20">
                 <Heading level={2} id="dashboard-regulator">
                     レギュレーター OH 状況
                 </Heading>
                 {regulatorFailed ? (
                     <div className="rounded-lg border border-border bg-background p-4">
-                        <p role="status" className="text-muted-foreground text-sm">
+                        <p role="status" className="text-muted-foreground">
                             機材情報の取得に失敗しました。時間をおいて再度お試しください。
                         </p>
-                        <Link href="/settings/equipment" className="text-primary text-sm underline">
+                        <Link href="/settings/equipment" className="text-primary underline">
                             機材設定を開く
                         </Link>
                     </div>
@@ -125,9 +126,9 @@ export const TopDashboard = async ({
                 </Link>
             </section>
 
-            <section aria-labelledby="dashboard-trends" className="flex flex-col gap-8">
+            <section aria-labelledby="dashboard-trends" className="flex flex-col gap-8 pt-20">
                 <Heading level={2} id="dashboard-trends">
-                    統計の推移
+                    累計ダイビング本数
                 </Heading>
                 <DiveTrends yearlyCounts={yearlyCounts} monthlyStats={monthlyStats} />
             </section>

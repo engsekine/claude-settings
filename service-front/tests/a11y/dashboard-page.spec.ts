@@ -18,7 +18,7 @@ const expectNoViolations = async (page: Page) => {
     expect(results.violations).toEqual([]);
 };
 
-test('TOP（ダッシュボード）- 統計の推移を含めて WCAG 2.1 AA 違反なし（要認証）', async ({ page }) => {
+test('TOP（ダッシュボード）- 累計ダイビング本数を含めて WCAG 2.1 AA 違反なし（要認証）', async ({ page }) => {
     // ログイン
     await page.goto('/login');
     await page.getByLabel('メールアドレス').fill(TEST_EMAIL);
@@ -26,9 +26,9 @@ test('TOP（ダッシュボード）- 統計の推移を含めて WCAG 2.1 AA �
     await page.getByRole('button', { name: 'ログイン', exact: true }).click();
     await page.waitForURL(/\/dives/);
 
-    // TOP（統計の推移セクションを含む）
+    // TOP（累計ダイビング本数セクションを含む）
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: '統計の推移' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '累計ダイビング本数' })).toBeVisible();
     await expectNoViolations(page);
 
     // 代替データテーブル（details）を開いた状態でも違反がないこと（FR-009）

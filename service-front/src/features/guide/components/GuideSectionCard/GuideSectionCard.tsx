@@ -18,21 +18,28 @@ interface GuideSectionCardProps {
  */
 export const GuideSectionCard = ({ section, example }: GuideSectionCardProps) => {
     return (
-        <section aria-labelledby={section.id} className="flex flex-col gap-4">
+        <section aria-labelledby={section.id} className="flex flex-col gap-6">
             <Heading level={2} id={section.id}>
                 {section.title}
             </Heading>
             <p className="text-muted-foreground text-sm">{section.description}</p>
-            <ol className="flex flex-col gap-3">
+            <ol className="flex flex-col">
                 {section.steps.map((step, index) => (
-                    <li key={step.title} className="flex gap-4 rounded-lg border border-border bg-background p-4">
+                    <li key={step.title} className="relative flex gap-4 pb-8 last:pb-0">
+                        {/* 番号バッジ同士を繋ぐ縦線（最終ステップには不要） */}
+                        {index < section.steps.length - 1 && (
+                            <span
+                                aria-hidden="true"
+                                className="-translate-x-1/2 absolute top-7 bottom-0 left-3.5 w-px bg-border"
+                            />
+                        )}
                         <span
                             aria-hidden="true"
                             className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#1649b1] font-bold text-sm text-white"
                         >
                             {index + 1}
                         </span>
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-3">
                             <Heading level={3}>{step.title}</Heading>
                             <p className="text-muted-foreground text-sm">{step.body}</p>
                         </div>

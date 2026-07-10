@@ -65,9 +65,7 @@ export const DashboardHero = async ({ badge, nextPlan }: DashboardHeroProps) => 
             />
             <div className="mx-auto flex w-full max-w-5xl flex-col gap-20 px-4 pt-10 pb-12">
                 <div className="flex flex-col gap-1">
-                    <p className="text-sm text-white/70 tracking-wide">
-                        {SITE_NAME} — あなたのダイビングのすべてを 1 冊に
-                    </p>
+                    <p className="text-white/70 tracking-wide">{SITE_NAME} — あなたのダイビングのすべてを 1 冊に</p>
                     <Heading level={1} id="dashboard-hero" className="text-white">
                         {hero.nickname ? `ようこそ、${hero.nickname}さん` : 'ようこそ'}
                     </Heading>
@@ -78,7 +76,7 @@ export const DashboardHero = async ({ badge, nextPlan }: DashboardHeroProps) => 
                             key={stat.label}
                             className="flex flex-col gap-1 rounded-xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm"
                         >
-                            <dt className="text-sm text-white/70">{stat.label}</dt>
+                            <dt className="text-white/70">{stat.label}</dt>
                             <dd className="flex flex-wrap items-baseline justify-between gap-x-2 font-semibold text-2xl text-white">
                                 <span>
                                     {stat.value}{' '}
@@ -113,13 +111,13 @@ export const DashboardHero = async ({ badge, nextPlan }: DashboardHeroProps) => 
                                 <span className="sr-only">行き先: </span>
                                 {nextPlan.location}
                             </span>
-                            <span className="shrink-0 rounded-full bg-[#1a73cc] px-3 py-1 font-semibold text-white text-sm">
+                            <span className="shrink-0 rounded-full bg-[#1a73cc] px-3 py-1 font-semibold text-sm text-white">
                                 <span className="sr-only">残り日数: </span>
                                 {formatDaysUntil(nextPlan.daysUntil)}
                             </span>
                         </Link>
                     ) : (
-                        <p className="rounded-xl border border-white/15 bg-white/10 p-4 text-sm text-white/70 backdrop-blur-sm">
+                        <p className="rounded-xl border border-white/15 bg-white/10 p-4 text-white/70 backdrop-blur-sm">
                             次の予定はまだありません。予定を作成して次のダイビングに備えましょう
                         </p>
                     )}

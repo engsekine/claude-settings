@@ -34,13 +34,13 @@ export const PackingChecklist = ({ items }: PackingChecklistProps) => {
     };
 
     if (items.length === 0) {
-        return <p className="text-muted-foreground text-sm">持ち物はまだありません</p>;
+        return <p className="text-muted-foreground">持ち物はまだありません</p>;
     }
 
     return (
         <div className="flex flex-col gap-2">
             {serverError && (
-                <p role="alert" className="text-red-600 text-sm">
+                <p role="alert" className="text-red-600">
                     {serverError}
                 </p>
             )}
@@ -57,7 +57,7 @@ export const PackingChecklist = ({ items }: PackingChecklistProps) => {
                                 onChange={() => handleToggle(item)}
                                 className="size-4 shrink-0"
                             />
-                            <label htmlFor={checkboxId} className="flex-1 text-foreground text-sm">
+                            <label htmlFor={checkboxId} className="flex-1 text-foreground">
                                 {item.name}
                             </label>
                         </li>
