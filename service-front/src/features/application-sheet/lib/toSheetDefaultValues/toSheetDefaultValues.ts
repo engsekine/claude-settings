@@ -1,5 +1,12 @@
-import type { SheetFormValues, SheetPrefill } from '../../types';
+import type { SheetFormValues, SheetPrefill, YesNoValue } from '../../types';
 import { yearMonthToDisplay } from '../yearMonth';
+
+/** boolean | null（保存値）→ 有無ラジオの値。null は未選択 */
+const toYesNoValue = (value: boolean | null): YesNoValue => {
+    if (value === true) return 'yes';
+    if (value === false) return 'no';
+    return '';
+};
 
 /** null / 空文字を取り除き、値のあるキーだけ残す */
 const compact = (entries: Partial<SheetFormValues>): Partial<SheetFormValues> =>
@@ -29,5 +36,7 @@ export const toSheetDefaultValues = (prefill: SheetPrefill | null): Partial<Shee
         emergencyContactRelation: prefill.emergencyContactRelation ?? '',
         emergencyContactPhone: prefill.emergencyContactPhone ?? '',
         nearestStation: prefill.nearestStation ?? '',
+        hasDrySuitExperience: toYesNoValue(prefill.hasDrySuitExperience),
+        drySuitDiveCount: prefill.drySuitDiveCount !== null ? String(prefill.drySuitDiveCount) : '',
     });
 };

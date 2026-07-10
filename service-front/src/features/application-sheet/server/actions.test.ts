@@ -21,7 +21,6 @@ interface SupabaseMockOptions {
     updatedRow?: { id: string } | null;
     updateError?: { code?: string; message: string } | null;
     deleteError?: { code?: string; message: string } | null;
-    upsertError?: { code?: string; message: string } | null;
 }
 
 const buildSupabaseMock = (options: SupabaseMockOptions = {}) => {
@@ -32,51 +31,40 @@ const buildSupabaseMock = (options: SupabaseMockOptions = {}) => {
         updatedRow = { id: 'sheet-1' },
         updateError = null,
         deleteError = null,
-        upsertError = null,
     } = options;
 
-    // insert().select().single()
+    // insert(): シート新規は .select().single()、基本情報は直接 await（thenable）
+    const insertResolved = insertError
+        ? { data: null, error: insertError }
+        : { data: { id: 'sheet-new' }, error: null };
     const insert = vi.fn().mockReturnValue({
-        select: vi.fn().mockReturnValue({
-            single: vi
-                .fn()
-                .mockResolvedValue(
-                    insertError ? { data: null, error: insertError } : { data: { id: 'sheet-new' }, error: null },
-                ),
-        }),
+        select: vi.fn().mockReturnValue({ single: vi.fn().mockResolvedValue(insertResolved) }),
+        then: (resolve: (value: { error: unknown }) => void) => resolve({ error: insertError ?? null }),
     });
 
-    // update().eq().eq().select().maybeSingle()
-    const updateEqUser = vi.fn().mockReturnValue({
-        select: vi.fn().mockReturnValue({
-            maybeSingle: vi
-                .fn()
-                .mockResolvedValue(
-                    updateError ? { data: null, error: updateError } : { data: updatedRow, error: null },
-                ),
-        }),
-    });
-    const updateEqId = vi.fn().mockReturnValue({ eq: updateEqUser });
-    const update = vi.fn().mockReturnValue({ eq: updateEqId });
+    // update(): eq を可変長でチェーンし .select().maybeSingle() で解決する
+    const updateResolved = updateError ? { data: null, error: updateError } : { data: updatedRow, error: null };
+    const updateSelect = vi.fn().mockReturnValue({ maybeSingle: vi.fn().mockResolvedValue(updateResolved) });
+    const updateEq = vi.fn();
+    updateEq.mockImplementation(() => ({ eq: updateEq, select: updateSelect }));
+    const update = vi.fn().mockReturnValue({ eq: updateEq });
 
     // delete().eq().eq()
     const deleteEqUser = vi.fn().mockResolvedValue({ error: deleteError });
     const deleteEqId = vi.fn().mockReturnValue({ eq: deleteEqUser });
     const deleteFn = vi.fn().mockReturnValue({ eq: deleteEqId });
 
-    // select(count)
-    const select = vi.fn().mockResolvedValue({ count: sheetCount, error: null });
+    // select(count).eq('kind', 'sheet')
+    const countEq = vi.fn().mockResolvedValue({ count: sheetCount, error: null });
+    const select = vi.fn().mockReturnValue({ eq: countEq });
 
-    // 基本情報の upsert
-    const upsert = vi.fn().mockResolvedValue({ error: upsertError });
-
-    const from = vi.fn().mockReturnValue({ insert, update, delete: deleteFn, select, upsert });
+    const from = vi.fn().mockReturnValue({ insert, update, delete: deleteFn, select });
     const supabase = {
         auth: { getUser: vi.fn().mockResolvedValue({ data: { user } }) },
         from,
     };
     createClient.mockResolvedValue(supabase);
-    return { from, insert, update, updateEqId, updateEqUser, deleteFn, deleteEqId, deleteEqUser, upsert };
+    return { from, insert, update, updateEq, deleteFn, deleteEqId, deleteEqUser };
 };
 
 const validValues: SheetFormValues = {
@@ -146,8 +134,8 @@ describe('saveApplicationSheet', () => {
         expect(revalidatePath).toHaveBeenCalledWith('/application-sheet');
     });
 
-    it('上書き保存: 本人のシートに限定して update する', async () => {
-        const { update, updateEqId, updateEqUser, insert } = buildSupabaseMock();
+    it('上書き保存: 本人のシート（kind=sheet）に限定して update する', async () => {
+        const { update, updateEq, insert } = buildSupabaseMock();
 
         const result = await saveApplicationSheet({
             sheetId: 'sheet-1',
@@ -157,8 +145,11 @@ describe('saveApplicationSheet', () => {
 
         expect(result).toEqual({ success: true, id: 'sheet-1' });
         expect(update).toHaveBeenCalledWith(expectedDbRow);
-        expect(updateEqId).toHaveBeenCalledWith('id', 'sheet-1');
-        expect(updateEqUser).toHaveBeenCalledWith('user_id', 'user-1');
+        expect(updateEq.mock.calls).toEqual([
+            ['id', 'sheet-1'],
+            ['user_id', 'user-1'],
+            ['kind', 'sheet'],
+        ]);
         expect(insert).not.toHaveBeenCalled();
     });
 
@@ -263,47 +254,71 @@ describe('saveApplicationBaseProfile', () => {
         vi.spyOn(console, 'error').mockImplementation(() => undefined);
     });
 
-    it('基本情報セクションの値を本人 user_id で upsert する', async () => {
-        const { from, upsert } = buildSupabaseMock();
+    const expectedBaseRow = {
+        full_name: '山田 太郎',
+        age: 36,
+        birth_on: '1990-05-03',
+        gender: 'male',
+        phone: '090-1234-5678',
+        emergency_contact_relation: '妻',
+        emergency_contact_phone: '080-9876-5432',
+        nearest_station: '横浜駅',
+        license_rank: 'Open Water Diver',
+        dive_count: 52,
+        last_dive_year_month: '2026-05',
+        has_dry_suit_experience: null,
+        dry_suit_dive_count: 10,
+    };
+
+    it('基本情報 + 経験を kind=base の行へ更新保存する（既存あり）', async () => {
+        const { update, updateEq, insert } = buildSupabaseMock({ updatedRow: { id: 'base-1' } });
 
         const result = await saveApplicationBaseProfile(validValues);
 
         expect(result).toEqual({ success: true });
-        expect(from).toHaveBeenCalledWith('application_base_profiles');
-        expect(upsert).toHaveBeenCalledWith({
-            user_id: 'user-1',
-            full_name: '山田 太郎',
-            age: 36,
-            birth_on: '1990-05-03',
-            gender: 'male',
-            phone: '090-1234-5678',
-            emergency_contact_relation: '妻',
-            emergency_contact_phone: '080-9876-5432',
-            nearest_station: '横浜駅',
-        });
+        expect(update).toHaveBeenCalledWith(expectedBaseRow);
+        expect(updateEq.mock.calls).toEqual([
+            ['kind', 'base'],
+            ['user_id', 'user-1'],
+        ]);
+        expect(insert).not.toHaveBeenCalled();
         expect(revalidatePath).toHaveBeenCalledWith('/application-sheet');
     });
 
+    it('kind=base の行が無ければ固定名で新規作成する', async () => {
+        const { insert } = buildSupabaseMock({ updatedRow: null });
+
+        const result = await saveApplicationBaseProfile(validValues);
+
+        expect(result).toEqual({ success: true });
+        expect(insert).toHaveBeenCalledWith({
+            ...expectedBaseRow,
+            kind: 'base',
+            name: '基本情報',
+            user_id: 'user-1',
+        });
+    });
+
     it('不正な入力はエラーを返し保存しない', async () => {
-        const { upsert } = buildSupabaseMock();
+        const { update } = buildSupabaseMock();
 
         const result = await saveApplicationBaseProfile({ ...validValues, phone: '090-abcd' });
 
         expect(result).toEqual({ success: false, error: '携帯電話は数字とハイフンで入力してください' });
-        expect(upsert).not.toHaveBeenCalled();
+        expect(update).not.toHaveBeenCalled();
     });
 
     it('未ログインなら失敗を返す', async () => {
-        const { upsert } = buildSupabaseMock({ user: null });
+        const { update } = buildSupabaseMock({ user: null });
 
         const result = await saveApplicationBaseProfile(validValues);
 
         expect(result).toEqual({ success: false, error: 'ログインが必要です' });
-        expect(upsert).not.toHaveBeenCalled();
+        expect(update).not.toHaveBeenCalled();
     });
 
     it('DB エラー時は失敗を返し、ログに個人情報の値を含めない', async () => {
-        buildSupabaseMock({ upsertError: { message: 'db error' } });
+        buildSupabaseMock({ updateError: { message: 'db error' } });
 
         const result = await saveApplicationBaseProfile(validValues);
 

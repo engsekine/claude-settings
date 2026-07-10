@@ -17,6 +17,8 @@ const emptyPrefill: SheetPrefill = {
     emergencyContactRelation: null,
     emergencyContactPhone: null,
     nearestStation: null,
+    hasDrySuitExperience: null,
+    drySuitDiveCount: null,
 };
 
 describe('toSheetDefaultValues', () => {
@@ -34,6 +36,8 @@ describe('toSheetDefaultValues', () => {
             lastDiveYearMonth: '2026-05',
             phone: '090-1234-5678',
             nearestStation: '横浜駅',
+            hasDrySuitExperience: false,
+            drySuitDiveCount: 10,
         });
 
         expect(defaults).toEqual({
@@ -48,6 +52,8 @@ describe('toSheetDefaultValues', () => {
             lastDiveYearMonth: '2026年5月',
             phone: '090-1234-5678',
             nearestStation: '横浜駅',
+            hasDrySuitExperience: 'no',
+            drySuitDiveCount: '10',
         });
     });
 

@@ -20,6 +20,8 @@ const EMPTY_PREFILL: SheetPrefill = {
     emergencyContactRelation: null,
     emergencyContactPhone: null,
     nearestStation: null,
+    hasDrySuitExperience: null,
+    drySuitDiveCount: null,
 };
 
 /** 生年月日（YYYY-MM-DD）から JST 基準の満年齢を算出する */
@@ -40,7 +42,7 @@ const toPrefillGender = (gender: string): SheetPrefill['gender'] => {
 
 /**
  * 申し込みシートの自動入力データを取得する（FR-007）。
- * user_details / certifications / dives / application_base_profiles（保存済み基本情報）を並列参照し、
+ * user_details / certifications / dives / 保存済み基本情報（application_sheets の kind='base' 行）を並列参照し、
  * 未登録のソースは null を返す（FR-009）。保存済み基本情報はプロフィール由来の値より優先する。
  * 新規シートの初期値にのみ使う（保存済みシートは getApplicationSheet でスナップショットを復元）。
  */
@@ -73,12 +75,13 @@ export const getApplicationSheetPrefill = async (): Promise<SheetPrefill> => {
             .eq('user_id', user.id)
             .order('dive_date', { ascending: false })
             .limit(1),
-        // 保存済みの基本情報（RLS で本人の 1 件のみ）
+        // 保存済みの基本情報（kind='base' の 1 行。RLS で本人分のみ）
         supabase
-            .from('application_base_profiles')
+            .from('application_sheets')
             .select(
-                'full_name, age, birth_on, gender, phone, emergency_contact_relation, emergency_contact_phone, nearest_station',
+                'full_name, age, birth_on, gender, phone, emergency_contact_relation, emergency_contact_phone, nearest_station, license_rank, dive_count, last_dive_year_month, has_dry_suit_experience, dry_suit_dive_count',
             )
+            .eq('kind', 'base')
             .maybeSingle(),
     ]);
 
@@ -112,14 +115,16 @@ export const getApplicationSheetPrefill = async (): Promise<SheetPrefill> => {
               : null,
         heightCm: details?.height_cm ?? null,
         weightKg: details?.weight_kg ?? null,
-        licenseRank: certificationResult.data?.rank ?? null,
+        licenseRank: baseProfile?.license_rank || (certificationResult.data?.rank ?? null),
         // ログ 0 件は空欄扱い（spec Edge Cases）
-        diveCount: diveCount > 0 ? diveCount : null,
-        lastDiveYearMonth: lastDiveDate ? lastDiveDate.slice(0, 7) : null,
+        diveCount: baseProfile?.dive_count ?? (diveCount > 0 ? diveCount : null),
+        lastDiveYearMonth: baseProfile?.last_dive_year_month ?? (lastDiveDate ? lastDiveDate.slice(0, 7) : null),
         phone: baseProfile?.phone || null,
         emergencyContactRelation: baseProfile?.emergency_contact_relation || null,
         emergencyContactPhone: baseProfile?.emergency_contact_phone || null,
         nearestStation: baseProfile?.nearest_station || null,
+        hasDrySuitExperience: baseProfile?.has_dry_suit_experience ?? null,
+        drySuitDiveCount: baseProfile?.dry_suit_dive_count ?? null,
     };
 };
 
@@ -130,6 +135,7 @@ export const listApplicationSheets = async (): Promise<SavedSheetSummary[]> => {
     const { data, error } = await supabase
         .from('application_sheets')
         .select('id, name, updated_at')
+        .eq('kind', 'sheet')
         .order('updated_at', { ascending: false });
 
     if (error || !data) {
@@ -148,7 +154,13 @@ export const getApplicationSheet = async (sheetId: string): Promise<SavedApplica
 
     const supabase = await createClient();
 
-    const { data, error } = await supabase.from('application_sheets').select('*').eq('id', sheetId).maybeSingle();
+    // kind='base'（基本情報の行）は一覧・選択の対象外
+    const { data, error } = await supabase
+        .from('application_sheets')
+        .select('*')
+        .eq('id', sheetId)
+        .eq('kind', 'sheet')
+        .maybeSingle();
 
     if (error) {
         throw new Error(`[getApplicationSheet] supabase error: ${error.message}`);

@@ -178,31 +178,6 @@ export const ApplicationSheetForm = ({ defaultValues, sheetId, initialSheetName 
                     error={errors.nearestStation?.message}
                     {...register('nearestStation')}
                 />
-                <div className="flex flex-col items-start gap-2">
-                    <p className="text-muted-foreground text-sm">
-                        基本情報を保存すると、新しいシートを作るときに自動で入力されます
-                    </p>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        disabled={isSavingBase}
-                        aria-busy={isSavingBase}
-                        onClick={() => {
-                            void onSaveBaseProfile();
-                        }}
-                    >
-                        {isSavingBase ? '保存中...' : '基本情報を保存する'}
-                    </Button>
-                    {/* aria-live 領域は常設して更新を通知する */}
-                    <span role="status" aria-live="polite" className="text-sky-700 text-sm">
-                        {baseSaveState === 'saved' ? '基本情報を保存しました' : ''}
-                    </span>
-                    {baseError && (
-                        <span role="alert" className="text-red-600 text-sm">
-                            {baseError}
-                        </span>
-                    )}
-                </div>
             </section>
 
             <section className="flex flex-col gap-4">
@@ -248,6 +223,31 @@ export const ApplicationSheetForm = ({ defaultValues, sheetId, initialSheetName 
                         {...register('drySuitDiveCount')}
                     />
                 )}
+                <div className="flex flex-col items-start gap-2">
+                    <p className="text-muted-foreground text-sm">
+                        基本情報と経験を保存すると、新しいシートを作るときに自動で入力されます
+                    </p>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        disabled={isSavingBase}
+                        aria-busy={isSavingBase}
+                        onClick={() => {
+                            void onSaveBaseProfile();
+                        }}
+                    >
+                        {isSavingBase ? '保存中...' : '基本情報を保存する'}
+                    </Button>
+                    {/* aria-live 領域は常設して更新を通知する */}
+                    <span role="status" aria-live="polite" className="text-sky-700 text-sm">
+                        {baseSaveState === 'saved' ? '基本情報を保存しました' : ''}
+                    </span>
+                    {baseError && (
+                        <span role="alert" className="text-red-600 text-sm">
+                            {baseError}
+                        </span>
+                    )}
+                </div>
             </section>
 
             <section className="flex flex-col gap-4">

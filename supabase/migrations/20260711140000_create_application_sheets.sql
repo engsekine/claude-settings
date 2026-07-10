@@ -1,12 +1,10 @@
--- 申し込みシートを名前付きで複数保存できるようにするため、users と 1:1 の
--- application_profiles を廃止し、1 ユーザー N 件の application_sheets に置き換える。
--- 未リリース機能のため既存データの移行は行わない（clarify 2026-07-11）。
-drop table public.application_profiles;
-
--- シートはフォーム全体のスナップショット（自動入力値の上書き・レンタル選択も保存する）
+-- 申し込みシート（名前付きスナップショット・1 ユーザー N 件）と基本情報（1 ユーザー 1 件）を
+-- 1 テーブルで保持する。kind = 'sheet' が一覧に並ぶ保存シート、kind = 'base' が
+-- 「基本情報を保存」で upsert される特別な 1 行（新規シート作成時の自動入力に使う・一覧非表示）
 create table public.application_sheets (
     id uuid primary key default gen_random_uuid(),
     user_id uuid not null references public.users(id) on delete cascade,
+    kind text not null default 'sheet' check (kind in ('sheet', 'base')),
     name text not null check (length(trim(name)) > 0 and char_length(name) <= 50),
     full_name text not null default '' check (char_length(full_name) <= 60),
     age integer check (age >= 0 and age <= 999),
@@ -18,8 +16,6 @@ create table public.application_sheets (
     nearest_station text not null default '' check (char_length(nearest_station) <= 100),
     license_rank text not null default '' check (char_length(license_rank) <= 60),
     dive_count integer check (dive_count >= 0),
-    has_izu_chiba_experience boolean,
-    has_boat_experience boolean,
     last_dive_year_month text check (last_dive_year_month ~ '^\d{4}-\d{2}$'),
     has_dry_suit_experience boolean,
     dry_suit_dive_count integer check (dry_suit_dive_count >= 0),
@@ -38,14 +34,18 @@ create table public.application_sheets (
     updated_at timestamptz not null default now()
 );
 
-comment on table public.application_sheets is '申し込みシートの保存スナップショット（1 ユーザー N 件・名前付き）。一覧から選択して再利用する';
-comment on column public.application_sheets.name is 'シート名（一覧での識別用。例: 〇〇ショップ用）';
+comment on table public.application_sheets is '申し込みシートの保存スナップショット。kind=sheet は名前付きで複数保存・一覧表示、kind=base は基本情報+経験の既定値（1 ユーザー 1 件・一覧非表示）';
+comment on column public.application_sheets.kind is 'sheet = 一覧から選ぶ保存シート / base = 新規シートの自動入力に使う基本情報';
+comment on column public.application_sheets.name is 'シート名（一覧での識別用。kind=base は固定名）';
 comment on column public.application_sheets.rental_items is '選択したレンタル品目キーの配列（アプリの RENTAL_ITEMS と同期）';
-comment on column public.application_sheets.has_izu_chiba_experience is '伊豆・千葉でのダイビング経験。null = 未入力（「無」と区別する）';
+comment on column public.application_sheets.last_dive_year_month is '最終ダイブ年月（YYYY-MM）。フォームでは「2026年7月」表記';
 comment on column public.application_sheets.contact_lens_type is 'コンタクトレンズの種類。有りの場合のみ意味を持つ';
 
 -- 一覧は本人のシートを更新日時降順で表示する
 create index idx_application_sheets_user_id_updated_at on public.application_sheets(user_id, updated_at desc);
+
+-- 基本情報（kind=base）は 1 ユーザー 1 件
+create unique index application_sheets_user_id_base_key on public.application_sheets(user_id) where kind = 'base';
 
 create trigger application_sheets_handle_updated_at
     before update on public.application_sheets

@@ -65,8 +65,6 @@ export interface SheetFormValues {
 
 export type ApplicationSheetRow = Database['public']['Tables']['application_sheets']['Row'];
 
-export type ApplicationBaseProfileRow = Database['public']['Tables']['application_base_profiles']['Row'];
-
 /** 保存済みシートの一覧表示用サマリー */
 export interface SavedSheetSummary {
     id: string;
@@ -100,9 +98,11 @@ export interface SheetPrefill {
     diveCount: number | null;
     /** YYYY-MM */
     lastDiveYearMonth: string | null;
-    /** 以下は保存済みの基本情報（application_base_profiles）由来。未保存は null */
+    /** 以下は保存済みの基本情報（application_sheets の kind='base' 行）由来。未保存は null */
     phone: string | null;
     emergencyContactRelation: string | null;
     emergencyContactPhone: string | null;
     nearestStation: string | null;
+    hasDrySuitExperience: boolean | null;
+    drySuitDiveCount: number | null;
 }

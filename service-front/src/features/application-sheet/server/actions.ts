@@ -7,7 +7,7 @@ import { createClient } from '@/shared/lib/supabase/server';
 import { validateWithSchema } from '@/shared/lib/validation';
 import { type ActionResult, actionFailure, actionSuccess } from '@/shared/types/action-result';
 
-import { MAX_APPLICATION_SHEETS, SHEET_NAME_MAX_LENGTH } from '../constants';
+import { BASE_PROFILE_SHEET_NAME, MAX_APPLICATION_SHEETS, SHEET_NAME_MAX_LENGTH } from '../constants';
 import { displayToYearMonth } from '../lib/yearMonth';
 import { applicationSheetSchema } from '../schemas/application-sheet.schema';
 import type { SheetFormValues, YesNoValue } from '../types';
@@ -85,6 +85,7 @@ export const saveApplicationSheet = async (input: SaveApplicationSheetInput): Pr
             .update(row)
             .eq('id', input.sheetId)
             .eq('user_id', user.id)
+            .eq('kind', 'sheet')
             .select('id')
             .maybeSingle();
 
@@ -98,10 +99,11 @@ export const saveApplicationSheet = async (input: SaveApplicationSheetInput): Pr
         return actionSuccess({ id: data.id });
     }
 
-    // 新規保存。無制限な行増加を防ぐため上限件数を確認する
+    // 新規保存。無制限な行増加を防ぐため上限件数を確認する（基本情報の行は数えない）
     const { count, error: countError } = await supabase
         .from('application_sheets')
-        .select('id', { count: 'exact', head: true });
+        .select('id', { count: 'exact', head: true })
+        .eq('kind', 'sheet');
 
     if (countError) {
         console.error('[saveApplicationSheet] supabase error code:', countError.code);
@@ -126,7 +128,7 @@ export const saveApplicationSheet = async (input: SaveApplicationSheetInput): Pr
     return actionSuccess({ id: data.id });
 };
 
-/** 基本情報セクションの値を DB カラムへマッピングする */
+/** 基本情報 + 経験セクションの値を DB カラムへマッピングする */
 const toBaseProfileDbRow = (values: SheetFormValues) => ({
     full_name: values.fullName,
     age: toNullableNumber(values.age),
@@ -136,11 +138,16 @@ const toBaseProfileDbRow = (values: SheetFormValues) => ({
     emergency_contact_relation: values.emergencyContactRelation,
     emergency_contact_phone: values.emergencyContactPhone,
     nearest_station: values.nearestStation,
+    license_rank: values.licenseRank,
+    dive_count: toNullableNumber(values.diveCount),
+    last_dive_year_month: displayToYearMonth(values.lastDiveYearMonth),
+    has_dry_suit_experience: toNullableBoolean(values.hasDrySuitExperience),
+    dry_suit_dive_count: toNullableNumber(values.drySuitDiveCount),
 });
 
 /**
- * 基本情報（1 ユーザー 1 件）を保存する。新規シート作成時の自動入力に使う。
- * 個人情報を扱うため、エラーログに入力値は含めない。
+ * 基本情報 + 経験（1 ユーザー 1 件・application_sheets の kind='base' 行）を保存する。
+ * 新規シート作成時の自動入力に使う。個人情報を扱うため、エラーログに入力値は含めない。
  */
 export const saveApplicationBaseProfile = async (input: SheetFormValues): Promise<ActionResult> => {
     const supabase = await createClient();
@@ -151,13 +158,31 @@ export const saveApplicationBaseProfile = async (input: SheetFormValues): Promis
     const validation = await validateWithSchema(applicationSheetSchema, input);
     if (validation.error !== undefined) return actionFailure(validation.error);
 
-    const { error } = await supabase
-        .from('application_base_profiles')
-        .upsert({ ...toBaseProfileDbRow(validation.values), user_id: user.id });
+    const row = toBaseProfileDbRow(validation.values);
 
-    if (error) {
-        console.error('[saveApplicationBaseProfile] supabase error code:', error.code);
+    // kind='base' は 1 ユーザー 1 件（部分ユニーク制約）。まず更新し、無ければ作成する
+    const { data: updated, error: updateError } = await supabase
+        .from('application_sheets')
+        .update(row)
+        .eq('kind', 'base')
+        .eq('user_id', user.id)
+        .select('id')
+        .maybeSingle();
+
+    if (updateError) {
+        console.error('[saveApplicationBaseProfile] supabase error code:', updateError.code);
         return actionFailure('基本情報の保存に失敗しました。時間をおいて再度お試しください');
+    }
+
+    if (!updated) {
+        const { error: insertError } = await supabase
+            .from('application_sheets')
+            .insert({ ...row, kind: 'base', name: BASE_PROFILE_SHEET_NAME, user_id: user.id });
+
+        if (insertError) {
+            console.error('[saveApplicationBaseProfile] supabase error code:', insertError.code);
+            return actionFailure('基本情報の保存に失敗しました。時間をおいて再度お試しください');
+        }
     }
 
     revalidatePath('/application-sheet');

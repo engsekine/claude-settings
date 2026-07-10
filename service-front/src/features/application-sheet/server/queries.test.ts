@@ -14,6 +14,7 @@ const SHEET_UUID = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
 const sampleSheetRow: ApplicationSheetRow = {
     id: SHEET_UUID,
     user_id: 'user-1',
+    kind: 'sheet',
     name: '〇〇ショップ用',
     full_name: '山田 太郎',
     age: 36,
@@ -81,11 +82,18 @@ const buildSupabaseMock = (options: SupabaseMockOptions = {}) => {
         }),
     });
 
-    // 一覧: select().order() / 1 件: select().eq().maybeSingle()
+    // 一覧: select().eq('kind','sheet').order() / 1 件: select().eq('id').eq('kind').maybeSingle()
+    // 基本情報: select().eq('kind','base').maybeSingle()
     const sheetsOrder = vi.fn().mockResolvedValue({ data: sheetSummaries, error: null });
-    const sheetsMaybeSingle = vi.fn().mockResolvedValue({ data: sheetRow, error: null });
-    const sheetsEq = vi.fn().mockReturnValue({ maybeSingle: sheetsMaybeSingle });
-    const sheetsSelect = vi.fn().mockReturnValue({ order: sheetsOrder, eq: sheetsEq });
+    const sheetsGetMaybeSingle = vi.fn().mockResolvedValue({ data: sheetRow, error: null });
+    const baseMaybeSingle = vi.fn().mockResolvedValue({ data: baseProfile, error: null });
+    const sheetsEq = vi.fn((column: string, value: string) => {
+        if (column === 'kind' && value === 'base') return { maybeSingle: baseMaybeSingle };
+        if (column === 'kind' && value === 'sheet') return { order: sheetsOrder };
+        // eq('id', ...) → eq('kind', 'sheet') → maybeSingle()
+        return { eq: vi.fn().mockReturnValue({ maybeSingle: sheetsGetMaybeSingle }) };
+    });
+    const sheetsSelect = vi.fn().mockReturnValue({ eq: sheetsEq });
 
     const from = vi.fn((table: string) => {
         if (table === 'user_details') {
@@ -114,13 +122,6 @@ const buildSupabaseMock = (options: SupabaseMockOptions = {}) => {
         if (table === 'application_sheets') {
             return { select: sheetsSelect };
         }
-        if (table === 'application_base_profiles') {
-            return {
-                select: vi.fn().mockReturnValue({
-                    maybeSingle: vi.fn().mockResolvedValue({ data: baseProfile, error: null }),
-                }),
-            };
-        }
         throw new Error(`unexpected table: ${table}`);
     });
 
@@ -129,7 +130,8 @@ const buildSupabaseMock = (options: SupabaseMockOptions = {}) => {
         from,
     };
     createClient.mockResolvedValue(supabase);
-    return { from, divesEq, sheetsSelect, sheetsOrder, sheetsEq };
+    const sheetsEqCalls = () => sheetsEq.mock.calls;
+    return { from, divesEq, sheetsSelect, sheetsOrder, sheetsEq, sheetsEqCalls };
 };
 
 describe('getApplicationSheetPrefill', () => {
@@ -227,6 +229,8 @@ describe('getApplicationSheetPrefill', () => {
             emergencyContactRelation: null,
             emergencyContactPhone: null,
             nearestStation: null,
+            hasDrySuitExperience: null,
+            drySuitDiveCount: null,
         });
     });
 
@@ -240,6 +244,9 @@ describe('getApplicationSheetPrefill', () => {
                 height_cm: 172.5,
                 weight_kg: 65,
             },
+            certification: { rank: 'Open Water Diver' },
+            divesCount: 8,
+            lastDiveDate: '2025-10-01',
             baseProfile: {
                 full_name: '山田 太郎（改名後）',
                 age: null,
@@ -249,6 +256,11 @@ describe('getApplicationSheetPrefill', () => {
                 emergency_contact_relation: '妻',
                 emergency_contact_phone: '080-9876-5432',
                 nearest_station: '横浜駅',
+                license_rank: 'Rescue Diver',
+                dive_count: 120,
+                last_dive_year_month: '2026-06',
+                has_dry_suit_experience: true,
+                dry_suit_dive_count: 15,
             },
         });
 
@@ -260,6 +272,12 @@ describe('getApplicationSheetPrefill', () => {
         expect(prefill.emergencyContactRelation).toBe('妻');
         expect(prefill.emergencyContactPhone).toBe('080-9876-5432');
         expect(prefill.nearestStation).toBe('横浜駅');
+        // 経験も保存値が優先される（資格・ログ由来の値より優先）
+        expect(prefill.licenseRank).toBe('Rescue Diver');
+        expect(prefill.diveCount).toBe(120);
+        expect(prefill.lastDiveYearMonth).toBe('2026-06');
+        expect(prefill.hasDrySuitExperience).toBe(true);
+        expect(prefill.drySuitDiveCount).toBe(15);
         // 保存値が空の項目はプロフィールで補完される
         expect(prefill.birthOn).toBe('1990-05-03');
         expect(prefill.age).toBe(36);
@@ -283,7 +301,7 @@ describe('listApplicationSheets', () => {
     });
 
     it('保存済みシートのサマリーを返す（camelCase）', async () => {
-        const { sheetsOrder } = buildSupabaseMock({
+        const { sheetsOrder, sheetsEqCalls } = buildSupabaseMock({
             sheetSummaries: [
                 { id: 'sheet-2', name: 'B ショップ用', updated_at: '2026-07-11T02:00:00Z' },
                 { id: 'sheet-1', name: 'A ショップ用', updated_at: '2026-07-10T00:00:00Z' },
@@ -296,7 +314,8 @@ describe('listApplicationSheets', () => {
             { id: 'sheet-2', name: 'B ショップ用', updatedAt: '2026-07-11T02:00:00Z' },
             { id: 'sheet-1', name: 'A ショップ用', updatedAt: '2026-07-10T00:00:00Z' },
         ]);
-        // 一覧は更新日時の降順
+        // 一覧は kind='sheet' のみ・更新日時の降順（基本情報の行は出さない）
+        expect(sheetsEqCalls()).toContainEqual(['kind', 'sheet']);
         expect(sheetsOrder).toHaveBeenCalledWith('updated_at', { ascending: false });
     });
 

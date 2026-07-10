@@ -59,23 +59,25 @@ test('申し込みシート: 名前を付けて保存 → 一覧から選択で�
     await expect(page.getByRole('link', { name: new RegExp(sheetName) })).toHaveCount(0);
 });
 
-test('申し込みシート: 基本情報を保存すると新規シート作成時に自動入力される', async ({ page }) => {
+test('申し込みシート: 基本情報と経験を保存すると新規シート作成時に自動入力される', async ({ page }) => {
     const phone = `090${String(Date.now()).slice(-8)}`;
 
     await login(page);
     await page.goto('/application-sheet');
 
-    // 基本情報を入力して専用ボタンで保存
+    // 基本情報 + 経験を入力して専用ボタンで保存
     await page.getByLabel('携帯電話').fill(phone);
     await page.getByLabel('最寄りの駅').fill('基本情報テスト駅');
+    await page.getByLabel('ライセンスランク').fill('基本情報テストランク');
     await page.getByRole('button', { name: '基本情報を保存する' }).click();
     await expect(page.getByRole('status').filter({ hasText: '基本情報を保存しました' })).toBeVisible();
 
-    // 再訪問（新規シート作成状態）で自動入力されている
+    // 再訪問（新規シート作成状態）で基本情報・経験とも自動入力されている
     await page.goto('/');
     await page.goto('/application-sheet');
     await expect(page.getByLabel('携帯電話')).toHaveValue(phone);
     await expect(page.getByLabel('最寄りの駅')).toHaveValue('基本情報テスト駅');
+    await expect(page.getByLabel('ライセンスランク')).toHaveValue('基本情報テストランク');
 });
 
 test('申し込みシート: TOP ダッシュボードの導線から遷移できる（FR-001）', async ({ page }) => {

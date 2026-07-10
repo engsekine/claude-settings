@@ -93,56 +93,6 @@ export type Database = {
                 };
                 Relationships: [];
             };
-            application_base_profiles: {
-                Row: {
-                    age: number | null;
-                    birth_on: string | null;
-                    created_at: string;
-                    emergency_contact_phone: string;
-                    emergency_contact_relation: string;
-                    full_name: string;
-                    gender: string | null;
-                    nearest_station: string;
-                    phone: string;
-                    updated_at: string;
-                    user_id: string;
-                };
-                Insert: {
-                    age?: number | null;
-                    birth_on?: string | null;
-                    created_at?: string;
-                    emergency_contact_phone?: string;
-                    emergency_contact_relation?: string;
-                    full_name?: string;
-                    gender?: string | null;
-                    nearest_station?: string;
-                    phone?: string;
-                    updated_at?: string;
-                    user_id: string;
-                };
-                Update: {
-                    age?: number | null;
-                    birth_on?: string | null;
-                    created_at?: string;
-                    emergency_contact_phone?: string;
-                    emergency_contact_relation?: string;
-                    full_name?: string;
-                    gender?: string | null;
-                    nearest_station?: string;
-                    phone?: string;
-                    updated_at?: string;
-                    user_id?: string;
-                };
-                Relationships: [
-                    {
-                        foreignKeyName: 'application_base_profiles_user_id_fkey';
-                        columns: ['user_id'];
-                        isOneToOne: true;
-                        referencedRelation: 'users';
-                        referencedColumns: ['id'];
-                    },
-                ];
-            };
             application_sheets: {
                 Row: {
                     age: number | null;
@@ -161,6 +111,7 @@ export type Database = {
                     has_rental: boolean | null;
                     height_cm: number | null;
                     id: string;
+                    kind: string;
                     last_dive_year_month: string | null;
                     license_rank: string;
                     name: string;
@@ -190,6 +141,7 @@ export type Database = {
                     has_rental?: boolean | null;
                     height_cm?: number | null;
                     id?: string;
+                    kind?: string;
                     last_dive_year_month?: string | null;
                     license_rank?: string;
                     name: string;
@@ -219,6 +171,7 @@ export type Database = {
                     has_rental?: boolean | null;
                     height_cm?: number | null;
                     id?: string;
+                    kind?: string;
                     last_dive_year_month?: string | null;
                     license_rank?: string;
                     name?: string;

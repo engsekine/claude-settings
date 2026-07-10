@@ -6,6 +6,7 @@ import { sheetToFormValues } from './sheetToFormValues';
 const baseRow: ApplicationSheetRow = {
     id: 'sheet-1',
     user_id: 'user-1',
+    kind: 'sheet',
     name: '〇〇ショップ用',
     full_name: '山田 太郎',
     age: 36,

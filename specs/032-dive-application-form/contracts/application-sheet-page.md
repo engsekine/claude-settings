@@ -37,29 +37,29 @@
 | 項目 | 内容 |
 |---|---|
 | 入力 | なし（認証ユーザーのコンテキスト） |
-| 出力 | `{ fullName, birthOn, age, gender, heightCm, weightKg, licenseRank, diveCount, lastDiveYearMonth, phone, emergencyContactRelation, emergencyContactPhone, nearestStation }` |
-| 挙動 | `user_details` / `certifications` / `dives` / `application_base_profiles` を並列参照し、未登録項目は null で返す（FR-007/009）。保存済み基本情報はプロフィール由来の値より優先し、空欄はプロフィールで補完。`age` は `birth_on` から JST 基準で算出。`gender` の `unanswered` は null（空欄扱い）。`diveCount` は 0 件なら null。`lastDiveYearMonth` は `max(dive_date)` の `YYYY-MM`。新規シートの初期値にのみ使う |
+| 出力 | `{ fullName, birthOn, age, gender, heightCm, weightKg, licenseRank, diveCount, lastDiveYearMonth, phone, emergencyContactRelation, emergencyContactPhone, nearestStation, hasDrySuitExperience, drySuitDiveCount }` |
+| 挙動 | `user_details` / `certifications` / `dives` / `application_sheets`（kind='base'）を並列参照し、未登録項目は null で返す（FR-007/009）。保存済み基本情報（経験含む）は資格・ログ・プロフィール由来の値より優先し、空欄はそれらで補完。`age` は `birth_on` から JST 基準で算出。`gender` の `unanswered` は null（空欄扱い）。`diveCount` は 0 件なら null。`lastDiveYearMonth` は `max(dive_date)` の `YYYY-MM`。新規シートの初期値にのみ使う |
 
 ### `listApplicationSheets()`（server/queries.ts）
 
 | 項目 | 内容 |
 |---|---|
 | 出力 | `SavedSheetSummary[]`（`{ id, name, updatedAt }`・更新日時の降順） |
-| 挙動 | RLS により本人のシートのみ返す |
+| 挙動 | RLS により本人のシートのみ。kind='sheet' に限定（基本情報の行は一覧に出さない） |
 
 ### `getApplicationSheet(sheetId)`（server/queries.ts）
 
 | 項目 | 内容 |
 |---|---|
 | 出力 | `{ id, name, values: SheetFormValues } \| null` |
-| 挙動 | UUID 形式でない ID は DB を参照せず null。RLS により他人のシートは null（新規作成として扱われる） |
+| 挙動 | UUID 形式でない ID は DB を参照せず null。RLS により他人のシート・kind='base' の行は null（新規作成として扱われる） |
 
 ### `saveApplicationBaseProfile(values)`（server/actions.ts・Server Action）
 
 | 項目 | 内容 |
 |---|---|
-| 入力 | フォーム全体（yup で再バリデーション。基本情報の項目のみ保存する） |
-| 挙動 | `application_base_profiles` へ upsert（1 ユーザー 1 件）。新規シート作成時の自動入力に使う（FR-014） |
+| 入力 | フォーム全体（yup で再バリデーション。基本情報 + 経験の項目のみ保存する） |
+| 挙動 | `application_sheets` の kind='base' 行へ upsert（1 ユーザー 1 件・固定名「基本情報」・一覧非表示）。新規シート作成時の自動入力に使う（FR-014） |
 | 認可 | RLS + 本人チェック |
 
 ### `saveApplicationSheet({ sheetId, name, values })`（server/actions.ts・Server Action）

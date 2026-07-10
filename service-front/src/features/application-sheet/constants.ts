@@ -81,3 +81,6 @@ export const SHEET_NAME_MAX_LENGTH = 50;
 
 /** 1 ユーザーが保存できるシートの上限件数（無制限な行増加を防ぐアプリ側の制限） */
 export const MAX_APPLICATION_SHEETS = 20;
+
+/** 基本情報（kind='base' 行）の固定シート名（一覧には表示しない） */
+export const BASE_PROFILE_SHEET_NAME = '基本情報';
