@@ -28,7 +28,7 @@ export const NextPlanCardView = ({ summary }: NextPlanCardViewProps) => {
                 <Heading level={3} id="next-plan-empty-heading" className="text-foreground">
                     次の予定
                 </Heading>
-                <p className="text-muted-foreground text-sm">次のダイビングを計画しよう</p>
+                <p className="text-muted-foreground">次のダイビングを計画しよう</p>
                 <Link href="/plans/new" className={buttonVariants()}>
                     予定を作成する
                 </Link>
@@ -50,7 +50,7 @@ export const NextPlanCardView = ({ summary }: NextPlanCardViewProps) => {
                 <div className="flex flex-col gap-4 p-5">
                     <div className="flex items-start justify-between gap-2">
                         <div className="flex flex-col gap-1">
-                            <p className="flex items-center gap-2 text-muted-foreground text-sm">
+                            <p className="flex items-center gap-2 text-muted-foreground">
                                 <span>
                                     <span className="sr-only">予定日: </span>
                                     {formatJstDateWithWeekday(summary.plannedOn)}
@@ -67,14 +67,12 @@ export const NextPlanCardView = ({ summary }: NextPlanCardViewProps) => {
                                 {summary.location}
                             </Heading>
                         </div>
-                        <span className="shrink-0 rounded-full bg-[#1a73cc] px-3 py-1 font-semibold text-white text-sm">
+                        <span className="shrink-0 rounded-full bg-[#1a73cc] px-3 py-1 font-semibold text-sm text-white">
                             <span className="sr-only">残り日数: </span>
                             {formatDaysUntil(summary.daysUntil)}
                         </span>
                     </div>
-                    {summary.notes && (
-                        <p className="whitespace-pre-wrap text-muted-foreground text-sm">{summary.notes}</p>
-                    )}
+                    {summary.notes && <p className="whitespace-pre-wrap text-muted-foreground">{summary.notes}</p>}
                     <div className="mt-auto flex flex-wrap items-center gap-2">
                         <Link href={`/plans/${summary.id}`} className={buttonVariants({ variant: 'default' })}>
                             予定の詳細
@@ -92,7 +90,7 @@ export const NextPlanCardView = ({ summary }: NextPlanCardViewProps) => {
                     </Heading>
                     <p className="font-semibold text-2xl text-foreground">
                         {checkedCount}{' '}
-                        <span className="font-normal text-muted-foreground text-sm">/ {totalCount} 準備済み</span>
+                        <span className="font-normal text-muted-foreground">/ {totalCount} 準備済み</span>
                     </p>
                     <div
                         role="progressbar"

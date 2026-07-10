@@ -62,7 +62,7 @@ export const RecentDives = ({ dives }: RecentDivesProps) => {
                                 )}
                                 <div className="flex flex-1 flex-col gap-1 p-4">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-muted-foreground text-sm">
+                                        <span className="text-muted-foreground">
                                             <span className="sr-only">潜水日: </span>
                                             {formatJstDate(dive.diveDate)}
                                         </span>
@@ -75,7 +75,7 @@ export const RecentDives = ({ dives }: RecentDivesProps) => {
                                         )}
                                     </div>
                                     <span className="font-semibold text-base text-foreground">{dive.location}</span>
-                                    <dl className="flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground text-sm">
+                                    <dl className="flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground">
                                         <div className="flex items-center gap-1">
                                             <dt className="font-medium">最大水深</dt>
                                             <dd>{dive.maxDepthM}m</dd>

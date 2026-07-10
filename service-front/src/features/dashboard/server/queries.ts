@@ -57,8 +57,8 @@ export const getYearlyDiveCounts = async (): Promise<YearlyDiveCount[]> => {
 };
 
 /**
- * 直近 12 ヶ月の月別統計（本数 / 平均水温 / 最大深度）を取得する（FR-002 / FR-004 / FR-005）。
- * データのない月は 0 本・null で補完し、ログの有無に関わらず常に 12 要素を返す。
+ * 直近 12 ヶ月の月別ダイビング本数を取得する（FR-002）。
+ * データのない月は 0 本で補完し、ログの有無に関わらず常に 12 要素を返す。
  */
 export const getMonthlyDiveStats = async (): Promise<MonthlyDiveStat[]> => {
     const supabase = await createClient();
@@ -75,8 +75,6 @@ export const getMonthlyDiveStats = async (): Promise<MonthlyDiveStat[]> => {
         data.map((row) => ({
             month: row.month,
             diveCount: Number(row.dive_count),
-            avgWaterTempC: toNumber(row.avg_water_temp_c),
-            maxDepthM: toNumber(row.max_depth_m),
         })),
         baseMonth,
         MONTHLY_TREND_MONTHS,

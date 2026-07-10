@@ -1013,9 +1013,7 @@ export type Database = {
             get_dive_monthly_stats: {
                 Args: { months_back?: number };
                 Returns: {
-                    avg_water_temp_c: number;
                     dive_count: number;
-                    max_depth_m: number;
                     month: string;
                 }[];
             };

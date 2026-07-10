@@ -15,6 +15,7 @@ interface HeaderProps {
 const NAV_ITEMS: ReadonlyArray<{ href: Route; label: string }> = [
     { href: '/dives', label: 'ダイビングログ' },
     { href: '/likes', label: 'いいね' },
+    { href: '/guide', label: '使い方' },
 ];
 
 export const Header = ({ actions }: HeaderProps) => {
