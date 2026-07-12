@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ApplicationSheetIntroSection } from '@/features/application-sheet';
 import { CreditBalanceBadge } from '@/features/credits/components/server/CreditBalanceBadge';
 import { DashboardHero, RecordOverhaulButton, TopDashboard } from '@/features/dashboard';
 import { diveLocationLabel, getCoverThumbUrls, listDives } from '@/features/dives';
@@ -108,20 +109,8 @@ export default async function Home() {
                         <RecordOverhaulButton regulatorId={regulatorId} onRecord={recordOverhaul} />
                     )}
                 />
-                {/* 申し込みシートへの導線（032 / FR-001）。ショップ申し込み時に使う補助機能のため日常動線の後ろに置く */}
-                <section aria-labelledby="dashboard-application-sheet" className="flex flex-col gap-4 pt-20">
-                    <Heading level={2} id="dashboard-application-sheet">
-                        申し込みシート
-                    </Heading>
-                    <p className="text-muted-foreground text-sm">
-                        ショップから依頼される定型の記入文を、プロフィールやログの登録内容から自動入力してテキスト生成・コピーできます。
-                    </p>
-                    <div>
-                        <Link href="/application-sheet" className={buttonVariants({ variant: 'default', size: 'lg' })}>
-                            申し込みシートを作る
-                        </Link>
-                    </div>
-                </section>
+                {/* 申し込みシートへの導線（032 / FR-001）。生成テキストのプレビュー付きで機能を紹介する */}
+                <ApplicationSheetIntroSection />
                 {/* 使い方ページへの導入（030）。既存の日常動線を圧迫しないよう末尾に置く */}
                 <GuideIntroSection />
             </div>
