@@ -8,6 +8,9 @@ import { toSheetDefaultValues } from '../../../lib/toSheetDefaultValues';
 import { applicationSheetSchema } from '../../../schemas/application-sheet.schema';
 import { getApplicationSheetPrefill } from '../../../server/queries';
 
+/** プレビューのスクロールボックス（1 行に収めて suppression を効かせるため定数化） */
+const PREVIEW_BOX_CLASS = 'max-h-72 overflow-y-auto rounded-lg border border-border bg-muted/30';
+
 /** TOP に載せる機能ポイント（実装と乖離しないよう文言は本セクションで一元管理） */
 const FEATURE_POINTS = [
     'プロフィールやログの登録内容から自動入力',
@@ -48,18 +51,15 @@ export const ApplicationSheetIntroSection = async () => {
                     </Link>
                 </div>
                 <figure className="flex flex-col gap-2">
-                    <figcaption id="application-sheet-preview-caption" className="text-muted-foreground text-xs">
+                    <figcaption id="sheet-preview-caption" className="text-muted-foreground text-xs">
                         あなたの登録内容で生成したプレビュー
                     </figcaption>
-                    {/* スクロール領域はキーボードでも操作できるよう tabIndex + アクセシブルネームを付ける */}
-                    <pre
-                        className="max-h-72 overflow-y-auto whitespace-pre-wrap rounded-lg border border-border bg-muted/30 px-4 py-3 font-mono text-xs leading-relaxed"
-                        role="region"
-                        tabIndex={0}
-                        aria-labelledby="application-sheet-preview-caption"
-                    >
-                        {previewText}
-                    </pre>
+                    {/* biome-ignore lint/a11y/noNoninteractiveTabindex: スクロール可能領域はキーボードで操作できる必要がある（axe: scrollable-region-focusable） */}
+                    <section tabIndex={0} className={PREVIEW_BOX_CLASS} aria-labelledby="sheet-preview-caption">
+                        <pre className="whitespace-pre-wrap px-4 py-3 font-mono text-xs leading-relaxed">
+                            {previewText}
+                        </pre>
+                    </section>
                 </figure>
             </div>
         </section>
