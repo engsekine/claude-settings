@@ -1,4 +1,5 @@
 export { ApplicationSheetForm } from './components/client/ApplicationSheetForm';
+export { ApplicationSheetIntroSection } from './components/server/ApplicationSheetIntroSection';
 export { RentalItemsField } from './components/client/RentalItemsField';
 export { SavedSheetList } from './components/client/SavedSheetList';
 export { SheetPreview } from './components/client/SheetPreview';

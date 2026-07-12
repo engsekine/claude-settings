@@ -16,7 +16,7 @@
 
 | 場所 | 内容 |
 |---|---|
-| TOP ダッシュボード（`app/page.tsx`） | 申し込みシートページへのリンクセクションを追加（030 `GuideIntroSection` と同様に app 層で組み立て） |
+| TOP ダッシュボード（`app/page.tsx`） | `ApplicationSheetIntroSection`（feature の Server Component）を配置。見出し・機能ポイント 3 点・「申し込みシートを作る」導線に加え、登録内容（プリフィル）から実際に生成したテキストのプレビューを表示する |
 
 ## コンポーネント構成
 
