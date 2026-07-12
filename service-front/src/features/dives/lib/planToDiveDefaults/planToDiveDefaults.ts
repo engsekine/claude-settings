@@ -8,6 +8,8 @@ interface PlanDefaultsInput {
     plannedOn: string;
     location: string;
     notes: string | null;
+    /** 予定に紐付けたショップ（033）。未紐付けは null / 未指定 */
+    diveShopId?: string | null;
 }
 
 /**
@@ -17,6 +19,7 @@ interface PlanDefaultsInput {
  * - ポイント名 → ポイント名（自由入力。diveSiteId は設定せず location と排他の制約を満たす）
  * - メモ → メモ（location 120・notes 2000 の上限は予定・ログで一致するため切り詰め不要 = FR-008 は design-covered）
  *
+ * 予定に紐付けたショップはログの初期値へ引き継ぐ（033 / FR-008）。
  * 必須の最大水深・潜水時間は含めず、ユーザーが入力する（FR-006）。
  * ダイブ番号はページ側の自動採番とマージするため、ここでは扱わない（FR-013）。
  */
@@ -24,4 +27,5 @@ export const planToDiveDefaults = (plan: PlanDefaultsInput): Partial<DiveFormVal
     diveDate: plan.plannedOn,
     location: plan.location,
     notes: plan.notes,
+    diveShopId: plan.diveShopId ?? null,
 });

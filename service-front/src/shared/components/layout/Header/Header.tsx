@@ -14,6 +14,7 @@ interface HeaderProps {
 /** ナビゲーション項目。デスクトップは横並び、SP は HeaderMobileNav（ハンバーガー）に収める */
 const NAV_ITEMS: ReadonlyArray<{ href: Route; label: string }> = [
     { href: '/dives', label: 'ダイビングログ' },
+    { href: '/shops', label: 'ショップ' },
     { href: '/likes', label: 'いいね' },
     { href: '/guide', label: '使い方' },
 ];

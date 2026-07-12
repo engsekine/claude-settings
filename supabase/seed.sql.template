@@ -164,6 +164,58 @@ insert into public.admin_users (id, display_name, role)
 values ('000000ad-0000-0000-0000-000000000001', '運営管理者', 'superadmin');
 
 -- ========================================
+-- 開発用の 2 人目テストユーザー（local development 専用）
+--   email   : buddy@example.com
+--   password: password123
+-- 公開ログの他ユーザー閲覧（021 / 033 FR-015 の E2E: tests/shops.spec.ts）で使用する。
+-- ========================================
+delete from auth.users where email = 'buddy@example.com';
+
+insert into auth.users (
+    instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+    raw_app_meta_data, raw_user_meta_data,
+    confirmation_token, email_change, email_change_token_new, recovery_token,
+    created_at, updated_at
+) values (
+    '00000000-0000-0000-0000-000000000000',
+    '000000bd-0000-0000-0000-000000000002',
+    'authenticated',
+    'authenticated',
+    'buddy@example.com',
+    crypt('password123', gen_salt('bf')),
+    now(),
+    '{"provider": "email", "providers": ["email"]}'::jsonb,
+    jsonb_build_object(
+        'last_name', 'バディ',
+        'first_name', '太郎',
+        'last_name_romaji', 'Buddy',
+        'first_name_romaji', 'Taro',
+        'nickname', 'buddy-taro',
+        'birth_on', '1992-02-02',
+        'gender', 'unanswered'
+    ),
+    '', '', '', '',
+    now(), now()
+);
+
+insert into auth.identities (
+    id, user_id, identity_data, provider, provider_id,
+    last_sign_in_at, created_at, updated_at
+) values (
+    gen_random_uuid(),
+    '000000bd-0000-0000-0000-000000000002',
+    jsonb_build_object(
+        'sub', '000000bd-0000-0000-0000-000000000002',
+        'email', 'buddy@example.com',
+        'email_verified', true,
+        'phone_verified', false
+    ),
+    'email',
+    '000000bd-0000-0000-0000-000000000002',
+    now(), now(), now()
+);
+
+-- ========================================
 -- ログ枠の追加付与（026）
 -- handle_new_user の初期枠 10 に加え、テストユーザーへ 20 枠を先に付与する。
 -- 以降の dives insert は consume_log_credit トリガーで 1 件 1 枠を消費するため、

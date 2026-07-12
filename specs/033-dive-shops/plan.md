@@ -6,7 +6,7 @@
 
 ## Summary
 
-ユーザーが行きつけのダイビングショップ（名前・住所・電話番号・Web サイト URL・メモ）をプライベートデータとして登録・管理できるようにする。ショップは予定（`dive_plans`）・ログ（`dives`）・申し込みシートの保存内容（`application_profiles`）へ任意で 1 件紐付けられ、ショップ詳細からは紐付いた予定・ログを逆引きできる。住所は入力確定時に Google Geocoding API（サーバー専用キー）で座標に解決し、Google マップの埋め込み iframe で地図を表示する。座標は保存時に `dive_shops` に永続化し、表示のたびに再解決しない。公開ログ・タイムラインにはショップ情報を一切出さない（本人閲覧画面のみ）。
+ユーザーが行きつけのダイビングショップ（名前・住所・電話番号・Web サイト URL・メモ）をプライベートデータとして登録・管理できるようにする。ショップは予定（`dive_plans`）・ログ（`dives`）・保存済み申し込みシート（`application_sheets`）へ任意で 1 件紐付けられ、ショップ詳細からは紐付いた予定・ログを逆引きできる。住所は入力確定時に Google Geocoding API（サーバー専用キー）で座標に解決し、Google マップの埋め込み iframe で地図を表示する。座標は保存時に `dive_shops` に永続化し、表示のたびに再解決しない。公開ログ・タイムラインにはショップ情報を一切出さない（本人閲覧画面のみ）。
 
 ## Technical Context
 
@@ -14,7 +14,7 @@
 
 **Primary Dependencies**: Supabase（PostgreSQL + Auth + RLS）/ React Hook Form + yup / Tailwind CSS。新規 npm パッケージは追加しない（地図は iframe 埋め込み、ジオコーディングは `fetch` で REST 呼び出し）
 
-**Storage**: Supabase PostgreSQL。新テーブル `dive_shops`、既存 `dives` / `dive_plans` / `application_profiles` に `dive_shop_id` 列を追加（マイグレーション SQL 経由のみ）
+**Storage**: Supabase PostgreSQL。新テーブル `dive_shops`、既存 `dives` / `dive_plans` / `application_sheets` に `dive_shop_id` 列を追加（マイグレーション SQL 経由のみ）
 
 **Testing**: Vitest（単体）/ Storybook（story）/ Playwright + axe-core（E2E・a11y）
 
@@ -64,7 +64,7 @@ specs/033-dive-shops/
 ```text
 supabase/migrations/
 ├── 20260711XXXXXX_create_dive_shops.sql        # 新テーブル + RLS + トリガー
-└── 20260711XXXXXX_add_dive_shop_links.sql      # dives / dive_plans / application_profiles に dive_shop_id 追加 + 所有者ガード
+└── 20260711XXXXXX_add_dive_shop_links.sql      # dives / dive_plans / application_sheets に dive_shop_id 追加 + 所有者ガード
 
 service-front/src/features/shops/               # ★新規 feature
 ├── components/
@@ -111,7 +111,7 @@ service-front/src/features/application-sheet/   # ApplicationSheetForm にショ
 
 ### 紐付け（research.md Decision 3）
 
-- `dives.dive_shop_id` / `dive_plans.dive_shop_id` / `application_profiles.dive_shop_id`（いずれも nullable・`on delete set null`）
+- `dives.dive_shop_id` / `dive_plans.dive_shop_id` / `application_sheets.dive_shop_id`（いずれも nullable・`on delete set null`）
 - ショップ削除時は DB の `on delete set null` で紐付けだけが外れる（FR-010 / SC-005）
 - 他人のショップ id を紐付けられないよう、サーバー検証（本人所有チェック）+ DB トリガー（`ensure_dive_shop_owned`）の二重ガード
 - 公開ログ・タイムラインの query / コンポーネントはショップを select しない（FR-015。既存公開ビューは変更しないことで満たす）

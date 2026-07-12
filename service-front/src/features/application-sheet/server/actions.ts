@@ -55,7 +55,19 @@ const toDbRow = (name: string, values: SheetFormValues) => ({
     has_contact_lens: toNullableBoolean(values.hasContactLens),
     contact_lens_type: values.contactLensType === '' ? null : values.contactLensType,
     needs_prescription_mask: toNullableBoolean(values.needsPrescriptionMask),
+    dive_shop_id: values.diveShopId === '' ? null : values.diveShopId,
 });
+
+/**
+ * 宛先ショップが本人所有か検証する（033 / FR-009）。
+ * RLS により他人のショップは SELECT できないため、取得できなければ不正 id とみなす。
+ * DB 側の ensure_dive_shop_owned トリガーと合わせた二重ガード。
+ */
+const isOwnShop = async (supabase: Awaited<ReturnType<typeof createClient>>, diveShopId: string) => {
+    if (diveShopId === '') return true;
+    const { data } = await supabase.from('dive_shops').select('id').eq('id', diveShopId).maybeSingle();
+    return data !== null;
+};
 
 /**
  * 申し込みシートを名前付きで保存する（新規 or 上書き）。
@@ -75,6 +87,11 @@ export const saveApplicationSheet = async (input: SaveApplicationSheetInput): Pr
 
     const validation = await validateWithSchema(applicationSheetSchema, input.values);
     if (validation.error !== undefined) return actionFailure(validation.error);
+
+    // 宛先ショップは本人所有のみ許可する（033 / FR-009）
+    if (!(await isOwnShop(supabase, validation.values.diveShopId))) {
+        return actionFailure('宛先ショップが見つかりません');
+    }
 
     const row = toDbRow(name, validation.values);
 

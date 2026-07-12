@@ -17,6 +17,16 @@ describe('planToDiveDefaults', () => {
         expect(result.notes).toBeNull();
     });
 
+    it('予定に紐付けたショップを初期値へ引き継ぐ（033）', () => {
+        const result = planToDiveDefaults({
+            plannedOn: '2026-06-30',
+            location: '串本',
+            notes: null,
+            diveShopId: 'shop-1',
+        });
+        expect(result.diveShopId).toBe('shop-1');
+    });
+
     it('diveSiteId は設定しない（location と排他の制約を満たす）', () => {
         const result = planToDiveDefaults({ plannedOn: '2026-06-30', location: '串本', notes: null });
         expect(result.diveSiteId).toBeUndefined();
