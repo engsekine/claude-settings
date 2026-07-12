@@ -60,7 +60,7 @@ describe('NotificationList', () => {
         await user.click(screen.getByRole('button', { name: /ダイバー太郎 さんにフォローされました/ }));
 
         await waitFor(() => expect(markNotificationRead).toHaveBeenCalledWith('notification-1'));
-        await waitFor(() => expect(push).toHaveBeenCalledWith('/users/user-1'));
+        await waitFor(() => expect(push).toHaveBeenCalledWith(`/users/${encodeURIComponent('ダイバー太郎')}`));
     });
 
     it('既読化が失敗しても遷移は続行する', async () => {
@@ -73,7 +73,7 @@ describe('NotificationList', () => {
 
         await user.click(screen.getByRole('button', { name: /ダイバー太郎 さんにフォローされました/ }));
 
-        await waitFor(() => expect(push).toHaveBeenCalledWith('/users/user-1'));
+        await waitFor(() => expect(push).toHaveBeenCalledWith(`/users/${encodeURIComponent('ダイバー太郎')}`));
     });
 
     it('actor 退会時は「退会したユーザー」を表示しリンク無効（ボタンにしない）', () => {

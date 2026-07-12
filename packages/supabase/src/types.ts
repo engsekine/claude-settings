@@ -1088,6 +1088,7 @@ export type Database = {
                     visited_locations: number;
                 }[];
             };
+            get_user_id_by_nickname: { Args: { p_nickname: string }; Returns: string };
             get_dive_yearly_counts: {
                 Args: never;
                 Returns: {

@@ -22,6 +22,17 @@ describe('ProfileCompletionForm', () => {
         completeProfile.mockReset();
     });
 
+    it('URL に使えないニックネームはエラーを表示して completeProfile を呼ばない（034 / FR-006）', async () => {
+        const user = userEvent.setup();
+        render(<ProfileCompletionForm />);
+
+        await user.type(screen.getByLabelText('ニックネーム'), 'search');
+        await user.click(screen.getByRole('button', { name: '登録して始める' }));
+
+        expect(await screen.findByText('このニックネームは使用できません')).toBeInTheDocument();
+        expect(completeProfile).not.toHaveBeenCalled();
+    });
+
     it('全プロフィール項目（姓名・ローマ字・ニックネーム・生年月日・性別）を表示する', () => {
         render(<ProfileCompletionForm />);
 

@@ -76,14 +76,15 @@ const buildSupabaseMock = (options: MockOptions = {}) => {
     const select = vi.fn().mockReturnValue({ eq: vi.fn().mockReturnValue({ single }) });
     const rpc = vi.fn().mockResolvedValue({ data: nicknameTaken, error: null });
     const getUser = vi.fn().mockResolvedValue({ data: { user } });
+    const updateUser = vi.fn().mockResolvedValue({ data: {}, error: null });
 
     const client = {
-        auth: { getUser },
+        auth: { getUser, updateUser },
         from: vi.fn().mockReturnValue({ select, update }),
         rpc,
     };
     createClient.mockResolvedValue(client);
-    return { client, update, rpc };
+    return { client, update, rpc, updateUser };
 };
 
 beforeEach(() => {
@@ -91,6 +92,24 @@ beforeEach(() => {
 });
 
 describe('updateProfile', () => {
+    it('更新成功時に auth の user_metadata へ nickname を同期する（034 / research.md Decision 4）', async () => {
+        const { updateUser } = buildSupabaseMock();
+
+        const result = await updateProfile(updateInput);
+
+        expect(result).toEqual({ success: true });
+        expect(updateUser).toHaveBeenCalledWith({ data: { nickname: updateInput.nickname } });
+    });
+
+    it('metadata 同期が失敗してもプロフィール更新は成功として扱う（034）', async () => {
+        const { updateUser } = buildSupabaseMock();
+        updateUser.mockResolvedValue({ data: null, error: { message: 'sync failed' } });
+
+        const result = await updateProfile(updateInput);
+
+        expect(result).toEqual({ success: true });
+    });
+
     it('更新成功で success を返す', async () => {
         const { update } = buildSupabaseMock();
 

@@ -12,6 +12,7 @@ import type { Dive, DiveBuddy, DivePhotoView } from '@/features/dives/types';
 import { Heading } from '@/shared/components/typography/Heading';
 import { buttonVariants } from '@/shared/components/ui/Button';
 import { formatJstDate } from '@/shared/lib/date';
+import { profilePath } from '@/shared/lib/profile-path';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
 
 interface DiveDetailProps {
@@ -38,7 +39,8 @@ const BuddyList = ({ buddies }: { buddies: DiveBuddy[] }) => {
                 buddy.isRegistered && buddy.userId ? (
                     <li key={buddy.id}>
                         <Link
-                            href={`/users/${buddy.userId}` as Route}
+                            // 登録ユーザーの buddy.name は nickname（不一致・空なら profilePath が ID URL にフォールバック）
+                            href={profilePath({ userId: buddy.userId, nickname: buddy.name }) as Route}
                             className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm hover:bg-muted/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
                         >
                             {buddy.name}

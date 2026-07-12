@@ -11,6 +11,8 @@ import {
     fetchFollowState,
     fetchLikedDives,
     fetchTimeline,
+    resolveProfileSlug,
+    resolveUserIdByNickname,
     searchUsers,
 } from './queries';
 
@@ -82,6 +84,77 @@ const buildClient = (options: {
 
 beforeEach(() => {
     vi.clearAllMocks();
+});
+
+describe('resolveUserIdByNickname', () => {
+    it('RPC get_user_id_by_nickname を呼び user_id を返す（034 / FR-001）', async () => {
+        const { rpc } = buildClient({ rpcResult: { data: TARGET_ID, error: null } });
+
+        await expect(resolveUserIdByNickname('buddy-taro')).resolves.toBe(TARGET_ID);
+        expect(rpc).toHaveBeenCalledWith('get_user_id_by_nickname', { p_nickname: 'buddy-taro' });
+    });
+
+    it('該当なし（data=null）は null を返す', async () => {
+        buildClient({ rpcResult: { data: null, error: null } });
+
+        await expect(resolveUserIdByNickname('no-such-user')).resolves.toBeNull();
+    });
+
+    it('RPC エラーは throw する', async () => {
+        buildClient({ rpcResult: { data: null, error: { message: 'boom' } } });
+
+        await expect(resolveUserIdByNickname('x')).rejects.toThrow('ニックネームの解決に失敗しました');
+    });
+});
+
+describe('resolveProfileSlug', () => {
+    it('ニックネーム slug は user_id に解決して ok を返す（エンコード済みも復元）', async () => {
+        const { rpc } = buildClient({ rpcResult: { data: TARGET_ID, error: null } });
+
+        await expect(resolveProfileSlug(encodeURIComponent('たろう'))).resolves.toEqual({
+            kind: 'ok',
+            userId: TARGET_ID,
+        });
+        expect(rpc).toHaveBeenCalledWith('get_user_id_by_nickname', { p_nickname: 'たろう' });
+    });
+
+    it('解決できないニックネームは null（FR-008）', async () => {
+        buildClient({ rpcResult: { data: null, error: null } });
+
+        await expect(resolveProfileSlug('no-such-user')).resolves.toBeNull();
+    });
+
+    it('uuid slug は nickname を解決し、URL 安全ならニックネーム URL への redirect を返す（FR-004）', async () => {
+        const { rpc } = buildClient({
+            rpcResult: { data: [{ user_id: TARGET_ID, nickname: 'buddy-taro' }], error: null },
+        });
+
+        await expect(resolveProfileSlug(TARGET_ID)).resolves.toEqual({
+            kind: 'redirect',
+            nicknamePath: '/users/buddy-taro',
+        });
+        expect(rpc).toHaveBeenCalledWith('get_user_public_profiles', { p_ids: [TARGET_ID] });
+    });
+
+    it('uuid slug で URL 不可ニックネームのユーザーは ID のまま表示（FR-005 フォールバック）', async () => {
+        buildClient({
+            rpcResult: { data: [{ user_id: TARGET_ID, nickname: 'a/b' }], error: null },
+        });
+
+        await expect(resolveProfileSlug(TARGET_ID)).resolves.toEqual({ kind: 'ok', userId: TARGET_ID });
+    });
+
+    it('uuid slug で該当ユーザーがいなければ null', async () => {
+        buildClient({ rpcResult: { data: [], error: null } });
+
+        await expect(resolveProfileSlug(TARGET_ID)).resolves.toBeNull();
+    });
+
+    it('不正なパーセントエンコードは null（decodeURIComponent 失敗）', async () => {
+        buildClient({});
+
+        await expect(resolveProfileSlug('%E3%81')).resolves.toBeNull();
+    });
 });
 
 describe('fetchFollowState', () => {

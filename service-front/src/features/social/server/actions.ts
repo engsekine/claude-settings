@@ -41,7 +41,8 @@ export const followUser = async (followeeId: string): Promise<ActionResult<{ isF
         return actionFailure('フォローに失敗しました。時間をおいて再度お試しください');
     }
 
-    revalidatePath(`/users/${followeeId}`);
+    // 034: プロフィールはニックネーム URL と ID URL の両方で表示されうるため、動的ルート全体を再検証する
+    revalidatePath('/users/[slug]', 'page');
     return actionSuccess({ isFollowing: true });
 };
 
@@ -63,7 +64,8 @@ export const unfollowUser = async (followeeId: string): Promise<ActionResult<{ i
         return actionFailure('フォロー解除に失敗しました。時間をおいて再度お試しください');
     }
 
-    revalidatePath(`/users/${followeeId}`);
+    // 034: プロフィールはニックネーム URL と ID URL の両方で表示されうるため、動的ルート全体を再検証する
+    revalidatePath('/users/[slug]', 'page');
     return actionSuccess({ isFollowing: false });
 };
 

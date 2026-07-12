@@ -41,6 +41,28 @@ describe('userProfileFields', () => {
         await expect(profileSchema.validate({ ...validInput, [field]: value })).rejects.toThrow(message);
     });
 
+    describe('ニックネームの URL 禁則（034 / FR-006）', () => {
+        it.each(['a/b', 'a?b', 'a#b', 'a%b', 'a\\b'])('禁止文字を含む %j はエラーになる', async (nickname) => {
+            await expect(profileSchema.validate({ ...validInput, nickname })).rejects.toThrow(
+                'ニックネームに / ? # % \\ は使用できません',
+            );
+        });
+
+        it.each([
+            'search',
+            'SEARCH',
+            '000000bd-0000-0000-0000-000000000002',
+        ])('予約セグメント・uuid 形式の %j はエラーになる', async (nickname) => {
+            await expect(profileSchema.validate({ ...validInput, nickname })).rejects.toThrow(
+                'このニックネームは使用できません',
+            );
+        });
+
+        it.each(['たろちゃん', 'Dive Master 田中', 'buddy-taro'])('%j は引き続き登録できる', async (nickname) => {
+            await expect(profileSchema.validate({ ...validInput, nickname })).resolves.toBeTruthy();
+        });
+    });
+
     it('51文字以上の姓はエラーになる', async () => {
         await expect(profileSchema.validate({ ...validInput, lastName: 'あ'.repeat(51) })).rejects.toThrow(
             '姓は50文字以内で入力してください',

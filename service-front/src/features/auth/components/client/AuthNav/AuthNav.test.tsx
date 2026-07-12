@@ -81,6 +81,19 @@ describe('AuthNav', () => {
         expect(signupLink).toHaveAttribute('href', '/signup');
     });
 
+    it('user_metadata に nickname があるとマイプロフィールはニックネーム URL になる（034 / FR-003）', async () => {
+        const user = buildUser({ email: 'user@example.com', user_metadata: { nickname: 'たろう' } });
+        mockStoreState.user = user;
+
+        const userEventInstance = userEvent.setup();
+        render(<AuthNav initialUser={user} />);
+
+        await userEventInstance.click(screen.getByRole('button', { name: 'アカウントメニューを開く' }));
+
+        const myProfileLink = await screen.findByRole('link', { name: /マイプロフィール/ });
+        expect(myProfileLink).toHaveAttribute('href', `/users/${encodeURIComponent('たろう')}`);
+    });
+
     it('ログイン済み状態でアイコンボタンを押すとシート内に会員情報・保有資格リンクとログアウトボタンを表示する', async () => {
         const user = buildUser({ email: 'user@example.com' });
         mockStoreState.user = user;

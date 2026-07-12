@@ -2,6 +2,9 @@ import 'server-only';
 
 import type { Database } from '@repo/supabase';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Route } from 'next';
+import { notFound, redirect } from 'next/navigation';
+import { cache } from 'react';
 
 import { attachLikeInfo, buildLikeInfo, type LikeRow } from '@/features/social/lib/likes';
 import type {
@@ -15,6 +18,7 @@ import type {
     TimelineItem,
     TimelinePage,
 } from '@/features/social/types';
+import { isUrlSafeNickname, isUuid, profilePath } from '@/shared/lib/profile-path';
 import { createClient } from '@/shared/lib/supabase/server';
 
 type Client = SupabaseClient<Database>;
@@ -40,6 +44,72 @@ const resolveNicknames = async (supabase: Client, userIds: string[]): Promise<Ma
     for (const profile of data ?? []) map.set(profile.user_id, profile.nickname);
     return map;
 };
+
+/** ニックネーム → user_id の解決（RPC 呼び出しの実体。クライアントは呼び出し側から共有する） */
+const resolveUserIdByNicknameWith = async (supabase: Client, nickname: string): Promise<string | null> => {
+    const { data, error } = await supabase.rpc('get_user_id_by_nickname', { p_nickname: nickname });
+    if (error) throw new Error(`ニックネームの解決に失敗しました: ${error.message}`);
+
+    return data ?? null;
+};
+
+/**
+ * ニックネーム → user_id の解決（034 / FR-001・FR-002）。
+ * 一意インデックスと同じ正規化（lower(trim())）で照合する SECURITY DEFINER RPC を呼ぶ。
+ * 該当なしは null（呼び出し側で notFound()）。
+ */
+export const resolveUserIdByNickname = async (nickname: string): Promise<string | null> =>
+    resolveUserIdByNicknameWith(await createClient(), nickname);
+
+/** プロフィール URL の slug 解決結果（034）。ok = 表示 / redirect = ニックネーム URL へ転送 */
+export type ProfileSlugResolution = { kind: 'ok'; userId: string } | { kind: 'redirect'; nicknamePath: string } | null;
+
+/**
+ * `/users/[slug]` の slug（uuid or ニックネーム）を解決する（034 / FR-001・FR-004・FR-005）。
+ * - uuid: ユーザーの nickname を取得し、URL 安全なら redirect 指示を返す（ID 形式 URL の後方互換転送）。
+ *   URL 不可ニックネームのユーザーは ID のまま表示（FR-005 フォールバック）
+ * - それ以外: ニックネームとして解決して表示
+ * 不正なエンコード・該当なしは null（呼び出し側で notFound()）。
+ */
+export const resolveProfileSlug = async (slug: string): Promise<ProfileSlugResolution> => {
+    let decoded: string;
+    try {
+        decoded = decodeURIComponent(slug);
+    } catch {
+        return null;
+    }
+
+    const supabase = await createClient();
+
+    if (isUuid(decoded)) {
+        const nicknames = await resolveNicknames(supabase, [decoded]);
+        const nickname = nicknames.get(decoded);
+        if (nickname === undefined) return null;
+        if (isUrlSafeNickname(nickname))
+            return { kind: 'redirect', nicknamePath: profilePath({ userId: decoded, nickname }) };
+        return { kind: 'ok', userId: decoded };
+    }
+
+    const userId = await resolveUserIdByNicknameWith(supabase, decoded);
+    return userId ? { kind: 'ok', userId } : null;
+};
+
+/**
+ * プロフィール系ページ（本体 / followers / following）共通の slug 解決 + プロフィール取得。
+ * - 解決不可・ユーザー不在 → notFound()
+ * - uuid → ニックネーム URL へ subPath を維持して転送（FR-004）
+ * React の cache() でリクエスト内メモ化し、generateMetadata と page 本体の二重フェッチを防ぐ。
+ */
+export const requireProfileBySlug = cache(async (slug: string, subPath: '' | '/followers' | '/following' = '') => {
+    const resolved = await resolveProfileSlug(slug);
+    if (!resolved) notFound();
+    // profilePath が生成する自アプリ内パスのみのため typedRoutes の静的検証対象外（cast が必要）
+    if (resolved.kind === 'redirect') redirect(`${resolved.nicknamePath}${subPath}` as Route);
+
+    const profile = await fetchPublicProfile(resolved.userId);
+    if (!profile) notFound();
+    return profile;
+});
 
 /**
  * 対象ユーザーへのフォロー状態と件数（spec 021 FR-016）。

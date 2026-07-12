@@ -117,6 +117,23 @@ describe('ProfileEditForm', () => {
         expect(updateProfile).toHaveBeenCalledWith(expect.objectContaining({ emailOptIn: false }));
     });
 
+    it('URL に使えないニックネーム（禁止文字・予約語）はエラーを表示して送信しない（034 / FR-006）', async () => {
+        const user = userEvent.setup();
+        render(<ProfileEditForm email="user@example.com" defaultValues={defaultValues} />);
+
+        await user.clear(screen.getByLabelText('ニックネーム'));
+        await user.type(screen.getByLabelText('ニックネーム'), 'a/b');
+        await user.click(screen.getByRole('button', { name: '更新する' }));
+        expect(await screen.findByText('ニックネームに / ? # % \\ は使用できません')).toBeInTheDocument();
+
+        await user.clear(screen.getByLabelText('ニックネーム'));
+        await user.type(screen.getByLabelText('ニックネーム'), 'search');
+        await user.click(screen.getByRole('button', { name: '更新する' }));
+        expect(await screen.findByText('このニックネームは使用できません')).toBeInTheDocument();
+
+        expect(updateProfile).not.toHaveBeenCalled();
+    });
+
     it('updateProfile が成功すると status メッセージを表示する', async () => {
         updateProfile.mockResolvedValueOnce({ success: true });
         const user = userEvent.setup();

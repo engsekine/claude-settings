@@ -8,6 +8,7 @@ import { useEffect, useState, useTransition } from 'react';
 import { signOut } from '@/features/auth/server/actions';
 import { Button } from '@/shared/components/ui/Button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/shared/components/ui/Sheet';
+import { profilePath } from '@/shared/lib/profile-path';
 import { createClient } from '@/shared/lib/supabase/browser';
 import { useUserStore } from '@/shared/stores/user-store';
 
@@ -99,7 +100,17 @@ export const AuthNav = ({ initialUser }: AuthNavProps) => {
                             </p>
                             {user?.id && (
                                 <Link
-                                    href={`/users/${user.id}` as Route}
+                                    // 034: user_metadata の nickname からニックネーム URL を生成する。
+                                    // 未設定（同期前の Google 初回ユーザー等）は ID URL となり、ページ側の転送で正規化される
+                                    href={
+                                        profilePath({
+                                            userId: user.id,
+                                            nickname:
+                                                typeof user.user_metadata?.['nickname'] === 'string'
+                                                    ? user.user_metadata['nickname']
+                                                    : null,
+                                        }) as Route
+                                    }
                                     onClick={() => setIsOpen(false)}
                                     className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
                                 >

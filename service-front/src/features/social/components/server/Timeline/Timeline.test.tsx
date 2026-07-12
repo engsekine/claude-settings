@@ -39,7 +39,8 @@ describe('Timeline', () => {
     it('所有者の nickname はプロフィールへリンクし、深度・時間も表示する', () => {
         render(<Timeline items={[item('1', '2026-06-30')]} />);
         const ownerLink = screen.getByRole('link', { name: 'ニック1' });
-        expect(ownerLink).toHaveAttribute('href', '/users/owner-1');
+        // 034: プロフィールリンクはニックネーム URL（エンコード済み）になる
+        expect(ownerLink).toHaveAttribute('href', `/users/${encodeURIComponent('ニック1')}`);
         expect(screen.getByText(/最大 18m ・ 40分/, { selector: 'span' })).toBeInTheDocument();
     });
 

@@ -23,6 +23,8 @@ export {
     fetchPublicProfile,
     fetchTimeline,
     fetchUserPublicDives,
+    requireProfileBySlug,
+    resolveProfileSlug,
     searchUsers,
 } from './server/queries';
 export type {

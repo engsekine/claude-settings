@@ -67,6 +67,17 @@ describe('SignupForm', () => {
         expect(screen.queryByLabelText('ダイバー番号')).not.toBeInTheDocument();
     });
 
+    it('URL に使えないニックネームはエラーを表示して signUp を呼ばない（034 / FR-006）', async () => {
+        const user = userEvent.setup();
+        render(<SignupForm />);
+
+        await user.type(screen.getByLabelText('ニックネーム'), 'a/b');
+        await user.click(screen.getByRole('button', { name: '新規登録' }));
+
+        expect(await screen.findByText('ニックネームに / ? # % \\ は使用できません')).toBeInTheDocument();
+        expect(signUp).not.toHaveBeenCalled();
+    });
+
     it('利用規約に同意しないまま送信すると signUp は呼ばれずエラーが表示される（018）', async () => {
         const user = userEvent.setup();
         render(<SignupForm />);

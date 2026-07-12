@@ -106,6 +106,7 @@ describe('NotificationBell', () => {
         await user.click(within(sheet).getByRole('button', { name: /たろう/ }));
 
         expect(markNotificationRead).toHaveBeenCalledWith('n9');
-        expect(routerPush).toHaveBeenCalledWith('/users/user-9');
+        // 034: 遷移先はニックネーム URL になる
+        expect(routerPush).toHaveBeenCalledWith(`/users/${encodeURIComponent('たろう')}`);
     });
 });

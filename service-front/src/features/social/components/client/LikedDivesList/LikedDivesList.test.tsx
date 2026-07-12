@@ -56,11 +56,11 @@ describe('LikedDivesList', () => {
             expect(link).toHaveAttribute('href', '/dives/dive-1');
         });
 
-        it('ownerNickname が /users/{ownerId} へのリンクになっている', () => {
+        it('ownerNickname がニックネーム URL のプロフィールへのリンクになっている（034 / FR-003）', () => {
             render(<LikedDivesList initialItems={[makeItem()]} initialCursor={null} />);
 
             const link = screen.getByRole('link', { name: 'taro' });
-            expect(link).toHaveAttribute('href', '/users/user-1');
+            expect(link).toHaveAttribute('href', '/users/taro');
         });
 
         it('「いいね {n} 件」の件数表示がある（スクリーンリーダー向けテキスト）', () => {

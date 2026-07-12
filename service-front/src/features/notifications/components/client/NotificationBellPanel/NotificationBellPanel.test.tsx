@@ -151,7 +151,8 @@ describe('NotificationBellPanel', () => {
             await user.click(within(sheet).getByRole('button', { name: /きろう/ }));
 
             expect(markNotificationRead).toHaveBeenCalledWith('n9');
-            expect(routerPush).toHaveBeenCalledWith('/users/user-9');
+            // 034: 遷移先はニックネーム URL になる
+            expect(routerPush).toHaveBeenCalledWith(`/users/${encodeURIComponent('きろう')}`);
             expect(screen.queryByRole('dialog', { name: '通知' })).not.toBeInTheDocument();
         });
 
@@ -164,7 +165,7 @@ describe('NotificationBellPanel', () => {
             const { user, sheet } = await openSheet('通知（未読 1 件）');
             await user.click(within(sheet).getByRole('button', { name: /たろう/ }));
 
-            expect(routerPush).toHaveBeenCalledWith('/users/user-1');
+            expect(routerPush).toHaveBeenCalledWith(`/users/${encodeURIComponent('たろう')}`);
             expect(screen.queryByRole('dialog', { name: '通知' })).not.toBeInTheDocument();
             consoleError.mockRestore();
         });

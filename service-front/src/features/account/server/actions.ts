@@ -130,6 +130,16 @@ export const updateProfile = async (input: UpdateProfileInput): Promise<ActionRe
         return actionFailure('プロフィールの更新に失敗しました。時間をおいて再度お試しください');
     }
 
+    /**
+     * ヘッダー（AuthNav）のマイプロフィールリンクが最新のニックネーム URL を生成できるよう、
+     * auth の user_metadata にも nickname を同期する（034 / research.md Decision 4）。
+     * 同期失敗は致命的でない（ID URL フォールバック → ページ側転送で正規化される）ため成功扱いにする。
+     */
+    const { error: metadataError } = await supabase.auth.updateUser({ data: { nickname: input.nickname } });
+    if (metadataError) {
+        console.error('[updateProfile] auth metadata sync error:', { message: metadataError.message });
+    }
+
     revalidatePath('/settings/profile');
     return actionSuccess();
 };

@@ -58,7 +58,7 @@ describe('followUser', () => {
         expect(from).toHaveBeenCalledWith('user_follows');
         expect(insert).toHaveBeenCalledWith({ follower_id: VIEWER_ID, followee_id: TARGET_ID });
         expect(result).toEqual({ success: true, isFollowing: true });
-        expect(revalidatePath).toHaveBeenCalledWith(`/users/${TARGET_ID}`);
+        expect(revalidatePath).toHaveBeenCalledWith('/users/[slug]', 'page');
     });
 
     it('未ログインなら失敗を返し INSERT しない', async () => {
@@ -200,7 +200,7 @@ describe('unfollowUser', () => {
         expect(from).toHaveBeenCalledWith('user_follows');
         expect(deleteFn).toHaveBeenCalled();
         expect(result).toEqual({ success: true, isFollowing: false });
-        expect(revalidatePath).toHaveBeenCalledWith(`/users/${TARGET_ID}`);
+        expect(revalidatePath).toHaveBeenCalledWith('/users/[slug]', 'page');
     });
 
     it('未ログインなら失敗を返し DELETE しない', async () => {
