@@ -15,8 +15,6 @@ const emptyValues: SheetFormValues = {
     nearestStation: '',
     licenseRank: '',
     diveCount: '',
-    hasIzuChibaExperience: '',
-    hasBoatExperience: '',
     lastDiveYearMonth: '',
     hasDrySuitExperience: '',
     drySuitDiveCount: '',
@@ -42,9 +40,7 @@ const filledValues: SheetFormValues = {
     nearestStation: '横浜駅',
     licenseRank: 'Open Water Diver',
     diveCount: '52',
-    hasIzuChibaExperience: 'yes',
-    hasBoatExperience: 'yes',
-    lastDiveYearMonth: '2026-05',
+    lastDiveYearMonth: '2026年5月',
     hasDrySuitExperience: 'no',
     drySuitDiveCount: '10',
     hasRental: 'yes',
@@ -69,8 +65,6 @@ const expectedEmptyText = [
     '・最寄りの駅（ ）',
     '・ライセンス ランク（ ）',
     '・経験本数（ 本）',
-    '・伊豆 千葉でのダイビング経験（ ）',
-    '・ボートダイビングの経験 有無（ ）',
     '・最終ダイブ年月（ 年 月）',
     '・ドライスーツの経験（ ）',
     '・ドライの経験本数 約（ 本）',
@@ -116,8 +110,6 @@ const expectedFilledText = [
     '・最寄りの駅（横浜駅）',
     '・ライセンス ランク（Open Water Diver）',
     '・経験本数（52 本）',
-    '・伊豆 千葉でのダイビング経験（有）',
-    '・ボートダイビングの経験 有無（有）',
     '・最終ダイブ年月（2026 年 5 月）',
     '・ドライスーツの経験（無）',
     '・ドライの経験本数 約（10 本）',
@@ -188,8 +180,6 @@ describe('buildSheetText', () => {
             '・最寄りの駅（ ）',
             '・ライセンス ランク（ ）',
             '・経験本数（ 本）',
-            '・伊豆 千葉でのダイビング経験（ ）',
-            '・ボートダイビングの経験 有無（ ）',
             '・最終ダイブ年月（ 年 月）',
             '・ドライスーツの経験（ ）',
             '・ドライの経験本数 約（ 本）',
@@ -218,7 +208,7 @@ describe('buildSheetText', () => {
     });
 
     it('生年月日・最終ダイブ年月の月日はゼロ埋めなしに整形される', () => {
-        const text = buildSheetText({ ...emptyValues, birthOn: '2001-01-09', lastDiveYearMonth: '2026-07' });
+        const text = buildSheetText({ ...emptyValues, birthOn: '2001-01-09', lastDiveYearMonth: '2026年07月' });
         expect(text).toContain('・生年月日（西暦 2001 年 1 月 9 日）');
         expect(text).toContain('・最終ダイブ年月（2026 年 7 月）');
     });

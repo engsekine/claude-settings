@@ -44,9 +44,7 @@ export interface SheetFormValues {
     licenseRank: string;
     /** 経験本数（数字文字列） */
     diveCount: string;
-    hasIzuChibaExperience: YesNoValue;
-    hasBoatExperience: YesNoValue;
-    /** 最終ダイブ年月（YYYY-MM） */
+    /** 最終ダイブ年月（表示形式「2026年7月」。DB では YYYY-MM で保持） */
     lastDiveYearMonth: string;
     hasDrySuitExperience: YesNoValue;
     /** ドライスーツの経験本数 約（数字文字列） */
@@ -65,42 +63,26 @@ export interface SheetFormValues {
     needsPrescriptionMask: YesNoValue;
 }
 
-export type ApplicationProfileRow = Database['public']['Tables']['application_profiles']['Row'];
+export type ApplicationSheetRow = Database['public']['Tables']['application_sheets']['Row'];
 
-/** 保存済み application_profiles（camelCase）。boolean の null は「未入力」 */
-export interface SavedApplicationProfile {
-    phone: string;
-    emergencyContactRelation: string;
-    emergencyContactPhone: string;
-    nearestStation: string;
-    footSizeCm: number | null;
-    hasIzuChibaExperience: boolean | null;
-    hasBoatExperience: boolean | null;
-    hasDrySuitExperience: boolean | null;
-    drySuitDiveCount: number | null;
-    hasContactLens: boolean | null;
-    contactLensType: 'hard' | 'soft' | 'disposable' | null;
-    needsPrescriptionMask: boolean | null;
+/** 保存済みシートの一覧表示用サマリー */
+export interface SavedSheetSummary {
+    id: string;
+    name: string;
+    /** timestamptz（ISO 文字列） */
+    updatedAt: string;
 }
 
-/** DB row → SavedApplicationProfile 変換 */
-export const mapSavedApplicationProfile = (row: ApplicationProfileRow): SavedApplicationProfile => ({
-    phone: row.phone,
-    emergencyContactRelation: row.emergency_contact_relation,
-    emergencyContactPhone: row.emergency_contact_phone,
-    nearestStation: row.nearest_station,
-    footSizeCm: row.foot_size_cm,
-    hasIzuChibaExperience: row.has_izu_chiba_experience,
-    hasBoatExperience: row.has_boat_experience,
-    hasDrySuitExperience: row.has_dry_suit_experience,
-    drySuitDiveCount: row.dry_suit_dive_count,
-    hasContactLens: row.has_contact_lens,
-    contactLensType: row.contact_lens_type as SavedApplicationProfile['contactLensType'],
-    needsPrescriptionMask: row.needs_prescription_mask,
-});
+/** 保存済みシート 1 件（フォーム全体のスナップショット） */
+export interface SavedApplicationSheet {
+    id: string;
+    name: string;
+    values: SheetFormValues;
+}
 
 /**
  * 自動入力データ（FR-007）。未登録のソースは null（FR-009）。
+ * 新規シート作成時の初期値にのみ使う（保存済みシートはスナップショットをそのまま復元する）。
  * gender は `unanswered` を null に落とす（空欄扱い）。
  */
 export interface SheetPrefill {
@@ -116,5 +98,11 @@ export interface SheetPrefill {
     diveCount: number | null;
     /** YYYY-MM */
     lastDiveYearMonth: string | null;
-    savedProfile: SavedApplicationProfile | null;
+    /** 以下は保存済みの基本情報（application_sheets の kind='base' 行）由来。未保存は null */
+    phone: string | null;
+    emergencyContactRelation: string | null;
+    emergencyContactPhone: string | null;
+    nearestStation: string | null;
+    hasDrySuitExperience: boolean | null;
+    drySuitDiveCount: number | null;
 }

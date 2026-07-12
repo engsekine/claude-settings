@@ -19,33 +19,65 @@ const login = async (page: Page) => {
     await page.waitForURL((url) => url.pathname === '/');
 };
 
-test('申し込みシート: 保存 → 再訪問で手入力項目が復元され、レンタル選択は復元されない（FR-010）', async ({ page }) => {
+test('申し込みシート: 名前を付けて保存 → 一覧から選択で全項目復元 → 削除（FR-010）', async ({ page }) => {
+    // 繰り返し実行しても前回分と衝突しないようシート名を一意にする
+    const sheetName = `E2E テスト ${Date.now()}`;
+    // 削除確認の confirm ダイアログは常に承認する
+    page.on('dialog', (dialog) => void dialog.accept());
+
     await login(page);
     await page.goto('/application-sheet');
 
-    // 手入力項目を入力
+    // 手入力 + レンタル選択（スナップショットに含まれることを確認するため）
     await page.getByLabel('携帯電話').fill('090-1111-2222');
     await page.getByLabel('最寄りの駅').fill('保存テスト駅');
-
-    // レンタル選択・省略トグルは保存対象外であることを確認するため選択しておく
     await page.getByRole('group', { name: 'レンタル器材の有無' }).getByLabel('有').check();
     await page.getByLabel('フィン').check();
 
-    // 保存
-    await page.getByRole('button', { name: '入力内容を保存する' }).click();
+    // 名前を付けて保存
+    await page.getByLabel('シート名').fill(sheetName);
+    await page.getByRole('button', { name: 'シートを保存する' }).click();
     await expect(page.getByRole('status').filter({ hasText: '保存しました' })).toBeVisible();
+    // 以降は上書き保存になる
+    await expect(page.getByRole('button', { name: '上書き保存する' })).toBeVisible();
 
-    // 再訪問 → 手入力項目が復元される
+    // 再訪問 → 一覧に表示され、選択するとレンタル選択も含めて復元される
     await page.goto('/');
     await page.goto('/application-sheet');
+    await page.getByRole('link', { name: new RegExp(sheetName) }).click();
+    await page.waitForURL(/application-sheet\?sheet=/);
+
+    await expect(page.getByLabel('シート名')).toHaveValue(sheetName);
     await expect(page.getByLabel('携帯電話')).toHaveValue('090-1111-2222');
     await expect(page.getByLabel('最寄りの駅')).toHaveValue('保存テスト駅');
+    await expect(page.getByRole('group', { name: 'レンタル器材の有無' }).getByLabel('有')).toBeChecked();
+    await expect(page.getByLabel('フィン')).toBeChecked();
 
-    // レンタル有無は毎回未選択に戻り、品目一覧も表示されない
-    const rentalGroup = page.getByRole('group', { name: 'レンタル器材の有無' });
-    await expect(rentalGroup.getByLabel('有')).not.toBeChecked();
-    await expect(rentalGroup.getByLabel('無')).not.toBeChecked();
-    await expect(page.getByLabel('フィン')).toHaveCount(0);
+    // 開いているシートを削除すると新規作成状態に戻り、一覧から消える
+    await page.getByRole('button', { name: `${sheetName}を削除` }).click();
+    await page.waitForURL((url) => url.pathname === '/application-sheet' && !url.searchParams.has('sheet'));
+    await expect(page.getByRole('link', { name: new RegExp(sheetName) })).toHaveCount(0);
+});
+
+test('申し込みシート: 基本情報と経験を保存すると新規シート作成時に自動入力される', async ({ page }) => {
+    const phone = `090${String(Date.now()).slice(-8)}`;
+
+    await login(page);
+    await page.goto('/application-sheet');
+
+    // 基本情報 + 経験を入力して専用ボタンで保存
+    await page.getByLabel('携帯電話').fill(phone);
+    await page.getByLabel('最寄りの駅').fill('基本情報テスト駅');
+    await page.getByLabel('ライセンスランク').fill('基本情報テストランク');
+    await page.getByRole('button', { name: '基本情報を保存する' }).click();
+    await expect(page.getByRole('status').filter({ hasText: '基本情報を保存しました' })).toBeVisible();
+
+    // 再訪問（新規シート作成状態）で基本情報・経験とも自動入力されている
+    await page.goto('/');
+    await page.goto('/application-sheet');
+    await expect(page.getByLabel('携帯電話')).toHaveValue(phone);
+    await expect(page.getByLabel('最寄りの駅')).toHaveValue('基本情報テスト駅');
+    await expect(page.getByLabel('ライセンスランク')).toHaveValue('基本情報テストランク');
 });
 
 test('申し込みシート: TOP ダッシュボードの導線から遷移できる（FR-001）', async ({ page }) => {

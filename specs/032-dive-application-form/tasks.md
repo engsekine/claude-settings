@@ -140,3 +140,28 @@ Phase 1 (T001)
 2. **Increment 2 = Phase 4（US2）**: prefill を接続し自動入力を有効化
 3. **Increment 3 = Phase 5（US3）**: 保存・復元を追加（マイグレーションは Phase 2 で適用済み）
 4. **仕上げ = Phase 6**: a11y・手動検証・biome・仕様書同期
+
+---
+
+## Phase 7: 複数シート保存（2026-07-11 追加要件）
+
+**Goal**: シートを名前付きで複数保存し、一覧から選択・削除できる（保存対象はフォーム全体のスナップショット）
+
+- [X] T030 マイグレーション: `application_profiles` を廃止し `application_sheets`（1 ユーザー N 件・name・全フォーム項目・rental_items jsonb・RLS select/insert/update/delete）に置き換える + Database 型更新
+- [X] T031 types / constants / lib 更新: `SavedSheetSummary`・`sheetToFormValues`（行→フォーム値）・`SHEET_NAME_MAX_LENGTH`・`MAX_APPLICATION_SHEETS`。`SheetPrefill.savedProfile` を廃止
+- [X] T032 queries: `listApplicationSheets` / `getApplicationSheet` を追加し、prefill から保存データ参照を除去（テスト先行）
+- [X] T033 actions: `saveApplicationSheet`（名前必須・新規/上書き・上限件数）/ `deleteApplicationSheet`（テスト先行）
+- [X] T034 `SavedSheetList` コンポーネント（一覧・選択リンク・削除）+ テスト + stories
+- [X] T035 `ApplicationSheetForm` にシート名入力と新規/上書き保存を接続、page.tsx を `?sheet=<id>` で選択ロード対応（テスト先行）
+- [X] T036 e2e（flows / a11y）を複数シート仕様に更新し実行、biome / tsc / 全ユニット確認
+- [X] T037 spec.md / data-model.md / contracts / quickstart を複数シート仕様に同期
+
+---
+
+## Phase 8: 基本情報の保存とフォーム調整（2026-07-11 追加要件）
+
+- [X] T038 `application_base_profiles`（1 ユーザー 1 件）を新設し、「基本情報を保存」ボタンで upsert・新規シート作成時にプロフィールより優先して自動入力する（FR-014。テスト先行）
+- [X] T039 伊豆・千葉でのダイビング経験・ボートダイビング経験を廃止する（フォーム・出力・DB カラム・型・テスト）
+- [X] T040 最終ダイブ年月を「2026年7月」形式のテキスト入力に変更する（DB は YYYY-MM 保持・`yearMonth` lib で相互変換）
+- [X] T041 ドライスーツの経験「有」選択時のみ経験本数の入力欄を表示する
+- [X] T042 経験セクションも基本情報の保存対象に含め、新規テーブルを application_sheets 1 つに統合する（kind='base' 行 + 部分ユニーク制約。PR 内マイグレーションを 1 本に squash）

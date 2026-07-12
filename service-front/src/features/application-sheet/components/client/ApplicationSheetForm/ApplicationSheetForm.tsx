@@ -1,6 +1,7 @@
 'use client';
 
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { useController, useForm } from 'react-hook-form';
 
@@ -18,24 +19,36 @@ import {
 } from '../../../constants';
 import { buildSheetText } from '../../../lib/buildSheetText';
 import { applicationSheetSchema } from '../../../schemas/application-sheet.schema';
-import { saveApplicationProfile } from '../../../server/actions';
+import { saveApplicationBaseProfile, saveApplicationSheet } from '../../../server/actions';
 import type { SheetFormValues } from '../../../types';
 import { RentalItemsField } from '../RentalItemsField';
 import { SheetPreview } from '../SheetPreview';
 
 interface ApplicationSheetFormProps {
-    /** 自動入力・保存値から組み立てた初期値（上書き修正可能・FR-008） */
+    /** 自動入力・保存シートから組み立てた初期値（上書き修正可能・FR-008） */
     defaultValues?: Partial<SheetFormValues>;
+    /** 開いている保存済みシートの ID（新規作成中は null / 未指定） */
+    sheetId?: string | null;
+    /** 開いている保存済みシートの名前 */
+    initialSheetName?: string;
 }
 
 /**
  * 申し込みシート作成フォーム。入力のたびに buildSheetText でプレビューを更新する。
  * 全項目任意（FR-005）のため必須マークは付けない。
+ * 保存はシート名付きのスナップショット（新規 or 開いているシートへの上書き・FR-010）。
  */
-export const ApplicationSheetForm = ({ defaultValues }: ApplicationSheetFormProps) => {
+export const ApplicationSheetForm = ({ defaultValues, sheetId, initialSheetName }: ApplicationSheetFormProps) => {
+    const router = useRouter();
     const [isSaving, startSaving] = useTransition();
     const [saveState, setSaveState] = useState<'idle' | 'saved'>('idle');
     const [serverError, setServerError] = useState<string | null>(null);
+    const [sheetName, setSheetName] = useState(initialSheetName ?? '');
+    const [isSavingBase, startSavingBase] = useTransition();
+    const [baseSaveState, setBaseSaveState] = useState<'idle' | 'saved'>('idle');
+    const [baseError, setBaseError] = useState<string | null>(null);
+    // 新規保存に成功したら以降は同じシートへの上書きにする
+    const [currentSheetId, setCurrentSheetId] = useState<string | null>(sheetId ?? null);
 
     const {
         register,
@@ -53,19 +66,42 @@ export const ApplicationSheetForm = ({ defaultValues }: ApplicationSheetFormProp
     const rentalItemsField = useController({ control, name: 'rentalItems' });
     const omitRentalBlockField = useController({ control, name: 'omitRentalBlock' });
 
-    const sheetText = buildSheetText(watch());
+    // 「無」を選んだら未該当ブロックの省略を既定で有効にする（FR-012。手動で解除可能）
+    const handleHasRentalChange = (value: SheetFormValues['hasRental']) => {
+        hasRentalField.field.onChange(value);
+        if (value === 'no') omitRentalBlockField.field.onChange(true);
+    };
 
-    // 保存対象の絞り込み（個人属性のみ・FR-010）はサーバー側で行う
+    const formValues = watch();
+    const sheetText = buildSheetText(formValues);
+
     const onSave = handleSubmit((values) => {
         setSaveState('idle');
         setServerError(null);
         startSaving(async () => {
-            const result = await saveApplicationProfile(values);
+            const result = await saveApplicationSheet({ sheetId: currentSheetId, name: sheetName, values });
             if (!result.success) {
                 setServerError(result.error);
                 return;
             }
+            setCurrentSheetId(result.id);
             setSaveState('saved');
+            // サーバーが持つ保存済みシート一覧を更新する
+            router.refresh();
+        });
+    });
+
+    // 基本情報だけを 1 ユーザー 1 件で保存する（新規シート作成時の自動入力に使う）
+    const onSaveBaseProfile = handleSubmit((values) => {
+        setBaseSaveState('idle');
+        setBaseError(null);
+        startSavingBase(async () => {
+            const result = await saveApplicationBaseProfile(values);
+            if (!result.success) {
+                setBaseError(result.error);
+                return;
+            }
+            setBaseSaveState('saved');
         });
     });
 
@@ -142,10 +178,6 @@ export const ApplicationSheetForm = ({ defaultValues }: ApplicationSheetFormProp
                     error={errors.nearestStation?.message}
                     {...register('nearestStation')}
                 />
-            </section>
-
-            <section className="flex flex-col gap-4">
-                <Heading level={2}>経験</Heading>
                 <FormField
                     id="licenseRank"
                     label="ライセンスランク"
@@ -162,24 +194,11 @@ export const ApplicationSheetForm = ({ defaultValues }: ApplicationSheetFormProp
                     error={errors.diveCount?.message}
                     {...register('diveCount')}
                 />
-                <FormRadioGroup
-                    legend="伊豆・千葉でのダイビング経験"
-                    {...register('hasIzuChibaExperience')}
-                    name="hasIzuChibaExperience"
-                    options={YES_NO_OPTIONS}
-                    error={errors.hasIzuChibaExperience?.message}
-                />
-                <FormRadioGroup
-                    legend="ボートダイビングの経験"
-                    {...register('hasBoatExperience')}
-                    name="hasBoatExperience"
-                    options={YES_NO_OPTIONS}
-                    error={errors.hasBoatExperience?.message}
-                />
                 <FormField
                     id="lastDiveYearMonth"
                     label="最終ダイブ年月"
-                    type="month"
+                    type="text"
+                    placeholder="例: 2026年7月"
                     error={errors.lastDiveYearMonth?.message}
                     {...register('lastDiveYearMonth')}
                 />
@@ -190,21 +209,48 @@ export const ApplicationSheetForm = ({ defaultValues }: ApplicationSheetFormProp
                     options={YES_NO_OPTIONS}
                     error={errors.hasDrySuitExperience?.message}
                 />
-                <FormField
-                    id="drySuitDiveCount"
-                    label="ドライスーツの経験本数"
-                    type="text"
-                    inputMode="numeric"
-                    error={errors.drySuitDiveCount?.message}
-                    {...register('drySuitDiveCount')}
-                />
+                {formValues.hasDrySuitExperience === 'yes' && (
+                    <FormField
+                        id="drySuitDiveCount"
+                        label="ドライスーツの経験本数"
+                        type="text"
+                        inputMode="numeric"
+                        error={errors.drySuitDiveCount?.message}
+                        {...register('drySuitDiveCount')}
+                    />
+                )}
+                <div className="flex flex-col items-start gap-2">
+                    <p className="text-muted-foreground text-sm">
+                        基本情報を保存すると、新しいシートを作るときに自動で入力されます
+                    </p>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        disabled={isSavingBase}
+                        aria-busy={isSavingBase}
+                        onClick={() => {
+                            void onSaveBaseProfile();
+                        }}
+                    >
+                        {isSavingBase ? '保存中...' : '基本情報を保存する'}
+                    </Button>
+                    {/* aria-live 領域は常設して更新を通知する */}
+                    <span role="status" aria-live="polite" className="text-sky-700 text-sm">
+                        {baseSaveState === 'saved' ? '基本情報を保存しました' : ''}
+                    </span>
+                    {baseError && (
+                        <span role="alert" className="text-red-600 text-sm">
+                            {baseError}
+                        </span>
+                    )}
+                </div>
             </section>
 
             <section className="flex flex-col gap-4">
                 <Heading level={2}>レンタル器材</Heading>
                 <RentalItemsField
                     hasRental={hasRentalField.field.value}
-                    onHasRentalChange={hasRentalField.field.onChange}
+                    onHasRentalChange={handleHasRentalChange}
                     selectedItems={rentalItemsField.field.value}
                     onSelectedItemsChange={rentalItemsField.field.onChange}
                     omitRentalBlock={omitRentalBlockField.field.value}
@@ -273,12 +319,24 @@ export const ApplicationSheetForm = ({ defaultValues }: ApplicationSheetFormProp
                 <SheetPreview generatedText={sheetText} />
             </section>
 
-            <div className="flex flex-col items-start gap-2">
+            <section className="flex flex-col items-start gap-4">
+                <Heading level={2}>シートの保存</Heading>
                 <p className="text-muted-foreground text-sm">
-                    携帯電話・緊急連絡先などの手入力項目を保存すると、次回から自動で復元されます（レンタル品目の選択は保存されません）
+                    シートは名前を付けて複数保存でき、次回から一覧で選んで再利用できます
                 </p>
+                <div className="w-full sm:max-w-sm">
+                    <FormField
+                        id="sheetName"
+                        label="シート名"
+                        name="sheetName"
+                        type="text"
+                        placeholder="例: 〇〇ショップ用"
+                        value={sheetName}
+                        onChange={(event) => setSheetName(event.target.value)}
+                    />
+                </div>
                 <Button type="submit" variant="outline" disabled={isSaving} aria-busy={isSaving}>
-                    {isSaving ? '保存中...' : '入力内容を保存する'}
+                    {isSaving ? '保存中...' : currentSheetId ? '上書き保存する' : 'シートを保存する'}
                 </Button>
                 {/* aria-live 領域は常設して更新を通知する */}
                 <span role="status" aria-live="polite" className="text-sky-700 text-sm">
@@ -289,7 +347,7 @@ export const ApplicationSheetForm = ({ defaultValues }: ApplicationSheetFormProp
                         {serverError}
                     </span>
                 )}
-            </div>
+            </section>
         </form>
     );
 };

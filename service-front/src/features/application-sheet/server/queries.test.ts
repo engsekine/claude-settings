@@ -1,12 +1,46 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getApplicationSheetPrefill } from './queries';
+import type { ApplicationSheetRow } from '../types';
+import { getApplicationSheet, getApplicationSheetPrefill, listApplicationSheets } from './queries';
 
 const createClient = vi.fn();
 
 vi.mock('@/shared/lib/supabase/server', () => ({
     createClient: (...args: unknown[]) => createClient(...args),
 }));
+
+const SHEET_UUID = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
+
+const sampleSheetRow: ApplicationSheetRow = {
+    id: SHEET_UUID,
+    user_id: 'user-1',
+    kind: 'sheet',
+    name: '〇〇ショップ用',
+    full_name: '山田 太郎',
+    age: 36,
+    birth_on: '1990-05-03',
+    gender: 'male',
+    phone: '090-1234-5678',
+    emergency_contact_relation: '妻',
+    emergency_contact_phone: '080-9876-5432',
+    nearest_station: '横浜駅',
+    license_rank: 'Open Water Diver',
+    dive_count: 52,
+    last_dive_year_month: '2026-05',
+    has_dry_suit_experience: null,
+    dry_suit_dive_count: 10,
+    has_rental: true,
+    rental_items: ['wetSuitFullSet', 'fin'],
+    omit_rental_block: false,
+    height_cm: 172.5,
+    weight_kg: 65,
+    foot_size_cm: 26.5,
+    has_contact_lens: true,
+    contact_lens_type: 'soft',
+    needs_prescription_mask: false,
+    created_at: '2026-07-11T00:00:00Z',
+    updated_at: '2026-07-11T00:00:00Z',
+};
 
 interface SupabaseMockOptions {
     user?: { id: string } | null;
@@ -21,7 +55,9 @@ interface SupabaseMockOptions {
     certification?: { rank: string } | null;
     divesCount?: number;
     lastDiveDate?: string | null;
-    profile?: Record<string, unknown> | null;
+    sheetSummaries?: { id: string; name: string; updated_at: string }[];
+    sheetRow?: ApplicationSheetRow | null;
+    baseProfile?: Record<string, unknown> | null;
 }
 
 const buildSupabaseMock = (options: SupabaseMockOptions = {}) => {
@@ -31,7 +67,9 @@ const buildSupabaseMock = (options: SupabaseMockOptions = {}) => {
         certification = null,
         divesCount = 0,
         lastDiveDate = null,
-        profile = null,
+        sheetSummaries = [],
+        sheetRow = null,
+        baseProfile = null,
     } = options;
 
     const divesEq = vi.fn().mockReturnValue({
@@ -43,6 +81,19 @@ const buildSupabaseMock = (options: SupabaseMockOptions = {}) => {
             }),
         }),
     });
+
+    // 一覧: select().eq('kind','sheet').order() / 1 件: select().eq('id').eq('kind').maybeSingle()
+    // 基本情報: select().eq('kind','base').maybeSingle()
+    const sheetsOrder = vi.fn().mockResolvedValue({ data: sheetSummaries, error: null });
+    const sheetsGetMaybeSingle = vi.fn().mockResolvedValue({ data: sheetRow, error: null });
+    const baseMaybeSingle = vi.fn().mockResolvedValue({ data: baseProfile, error: null });
+    const sheetsEq = vi.fn((column: string, value: string) => {
+        if (column === 'kind' && value === 'base') return { maybeSingle: baseMaybeSingle };
+        if (column === 'kind' && value === 'sheet') return { order: sheetsOrder };
+        // eq('id', ...) → eq('kind', 'sheet') → maybeSingle()
+        return { eq: vi.fn().mockReturnValue({ maybeSingle: sheetsGetMaybeSingle }) };
+    });
+    const sheetsSelect = vi.fn().mockReturnValue({ eq: sheetsEq });
 
     const from = vi.fn((table: string) => {
         if (table === 'user_details') {
@@ -68,12 +119,8 @@ const buildSupabaseMock = (options: SupabaseMockOptions = {}) => {
         if (table === 'dives') {
             return { select: vi.fn().mockReturnValue({ eq: divesEq }) };
         }
-        if (table === 'application_profiles') {
-            return {
-                select: vi.fn().mockReturnValue({
-                    maybeSingle: vi.fn().mockResolvedValue({ data: profile, error: null }),
-                }),
-            };
+        if (table === 'application_sheets') {
+            return { select: sheetsSelect };
         }
         throw new Error(`unexpected table: ${table}`);
     });
@@ -83,7 +130,8 @@ const buildSupabaseMock = (options: SupabaseMockOptions = {}) => {
         from,
     };
     createClient.mockResolvedValue(supabase);
-    return { from, divesEq };
+    const sheetsEqCalls = () => sheetsEq.mock.calls;
+    return { from, divesEq, sheetsSelect, sheetsOrder, sheetsEq, sheetsEqCalls };
 };
 
 describe('getApplicationSheetPrefill', () => {
@@ -177,47 +225,63 @@ describe('getApplicationSheetPrefill', () => {
             licenseRank: null,
             diveCount: null,
             lastDiveYearMonth: null,
-            savedProfile: null,
+            phone: null,
+            emergencyContactRelation: null,
+            emergencyContactPhone: null,
+            nearestStation: null,
+            hasDrySuitExperience: null,
+            drySuitDiveCount: null,
         });
     });
 
-    it('保存済み application_profiles があれば camelCase で savedProfile に返す（FR-010）', async () => {
+    it('保存済みの基本情報はプロフィール由来の値より優先され、空欄はプロフィールで補完される', async () => {
         buildSupabaseMock({
-            profile: {
-                user_id: 'user-1',
+            details: {
+                last_name: '山田',
+                first_name: '太郎',
+                birth_on: '1990-05-03',
+                gender: 'male',
+                height_cm: 172.5,
+                weight_kg: 65,
+            },
+            certification: { rank: 'Open Water Diver' },
+            divesCount: 8,
+            lastDiveDate: '2025-10-01',
+            baseProfile: {
+                full_name: '山田 太郎（改名後）',
+                age: null,
+                birth_on: null,
+                gender: null,
                 phone: '090-1234-5678',
                 emergency_contact_relation: '妻',
                 emergency_contact_phone: '080-9876-5432',
                 nearest_station: '横浜駅',
-                foot_size_cm: 26.5,
-                has_izu_chiba_experience: true,
-                has_boat_experience: false,
-                has_dry_suit_experience: null,
-                dry_suit_dive_count: 10,
-                has_contact_lens: true,
-                contact_lens_type: 'soft',
-                needs_prescription_mask: false,
-                created_at: '2026-07-01T00:00:00Z',
-                updated_at: '2026-07-01T00:00:00Z',
+                license_rank: 'Rescue Diver',
+                dive_count: 120,
+                last_dive_year_month: '2026-06',
+                has_dry_suit_experience: true,
+                dry_suit_dive_count: 15,
             },
         });
 
         const prefill = await getApplicationSheetPrefill();
 
-        expect(prefill.savedProfile).toEqual({
-            phone: '090-1234-5678',
-            emergencyContactRelation: '妻',
-            emergencyContactPhone: '080-9876-5432',
-            nearestStation: '横浜駅',
-            footSizeCm: 26.5,
-            hasIzuChibaExperience: true,
-            hasBoatExperience: false,
-            hasDrySuitExperience: null,
-            drySuitDiveCount: 10,
-            hasContactLens: true,
-            contactLensType: 'soft',
-            needsPrescriptionMask: false,
-        });
+        // 保存値が優先される
+        expect(prefill.fullName).toBe('山田 太郎（改名後）');
+        expect(prefill.phone).toBe('090-1234-5678');
+        expect(prefill.emergencyContactRelation).toBe('妻');
+        expect(prefill.emergencyContactPhone).toBe('080-9876-5432');
+        expect(prefill.nearestStation).toBe('横浜駅');
+        // 経験も保存値が優先される（資格・ログ由来の値より優先）
+        expect(prefill.licenseRank).toBe('Rescue Diver');
+        expect(prefill.diveCount).toBe(120);
+        expect(prefill.lastDiveYearMonth).toBe('2026-06');
+        expect(prefill.hasDrySuitExperience).toBe(true);
+        expect(prefill.drySuitDiveCount).toBe(15);
+        // 保存値が空の項目はプロフィールで補完される
+        expect(prefill.birthOn).toBe('1990-05-03');
+        expect(prefill.age).toBe(36);
+        expect(prefill.gender).toBe('male');
     });
 
     it('公開読み取り RLS で他人のログを数えないよう dives は本人 user_id で絞る', async () => {
@@ -228,5 +292,68 @@ describe('getApplicationSheetPrefill', () => {
         expect(divesEq).toHaveBeenCalledWith('user_id', 'user-1');
         expect(prefill.diveCount).toBe(3);
         expect(prefill.lastDiveYearMonth).toBe('2025-12');
+    });
+});
+
+describe('listApplicationSheets', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it('保存済みシートのサマリーを返す（camelCase）', async () => {
+        const { sheetsOrder, sheetsEqCalls } = buildSupabaseMock({
+            sheetSummaries: [
+                { id: 'sheet-2', name: 'B ショップ用', updated_at: '2026-07-11T02:00:00Z' },
+                { id: 'sheet-1', name: 'A ショップ用', updated_at: '2026-07-10T00:00:00Z' },
+            ],
+        });
+
+        const sheets = await listApplicationSheets();
+
+        expect(sheets).toEqual([
+            { id: 'sheet-2', name: 'B ショップ用', updatedAt: '2026-07-11T02:00:00Z' },
+            { id: 'sheet-1', name: 'A ショップ用', updatedAt: '2026-07-10T00:00:00Z' },
+        ]);
+        // 一覧は kind='sheet' のみ・更新日時の降順（基本情報の行は出さない）
+        expect(sheetsEqCalls()).toContainEqual(['kind', 'sheet']);
+        expect(sheetsOrder).toHaveBeenCalledWith('updated_at', { ascending: false });
+    });
+
+    it('保存が無ければ空配列を返す', async () => {
+        buildSupabaseMock({ sheetSummaries: [] });
+
+        expect(await listApplicationSheets()).toEqual([]);
+    });
+});
+
+describe('getApplicationSheet', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it('シートをフォーム値のスナップショットとして返す', async () => {
+        const { sheetsEq } = buildSupabaseMock({ sheetRow: sampleSheetRow });
+
+        const sheet = await getApplicationSheet(SHEET_UUID);
+
+        expect(sheetsEq).toHaveBeenCalledWith('id', SHEET_UUID);
+        expect(sheet?.id).toBe(SHEET_UUID);
+        expect(sheet?.name).toBe('〇〇ショップ用');
+        expect(sheet?.values.fullName).toBe('山田 太郎');
+        expect(sheet?.values.rentalItems).toEqual(['wetSuitFullSet', 'fin']);
+        expect(sheet?.values.hasRental).toBe('yes');
+    });
+
+    it('見つからない（他人のシート含む・RLS）場合は null を返す', async () => {
+        buildSupabaseMock({ sheetRow: null });
+
+        expect(await getApplicationSheet('00000000-0000-4000-8000-000000000000')).toBeNull();
+    });
+
+    it('UUID 形式でない ID は DB を参照せず null を返す（URL 直打ち対策）', async () => {
+        const { from } = buildSupabaseMock();
+
+        expect(await getApplicationSheet('not-a-uuid')).toBeNull();
+        expect(from).not.toHaveBeenCalledWith('application_sheets');
     });
 });

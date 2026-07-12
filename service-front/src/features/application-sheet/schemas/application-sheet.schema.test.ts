@@ -14,8 +14,6 @@ const emptyInput = {
     nearestStation: '',
     licenseRank: '',
     diveCount: '',
-    hasIzuChibaExperience: '',
-    hasBoatExperience: '',
     lastDiveYearMonth: '',
     hasDrySuitExperience: '',
     drySuitDiveCount: '',
@@ -42,9 +40,7 @@ const filledInput = {
     nearestStation: '横浜駅',
     licenseRank: 'Open Water Diver',
     diveCount: '52',
-    hasIzuChibaExperience: 'yes',
-    hasBoatExperience: 'yes',
-    lastDiveYearMonth: '2026-05',
+    lastDiveYearMonth: '2026年5月',
     hasDrySuitExperience: 'no',
     drySuitDiveCount: '',
     hasRental: 'yes',
@@ -58,6 +54,12 @@ const filledInput = {
 };
 
 describe('applicationSheetSchema', () => {
+    it('スキーマのデフォルトはレンタル「無」+ 省略トグル ON（FR-012）', () => {
+        const defaults = applicationSheetSchema.getDefault();
+        expect(defaults.hasRental).toBe('no');
+        expect(defaults.omitRentalBlock).toBe(true);
+    });
+
     it('全項目未入力でも通る（全項目任意・FR-005）', async () => {
         const result = await applicationSheetSchema.validate(emptyInput);
         expect(result.fullName).toBe('');
@@ -157,10 +159,15 @@ describe('applicationSheetSchema', () => {
             );
         });
 
-        it('最終ダイブ年月は YYYY-MM 形式のみ受け付ける', async () => {
+        it('最終ダイブ年月は「YYYY年M月」形式のみ受け付ける', async () => {
             await expect(
-                applicationSheetSchema.validate({ ...emptyInput, lastDiveYearMonth: '2026年5月' }),
-            ).rejects.toThrow('最終ダイブ年月を正しく入力してください');
+                applicationSheetSchema.validate({ ...emptyInput, lastDiveYearMonth: '2026-05' }),
+            ).rejects.toThrow('最終ダイブ年月は「2026年7月」の形式で入力してください');
+            await expect(
+                applicationSheetSchema.validate({ ...emptyInput, lastDiveYearMonth: '2026年13月' }),
+            ).rejects.toThrow('最終ダイブ年月は「2026年7月」の形式で入力してください');
+            const result = await applicationSheetSchema.validate({ ...emptyInput, lastDiveYearMonth: '2026年7月' });
+            expect(result.lastDiveYearMonth).toBe('2026年7月');
         });
     });
 

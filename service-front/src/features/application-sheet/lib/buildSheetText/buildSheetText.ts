@@ -29,11 +29,11 @@ const formatBirthOn = (birthOn: string): string => {
     return `（西暦 ${year} 年 ${stripLeadingZero(month)} 月 ${stripLeadingZero(day)} 日）`;
 };
 
-/** YYYY-MM →「{年} 年 {月} 月」（未入力は空欄のままラベルだけ残す） */
-const formatYearMonth = (yearMonth: string): string => {
-    const [year, month] = yearMonth.split('-');
-    if (!year || !month) return '（ 年 月）';
-    return `（${year} 年 ${stripLeadingZero(month)} 月）`;
+/** 「YYYY年M月」→「{年} 年 {月} 月」（未入力は空欄のままラベルだけ残す） */
+const formatYearMonth = (yearMonthDisplay: string): string => {
+    const matched = yearMonthDisplay.match(/^(\d{4})年(\d{1,2})月$/);
+    if (!matched?.[1] || !matched[2]) return '（ 年 月）';
+    return `（${matched[1]} 年 ${stripLeadingZero(matched[2])} 月）`;
 };
 
 /** 「身長:172.5 cm」のような単位付き記入欄（未入力は「身長: cm」とラベル・単位のみ） */
@@ -63,8 +63,6 @@ export const buildSheetText = (values: SheetFormValues): string => {
         `・最寄りの駅${paren(values.nearestStation)}`,
         `・ライセンス ランク${paren(values.licenseRank)}`,
         `・経験本数${parenWithUnit(values.diveCount, '本')}`,
-        `・伊豆 千葉でのダイビング経験${paren(yesNoLabel(values.hasIzuChibaExperience))}`,
-        `・ボートダイビングの経験 有無${paren(yesNoLabel(values.hasBoatExperience))}`,
         `・最終ダイブ年月${formatYearMonth(values.lastDiveYearMonth)}`,
         `・ドライスーツの経験${paren(yesNoLabel(values.hasDrySuitExperience))}`,
         `・ドライの経験本数 約${parenWithUnit(values.drySuitDiveCount, '本')}`,
