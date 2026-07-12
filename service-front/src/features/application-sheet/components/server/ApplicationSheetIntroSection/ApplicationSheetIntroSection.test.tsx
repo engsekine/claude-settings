@@ -59,6 +59,14 @@ describe('ApplicationSheetIntroSection', () => {
         expect(preview.textContent).toContain('・経験本数（52 本）');
     });
 
+    it('プレビューはスクロール可能な領域としてキーボード操作できる（tabIndex + アクセシブルネーム）', async () => {
+        render(await ApplicationSheetIntroSection());
+
+        const preview = screen.getByRole('region', { name: 'あなたの登録内容で生成したプレビュー' });
+        expect(preview).toHaveAttribute('tabindex', '0');
+        expect(preview).toHaveClass('overflow-y-auto');
+    });
+
     it('未登録ユーザーでも空欄の定型文プレビューが表示されエラーにならない（FR-009）', async () => {
         render(await ApplicationSheetIntroSection());
 

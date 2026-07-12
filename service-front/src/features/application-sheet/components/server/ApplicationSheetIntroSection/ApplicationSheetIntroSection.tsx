@@ -48,19 +48,18 @@ export const ApplicationSheetIntroSection = async () => {
                     </Link>
                 </div>
                 <figure className="flex flex-col gap-2">
-                    <figcaption className="text-muted-foreground text-xs">
+                    <figcaption id="application-sheet-preview-caption" className="text-muted-foreground text-xs">
                         あなたの登録内容で生成したプレビュー
                     </figcaption>
-                    <div className="relative overflow-hidden rounded-lg border border-border bg-muted/30">
-                        <pre className="max-h-72 overflow-hidden whitespace-pre-wrap px-4 py-3 font-mono text-xs leading-relaxed">
-                            {previewText}
-                        </pre>
-                        {/* はみ出す場合に下端をなじませるフェード（装飾） */}
-                        <div
-                            aria-hidden="true"
-                            className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-linear-to-t from-background to-transparent"
-                        />
-                    </div>
+                    {/* スクロール領域はキーボードでも操作できるよう tabIndex + アクセシブルネームを付ける */}
+                    <pre
+                        className="max-h-72 overflow-y-auto whitespace-pre-wrap rounded-lg border border-border bg-muted/30 px-4 py-3 font-mono text-xs leading-relaxed"
+                        role="region"
+                        tabIndex={0}
+                        aria-labelledby="application-sheet-preview-caption"
+                    >
+                        {previewText}
+                    </pre>
                 </figure>
             </div>
         </section>
