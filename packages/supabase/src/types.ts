@@ -963,6 +963,7 @@ export type Database = {
                     first_name: string;
                     first_name_romaji: string;
                     gender: string;
+                    handle: string;
                     height_cm: number | null;
                     is_email_opted_in: boolean;
                     last_name: string;
@@ -983,6 +984,7 @@ export type Database = {
                     first_name: string;
                     first_name_romaji: string;
                     gender?: string;
+                    handle: string;
                     height_cm?: number | null;
                     is_email_opted_in?: boolean;
                     last_name: string;
@@ -1003,6 +1005,7 @@ export type Database = {
                     first_name?: string;
                     first_name_romaji?: string;
                     gender?: string;
+                    handle?: string;
                     height_cm?: number | null;
                     is_email_opted_in?: boolean;
                     last_name?: string;
@@ -1127,7 +1130,7 @@ export type Database = {
                     visited_locations: number;
                 }[];
             };
-            get_user_id_by_nickname: { Args: { p_nickname: string }; Returns: string };
+            get_user_id_by_handle: { Args: { p_handle: string }; Returns: string };
             get_dive_yearly_counts: {
                 Args: never;
                 Returns: {
@@ -1138,12 +1141,17 @@ export type Database = {
             get_user_public_profiles: {
                 Args: { p_ids: string[] };
                 Returns: {
+                    handle: string;
                     nickname: string;
                     user_id: string;
                 }[];
             };
             grant_daily_bonus: { Args: never; Returns: undefined };
             is_admin: { Args: never; Returns: boolean };
+            is_handle_taken: {
+                Args: { p_exclude_user_id?: string; p_handle: string };
+                Returns: boolean;
+            };
             is_nickname_taken: {
                 Args: { p_exclude_user_id?: string; p_nickname: string };
                 Returns: boolean;
@@ -1153,6 +1161,7 @@ export type Database = {
             search_users_by_nickname: {
                 Args: { p_limit?: number; p_query: string };
                 Returns: {
+                    handle: string;
                     nickname: string;
                     user_id: string;
                 }[];

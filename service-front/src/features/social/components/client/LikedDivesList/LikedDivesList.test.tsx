@@ -21,6 +21,7 @@ const makeItem = (overrides: Partial<TimelineItem> = {}): TimelineItem => ({
     bottomTimeMin: 50,
     ownerId: 'user-1',
     ownerNickname: 'taro',
+    ownerHandle: 'taro',
     likeCount: 3,
     likedByMe: true,
     ...overrides,
@@ -56,7 +57,7 @@ describe('LikedDivesList', () => {
             expect(link).toHaveAttribute('href', '/dives/dive-1');
         });
 
-        it('ownerNickname がニックネーム URL のプロフィールへのリンクになっている（034 / FR-003）', () => {
+        it('ownerNickname の表示リンクがユーザー ID の URL になっている（034 / FR-004）', () => {
             render(<LikedDivesList initialItems={[makeItem()]} initialCursor={null} />);
 
             const link = screen.getByRole('link', { name: 'taro' });
@@ -71,7 +72,13 @@ describe('LikedDivesList', () => {
 
         it('複数アイテムを全て描画する', () => {
             const items = [
-                makeItem({ diveId: 'dive-1', location: '慶良間諸島', ownerId: 'user-1', ownerNickname: 'taro' }),
+                makeItem({
+                    diveId: 'dive-1',
+                    location: '慶良間諸島',
+                    ownerId: 'user-1',
+                    ownerNickname: 'taro',
+                    ownerHandle: 'taro',
+                }),
                 makeItem({ diveId: 'dive-2', location: '柏島', ownerId: 'user-2', ownerNickname: 'hanako' }),
             ];
             render(<LikedDivesList initialItems={items} initialCursor={null} />);

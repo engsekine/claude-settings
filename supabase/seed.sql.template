@@ -64,6 +64,7 @@ insert into auth.users (
         'last_name_romaji', 'Tanaka',
         'first_name_romaji', 'Taro',
         'nickname', 'たろう',
+        'handle', 'taro',
         'birth_on', '1990-05-15',
         'gender', 'male',
         'height_cm', '170',
@@ -135,6 +136,7 @@ insert into auth.users (
         'last_name_romaji', 'Unei',
         'first_name_romaji', 'Kanrisha',
         'nickname', 'admin',
+        'handle', 'admin-ops',
         'birth_on', '1990-01-01',
         'gender', 'unanswered'
     ),
@@ -191,6 +193,7 @@ insert into auth.users (
         'last_name_romaji', 'Buddy',
         'first_name_romaji', 'Taro',
         'nickname', 'buddy-taro',
+        'handle', 'buddy-taro',
         'birth_on', '1992-02-02',
         'gender', 'unanswered'
     ),
@@ -244,6 +247,7 @@ insert into auth.users (
         'last_name_romaji', 'Kaimei',
         'first_name_romaji', 'Saburo',
         'nickname', 'rename-saburo',
+        'handle', 'rename-saburo',
         'birth_on', '1993-03-03',
         'gender', 'unanswered'
     ),

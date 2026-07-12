@@ -81,8 +81,8 @@ describe('AuthNav', () => {
         expect(signupLink).toHaveAttribute('href', '/signup');
     });
 
-    it('user_metadata に nickname があるとマイプロフィールはニックネーム URL になる（034 / FR-003）', async () => {
-        const user = buildUser({ email: 'user@example.com', user_metadata: { nickname: 'たろう' } });
+    it('user_metadata に handle があるとマイプロフィールはユーザー ID の URL になる（034 / FR-004）', async () => {
+        const user = buildUser({ email: 'user@example.com', user_metadata: { handle: 'taro' } });
         mockStoreState.user = user;
 
         const userEventInstance = userEvent.setup();
@@ -91,7 +91,7 @@ describe('AuthNav', () => {
         await userEventInstance.click(screen.getByRole('button', { name: 'アカウントメニューを開く' }));
 
         const myProfileLink = await screen.findByRole('link', { name: /マイプロフィール/ });
-        expect(myProfileLink).toHaveAttribute('href', `/users/${encodeURIComponent('たろう')}`);
+        expect(myProfileLink).toHaveAttribute('href', '/users/taro');
     });
 
     it('ログイン済み状態でアイコンボタンを押すとシート内に会員情報・保有資格リンクとログアウトボタンを表示する', async () => {

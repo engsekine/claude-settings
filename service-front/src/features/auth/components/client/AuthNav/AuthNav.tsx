@@ -100,14 +100,14 @@ export const AuthNav = ({ initialUser }: AuthNavProps) => {
                             </p>
                             {user?.id && (
                                 <Link
-                                    // 034: user_metadata の nickname からニックネーム URL を生成する。
-                                    // 未設定（同期前の Google 初回ユーザー等）は ID URL となり、ページ側の転送で正規化される
+                                    // 034: user_metadata の handle からユーザー ID の URL を生成する。
+                                    // 未設定（同期前の Google 初回ユーザー等）は内部 ID URL となり、ページ側の転送で正規化される
                                     href={
                                         profilePath({
                                             userId: user.id,
-                                            nickname:
-                                                typeof user.user_metadata?.['nickname'] === 'string'
-                                                    ? user.user_metadata['nickname']
+                                            handle:
+                                                typeof user.user_metadata?.['handle'] === 'string'
+                                                    ? user.user_metadata['handle']
                                                     : null,
                                         }) as Route
                                     }

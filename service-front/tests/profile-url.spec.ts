@@ -3,18 +3,18 @@ import { expect, type Page, test } from '@playwright/test';
 import { presetConsent } from './a11y/_helpers';
 
 /**
- * プロフィール URL のニックネーム化（034）の E2E 検証。quickstart.md のシナリオに対応する。
- * - US1: ニックネーム URL での表示・導線・404・大文字小文字解決
- * - US2: ID 形式 URL の恒久転送（seed の固定 uuid を使用）
- * - US3: ニックネーム変更と URL の追随・登録禁則
+ * ユーザー ID とプロフィール URL（034 Rev.2）の E2E 検証。quickstart.md のシナリオに対応する。
+ * - シナリオ 2: ユーザー ID の URL・大文字解決・導線・uuid 転送・404
+ * - シナリオ 3: ユーザー ID の変更と URL の追随（リネーム専用ユーザーで実施）
+ * 登録フォームの形式・重複エラー（シナリオ 1）は schema / form の単体テストで担保する。
  */
 
-/** supabase/seed.sql のローカル開発専用テストユーザー（nickname: たろう） */
+/** supabase/seed.sql のローカル開発専用テストユーザー（handle: taro / nickname: たろう） */
 const TEST_EMAIL = 'test@example.com';
 const TEST_PASSWORD = 'password123';
-/** 2 人目のテストユーザー（固定 uuid / nickname: buddy-taro） */
+/** 2 人目のテストユーザー（固定 uuid / handle: buddy-taro） */
 const BUDDY_ID = '000000bd-0000-0000-0000-000000000002';
-const BUDDY_NICKNAME = 'buddy-taro';
+const BUDDY_HANDLE = 'buddy-taro';
 
 const login = async (page: Page) => {
     await page.goto('/login');
@@ -29,75 +29,67 @@ test.beforeEach(async ({ context, page }) => {
     await login(page);
 });
 
-// US1: ニックネーム URL での表示（quickstart シナリオ 1）
-test('ニックネーム URL でプロフィールが表示される（日本語・英数字とも）', async ({ page }) => {
-    // 英数字ニックネーム
-    await page.goto(`/users/${BUDDY_NICKNAME}`);
-    await expect(page.getByRole('heading', { name: BUDDY_NICKNAME })).toBeVisible();
-
-    // 日本語ニックネーム（エンコードされた URL）
-    await page.goto(`/users/${encodeURIComponent('たろう')}`);
-    await expect(page.getByRole('heading', { name: 'たろう' })).toBeVisible();
+test('ユーザー ID の URL でプロフィールが表示される（表示名はニックネームのまま）', async ({ page }) => {
+    await page.goto(`/users/${BUDDY_HANDLE}`);
+    // 表示名（見出し）はニックネーム（FR-010）
+    await expect(page.getByRole('heading', { name: 'buddy-taro' })).toBeVisible();
 });
 
-test('ヘッダーのマイプロフィールからニックネーム URL で遷移する', async ({ page }) => {
+test('ヘッダーのマイプロフィールからユーザー ID の URL で遷移する', async ({ page }) => {
     await page.getByRole('button', { name: 'アカウントメニューを開く' }).click();
     await page.getByRole('link', { name: /マイプロフィール/ }).click();
 
-    // seed のサインアップ metadata に nickname が入っているためニックネーム URL になる
-    await page.waitForURL((url) => decodeURIComponent(url.pathname) === '/users/たろう');
+    // metadata の handle からユーザー ID の URL が生成される（FR-004）
+    await page.waitForURL((url) => url.pathname === '/users/taro');
     await expect(page.getByRole('heading', { name: 'たろう' })).toBeVisible();
 });
 
-test('followers / following もニックネーム基準の URL で表示される', async ({ page }) => {
-    await page.goto(`/users/${BUDDY_NICKNAME}/followers`);
-    await expect(page.getByRole('heading', { name: `${BUDDY_NICKNAME} さんのフォロワー` })).toBeVisible();
+test('followers / following もユーザー ID 基準の URL で表示される', async ({ page }) => {
+    await page.goto(`/users/${BUDDY_HANDLE}/followers`);
+    await expect(page.getByRole('heading', { name: /さんのフォロワー/ })).toBeVisible();
 
-    await page.goto(`/users/${BUDDY_NICKNAME}/following`);
-    await expect(page.getByRole('heading', { name: `${BUDDY_NICKNAME} さんのフォロー中` })).toBeVisible();
+    await page.goto(`/users/${BUDDY_HANDLE}/following`);
+    await expect(page.getByRole('heading', { name: /さんのフォロー中/ })).toBeVisible();
 });
 
-test('大文字小文字だけが異なる URL は同一ユーザーに解決される（FR-002）', async ({ page }) => {
-    await page.goto(`/users/${BUDDY_NICKNAME.toUpperCase()}`);
-    await expect(page.getByRole('heading', { name: BUDDY_NICKNAME })).toBeVisible();
+test('大文字だけが異なる URL は同一ユーザーに解決される（FR-002）', async ({ page }) => {
+    await page.goto(`/users/${BUDDY_HANDLE.toUpperCase()}`);
+    await expect(page.getByRole('heading', { name: 'buddy-taro' })).toBeVisible();
 });
 
-test('存在しないニックネームの URL は 404 になる（FR-008）', async ({ page }) => {
-    const response = await page.goto('/users/no-such-user-xyz');
-    expect(response?.status()).toBe(404);
+test('存在しないユーザー ID・uuid の URL は 404 になる（FR-007）', async ({ page }) => {
+    const byHandle = await page.goto('/users/no-such-user-xyz');
+    expect(byHandle?.status()).toBe(404);
     await expect(page.getByText('お探しのページが見つかりませんでした')).toBeVisible();
+
+    const byUuid = await page.goto('/users/00000000-0000-0000-0000-00000000dead');
+    expect(byUuid?.status()).toBe(404);
 });
 
-// US2: ID 形式 URL の互換転送（quickstart シナリオ 2）
-test('ID 形式の URL はニックネーム URL へ転送される（FR-004）', async ({ page }) => {
+test('内部 ID（uuid）形式の URL はユーザー ID の URL へ転送される（FR-005）', async ({ page }) => {
     await page.goto(`/users/${BUDDY_ID}`);
-    await page.waitForURL((url) => url.pathname === `/users/${BUDDY_NICKNAME}`);
-    await expect(page.getByRole('heading', { name: BUDDY_NICKNAME })).toBeVisible();
+    await page.waitForURL((url) => url.pathname === `/users/${BUDDY_HANDLE}`);
+    await expect(page.getByRole('heading', { name: 'buddy-taro' })).toBeVisible();
 
     // 下層パス（followers）も維持して転送される
     await page.goto(`/users/${BUDDY_ID}/followers`);
-    await page.waitForURL((url) => url.pathname === `/users/${BUDDY_NICKNAME}/followers`);
+    await page.waitForURL((url) => url.pathname === `/users/${BUDDY_HANDLE}/followers`);
 });
 
-test('存在しない uuid の URL は 404 になる', async ({ page }) => {
-    const response = await page.goto('/users/00000000-0000-0000-0000-00000000dead');
-    expect(response?.status()).toBe(404);
-});
-
-// US3: ニックネーム変更と URL の追随（quickstart シナリオ 3・4）。
+// シナリオ 3: ユーザー ID の変更（US3）。
 // 並列実行中の他テスト（buddy-taro 依存）と干渉しないよう、リネーム専用ユーザーで実施し最後に戻す
 const RENAME_EMAIL = 'rename@example.com';
 const RENAME_ID = '000000ce-0000-0000-0000-000000000003';
-const RENAME_NICKNAME = 'rename-saburo';
+const RENAME_HANDLE = 'rename-saburo';
 
-const changeNickname = async (page: Page, nickname: string) => {
+const changeHandle = async (page: Page, handle: string) => {
     await page.goto('/settings/profile');
-    await page.getByLabel(/ニックネーム/).fill(nickname);
+    await page.getByLabel('ユーザー ID').fill(handle);
     await page.getByRole('button', { name: '更新する' }).click();
     await expect(page.getByText('プロフィールを更新しました')).toBeVisible({ timeout: 15_000 });
 };
 
-test('ニックネーム変更で URL が追随し、旧ニックネームは無効・ID URL は転送される（US3）', async ({ browser }) => {
+test('ユーザー ID の変更で URL が追随し、旧 ID は無効・uuid URL は転送される（US3）', async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
     await presetConsent(context);
@@ -107,44 +99,52 @@ test('ニックネーム変更で URL が追随し、旧ニックネームは無
     await page.getByRole('button', { name: 'ログイン', exact: true }).click();
     await page.waitForURL((url) => url.pathname === '/');
 
-    const NEW_NICKNAME = 'rename-shiro';
-    await changeNickname(page, NEW_NICKNAME);
+    const NEW_HANDLE = 'rename-shiro';
+    await changeHandle(page, NEW_HANDLE);
 
     try {
-        // 新しいニックネーム URL で表示できる（SC-004）
-        await page.goto(`/users/${NEW_NICKNAME}`);
-        await expect(page.getByRole('heading', { name: NEW_NICKNAME })).toBeVisible();
+        // 新しいユーザー ID の URL で表示できる（SC-004）
+        await page.goto(`/users/${NEW_HANDLE}`);
+        await expect(page.getByRole('heading', { name: 'rename-saburo' })).toBeVisible();
 
-        // 旧ニックネームの URL は 404（FR-007）
-        const oldResponse = await page.goto(`/users/${RENAME_NICKNAME}`);
+        // 旧ユーザー ID の URL は 404（FR-006）
+        const oldResponse = await page.goto(`/users/${RENAME_HANDLE}`);
         expect(oldResponse?.status()).toBe(404);
 
-        // ID 形式 URL は新しいニックネーム URL へ転送される（ID 経由は変更に影響されない）
+        // uuid 形式 URL は新しいユーザー ID の URL へ転送される（uuid 経由は変更に影響されない）
         await page.goto(`/users/${RENAME_ID}`);
-        await page.waitForURL((url) => url.pathname === `/users/${NEW_NICKNAME}`);
+        await page.waitForURL((url) => url.pathname === `/users/${NEW_HANDLE}`);
 
-        // ヘッダーのマイプロフィールも新ニックネーム URL になる（metadata 同期。リロードで SSR セッションに反映）
+        // ヘッダーのマイプロフィールも新ユーザー ID の URL になる（metadata 同期）
         await page.goto('/');
         await page.getByRole('button', { name: 'アカウントメニューを開く' }).click();
         await expect(page.getByRole('link', { name: /マイプロフィール/ })).toHaveAttribute(
             'href',
-            `/users/${NEW_NICKNAME}`,
+            `/users/${NEW_HANDLE}`,
         );
     } finally {
-        // 後始末: ニックネームを元に戻す
-        await changeNickname(page, RENAME_NICKNAME);
+        // 後始末: ユーザー ID を元に戻す
+        await changeHandle(page, RENAME_HANDLE);
         await context.close();
     }
 });
 
-test('URL に使えないニックネームへの変更は拒否される（FR-006）', async ({ page }) => {
+test('不正な形式・予約語への変更は拒否される（FR-002・003）', async ({ page }) => {
     await page.goto('/settings/profile');
 
-    for (const invalid of ['search', 'a/b', '00000000-0000-0000-0000-00000000dead']) {
-        await page.getByLabel(/ニックネーム/).fill(invalid);
-        await page.getByRole('button', { name: '更新する' }).click();
-        await expect(
-            page.getByText(/このニックネームは使用できません|ニックネームに \/ \? # % \\ は使用できません/),
-        ).toBeVisible();
-    }
+    await page.getByLabel('ユーザー ID').fill('a/b');
+    await page.getByRole('button', { name: '更新する' }).click();
+    await expect(
+        page.getByText('ユーザー ID は半角英小文字・数字・ - _ の 3〜30 文字（先頭は英字）で入力してください'),
+    ).toBeVisible();
+
+    await page.getByLabel('ユーザー ID').fill('search');
+    await page.getByRole('button', { name: '更新する' }).click();
+    await expect(page.getByText('このユーザー ID は使用できません')).toBeVisible();
+
+    await page.getByLabel('ユーザー ID').fill(BUDDY_HANDLE); // 他人の ID
+    await page.getByRole('button', { name: '更新する' }).click();
+    await expect(page.getByText('このユーザー ID は既に使われています。別のユーザー ID をお試しください')).toBeVisible({
+        timeout: 15_000,
+    });
 });

@@ -12,12 +12,12 @@ export interface NotificationTarget {
  * 遷移先の存在確認は行わず、削除済みリソースは各ページの 404 / 表示制御に委譲する。
  */
 export const getNotificationTarget = (
-    item: Pick<NotificationItem, 'type' | 'actorId' | 'actorNickname' | 'resourceId'>,
+    item: Pick<NotificationItem, 'type' | 'actorId' | 'actorHandle' | 'resourceId'>,
 ): NotificationTarget => {
     switch (item.type) {
         case 'followed':
-            // 034: プロフィールはニックネーム URL（URL 不可・未取得は ID URL にフォールバック）
-            return { href: item.actorId ? profilePath({ userId: item.actorId, nickname: item.actorNickname }) : null };
+            // 034: プロフィールはユーザー ID の URL（未取得時は内部 ID URL → ページ側転送で正規化）
+            return { href: item.actorId ? profilePath({ userId: item.actorId, handle: item.actorHandle }) : null };
         case 'buddy_tagged':
             return { href: item.resourceId ? `/dives/${item.resourceId}` : null };
         case 'log_liked':

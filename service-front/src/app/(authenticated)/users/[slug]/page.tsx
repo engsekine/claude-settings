@@ -16,7 +16,7 @@ export const generateMetadata = async ({ params }: ProfilePageProps) => {
     return generatePageMetadata(
         {
             // canonical はニックネーム URL を正とする（URL 不可ニックネームは ID URL のまま = FR-005）
-            slug: profilePath({ userId: profile.userId, nickname: profile.nickname }),
+            slug: profilePath({ userId: profile.userId, handle: profile.handle }),
             title: `${profile.nickname} さんのプロフィール`,
             description: `${profile.nickname} さんの公開ログとフォロー情報`,
         },

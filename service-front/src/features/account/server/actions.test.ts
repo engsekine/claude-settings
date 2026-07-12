@@ -16,6 +16,7 @@ const updateInput: UpdateProfileInput = {
     lastNameRomaji: 'Yamada',
     firstNameRomaji: 'Taro',
     nickname: 'たろちゃん',
+    handle: 'taro-diver',
     birthOn: '1990-01-01',
     gender: 'male',
     heightCm: null,
@@ -32,6 +33,7 @@ const profileRow = {
     last_name_romaji: 'Yamada',
     first_name_romaji: 'Taro',
     nickname: 'たろちゃん',
+    handle: 'taro-diver',
     birth_on: '1990-01-01',
     gender: 'male',
     height_cm: null,
@@ -92,13 +94,13 @@ beforeEach(() => {
 });
 
 describe('updateProfile', () => {
-    it('更新成功時に auth の user_metadata へ nickname を同期する（034 / research.md Decision 4）', async () => {
+    it('更新成功時に auth の user_metadata へ handle を同期する（034 Rev.2）', async () => {
         const { updateUser } = buildSupabaseMock();
 
         const result = await updateProfile(updateInput);
 
         expect(result).toEqual({ success: true });
-        expect(updateUser).toHaveBeenCalledWith({ data: { nickname: updateInput.nickname } });
+        expect(updateUser).toHaveBeenCalledWith({ data: { handle: updateInput.handle } });
     });
 
     it('metadata 同期が失敗してもプロフィール更新は成功として扱う（034）', async () => {

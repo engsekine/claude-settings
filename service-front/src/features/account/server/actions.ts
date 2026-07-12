@@ -16,6 +16,8 @@ export interface UpdateProfileInput {
     lastNameRomaji: string;
     firstNameRomaji: string;
     nickname: string;
+    /** ユーザー ID（034。プロフィール URL の識別子） */
+    handle: string;
     /** ISO 8601 date string (YYYY-MM-DD) */
     birthOn: string;
     gender: Gender;
@@ -38,6 +40,8 @@ export interface ProfileData {
     lastNameRomaji: string;
     firstNameRomaji: string;
     nickname: string;
+    /** ユーザー ID（034。プロフィール URL の識別子） */
+    handle: string;
     /** ISO 8601 date string (YYYY-MM-DD) */
     birthOn: string;
     gender: Gender;
@@ -64,7 +68,7 @@ export const getProfile = async (): Promise<ProfileData | null> => {
     const { data, error } = await supabase
         .from('user_details')
         .select(
-            'last_name, first_name, last_name_romaji, first_name_romaji, nickname, birth_on, gender, height_cm, weight_kg, diver_type, diver_number, is_email_opted_in',
+            'last_name, first_name, last_name_romaji, first_name_romaji, nickname, handle, birth_on, gender, height_cm, weight_kg, diver_type, diver_number, is_email_opted_in',
         )
         .eq('user_id', user.id)
         .single();
@@ -90,6 +94,15 @@ export const updateProfile = async (input: UpdateProfileInput): Promise<ActionRe
     });
     if (nicknameTaken) {
         return actionFailure('このニックネームは既に使われています。別のニックネームをお試しください');
+    }
+
+    /** ユーザー ID の一意制約（034）。自分は衝突対象から除外する */
+    const { data: handleTaken } = await supabase.rpc('is_handle_taken', {
+        p_handle: input.handle,
+        p_exclude_user_id: user.id,
+    });
+    if (handleTaken) {
+        return actionFailure('このユーザー ID は既に使われています。別のユーザー ID をお試しください');
     }
 
     /**
@@ -123,6 +136,9 @@ export const updateProfile = async (input: UpdateProfileInput): Promise<ActionRe
         if (error.code === '23505' && error.message.includes('user_details_nickname_key')) {
             return actionFailure('このニックネームは既に使われています。別のニックネームをお試しください');
         }
+        if (error.code === '23505' && error.message.includes('user_details_handle_key')) {
+            return actionFailure('このユーザー ID は既に使われています。別のユーザー ID をお試しください');
+        }
         console.error('[updateProfile] supabase error:', {
             message: error.message,
             code: error.code,
@@ -131,11 +147,11 @@ export const updateProfile = async (input: UpdateProfileInput): Promise<ActionRe
     }
 
     /**
-     * ヘッダー（AuthNav）のマイプロフィールリンクが最新のニックネーム URL を生成できるよう、
-     * auth の user_metadata にも nickname を同期する（034 / research.md Decision 4）。
-     * 同期失敗は致命的でない（ID URL フォールバック → ページ側転送で正規化される）ため成功扱いにする。
+     * ヘッダー（AuthNav）のマイプロフィールリンクが最新のユーザー ID の URL を生成できるよう、
+     * auth の user_metadata に handle を同期する（034 Rev.2）。
+     * 同期失敗は致命的でない（内部 ID URL → ページ側転送で正規化される）ため成功扱いにする。
      */
-    const { error: metadataError } = await supabase.auth.updateUser({ data: { nickname: input.nickname } });
+    const { error: metadataError } = await supabase.auth.updateUser({ data: { handle: input.handle } });
     if (metadataError) {
         console.error('[updateProfile] auth metadata sync error:', { message: metadataError.message });
     }

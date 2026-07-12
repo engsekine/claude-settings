@@ -1,7 +1,7 @@
-# Specification Quality Checklist: プロフィール URL のニックネーム化
+# Specification Quality Checklist: ユーザー ID とプロフィール URL
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
-**Created**: 2026-07-12
+**Created**: 2026-07-12（Rev.2 で再検証）
 **Feature**: [spec.md](../spec.md)
 
 ## Content Quality
@@ -31,5 +31,5 @@
 
 ## Notes
 
-- ユーザーの前提質問「ニックネームは一意か」への回答を spec 冒頭に明記した（導入済みの正規化一意制約に依拠）
-- 判断が分かれうる 3 点（旧 ID URL の恒久転送 / ニックネーム変更時は旧 URL 即無効 / 文字制約は新規・変更時のみ強化 + 既存は ID フォールバック）は Assumptions に既定値として明記。認識と異なる場合は `/speckit-clarify` で修正する
+- Rev.2（ニックネーム → ユーザー ID 方式への全面改訂）を Clarifications に記録済み
+- 文字ルール（小文字英数字 + - _・3〜30・先頭英字）と既存ユーザーの自動採番は Assumptions に既定値として明記

@@ -31,6 +31,8 @@ export interface SignUpInput {
     lastNameRomaji: string;
     firstNameRomaji: string;
     nickname: string;
+    /** ユーザー ID（034。プロフィール URL の識別子。小文字英数字と - _） */
+    handle: string;
     /** ISO 8601 date string (YYYY-MM-DD) */
     birthOn: string;
     gender: Gender;
@@ -77,6 +79,12 @@ export const signUp = async (input: SignUpInput): Promise<ActionResult<SignUpPay
         return actionFailure('このニックネームは既に使われています。別のニックネームをお試しください');
     }
 
+    /** ユーザー ID の一意制約（034）も同様に事前チェックする */
+    const { data: handleTaken } = await supabase.rpc('is_handle_taken', { p_handle: input.handle });
+    if (handleTaken) {
+        return actionFailure('このユーザー ID は既に使われています。別のユーザー ID をお試しください');
+    }
+
     const { data, error } = await supabase.auth.signUp({
         email: input.email,
         password: input.password,
@@ -92,6 +100,8 @@ export const signUp = async (input: SignUpInput): Promise<ActionResult<SignUpPay
                 last_name_romaji: input.lastNameRomaji,
                 first_name_romaji: input.firstNameRomaji,
                 nickname: input.nickname,
+                /** handle_new_user トリガーが user_details.handle に記録する（034） */
+                handle: input.handle,
                 birth_on: input.birthOn,
                 gender: input.gender,
                 height_cm: input.heightCm,
@@ -280,12 +290,25 @@ export const completeProfile = async (input: CompleteProfileInput): Promise<Acti
         return actionFailure('このニックネームは既に使われています。別のニックネームをお試しください');
     }
 
+    /** ユーザー ID の一意制約（034）も同様に事前チェックする */
+    const { data: handleTaken } = await supabase.rpc('is_handle_taken', {
+        p_handle: input.handle,
+        p_exclude_user_id: user.id,
+    });
+    if (handleTaken) {
+        return actionFailure('このユーザー ID は既に使われています。別のユーザー ID をお試しください');
+    }
+
     const { error } = await supabase.from('user_details').insert(toUserDetailsInsert(user.id, input));
 
     if (error) {
         /** nickname 一意制約違反（競合時のフォールバック）は「補完済み」と混同せずエラーを返す */
         if (error.code === '23505' && error.message.includes('user_details_nickname_key')) {
             return actionFailure('このニックネームは既に使われています。別のニックネームをお試しください');
+        }
+        /** handle 一意制約違反（034。競合時のフォールバック） */
+        if (error.code === '23505' && error.message.includes('user_details_handle_key')) {
+            return actionFailure('このユーザー ID は既に使われています。別のユーザー ID をお試しください');
         }
         /** 既に補完済み（PK user_id 重複）の場合は冪等に成功扱いとし TOP へ */
         if (error.code === '23505') {
@@ -296,6 +319,15 @@ export const completeProfile = async (input: CompleteProfileInput): Promise<Acti
             code: error.code,
         });
         return actionFailure('プロフィールの保存に失敗しました。時間をおいて再度お試しください');
+    }
+
+    /**
+     * ヘッダー（AuthNav）がユーザー ID の URL を生成できるよう metadata に同期する（034）。
+     * 同期失敗は致命的でない（内部 ID URL → ページ側転送で正規化される）ため成功扱いにする。
+     */
+    const { error: metadataError } = await supabase.auth.updateUser({ data: { handle: input.handle } });
+    if (metadataError) {
+        console.error('[completeProfile] auth metadata sync error:', { message: metadataError.message });
     }
 
     redirect('/');

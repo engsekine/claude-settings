@@ -29,6 +29,7 @@ const buildItem = (overrides: Partial<NotificationItem> = {}): NotificationItem 
     type: 'followed',
     actorId: 'user-1',
     actorNickname: 'たろう',
+    actorHandle: 'taro',
     resourceId: null,
     occurredAt: '2026-07-01T12:00:00+09:00',
     readAt: null,
@@ -106,7 +107,7 @@ describe('NotificationBell', () => {
         await user.click(within(sheet).getByRole('button', { name: /たろう/ }));
 
         expect(markNotificationRead).toHaveBeenCalledWith('n9');
-        // 034: 遷移先はニックネーム URL になる
-        expect(routerPush).toHaveBeenCalledWith(`/users/${encodeURIComponent('たろう')}`);
+        // 034: 遷移先はユーザー ID の URL になる
+        expect(routerPush).toHaveBeenCalledWith('/users/taro');
     });
 });

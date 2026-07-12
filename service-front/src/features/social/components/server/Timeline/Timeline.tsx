@@ -53,7 +53,7 @@ export const Timeline = ({ items, viewerId = null }: TimelineProps) => {
                                             href={
                                                 profilePath({
                                                     userId: dive.ownerId,
-                                                    nickname: dive.ownerNickname,
+                                                    handle: dive.ownerHandle,
                                                 }) as Route
                                             }
                                             className="hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"

@@ -18,7 +18,7 @@ import type {
     TimelineItem,
     TimelinePage,
 } from '@/features/social/types';
-import { isUrlSafeNickname, isUuid, profilePath } from '@/shared/lib/profile-path';
+import { isUuid, normalizeHandle, profilePath } from '@/shared/lib/profile-path';
 import { createClient } from '@/shared/lib/supabase/server';
 
 type Client = SupabaseClient<Database>;
@@ -34,41 +34,47 @@ const DEFAULT_PAGE_SIZE = 20;
  */
 const MAX_TIMELINE_FOLLOWEES = 1000;
 
-/** user_id 配列 → nickname の Map を get_user_public_profiles（SECURITY DEFINER）で解決する */
-const resolveNicknames = async (supabase: Client, userIds: string[]): Promise<Map<string, string>> => {
+/** 公開プロフィール要約（表示名 nickname + リンク用 handle） */
+interface ProfileSummary {
+    nickname: string;
+    handle: string;
+}
+
+/** user_id 配列 → プロフィール要約の Map を get_user_public_profiles（SECURITY DEFINER）で解決する */
+const resolveProfiles = async (supabase: Client, userIds: string[]): Promise<Map<string, ProfileSummary>> => {
     const unique = [...new Set(userIds)];
-    const map = new Map<string, string>();
+    const map = new Map<string, ProfileSummary>();
     if (unique.length === 0) return map;
     const { data, error } = await supabase.rpc('get_user_public_profiles', { p_ids: unique });
     if (error) throw new Error(`表示名の取得に失敗しました: ${error.message}`);
-    for (const profile of data ?? []) map.set(profile.user_id, profile.nickname);
+    for (const profile of data ?? []) map.set(profile.user_id, { nickname: profile.nickname, handle: profile.handle });
     return map;
 };
 
-/** ニックネーム → user_id の解決（RPC 呼び出しの実体。クライアントは呼び出し側から共有する） */
-const resolveUserIdByNicknameWith = async (supabase: Client, nickname: string): Promise<string | null> => {
-    const { data, error } = await supabase.rpc('get_user_id_by_nickname', { p_nickname: nickname });
-    if (error) throw new Error(`ニックネームの解決に失敗しました: ${error.message}`);
+/** ユーザー ID → user_id の解決（RPC 呼び出しの実体。クライアントは呼び出し側から共有する） */
+const resolveUserIdByHandleWith = async (supabase: Client, handle: string): Promise<string | null> => {
+    const { data, error } = await supabase.rpc('get_user_id_by_handle', { p_handle: handle });
+    if (error) throw new Error(`ユーザー ID の解決に失敗しました: ${error.message}`);
 
     return data ?? null;
 };
 
 /**
- * ニックネーム → user_id の解決（034 / FR-001・FR-002）。
- * 一意インデックスと同じ正規化（lower(trim())）で照合する SECURITY DEFINER RPC を呼ぶ。
+ * ユーザー ID → user_id の解決（034 / FR-001）。
+ * 小文字正規化して照合する SECURITY DEFINER RPC を呼ぶ（大文字 URL も同一ユーザーに解決 = FR-002）。
  * 該当なしは null（呼び出し側で notFound()）。
  */
-export const resolveUserIdByNickname = async (nickname: string): Promise<string | null> =>
-    resolveUserIdByNicknameWith(await createClient(), nickname);
+export const resolveUserIdByHandle = async (handle: string): Promise<string | null> =>
+    resolveUserIdByHandleWith(await createClient(), handle);
 
 /** プロフィール URL の slug 解決結果（034）。ok = 表示 / redirect = ニックネーム URL へ転送 */
 export type ProfileSlugResolution = { kind: 'ok'; userId: string } | { kind: 'redirect'; nicknamePath: string } | null;
 
 /**
- * `/users/[slug]` の slug（uuid or ニックネーム）を解決する（034 / FR-001・FR-004・FR-005）。
- * - uuid: ユーザーの nickname を取得し、URL 安全なら redirect 指示を返す（ID 形式 URL の後方互換転送）。
- *   URL 不可ニックネームのユーザーは ID のまま表示（FR-005 フォールバック）
- * - それ以外: ニックネームとして解決して表示
+ * `/users/[slug]` の slug（uuid or ユーザー ID）を解決する（034 Rev.2 / FR-001・FR-005・FR-007）。
+ * - uuid（36 文字・形式一致。ユーザー ID は最大 30 文字のため衝突しない）: handle を取得し、
+ *   現在のユーザー ID の URL への redirect 指示を返す（内部 ID URL の転送）
+ * - それ以外: 小文字正規化してユーザー ID として解決
  * 不正なエンコード・該当なしは null（呼び出し側で notFound()）。
  */
 export const resolveProfileSlug = async (slug: string): Promise<ProfileSlugResolution> => {
@@ -82,15 +88,13 @@ export const resolveProfileSlug = async (slug: string): Promise<ProfileSlugResol
     const supabase = await createClient();
 
     if (isUuid(decoded)) {
-        const nicknames = await resolveNicknames(supabase, [decoded]);
-        const nickname = nicknames.get(decoded);
-        if (nickname === undefined) return null;
-        if (isUrlSafeNickname(nickname))
-            return { kind: 'redirect', nicknamePath: profilePath({ userId: decoded, nickname }) };
-        return { kind: 'ok', userId: decoded };
+        const profiles = await resolveProfiles(supabase, [decoded]);
+        const profile = profiles.get(decoded);
+        if (profile === undefined) return null;
+        return { kind: 'redirect', nicknamePath: profilePath({ userId: decoded, handle: profile.handle }) };
     }
 
-    const userId = await resolveUserIdByNicknameWith(supabase, decoded);
+    const userId = await resolveUserIdByHandleWith(supabase, normalizeHandle(decoded));
     return userId ? { kind: 'ok', userId } : null;
 };
 
@@ -197,8 +201,8 @@ export const fetchFollowLists = async (
     const pageRows = hasNext ? normalized.slice(0, limit) : normalized;
     const targetIds = pageRows.map((row) => row.targetId);
 
-    const [nicknames, myFollowing] = await Promise.all([
-        resolveNicknames(supabase, targetIds),
+    const [profiles, myFollowing] = await Promise.all([
+        resolveProfiles(supabase, targetIds),
         // 閲覧者が targetIds の誰をフォロー中か（リストのフォローボタン用）
         user && targetIds.length > 0
             ? supabase
@@ -212,7 +216,8 @@ export const fetchFollowLists = async (
 
     const items: FollowUser[] = pageRows.map(({ targetId }) => ({
         userId: targetId,
-        nickname: nicknames.get(targetId) ?? '（不明なユーザー）',
+        nickname: profiles.get(targetId)?.nickname ?? '（不明なユーザー）',
+        handle: profiles.get(targetId)?.handle ?? '',
         isFollowing: followingSet.has(targetId),
     }));
 
@@ -254,6 +259,7 @@ export const searchUsers = async (query: string): Promise<FollowUser[]> => {
     return results.map((row) => ({
         userId: row.user_id,
         nickname: row.nickname,
+        handle: row.handle,
         isFollowing: followingSet.has(row.user_id),
     }));
 };
@@ -264,12 +270,12 @@ export const searchUsers = async (query: string): Promise<FollowUser[]> => {
  */
 export const fetchPublicProfile = async (userId: string): Promise<PublicProfile | null> => {
     const supabase = await createClient();
-    const nicknames = await resolveNicknames(supabase, [userId]);
-    const nickname = nicknames.get(userId);
-    if (!nickname) return null;
+    const profiles = await resolveProfiles(supabase, [userId]);
+    const profile = profiles.get(userId);
+    if (!profile) return null;
 
     const followState = await fetchFollowState(userId);
-    return { userId, nickname, followState };
+    return { userId, nickname: profile.nickname, handle: profile.handle, followState };
 };
 
 /**
@@ -326,7 +332,7 @@ const mapTimelineRow = (
         max_depth_m: number;
         bottom_time_min: number;
     },
-    nicknames: Map<string, string>,
+    profiles: Map<string, ProfileSummary>,
 ): TimelineItem => ({
     diveId: row.id,
     diveDate: row.dive_date,
@@ -335,7 +341,8 @@ const mapTimelineRow = (
     maxDepthM: Number(row.max_depth_m),
     bottomTimeMin: row.bottom_time_min,
     ownerId: row.user_id,
-    ownerNickname: nicknames.get(row.user_id) ?? '（不明なユーザー）',
+    ownerNickname: profiles.get(row.user_id)?.nickname ?? '（不明なユーザー）',
+    ownerHandle: profiles.get(row.user_id)?.handle ?? '',
     // いいね情報は attachLikeInfo（lib/likes）で後付けする。ここでは未取得の既定値
     likeCount: 0,
     likedByMe: false,
@@ -368,11 +375,11 @@ export const fetchUserPublicDives = async (
 
     const hasNext = (rows?.length ?? 0) > limit;
     const pageRows = (hasNext ? rows?.slice(0, limit) : rows) ?? [];
-    const nicknames = await resolveNicknames(
+    const profiles = await resolveProfiles(
         supabase,
         pageRows.map((row) => row.user_id),
     );
-    const items = pageRows.map((row) => mapTimelineRow(row, nicknames));
+    const items = pageRows.map((row) => mapTimelineRow(row, profiles));
     const last = pageRows.at(-1);
     const nextCursor = hasNext && last ? { diveDate: last.dive_date, id: last.id } : null;
 
@@ -414,8 +421,8 @@ export const fetchLikedDives = async (
     const pageRows = (hasNext ? rows?.slice(0, limit) : rows) ?? [];
     const dives = pageRows.map((row) => row.dives);
 
-    const [nicknames, likeInfo] = await Promise.all([
-        resolveNicknames(
+    const [profiles, likeInfo] = await Promise.all([
+        resolveProfiles(
             supabase,
             dives.map((dive) => dive.user_id),
         ),
@@ -426,7 +433,7 @@ export const fetchLikedDives = async (
         ),
     ]);
     const items = attachLikeInfo(
-        dives.map((dive) => mapTimelineRow(dive, nicknames)),
+        dives.map((dive) => mapTimelineRow(dive, profiles)),
         likeInfo,
     );
     const last = pageRows.at(-1);
@@ -484,8 +491,8 @@ export const fetchTimeline = async (
 
     const hasNext = (rows?.length ?? 0) > limit;
     const pageRows = (hasNext ? rows?.slice(0, limit) : rows) ?? [];
-    const [nicknames, likeInfo] = await Promise.all([
-        resolveNicknames(
+    const [profiles, likeInfo] = await Promise.all([
+        resolveProfiles(
             supabase,
             pageRows.map((row) => row.user_id),
         ),
@@ -496,7 +503,7 @@ export const fetchTimeline = async (
         ),
     ]);
     const items = attachLikeInfo(
-        pageRows.map((row) => mapTimelineRow(row, nicknames)),
+        pageRows.map((row) => mapTimelineRow(row, profiles)),
         likeInfo,
     );
     const last = pageRows.at(-1);

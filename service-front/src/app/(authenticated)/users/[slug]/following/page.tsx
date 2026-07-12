@@ -15,7 +15,7 @@ export const generateMetadata = async ({ params }: FollowingPageProps) => {
     const profile = await requireProfileBySlug(slug, '/following');
     return generatePageMetadata(
         {
-            slug: `${profilePath({ userId: profile.userId, nickname: profile.nickname })}/following`,
+            slug: `${profilePath({ userId: profile.userId, handle: profile.handle })}/following`,
             title: `${profile.nickname} さんのフォロー中`,
             description: 'フォロー中のユーザー一覧',
         },
@@ -39,7 +39,7 @@ export default async function FollowingPage({ params }: FollowingPageProps) {
                 breadcrumbs={[
                     {
                         name: profile.nickname,
-                        slug: profilePath({ userId: profile.userId, nickname: profile.nickname }),
+                        slug: profilePath({ userId: profile.userId, handle: profile.handle }),
                     },
                     { name: 'フォロー中' },
                 ]}

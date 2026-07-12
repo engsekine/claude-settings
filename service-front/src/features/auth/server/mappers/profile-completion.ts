@@ -19,6 +19,7 @@ export const toUserDetailsInsert = (userId: string, input: CompleteProfileInput)
     last_name_romaji: input.lastNameRomaji,
     first_name_romaji: input.firstNameRomaji,
     nickname: input.nickname,
+    handle: input.handle,
     birth_on: input.birthOn,
     gender: input.gender,
     height_cm: input.heightCm,

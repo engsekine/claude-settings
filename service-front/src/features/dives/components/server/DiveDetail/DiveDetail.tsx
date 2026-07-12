@@ -39,8 +39,8 @@ const BuddyList = ({ buddies }: { buddies: DiveBuddy[] }) => {
                 buddy.isRegistered && buddy.userId ? (
                     <li key={buddy.id}>
                         <Link
-                            // 登録ユーザーの buddy.name は nickname（不一致・空なら profilePath が ID URL にフォールバック）
-                            href={profilePath({ userId: buddy.userId, nickname: buddy.name }) as Route}
+                            // リンクはユーザー ID（034）。未解決時は内部 ID URL → ページ側転送で正規化される
+                            href={profilePath({ userId: buddy.userId, handle: buddy.handle }) as Route}
                             className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm hover:bg-muted/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
                         >
                             {buddy.name}

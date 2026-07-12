@@ -24,7 +24,7 @@ export const FollowList = ({ items, currentUserId, emptyMessage = 'ユーザー�
             {items.map((user) => (
                 <li key={user.userId} className="flex items-center justify-between gap-3 py-3">
                     <Link
-                        href={profilePath({ userId: user.userId, nickname: user.nickname }) as Route}
+                        href={profilePath({ userId: user.userId, handle: user.handle }) as Route}
                         className="font-medium text-sm hover:underline"
                     >
                         {user.nickname}

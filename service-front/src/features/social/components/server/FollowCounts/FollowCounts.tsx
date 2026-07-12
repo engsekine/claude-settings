@@ -5,15 +5,15 @@ import { profilePath } from '@/shared/lib/profile-path';
 
 interface FollowCountsProps {
     userId: string;
-    /** プロフィール URL 生成用（034）。URL 不可の場合は ID URL にフォールバックする */
-    nickname?: string | null;
+    /** ユーザー ID（034。プロフィール URL 生成用） */
+    handle?: string | null;
     followingCount: number;
     followerCount: number;
 }
 
 /** フォロー中 / フォロワーの件数（spec 021 FR-016）。各一覧ページへのリンクを兼ねる。 */
-export const FollowCounts = ({ userId, nickname, followingCount, followerCount }: FollowCountsProps) => {
-    const basePath = profilePath({ userId, nickname });
+export const FollowCounts = ({ userId, handle, followingCount, followerCount }: FollowCountsProps) => {
+    const basePath = profilePath({ userId, handle });
     return (
         <ul className="flex gap-4 text-sm">
             <li>

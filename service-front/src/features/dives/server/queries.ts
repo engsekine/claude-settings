@@ -91,12 +91,16 @@ export const getDiveBuddies = async (diveId: string): Promise<DiveBuddy[]> => {
     // get_user_public_profiles（SECURITY DEFINER）経由で取得する。
     const userIds = [...new Set(rows.map((r) => r.buddy_user_id).filter((id): id is string => id !== null))];
     const nicknameById = new Map<string, string>();
+    const handleById = new Map<string, string>();
     if (userIds.length > 0) {
         const { data: profiles, error: profileError } = await supabase.rpc('get_user_public_profiles', {
             p_ids: userIds,
         });
         if (profileError) throw new Error(`バディの表示名取得に失敗しました: ${profileError.message}`);
-        for (const profile of profiles ?? []) nicknameById.set(profile.user_id, profile.nickname);
+        for (const profile of profiles ?? []) {
+            nicknameById.set(profile.user_id, profile.nickname);
+            handleById.set(profile.user_id, profile.handle);
+        }
     }
 
     const inputs: BuddyRowInput[] = rows.map((r) => ({
@@ -104,6 +108,7 @@ export const getDiveBuddies = async (diveId: string): Promise<DiveBuddy[]> => {
         buddyUserId: r.buddy_user_id,
         buddyName: r.buddy_name,
         nickname: r.buddy_user_id ? (nicknameById.get(r.buddy_user_id) ?? null) : null,
+        handle: r.buddy_user_id ? (handleById.get(r.buddy_user_id) ?? null) : null,
     }));
 
     return mapDiveBuddies(inputs);

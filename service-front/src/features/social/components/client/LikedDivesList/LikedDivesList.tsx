@@ -62,7 +62,7 @@ export const LikedDivesList = ({ initialItems, initialCursor }: LikedDivesListPr
                             </Link>
                             <span className="text-muted-foreground text-xs">
                                 <Link
-                                    href={profilePath({ userId: dive.ownerId, nickname: dive.ownerNickname }) as Route}
+                                    href={profilePath({ userId: dive.ownerId, handle: dive.ownerHandle }) as Route}
                                     className="hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
                                 >
                                     {dive.ownerNickname}

@@ -26,6 +26,7 @@ const buildItem = (overrides: Partial<NotificationItem> = {}): NotificationItem 
     type: 'followed',
     actorId: 'user-1',
     actorNickname: 'ダイバー太郎',
+    actorHandle: 'diver-taro',
     resourceId: null,
     occurredAt: '2026-07-01T03:00:00+00:00',
     readAt: null,
@@ -60,7 +61,7 @@ describe('NotificationList', () => {
         await user.click(screen.getByRole('button', { name: /ダイバー太郎 さんにフォローされました/ }));
 
         await waitFor(() => expect(markNotificationRead).toHaveBeenCalledWith('notification-1'));
-        await waitFor(() => expect(push).toHaveBeenCalledWith(`/users/${encodeURIComponent('ダイバー太郎')}`));
+        await waitFor(() => expect(push).toHaveBeenCalledWith('/users/diver-taro'));
     });
 
     it('既読化が失敗しても遷移は続行する', async () => {
@@ -73,7 +74,7 @@ describe('NotificationList', () => {
 
         await user.click(screen.getByRole('button', { name: /ダイバー太郎 さんにフォローされました/ }));
 
-        await waitFor(() => expect(push).toHaveBeenCalledWith(`/users/${encodeURIComponent('ダイバー太郎')}`));
+        await waitFor(() => expect(push).toHaveBeenCalledWith('/users/diver-taro'));
     });
 
     it('actor 退会時は「退会したユーザー」を表示しリンク無効（ボタンにしない）', () => {
@@ -130,6 +131,7 @@ describe('NotificationList', () => {
                     type: 'overhaul_reminder',
                     actorId: null,
                     actorNickname: null,
+                    actorHandle: null,
                     readAt: '2026-06-01T00:00:00+00:00',
                 }),
             ],

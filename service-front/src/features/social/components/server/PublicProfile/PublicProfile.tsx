@@ -28,7 +28,7 @@ export const PublicProfile = ({ profile, publicDives, isSelf }: PublicProfilePro
             </div>
             <FollowCounts
                 userId={profile.userId}
-                nickname={profile.nickname}
+                handle={profile.handle}
                 followingCount={profile.followState.followingCount}
                 followerCount={profile.followState.followerCount}
             />

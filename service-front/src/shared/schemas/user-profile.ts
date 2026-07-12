@@ -2,7 +2,7 @@ import * as yup from 'yup';
 
 import { GENDER_VALUES, type Gender } from '@/shared/constants/gender';
 import { isValidBirthDate } from '@/shared/lib/date';
-import { isUrlSafeNickname, NICKNAME_FORBIDDEN_PATTERN } from '@/shared/lib/profile-path';
+import { isValidHandle, normalizeHandle, RESERVED_USER_SEGMENTS } from '@/shared/lib/profile-path';
 import { ROMAJI_PATTERN } from '@/shared/schemas/patterns';
 import { optionalNumber } from '@/shared/schemas/transforms';
 
@@ -40,18 +40,29 @@ export const userProfileFields = {
         .trim()
         .min(1, 'ニックネームを入力してください')
         .max(50, 'ニックネームは50文字以内で入力してください')
-        // プロフィール URL の判別・エンコードを壊す値を拒否する（034 / FR-006。判定は profile-path と共有）。
-        // 2 段の test はエラーメッセージの出し分けが目的: 禁止文字は具体的な文字を提示し、
-        // 予約語・uuid 形式は url-safe 側の汎用メッセージで拒否する（yup は先に失敗した方を返す）
-        .test('no-forbidden-chars', 'ニックネームに / ? # % \\ は使用できません', (value) => {
-            if (!value) return true;
-            return !NICKNAME_FORBIDDEN_PATTERN.test(value);
-        })
-        .test('url-safe', 'このニックネームは使用できません', (value) => {
-            if (!value) return true;
-            return isUrlSafeNickname(value);
-        })
         .required('ニックネームを入力してください'),
+    /**
+     * ユーザー ID（034 Rev.2）。プロフィール URL の識別子。
+     * 大文字入力は小文字へ正規化して保存する（判定は profile-path と共有）。
+     */
+    handle: yup
+        .string()
+        .transform((v) => (typeof v === 'string' ? normalizeHandle(v) : v))
+        .required('ユーザー ID を入力してください')
+        .min(1, 'ユーザー ID を入力してください')
+        .test(
+            'handle-format',
+            'ユーザー ID は半角英小文字・数字・ - _ の 3〜30 文字（先頭は英字）で入力してください',
+            (value) => {
+                if (!value) return true;
+                if ((RESERVED_USER_SEGMENTS as readonly string[]).includes(value)) return true; // 予約語は次の test で専用メッセージを出す
+                return isValidHandle(value);
+            },
+        )
+        .test('handle-reserved', 'このユーザー ID は使用できません', (value) => {
+            if (!value) return true;
+            return !(RESERVED_USER_SEGMENTS as readonly string[]).includes(value);
+        }),
     birthOn: yup
         .string()
         .matches(/^\d{4}-\d{2}-\d{2}$/, '正しい日付を入力してください')

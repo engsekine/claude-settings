@@ -12,7 +12,7 @@ import {
     fetchLikedDives,
     fetchTimeline,
     resolveProfileSlug,
-    resolveUserIdByNickname,
+    resolveUserIdByHandle,
     searchUsers,
 } from './queries';
 
@@ -86,47 +86,47 @@ beforeEach(() => {
     vi.clearAllMocks();
 });
 
-describe('resolveUserIdByNickname', () => {
-    it('RPC get_user_id_by_nickname を呼び user_id を返す（034 / FR-001）', async () => {
+describe('resolveUserIdByHandle', () => {
+    it('RPC get_user_id_by_handle を呼び user_id を返す（034 / FR-001）', async () => {
         const { rpc } = buildClient({ rpcResult: { data: TARGET_ID, error: null } });
 
-        await expect(resolveUserIdByNickname('buddy-taro')).resolves.toBe(TARGET_ID);
-        expect(rpc).toHaveBeenCalledWith('get_user_id_by_nickname', { p_nickname: 'buddy-taro' });
+        await expect(resolveUserIdByHandle('buddy-taro')).resolves.toBe(TARGET_ID);
+        expect(rpc).toHaveBeenCalledWith('get_user_id_by_handle', { p_handle: 'buddy-taro' });
     });
 
     it('該当なし（data=null）は null を返す', async () => {
         buildClient({ rpcResult: { data: null, error: null } });
 
-        await expect(resolveUserIdByNickname('no-such-user')).resolves.toBeNull();
+        await expect(resolveUserIdByHandle('no-such-user')).resolves.toBeNull();
     });
 
     it('RPC エラーは throw する', async () => {
         buildClient({ rpcResult: { data: null, error: { message: 'boom' } } });
 
-        await expect(resolveUserIdByNickname('x')).rejects.toThrow('ニックネームの解決に失敗しました');
+        await expect(resolveUserIdByHandle('x')).rejects.toThrow('ユーザー ID の解決に失敗しました');
     });
 });
 
 describe('resolveProfileSlug', () => {
-    it('ニックネーム slug は user_id に解決して ok を返す（エンコード済みも復元）', async () => {
+    it('ユーザー ID slug は user_id に解決して ok を返す（大文字は小文字に正規化 = FR-002）', async () => {
         const { rpc } = buildClient({ rpcResult: { data: TARGET_ID, error: null } });
 
-        await expect(resolveProfileSlug(encodeURIComponent('たろう'))).resolves.toEqual({
+        await expect(resolveProfileSlug('BUDDY-TARO')).resolves.toEqual({
             kind: 'ok',
             userId: TARGET_ID,
         });
-        expect(rpc).toHaveBeenCalledWith('get_user_id_by_nickname', { p_nickname: 'たろう' });
+        expect(rpc).toHaveBeenCalledWith('get_user_id_by_handle', { p_handle: 'buddy-taro' });
     });
 
-    it('解決できないニックネームは null（FR-008）', async () => {
+    it('解決できないユーザー ID は null（FR-007）', async () => {
         buildClient({ rpcResult: { data: null, error: null } });
 
         await expect(resolveProfileSlug('no-such-user')).resolves.toBeNull();
     });
 
-    it('uuid slug は nickname を解決し、URL 安全ならニックネーム URL への redirect を返す（FR-004）', async () => {
+    it('uuid slug は handle を解決し、ユーザー ID の URL への redirect を返す（FR-005）', async () => {
         const { rpc } = buildClient({
-            rpcResult: { data: [{ user_id: TARGET_ID, nickname: 'buddy-taro' }], error: null },
+            rpcResult: { data: [{ user_id: TARGET_ID, nickname: 'バディ', handle: 'buddy-taro' }], error: null },
         });
 
         await expect(resolveProfileSlug(TARGET_ID)).resolves.toEqual({
@@ -134,14 +134,6 @@ describe('resolveProfileSlug', () => {
             nicknamePath: '/users/buddy-taro',
         });
         expect(rpc).toHaveBeenCalledWith('get_user_public_profiles', { p_ids: [TARGET_ID] });
-    });
-
-    it('uuid slug で URL 不可ニックネームのユーザーは ID のまま表示（FR-005 フォールバック）', async () => {
-        buildClient({
-            rpcResult: { data: [{ user_id: TARGET_ID, nickname: 'a/b' }], error: null },
-        });
-
-        await expect(resolveProfileSlug(TARGET_ID)).resolves.toEqual({ kind: 'ok', userId: TARGET_ID });
     });
 
     it('uuid slug で該当ユーザーがいなければ null', async () => {
@@ -197,7 +189,7 @@ describe('fetchFollowLists', () => {
                 { data: [{ followee_id: TARGET_ID, created_at: '2026-06-01T00:00:00Z' }], error: null },
                 { data: [{ followee_id: TARGET_ID }], error: null },
             ],
-            rpcResult: { data: [{ user_id: TARGET_ID, nickname: 'はなこ' }], error: null },
+            rpcResult: { data: [{ user_id: TARGET_ID, nickname: 'はなこ', handle: 'hanako' }], error: null },
         });
 
         const { items, nextCursor } = await fetchFollowLists(VIEWER_ID, 'following');
@@ -206,7 +198,7 @@ describe('fetchFollowLists', () => {
         // following 一覧は follower_id で絞る
         expect(builders[0]?.eq).toHaveBeenCalledWith('follower_id', VIEWER_ID);
         expect(rpc).toHaveBeenCalledWith('get_user_public_profiles', { p_ids: [TARGET_ID] });
-        expect(items).toEqual([{ userId: TARGET_ID, nickname: 'はなこ', isFollowing: true }]);
+        expect(items).toEqual([{ userId: TARGET_ID, nickname: 'はなこ', handle: 'hanako', isFollowing: true }]);
         expect(nextCursor).toBeNull();
     });
 
@@ -222,7 +214,7 @@ describe('fetchFollowLists', () => {
         const { items } = await fetchFollowLists(TARGET_ID, 'followers');
 
         expect(builders[0]?.eq).toHaveBeenCalledWith('followee_id', TARGET_ID);
-        expect(items).toEqual([{ userId: VIEWER_ID, nickname: '（不明なユーザー）', isFollowing: false }]);
+        expect(items).toEqual([{ userId: VIEWER_ID, nickname: '（不明なユーザー）', handle: '', isFollowing: false }]);
     });
 
     it('limit+1 件取れたら次ページ用カーソルを返す', async () => {
@@ -306,7 +298,7 @@ describe('fetchTimeline', () => {
                     error: null,
                 },
             ],
-            rpcResult: { data: [{ user_id: TARGET_ID, nickname: 'はなこ' }], error: null },
+            rpcResult: { data: [{ user_id: TARGET_ID, nickname: 'はなこ', handle: 'hanako' }], error: null },
         });
 
         const page = await fetchTimeline();
@@ -331,6 +323,7 @@ describe('fetchTimeline', () => {
                 bottomTimeMin: 45,
                 ownerId: TARGET_ID,
                 ownerNickname: 'はなこ',
+                ownerHandle: 'hanako',
                 likeCount: 2,
                 likedByMe: true,
             },
@@ -357,7 +350,7 @@ describe('fetchTimeline', () => {
                 },
                 { data: [], error: null },
             ],
-            rpcResult: { data: [{ user_id: TARGET_ID, nickname: 'はなこ' }], error: null },
+            rpcResult: { data: [{ user_id: TARGET_ID, nickname: 'はなこ', handle: 'hanako' }], error: null },
         });
 
         const page = await fetchTimeline();
@@ -397,7 +390,7 @@ describe('fetchTimeline', () => {
                 { data: [{ followee_id: TARGET_ID }], error: null },
                 { data: divesRows, error: null },
             ],
-            rpcResult: { data: [{ user_id: TARGET_ID, nickname: 'はなこ' }], error: null },
+            rpcResult: { data: [{ user_id: TARGET_ID, nickname: 'はなこ', handle: 'hanako' }], error: null },
         });
 
         const page = await fetchTimeline({ limit: 2 });
@@ -444,7 +437,7 @@ describe('fetchLikedDives', () => {
                     error: null,
                 },
             ],
-            rpcResult: { data: [{ user_id: TARGET_ID, nickname: 'はなこ' }], error: null },
+            rpcResult: { data: [{ user_id: TARGET_ID, nickname: 'はなこ', handle: 'hanako' }], error: null },
         });
 
         const page = await fetchLikedDives();
@@ -463,6 +456,7 @@ describe('fetchLikedDives', () => {
                 bottomTimeMin: 45,
                 ownerId: TARGET_ID,
                 ownerNickname: 'はなこ',
+                ownerHandle: 'hanako',
                 likeCount: 2,
                 likedByMe: true,
             },
@@ -483,7 +477,7 @@ describe('fetchLikedDives', () => {
                 },
                 { data: [], error: null },
             ],
-            rpcResult: { data: [{ user_id: TARGET_ID, nickname: 'はなこ' }], error: null },
+            rpcResult: { data: [{ user_id: TARGET_ID, nickname: 'はなこ', handle: 'hanako' }], error: null },
         });
 
         const page = await fetchLikedDives({ limit: 2 });

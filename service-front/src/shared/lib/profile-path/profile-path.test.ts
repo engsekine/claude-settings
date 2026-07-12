@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isUrlSafeNickname, isUuid, profilePath, RESERVED_USER_SEGMENTS } from './profile-path';
+import { isUuid, isValidHandle, normalizeHandle, profilePath, RESERVED_USER_SEGMENTS } from './profile-path';
 
 const USER_ID = '000000bd-0000-0000-0000-000000000002';
 
@@ -12,30 +12,38 @@ describe('isUuid', () => {
         expect(isUuid(value)).toBe(true);
     });
 
-    it.each(['buddy-taro', 'たろう', '12345', 'not-a-uuid-000-000'])('%s は false', (value) => {
+    it.each(['buddy-taro', 'taro', '12345', 'not-a-uuid-000-000'])('%s は false', (value) => {
         expect(isUuid(value)).toBe(false);
     });
 });
 
-describe('isUrlSafeNickname', () => {
-    it.each(['buddy-taro', 'たろう', 'Dive Master 田中', 'user_01', '山田+海'])('%s は safe', (value) => {
-        expect(isUrlSafeNickname(value)).toBe(true);
+describe('normalizeHandle', () => {
+    it('前後空白を除去し小文字化する', () => {
+        expect(normalizeHandle('  TaroDiver ')).toBe('tarodiver');
     });
+});
 
-    it.each(['a/b', 'a?b', 'a#b', 'a%b', 'a\\b', 'a\nb'])('禁止文字を含む %j は unsafe', (value) => {
-        expect(isUrlSafeNickname(value)).toBe(false);
+describe('isValidHandle', () => {
+    it.each(['taro', 'buddy-taro', 'user_01', 'abc', 'a12', 'a'.repeat(30)])('%s は valid', (value) => {
+        expect(isValidHandle(value)).toBe(true);
     });
 
     it.each([
-        'search',
-        'SEARCH',
-        ' Search ',
-    ])('予約セグメント %j は unsafe（大文字小文字・前後空白問わず）', (value) => {
-        expect(isUrlSafeNickname(value)).toBe(false);
+        'ab', // 短すぎ
+        'a'.repeat(31), // 長すぎ
+        '1abc', // 先頭が数字
+        '-abc', // 先頭が記号
+        'Taro', // 大文字（保存前に normalizeHandle 済みであること）
+        'たろう', // 日本語
+        'a b', // スペース
+        'a.b', // 許可外記号
+        '', // 空
+    ])('%j は invalid', (value) => {
+        expect(isValidHandle(value)).toBe(false);
     });
 
-    it('uuid 形式は unsafe（ID との判別を壊すため）', () => {
-        expect(isUrlSafeNickname(USER_ID)).toBe(false);
+    it.each(['search'])('予約セグメント %j は invalid', (value) => {
+        expect(isValidHandle(value)).toBe(false);
     });
 
     it('RESERVED_USER_SEGMENTS には search が含まれる', () => {
@@ -44,23 +52,13 @@ describe('isUrlSafeNickname', () => {
 });
 
 describe('profilePath', () => {
-    it('URL 安全なニックネームはエンコードしたニックネーム URL を返す', () => {
-        expect(profilePath({ userId: USER_ID, nickname: 'buddy-taro' })).toBe('/users/buddy-taro');
-        expect(profilePath({ userId: USER_ID, nickname: 'たろう' })).toBe(`/users/${encodeURIComponent('たろう')}`);
-        expect(profilePath({ userId: USER_ID, nickname: 'Dive Master 田中' })).toBe(
-            `/users/${encodeURIComponent('Dive Master 田中')}`,
-        );
+    it('handle があればユーザー ID の URL を返す', () => {
+        expect(profilePath({ userId: USER_ID, handle: 'buddy-taro' })).toBe('/users/buddy-taro');
     });
 
-    it('URL 不可のニックネームは ID URL にフォールバックする（FR-005）', () => {
-        expect(profilePath({ userId: USER_ID, nickname: 'a/b' })).toBe(`/users/${USER_ID}`);
-        expect(profilePath({ userId: USER_ID, nickname: 'search' })).toBe(`/users/${USER_ID}`);
-        expect(profilePath({ userId: USER_ID, nickname: USER_ID })).toBe(`/users/${USER_ID}`);
-    });
-
-    it('ニックネーム未指定（null / undefined / 空文字）は ID URL を返す', () => {
+    it('handle 未指定（null / undefined / 空文字）は内部 ID の URL にフォールバックする（ページ側の転送で正規化される）', () => {
         expect(profilePath({ userId: USER_ID })).toBe(`/users/${USER_ID}`);
-        expect(profilePath({ userId: USER_ID, nickname: null })).toBe(`/users/${USER_ID}`);
-        expect(profilePath({ userId: USER_ID, nickname: '' })).toBe(`/users/${USER_ID}`);
+        expect(profilePath({ userId: USER_ID, handle: null })).toBe(`/users/${USER_ID}`);
+        expect(profilePath({ userId: USER_ID, handle: '' })).toBe(`/users/${USER_ID}`);
     });
 });
