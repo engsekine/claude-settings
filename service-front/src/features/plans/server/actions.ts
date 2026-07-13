@@ -13,7 +13,19 @@ const toDbRow = (input: PlanFormValues) => ({
     planned_on: input.plannedOn,
     location: input.location,
     notes: input.notes,
+    dive_shop_id: input.diveShopId,
 });
+
+/**
+ * 紐付けるショップが本人所有か検証する（033 / FR-007）。
+ * RLS により他人のショップは SELECT できないため、取得できなければ不正 id とみなす。
+ * DB 側の ensure_dive_shop_owned トリガーと合わせた二重ガード。
+ */
+const isOwnShop = async (supabase: Awaited<ReturnType<typeof createClient>>, diveShopId: string | null) => {
+    if (!diveShopId) return true;
+    const { data } = await supabase.from('dive_shops').select('id').eq('id', diveShopId).maybeSingle();
+    return data !== null;
+};
 
 /** 予定関連の表示を再検証（一覧・詳細・TOP の「次の予定」カード） */
 const revalidatePlanPaths = (id?: string) => {
@@ -31,6 +43,10 @@ export const createPlan = async (input: PlanFormValues): Promise<ActionResult<{ 
 
     const { user, failure } = await requireUser(supabase);
     if (failure) return failure;
+
+    if (!(await isOwnShop(supabase, input.diveShopId))) {
+        return actionFailure('選択したショップが見つかりません');
+    }
 
     const { data, error } = await supabase
         .from('dive_plans')
@@ -66,6 +82,10 @@ export const updatePlan = async (id: string, input: PlanFormValues): Promise<Act
 
     const { failure } = await requireUser(supabase);
     if (failure) return failure;
+
+    if (!(await isOwnShop(supabase, input.diveShopId))) {
+        return actionFailure('選択したショップが見つかりません');
+    }
 
     const { error } = await supabase.from('dive_plans').update(toDbRow(input)).eq('id', id);
 

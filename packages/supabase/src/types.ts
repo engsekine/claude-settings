@@ -99,6 +99,7 @@ export type Database = {
                     birth_on: string | null;
                     contact_lens_type: string | null;
                     created_at: string;
+                    dive_shop_id: string | null;
                     dive_count: number | null;
                     dry_suit_dive_count: number | null;
                     emergency_contact_phone: string;
@@ -129,6 +130,7 @@ export type Database = {
                     birth_on?: string | null;
                     contact_lens_type?: string | null;
                     created_at?: string;
+                    dive_shop_id?: string | null;
                     dive_count?: number | null;
                     dry_suit_dive_count?: number | null;
                     emergency_contact_phone?: string;
@@ -159,6 +161,7 @@ export type Database = {
                     birth_on?: string | null;
                     contact_lens_type?: string | null;
                     created_at?: string;
+                    dive_shop_id?: string | null;
                     dive_count?: number | null;
                     dry_suit_dive_count?: number | null;
                     emergency_contact_phone?: string;
@@ -185,6 +188,13 @@ export type Database = {
                     weight_kg?: number | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: 'application_sheets_dive_shop_id_fkey';
+                        columns: ['dive_shop_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'dive_shops';
+                        referencedColumns: ['id'];
+                    },
                     {
                         foreignKeyName: 'application_sheets_user_id_fkey';
                         columns: ['user_id'];
@@ -418,6 +428,7 @@ export type Database = {
             dive_plans: {
                 Row: {
                     created_at: string;
+                    dive_shop_id: string | null;
                     id: string;
                     location: string;
                     notes: string | null;
@@ -427,6 +438,7 @@ export type Database = {
                 };
                 Insert: {
                     created_at?: string;
+                    dive_shop_id?: string | null;
                     id?: string;
                     location: string;
                     notes?: string | null;
@@ -436,6 +448,7 @@ export type Database = {
                 };
                 Update: {
                     created_at?: string;
+                    dive_shop_id?: string | null;
                     id?: string;
                     location?: string;
                     notes?: string | null;
@@ -445,7 +458,64 @@ export type Database = {
                 };
                 Relationships: [
                     {
+                        foreignKeyName: 'dive_plans_dive_shop_id_fkey';
+                        columns: ['dive_shop_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'dive_shops';
+                        referencedColumns: ['id'];
+                    },
+                    {
                         foreignKeyName: 'dive_plans_user_id_fkey';
+                        columns: ['user_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
+            dive_shops: {
+                Row: {
+                    address: string;
+                    created_at: string;
+                    id: string;
+                    latitude: number | null;
+                    longitude: number | null;
+                    memo: string;
+                    name: string;
+                    phone: string;
+                    updated_at: string;
+                    user_id: string;
+                    website_url: string;
+                };
+                Insert: {
+                    address?: string;
+                    created_at?: string;
+                    id?: string;
+                    latitude?: number | null;
+                    longitude?: number | null;
+                    memo?: string;
+                    name: string;
+                    phone?: string;
+                    updated_at?: string;
+                    user_id: string;
+                    website_url?: string;
+                };
+                Update: {
+                    address?: string;
+                    created_at?: string;
+                    id?: string;
+                    latitude?: number | null;
+                    longitude?: number | null;
+                    memo?: string;
+                    name?: string;
+                    phone?: string;
+                    updated_at?: string;
+                    user_id?: string;
+                    website_url?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'dive_shops_user_id_fkey';
                         columns: ['user_id'];
                         isOneToOne: false;
                         referencedRelation: 'users';
@@ -494,6 +564,7 @@ export type Database = {
                     buddy_name: string | null;
                     certification_dive: boolean;
                     created_at: string;
+                    dive_shop_id: string | null;
                     current_condition: string | null;
                     deleted_at: string | null;
                     dive_date: string;
@@ -532,6 +603,7 @@ export type Database = {
                     buddy_name?: string | null;
                     certification_dive?: boolean;
                     created_at?: string;
+                    dive_shop_id?: string | null;
                     current_condition?: string | null;
                     deleted_at?: string | null;
                     dive_date: string;
@@ -570,6 +642,7 @@ export type Database = {
                     buddy_name?: string | null;
                     certification_dive?: boolean;
                     created_at?: string;
+                    dive_shop_id?: string | null;
                     current_condition?: string | null;
                     deleted_at?: string | null;
                     dive_date?: string;
@@ -602,6 +675,13 @@ export type Database = {
                     weight_kg?: number | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: 'dives_dive_shop_id_fkey';
+                        columns: ['dive_shop_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'dive_shops';
+                        referencedColumns: ['id'];
+                    },
                     {
                         foreignKeyName: 'dives_dive_site_id_fkey';
                         columns: ['dive_site_id'];

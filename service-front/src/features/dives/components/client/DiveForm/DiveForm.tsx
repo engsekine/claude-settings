@@ -3,6 +3,7 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { XIcon } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type ChangeEvent, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -36,6 +37,8 @@ interface DiveFormProps {
      * 0 のときは NoCreditBanner を先行表示する（サーバー側トリガーが最終判定）
      */
     creditBalance?: number;
+    /** ショップ選択肢（033）。page 側で features/shops から取得して注入する（feature 間 import 禁止のため） */
+    shopOptions?: ReadonlyArray<{ id: string; name: string }>;
 }
 
 const createDefaultValues = (overrides?: Partial<DiveFormValues>): DiveFormValues => ({
@@ -70,6 +73,7 @@ const createDefaultValues = (overrides?: Partial<DiveFormValues>): DiveFormValue
     notes: null,
     buddies: [],
     isPublic: false,
+    diveShopId: null,
     ...overrides,
 });
 
@@ -80,6 +84,7 @@ export const DiveForm = ({
     existingPhotos = [],
     fromPlanId,
     creditBalance,
+    shopOptions = [],
 }: DiveFormProps) => {
     const router = useRouter();
     const isEdit = diveId !== undefined;
@@ -300,6 +305,25 @@ export const DiveForm = ({
                     placeholder="選択しない"
                     {...register('diveType')}
                 />
+
+                {/* ショップ紐付け（033 / FR-008）。選択肢は page 側から注入される。0 件時は登録導線を表示する */}
+                {shopOptions.length > 0 ? (
+                    <FormSelect
+                        id="diveShopId"
+                        label="ショップ"
+                        options={shopOptions.map((shop) => ({ value: shop.id, label: shop.name }))}
+                        placeholder="選択しない"
+                        error={errors.diveShopId?.message}
+                        {...register('diveShopId')}
+                    />
+                ) : (
+                    <p className="text-muted-foreground text-sm">
+                        <Link href="/shops/new" className="text-primary underline">
+                            ショップを登録
+                        </Link>
+                        するとログに紐付けできます
+                    </p>
+                )}
             </section>
 
             <section aria-labelledby="dive-form-numbers" className="flex flex-col gap-4">

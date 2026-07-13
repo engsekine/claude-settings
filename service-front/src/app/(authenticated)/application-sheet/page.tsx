@@ -8,6 +8,7 @@ import {
     SavedSheetList,
     toSheetDefaultValues,
 } from '@/features/application-sheet';
+import { getShopOptions } from '@/features/shops';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
 import { Heading } from '@/shared/components/typography/Heading';
 import { generatePageMetadata } from '@/shared/config/metadata';
@@ -25,10 +26,12 @@ interface ApplicationSheetPageProps {
 export default async function ApplicationSheetPage({ searchParams }: ApplicationSheetPageProps) {
     const { sheet: sheetParam } = await searchParams;
 
-    const [prefill, sheets, selectedSheet] = await Promise.all([
+    // 宛先ショップの選択肢は page 合成で注入する（feature 間 import 禁止 / 033 research.md Decision 5）
+    const [prefill, sheets, selectedSheet, shopOptions] = await Promise.all([
         getApplicationSheetPrefill(),
         listApplicationSheets(),
         sheetParam ? getApplicationSheet(sheetParam) : Promise.resolve(null),
+        getShopOptions(),
     ]);
 
     return (
@@ -60,6 +63,7 @@ export default async function ApplicationSheetPage({ searchParams }: Application
                     defaultValues={selectedSheet ? selectedSheet.values : toSheetDefaultValues(prefill)}
                     sheetId={selectedSheet?.id ?? null}
                     initialSheetName={selectedSheet?.name ?? ''}
+                    shopOptions={shopOptions}
                 />
             </div>
         </div>

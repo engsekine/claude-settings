@@ -157,6 +157,18 @@ export const DiveDetail = ({ dive, photos = [], buddies = [], canManage = false,
                 </div>
 
                 <Field label="ダイブタイプ" value={dive.diveType} />
+
+                {/* 紐付けたショップ（033 / FR-008）。RLS により本人以外では shop が null になるため公開ビューには出ない */}
+                {dive.shop && (
+                    <dl className="flex flex-col gap-1">
+                        <dt className="font-medium text-sm">ショップ</dt>
+                        <dd>
+                            <Link href={`/shops/${dive.shop.id}` as Route} className="text-primary underline">
+                                {dive.shop.name}
+                            </Link>
+                        </dd>
+                    </dl>
+                )}
             </section>
 
             <section aria-labelledby="dive-detail-numbers" className="flex flex-col gap-4">

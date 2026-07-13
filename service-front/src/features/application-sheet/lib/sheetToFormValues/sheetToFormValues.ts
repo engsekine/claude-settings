@@ -52,4 +52,5 @@ export const sheetToFormValues = (row: ApplicationSheetRow): SheetFormValues => 
     hasContactLens: toYesNoValue(row.has_contact_lens),
     contactLensType: (row.contact_lens_type ?? '') as ContactLensTypeValue,
     needsPrescriptionMask: toYesNoValue(row.needs_prescription_mask),
+    diveShopId: row.dive_shop_id ?? '',
 });

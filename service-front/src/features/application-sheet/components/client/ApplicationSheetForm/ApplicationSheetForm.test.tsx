@@ -260,4 +260,24 @@ describe('ApplicationSheetForm', () => {
         const alert = await screen.findByRole('alert');
         expect(alert).toHaveTextContent('シート名を入力してください');
     });
+
+    it('shopOptions があると宛先ショップ選択欄が表示され、選択値が保存スナップショットに含まれる（033 / FR-009）', async () => {
+        const user = userEvent.setup();
+        render(<ApplicationSheetForm shopOptions={[{ id: 'shop-1', name: 'マリンステージ' }]} />);
+
+        await user.selectOptions(screen.getByLabelText('宛先ショップ'), 'shop-1');
+        await user.type(screen.getByLabelText('シート名'), '〇〇ショップ用');
+        await user.click(screen.getByRole('button', { name: 'シートを保存する' }));
+
+        expect(saveApplicationSheet).toHaveBeenCalledWith(
+            expect.objectContaining({ values: expect.objectContaining({ diveShopId: 'shop-1' }) }),
+        );
+    });
+
+    it('shopOptions が空だと宛先ショップ選択欄を出さず、ショップ登録への導線を表示する（033）', () => {
+        render(<ApplicationSheetForm />);
+
+        expect(screen.queryByLabelText('宛先ショップ')).not.toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'ショップを登録' })).toHaveAttribute('href', '/shops/new');
+    });
 });

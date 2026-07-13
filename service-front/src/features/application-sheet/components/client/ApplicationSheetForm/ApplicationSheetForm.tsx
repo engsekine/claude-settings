@@ -1,6 +1,7 @@
 'use client';
 
 import { yupResolver } from '@hookform/resolvers/yup';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { useController, useForm } from 'react-hook-form';
@@ -31,6 +32,8 @@ interface ApplicationSheetFormProps {
     sheetId?: string | null;
     /** 開いている保存済みシートの名前 */
     initialSheetName?: string;
+    /** 宛先ショップの選択肢（033）。page 側で features/shops から取得して注入する */
+    shopOptions?: ReadonlyArray<{ id: string; name: string }>;
 }
 
 /**
@@ -38,7 +41,12 @@ interface ApplicationSheetFormProps {
  * 全項目任意（FR-005）のため必須マークは付けない。
  * 保存はシート名付きのスナップショット（新規 or 開いているシートへの上書き・FR-010）。
  */
-export const ApplicationSheetForm = ({ defaultValues, sheetId, initialSheetName }: ApplicationSheetFormProps) => {
+export const ApplicationSheetForm = ({
+    defaultValues,
+    sheetId,
+    initialSheetName,
+    shopOptions = [],
+}: ApplicationSheetFormProps) => {
     const router = useRouter();
     const [isSaving, startSaving] = useTransition();
     const [saveState, setSaveState] = useState<'idle' | 'saved'>('idle');
@@ -115,6 +123,24 @@ export const ApplicationSheetForm = ({ defaultValues, sheetId, initialSheetName 
         >
             <section className="flex flex-col gap-4">
                 <Heading level={2}>基本情報</Heading>
+                {/* 宛先ショップ（033 / FR-009）。シート保存のスナップショットに含まれ、開くと復元される。0 件時は登録導線を表示 */}
+                {shopOptions.length > 0 ? (
+                    <FormSelect
+                        id="diveShopId"
+                        label="宛先ショップ"
+                        options={shopOptions.map((shop) => ({ value: shop.id, label: shop.name }))}
+                        placeholder="選択しない"
+                        error={errors.diveShopId?.message}
+                        {...register('diveShopId')}
+                    />
+                ) : (
+                    <p className="text-muted-foreground text-sm">
+                        <Link href="/shops/new" className="text-primary underline">
+                            ショップを登録
+                        </Link>
+                        すると宛先ショップを記録できます
+                    </p>
+                )}
                 <FormField
                     id="fullName"
                     label="お名前"

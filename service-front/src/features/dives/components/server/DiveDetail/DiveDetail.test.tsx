@@ -28,6 +28,8 @@ const baseDive: Dive = {
     exitTime: '10:18:00',
     location: '伊豆 / 大瀬崎',
     diveSiteId: null,
+    diveShopId: null,
+    shop: null,
     diveSite: null,
     diveType: 'ファンダイブ',
     weather: '晴れ',

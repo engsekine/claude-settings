@@ -28,7 +28,7 @@ Phase 0 の技術調査。spec.md の要件（特に FR-011〜013 の地図、FR
 
 ## Decision 3: 紐付けは各テーブルへの nullable FK（`on delete set null`）+ 所有者ガード
 
-- **Decision**: `dives` / `dive_plans` / `application_profiles` に `dive_shop_id uuid references public.dive_shops(id) on delete set null` を追加する（すべて nullable・FK インデックス付き）。他人のショップ id を設定できないよう、(1) Server Action での本人所有チェック、(2) DB トリガー `ensure_dive_shop_owned`（`dive_shop_id` 設定時に `dive_shops.user_id = 対象行の user_id` を検証）の二重ガードとする
+- **Decision**: `dives` / `dive_plans` / `application_sheets` に `dive_shop_id uuid references public.dive_shops(id) on delete set null` を追加する（すべて nullable・FK インデックス付き）。他人のショップ id を設定できないよう、(1) Server Action での本人所有チェック、(2) DB トリガー `ensure_dive_shop_owned`（`dive_shop_id` 設定時に `dive_shops.user_id = 対象行の user_id` を検証）の二重ガードとする
 - **Rationale**:
   - 「任意で 1 件」（spec Assumptions）は nullable FK が最も単純で、`on delete set null` により FR-010（ショップ削除で紐付けのみ解除・データは残す）が DB レベルで保証される（SC-005）
   - RLS はショップの読み取りを本人に限定するが、FK 制約自体は他人の行 id でも成立しうるため、トリガーでの整合性ガードが必要（`dive_log_buddies` の update ガードと同じ手法）
@@ -36,14 +36,12 @@ Phase 0 の技術調査。spec.md の要件（特に FR-011〜013 の地図、FR
   - **中間テーブル（多対多）**: 複数ショップの紐付けはスコープ外（spec Assumptions）。1:N の FK で十分
   - **アプリ側チェックのみ**: RLS・制約を DB 側で表現する原則（`rules/sql.md`）に反する
 
-## Decision 4: 申し込みシートへの紐付けは `application_profiles.dive_shop_id`
+## Decision 4: 申し込みシートへの紐付けは `application_sheets.dive_shop_id`
 
-- **Decision**: 申し込みシート（032）は「保存された個人属性」= `application_profiles`（users と 1:1）だけを永続化しているため、シートへのショップ紐付けは `application_profiles.dive_shop_id` に「最後に保存した宛先ショップ」として記録する。シート作成画面のショップ選択欄は保存操作（既存の「保存」ボタン）で永続化され、次回作成時に復元される
-- **Rationale**: 032 はシートをレコードとして保存しない設計（生成テキストは都度作成・編集は破棄）のため、「どのショップ宛か」を持てる永続エンティティは application_profiles のみ。spec の「どのショップ宛のシートかが分かる」（US2-3）は前回宛先の復元で満たす
+- **Decision**: 申し込みシート（032 改め、保存シート機能を含む現行設計）は名前付きスナップショットを `application_sheets` に複数保存するため、シートへのショップ紐付けは `application_sheets.dive_shop_id` に「そのシートの宛先ショップ」として記録する。シート作成画面のショップ選択欄はシート保存（「シートを保存する」）でスナップショットに含まれ、保存済みシートを開くと復元される
+- **Rationale**: シートがレコードとして保存される現行設計では「どのショップ宛のシートか」をシート単位で持てる。spec の「どのショップ宛のシートかが分かる」（US2-3）はシートごとの宛先保存で満たす
 - **Alternatives considered**:
-  - **シート履歴テーブルの新設**: シート自体の保存機能がスコープ外（032 の設計判断を覆す）。過剰
-  - **保存せず選択のみ**: 次回「どのショップ宛に作成したか」が分からず FR-009 を満たさない
-
+  - **ユーザー単位（1 件）の宛先記録**: 旧 application_profiles（1 ユーザー 1 行）時代の設計。シートを複数保存できる現行設計ではシートごとに宛先が異なるため不適
 ## Decision 5: ショップ選択肢の受け渡しは page 合成（props 注入）
 
 - **Decision**: 予定・ログ・申し込みシートの各フォームへのショップ選択欄は、page（Server Component）が `features/shops/server/queries` の `getShopOptions()`（`{ id, name }[]`）を取得し、各 feature のフォームコンポーネントに **データ props として注入**する。フォーム側は受け取った options で `<select>` を描画する（shops feature のコンポーネントは import しない）
