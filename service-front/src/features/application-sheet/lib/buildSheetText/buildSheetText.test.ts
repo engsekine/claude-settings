@@ -27,6 +27,7 @@ const emptyValues: SheetFormValues = {
     hasContactLens: '',
     contactLensType: '',
     needsPrescriptionMask: '',
+    diveShopId: '',
 };
 
 const filledValues: SheetFormValues = {
@@ -52,6 +53,7 @@ const filledValues: SheetFormValues = {
     hasContactLens: 'yes',
     contactLensType: 'soft',
     needsPrescriptionMask: 'no',
+    diveShopId: '',
 };
 
 /** 出力テキスト契約（contracts/application-sheet-page.md）: 全項目空欄の全文 */

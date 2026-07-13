@@ -89,4 +89,6 @@ export const applicationSheetSchema: yup.ObjectSchema<SheetFormValues> = yup.obj
     hasContactLens: yesNoValue(),
     contactLensType: yup.string().oneOf<ContactLensTypeValue>(['', 'hard', 'soft', 'disposable']).default(''),
     needsPrescriptionMask: yesNoValue(),
+    // 宛先ショップ（033）。選択肢には本人のショップのみが注入され、所有はサーバー側でも検証する
+    diveShopId: yup.string().default(''),
 });

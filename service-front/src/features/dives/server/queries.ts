@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { type BuddyRowInput, mapDiveBuddies } from '@/features/dives/lib/buddies/buddy-mapper';
-import { DIVE_SITE_JOIN, type DiveRowWithSite, mapDive } from '@/features/dives/lib/dive-mapper';
+import { DIVE_FULL_COLUMNS, DIVE_SITE_JOIN, type DiveRowWithSite, mapDive } from '@/features/dives/lib/dive-mapper';
 import { diveLocationLabel } from '@/features/dives/lib/diveLabel';
 import { fetchDiveListPage } from '@/features/dives/lib/list-query';
 import type { Dive, DiveBuddy, DiveCursor, DiveListFilter, DiveListPage } from '@/features/dives/types';
@@ -59,7 +59,8 @@ export const getLatestDiveNumber = async (): Promise<number | null> => {
 export const getDive = async (id: string): Promise<Dive | null> => {
     const supabase = await createClient();
 
-    const { data, error } = await supabase.from('dives').select(`*, ${DIVE_SITE_JOIN}`).eq('id', id).maybeSingle();
+    // dive_shop の join は RLS により本人以外には null になる（他ユーザーの公開ログ閲覧でショップは漏れない / 033 FR-015）
+    const { data, error } = await supabase.from('dives').select(DIVE_FULL_COLUMNS).eq('id', id).maybeSingle();
 
     if (error) throw new Error(`dive の取得に失敗しました: ${error.message}`);
     if (!data) return null;

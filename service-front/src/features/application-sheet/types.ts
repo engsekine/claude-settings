@@ -61,6 +61,8 @@ export interface SheetFormValues {
     contactLensType: ContactLensTypeValue;
     /** 度付きマスクレンタルの要否（yes = 要 / no = 不要） */
     needsPrescriptionMask: YesNoValue;
+    /** 宛先ショップ（033）。'' = 未選択。保存時に null へ変換する */
+    diveShopId: string;
 }
 
 export type ApplicationSheetRow = Database['public']['Tables']['application_sheets']['Row'];

@@ -64,6 +64,15 @@ export default async function PlanPage({ params }: PlanPageProps) {
                         )}
                     </div>
                     <Heading level={1}>{plan.location}</Heading>
+                    {/* 紐付けたショップ（033 / FR-007）。本人向け詳細のみに表示する */}
+                    {plan.shop && (
+                        <p className="text-muted-foreground text-sm">
+                            <span className="sr-only">ショップ: </span>
+                            <Link href={`/shops/${plan.shop.id}`} className="text-primary underline">
+                                {plan.shop.name}
+                            </Link>
+                        </p>
+                    )}
                     {plan.notes && <p className="whitespace-pre-wrap text-muted-foreground text-sm">{plan.notes}</p>}
                     <div className="flex flex-wrap items-center gap-2">
                         {/* 当日以前の予定のみ「ログに記録する」を表示（未来日は非表示 / 024 FR-001,002） */}

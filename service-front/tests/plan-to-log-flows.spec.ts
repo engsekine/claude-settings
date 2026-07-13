@@ -53,19 +53,28 @@ test('S1: 当日以前の予定をログへ移動できる（引き継ぎ + 予�
     await expect(page.getByLabel(/ポイント名/)).toHaveValue(location);
     await expect(page.getByLabel(/潜水日/)).toHaveValue('2024-06-30');
 
-    // 必須の潜水データを入力（ダイブ番号は衝突回避のため明示）
-    await page.getByLabel('ダイブ番号').fill('9241');
+    // 必須の潜水データを入力（ダイブ番号は失敗残骸と衝突しないよう実行ごとに一意な値を使う）
+    await page.getByLabel('ダイブ番号').fill(String(9000 + (Date.now() % 900)));
     await page.getByLabel(/最大水深/).fill('18');
     await page.getByLabel(/潜水時間/).fill('45');
     await page.getByRole('button', { name: '作成する' }).click();
 
     // ログ詳細へ遷移し、作成されたログが表示される
     await page.waitForURL(/\/dives\/[0-9a-f-]+$/);
-    await expect(page.getByText(location)).toBeVisible();
+    // パンくずにも同名が出るため見出しに絞る
+    await expect(page.getByRole('heading', { name: new RegExp(location) })).toBeVisible();
+
+    const diveUrl = new URL(page.url()).pathname;
 
     // 元の予定は消えている
     await page.goto('/plans');
     await expect(page.getByText(location)).toHaveCount(0);
+
+    // 後始末: 作成したログを削除する（再実行時のダイブ番号残骸を残さない）
+    await page.goto(diveUrl);
+    await page.getByRole('button', { name: /削除/ }).first().click();
+    await page.getByRole('dialog').getByRole('button', { name: /削除/ }).click();
+    await page.waitForURL(/\/dives$/);
 });
 
 test('S3: 必須の潜水データ未入力では移動が確定しない', async ({ page }) => {
@@ -105,8 +114,8 @@ test('S2: 未来日の予定には移動導線が出ない（一覧・詳細）'
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
     expect(results.violations).toEqual([]);
 
-    // 後始末
-    await page.getByRole('link', { name: location }).click();
+    // 後始末（一覧カードの region から「予定の詳細」リンクで遷移する）
+    await page.getByRole('region', { name: location }).getByRole('link', { name: '予定の詳細' }).click();
     await page.waitForURL(/\/plans\/[0-9a-f-]+$/);
     await page.getByRole('button', { name: /削除/ }).first().click();
     await page.getByRole('dialog').getByRole('button', { name: /削除/ }).click();

@@ -91,6 +91,7 @@ const validValues: SheetFormValues = {
     hasContactLens: 'yes',
     contactLensType: 'soft',
     needsPrescriptionMask: 'no',
+    diveShopId: '',
 };
 
 const expectedDbRow = {
@@ -117,6 +118,7 @@ const expectedDbRow = {
     has_contact_lens: true,
     contact_lens_type: 'soft',
     needs_prescription_mask: false,
+    dive_shop_id: null,
 };
 
 describe('saveApplicationSheet', () => {

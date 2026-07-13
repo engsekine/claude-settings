@@ -12,7 +12,7 @@ describe('Header', () => {
         expect(logoLink).not.toHaveTextContent(SITE_NAME);
     });
 
-    it('メインナビゲーションのリンク（ダイビングログ, いいね, 使い方）を表示し、ホームのリンクは表示しない', () => {
+    it('メインナビゲーションのリンク（ダイビングログ, ショップ, いいね, 使い方）を表示し、ホームのリンクは表示しない', () => {
         render(<Header />);
 
         const nav = screen.getByRole('navigation', { name: 'メインナビゲーション' });
@@ -22,6 +22,10 @@ describe('Header', () => {
 
         const dives = screen.getByRole('link', { name: 'ダイビングログ' });
         expect(dives).toHaveAttribute('href', '/dives');
+
+        // ショップ一覧への導線（spec 033 FR-003）
+        const shops = screen.getByRole('link', { name: 'ショップ' });
+        expect(shops).toHaveAttribute('href', '/shops');
 
         // いいねしたログ一覧への導線（spec 027 FR-008a）
         const likes = screen.getByRole('link', { name: 'いいね' });
@@ -41,6 +45,8 @@ describe('Header', () => {
         // モーダルシートが開くと背景（デスクトップナビ）は a11y ツリーから外れる
         const sheet = await screen.findByRole('dialog', { name: 'メニュー' });
         expect(within(sheet).getByRole('link', { name: 'ダイビングログ' })).toHaveAttribute('href', '/dives');
+        // ショップ一覧への導線（spec 033 FR-003。モバイルはメニュー内に表示）
+        expect(within(sheet).getByRole('link', { name: 'ショップ' })).toHaveAttribute('href', '/shops');
         expect(within(sheet).getByRole('link', { name: 'いいね' })).toHaveAttribute('href', '/likes');
         // 使い方ページへの導線（spec 030 FR-006。モバイルはメニュー内に表示）
         expect(within(sheet).getByRole('link', { name: '使い方' })).toHaveAttribute('href', '/guide');

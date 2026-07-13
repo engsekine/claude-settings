@@ -3,6 +3,7 @@ import { getCreditBalance } from '@/features/credits/server/queries';
 import { listDiveSites, siteLabel } from '@/features/dive-sites';
 import { DiveForm, type DiveFormValues, getLatestDiveNumber, planToDiveDefaults } from '@/features/dives';
 import { canMovePlanToLog, getPlan } from '@/features/plans';
+import { getShopOptions } from '@/features/shops';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
 import { Heading } from '@/shared/components/typography/Heading';
 import { generatePageMetadata } from '@/shared/config/metadata';
@@ -23,10 +24,12 @@ interface NewDivePageProps {
 
 export default async function NewDivePage({ searchParams }: NewDivePageProps) {
     const { fromPlanId } = await searchParams;
-    const [latestDiveNumber, sites, creditBalance] = await Promise.all([
+    const [latestDiveNumber, sites, creditBalance, shopOptions] = await Promise.all([
         getLatestDiveNumber(),
         listDiveSites(),
         getCreditBalance(),
+        // ショップ選択肢は page 合成で注入する（feature 間 import 禁止 / 033 research.md Decision 5）
+        getShopOptions(),
     ]);
     const nextDiveNumber = (latestDiveNumber ?? 0) + 1;
     const siteOptions = sites.map((site) => ({ value: site.id, label: siteLabel(site) }));
@@ -55,6 +58,7 @@ export default async function NewDivePage({ searchParams }: NewDivePageProps) {
                     defaultValues={{ diveNumber: nextDiveNumber, ...planDefaults }}
                     siteOptions={siteOptions}
                     creditBalance={creditBalance}
+                    shopOptions={shopOptions}
                     {...(movingPlanId ? { fromPlanId: movingPlanId } : {})}
                 />
             </div>

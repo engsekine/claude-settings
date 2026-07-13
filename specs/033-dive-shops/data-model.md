@@ -67,18 +67,18 @@ comment on column public.dive_shops.latitude is '住所のジオコーディン�
 
 ## 既存テーブルへの追加（紐付け）
 
-`dives` / `dive_plans` / `application_profiles` に同じ形の列を追加する（FR-007〜010）。
+`dives` / `dive_plans` / `application_sheets` に同じ形の列を追加する（FR-007〜010）。
 
 | テーブル | 追加カラム | 制約 | 意味 |
 |---|---|---|---|
 | `dives` | `dive_shop_id uuid` | nullable, FK → `public.dive_shops(id)` `on delete set null` | このログで利用したショップ |
 | `dive_plans` | `dive_shop_id uuid` | 同上 | この予定で利用するショップ |
-| `application_profiles` | `dive_shop_id uuid` | 同上 | 最後に保存した申し込みシートの宛先ショップ（research.md Decision 4） |
+| `application_sheets` | `dive_shop_id uuid` | 同上 | 保存シートの宛先ショップ（シートごと・research.md Decision 4） |
 
 ```sql
 create index idx_dives_dive_shop_id on public.dives(dive_shop_id);
 create index idx_dive_plans_dive_shop_id on public.dive_plans(dive_shop_id);
-create index idx_application_profiles_dive_shop_id on public.application_profiles(dive_shop_id);
+create index idx_application_sheets_dive_shop_id on public.application_sheets(dive_shop_id);
 ```
 
 - `on delete set null` により、ショップ削除時は紐付けだけが外れて予定・ログ・シート保存内容は残る（FR-010 / SC-005）
@@ -111,8 +111,7 @@ create trigger dives_ensure_dive_shop_owned
     for each row
     execute function public.ensure_dive_shop_owned();
 
--- dive_plans / application_profiles にも同名トリガーを作成する
--- （application_profiles は PK が user_id のため new.user_id がそのまま使える）
+-- dive_plans / application_sheets にも同名トリガーを作成する
 ```
 
 ## リレーション図
@@ -122,7 +121,7 @@ users 1 ─── N dive_shops
                  │ 0..1（on delete set null）
    dives N ──────┤
    dive_plans N ─┤
-   application_profiles 1 ─┘（宛先ショップ）
+   application_sheets N ─┘（シートごとの宛先ショップ）
 ```
 
 ## 状態遷移

@@ -51,5 +51,5 @@
 |---|---|
 | `features/dives`（schema / actions / queries） | `diveShopId: string \| null` を入力に追加。作成・更新 action は本人所有チェック（不正 id は actionFailure）。詳細 query はショップ `{ id, name }` を join で取得（本人向け画面のみ） |
 | `features/plans`（同上） | 同上 |
-| `features/application-sheet` | 保存 action の入力・`application_profiles` の upsert に `dive_shop_id` を追加。画面初期表示で保存済み宛先を復元 |
+| `features/application-sheet` | シート保存 action の入力・`application_sheets` の行に `dive_shop_id` を追加。保存済みシートを開くと宛先を復元 |
 | 公開系（social / likes 等） | **変更しない**（FR-015） |

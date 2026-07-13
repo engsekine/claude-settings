@@ -31,6 +31,7 @@ const baseRow: ApplicationSheetRow = {
     contact_lens_type: 'soft',
     needs_prescription_mask: false,
     created_at: '2026-07-11T00:00:00Z',
+    dive_shop_id: null,
     updated_at: '2026-07-11T00:00:00Z',
 };
 
@@ -59,6 +60,7 @@ describe('sheetToFormValues', () => {
             hasContactLens: 'yes',
             contactLensType: 'soft',
             needsPrescriptionMask: 'no',
+            diveShopId: '',
         });
     });
 

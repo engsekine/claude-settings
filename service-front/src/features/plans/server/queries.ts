@@ -31,7 +31,7 @@ export const getPlan = async (id: string): Promise<PlanWithPacking | null> => {
 
     const { data, error } = await supabase
         .from('dive_plans')
-        .select('*, plan_packing_items(*)')
+        .select('*, plan_packing_items(*), dive_shops(id, name)')
         .eq('id', id)
         .maybeSingle();
 
@@ -40,10 +40,10 @@ export const getPlan = async (id: string): Promise<PlanWithPacking | null> => {
     }
     if (!data) return null;
 
-    const { plan_packing_items: itemRows, ...planRow } = data;
+    const { plan_packing_items: itemRows, dive_shops: shopRow, ...planRow } = data;
     const packingItems = [...itemRows].sort((a, b) => a.position - b.position).map(mapPackingItem);
 
-    return { ...mapPlan(planRow), packingItems };
+    return { ...mapPlan(planRow), packingItems, shop: shopRow ? { id: shopRow.id, name: shopRow.name } : null };
 };
 
 /**

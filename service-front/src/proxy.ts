@@ -16,6 +16,7 @@ const APP_ROUTE_PREFIXES = [
     '/update-password',
     '/notifications',
     '/application-sheet',
+    '/shops',
 ];
 
 /**

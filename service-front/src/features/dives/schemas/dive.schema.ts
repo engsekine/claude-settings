@@ -273,6 +273,12 @@ export const diveSchema = yup.object({
         .default([]),
     // 公開フラグ（spec 021 FR-007/008）: 新規は既定で非公開
     isPublic: yup.boolean().default(false).required(),
+    // 紐付けるショップ（033）。任意・未選択（空文字）は null に正規化する
+    diveShopId: yup
+        .string()
+        .transform((v) => (v === '' ? null : v))
+        .nullable()
+        .default(null),
 });
 
 export type DiveFormValues = yup.InferType<typeof diveSchema>;
