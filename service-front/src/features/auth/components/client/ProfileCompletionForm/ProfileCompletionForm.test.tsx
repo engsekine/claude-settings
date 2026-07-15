@@ -22,6 +22,17 @@ describe('ProfileCompletionForm', () => {
         completeProfile.mockReset();
     });
 
+    it('予約語のユーザー ID はエラーを表示して completeProfile を呼ばない（034 / FR-002・003）', async () => {
+        const user = userEvent.setup();
+        render(<ProfileCompletionForm />);
+
+        await user.type(screen.getByLabelText('ユーザー ID'), 'search');
+        await user.click(screen.getByRole('button', { name: '登録して始める' }));
+
+        expect(await screen.findByText('このユーザー ID は使用できません')).toBeInTheDocument();
+        expect(completeProfile).not.toHaveBeenCalled();
+    });
+
     it('全プロフィール項目（姓名・ローマ字・ニックネーム・生年月日・性別）を表示する', () => {
         render(<ProfileCompletionForm />);
 
@@ -56,6 +67,7 @@ describe('ProfileCompletionForm', () => {
         await user.type(screen.getByLabelText('名'), '太郎');
         await user.type(screen.getByLabelText('姓（ローマ字）'), 'Yamada');
         await user.type(screen.getByLabelText('名（ローマ字）'), 'Taro');
+        await user.type(screen.getByLabelText('ユーザー ID'), 'taro-diver');
         await user.type(screen.getByLabelText('ニックネーム'), 'たろちゃん');
         await user.type(screen.getByLabelText('生年月日'), '1990-01-01');
         await user.click(screen.getByRole('radio', { name: '一般ダイバー' }));
@@ -74,6 +86,7 @@ describe('ProfileCompletionForm', () => {
         await user.type(screen.getByLabelText('名'), '太郎');
         await user.type(screen.getByLabelText('姓（ローマ字）'), 'Yamada');
         await user.type(screen.getByLabelText('名（ローマ字）'), 'Taro');
+        await user.type(screen.getByLabelText('ユーザー ID'), 'taro-diver');
         await user.type(screen.getByLabelText('ニックネーム'), 'たろちゃん');
         await user.type(screen.getByLabelText('生年月日'), '1990-01-01');
         // 利用規約はチェックしないまま送信
@@ -95,6 +108,7 @@ describe('ProfileCompletionForm', () => {
         await user.type(screen.getByLabelText('名'), '太郎');
         await user.type(screen.getByLabelText('姓（ローマ字）'), 'Yamada');
         await user.type(screen.getByLabelText('名（ローマ字）'), 'Taro');
+        await user.type(screen.getByLabelText('ユーザー ID'), 'taro-diver');
         await user.type(screen.getByLabelText('ニックネーム'), 'たろちゃん');
         await user.type(screen.getByLabelText('生年月日'), '1990-01-01');
         await user.click(screen.getByRole('radio', { name: '一般ダイバー' }));

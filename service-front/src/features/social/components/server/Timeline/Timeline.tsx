@@ -1,12 +1,12 @@
 import { Heart } from 'lucide-react';
 import type { Route } from 'next';
 import Link from 'next/link';
-
 import { LikeButton } from '@/features/social/components/client/LikeButton';
 import { groupTimelineByDate, isTimelineEmpty } from '@/features/social/lib/timeline';
 import type { TimelineItem } from '@/features/social/types';
 import { Heading } from '@/shared/components/typography/Heading';
 import { formatJstDate } from '@/shared/lib/date';
+import { profilePath } from '@/shared/lib/profile-path';
 
 interface TimelineProps {
     items: TimelineItem[];
@@ -50,7 +50,12 @@ export const Timeline = ({ items, viewerId = null }: TimelineProps) => {
                                     </Link>
                                     <span className="text-muted-foreground text-xs">
                                         <Link
-                                            href={`/users/${dive.ownerId}` as Route}
+                                            href={
+                                                profilePath({
+                                                    userId: dive.ownerId,
+                                                    handle: dive.ownerHandle,
+                                                }) as Route
+                                            }
                                             className="hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
                                         >
                                             {dive.ownerNickname}

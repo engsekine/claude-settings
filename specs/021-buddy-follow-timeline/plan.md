@@ -111,7 +111,7 @@ service-front/src/
 │           └── server/DiveDetail/      # バディ一覧表示を追加
 └── app/
     ├── page.tsx                        # TOP：タイムラインセクションを app 層で合成
-    ├── (authenticated)/users/[id]/page.tsx        # 公開プロフィール（フォロー・公開ログ）
+    ├── (authenticated)/users/[slug]/page.tsx      # 公開プロフィール（フォロー・公開ログ）。034 でユーザー ID（handle）の URL 化（uuid は転送）
     # （2026-07-01 廃止）(public)/shared/dives/[slug]/page.tsx  ← 公開ログ閲覧は /dives/[id] に統合
 ```
 
@@ -136,7 +136,7 @@ service-front/src/
 ### 3. フォロー（FR-012〜016）
 
 - `followUser(followeeId)` / `unfollowUser(followeeId)` を Server Action 化。`follower_id` は `auth.uid()` 固定（クライアント値を信用しない）。自己フォロー・重複は DB 制約 + 事前チェックで弾く。
-- フォロー状態・件数・一覧は `social/server/queries.ts` で取得。プロフィール（`/users/[id]`）と TOP で利用。
+- フォロー状態・件数・一覧は `social/server/queries.ts` で取得。プロフィール（`/users/[slug]`。034 でユーザー ID の URL 化）と TOP で利用。
 
 ### 4. ログ公開/非公開（FR-007〜011）
 
@@ -149,7 +149,7 @@ service-front/src/
 
 - `DiveBuddyField`（Client）で「登録ユーザー検索選択」＋「フリーテキスト追加」を 0..n 行で編集。`dive.schema.ts` に `buddies: { userId?: string; name?: string }[]` を追加（yup：どちらか一方必須、名前 ≤100）。
 - 保存は Dive 保存 Action 内で `dive_log_buddies` を差分同期（既存 `buddy_name` 単一欄は移行：初期はフリーテキスト 1 件として併存表示、新規入力は中間テーブルへ）。
-- `DiveDetail` にバディ一覧表示（登録ユーザーは `/users/[id]` リンク、フリーテキストは素テキスト）。自己バディはトリガで防止。
+- `DiveDetail` にバディ一覧表示（登録ユーザーはプロフィールへのリンク = 034 以降ユーザー ID の URL、フリーテキストは素テキスト）。自己バディはトリガで防止。
 
 ### 6. タイムライン（FR-017〜021）
 

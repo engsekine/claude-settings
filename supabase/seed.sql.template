@@ -64,6 +64,7 @@ insert into auth.users (
         'last_name_romaji', 'Tanaka',
         'first_name_romaji', 'Taro',
         'nickname', 'たろう',
+        'handle', 'taro',
         'birth_on', '1990-05-15',
         'gender', 'male',
         'height_cm', '170',
@@ -135,6 +136,7 @@ insert into auth.users (
         'last_name_romaji', 'Unei',
         'first_name_romaji', 'Kanrisha',
         'nickname', 'admin',
+        'handle', 'admin-ops',
         'birth_on', '1990-01-01',
         'gender', 'unanswered'
     ),
@@ -191,6 +193,7 @@ insert into auth.users (
         'last_name_romaji', 'Buddy',
         'first_name_romaji', 'Taro',
         'nickname', 'buddy-taro',
+        'handle', 'buddy-taro',
         'birth_on', '1992-02-02',
         'gender', 'unanswered'
     ),
@@ -212,6 +215,60 @@ insert into auth.identities (
     ),
     'email',
     '000000bd-0000-0000-0000-000000000002',
+    now(), now(), now()
+);
+
+-- ========================================
+-- ニックネーム変更 E2E（034 US3 / tests/profile-url.spec.ts）専用ユーザー（local development 専用）
+--   email   : rename@example.com
+--   password: password123
+-- テスト中にニックネームを一時変更するため、他のテストはこのユーザーに依存しないこと
+-- （buddy@example.com を変更すると並列実行中の他テストと干渉する）。
+-- ========================================
+delete from auth.users where email = 'rename@example.com';
+
+insert into auth.users (
+    instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+    raw_app_meta_data, raw_user_meta_data,
+    confirmation_token, email_change, email_change_token_new, recovery_token,
+    created_at, updated_at
+) values (
+    '00000000-0000-0000-0000-000000000000',
+    '000000ce-0000-0000-0000-000000000003',
+    'authenticated',
+    'authenticated',
+    'rename@example.com',
+    crypt('password123', gen_salt('bf')),
+    now(),
+    '{"provider": "email", "providers": ["email"]}'::jsonb,
+    jsonb_build_object(
+        'last_name', '改名',
+        'first_name', '三郎',
+        'last_name_romaji', 'Kaimei',
+        'first_name_romaji', 'Saburo',
+        'nickname', 'rename-saburo',
+        'handle', 'rename-saburo',
+        'birth_on', '1993-03-03',
+        'gender', 'unanswered'
+    ),
+    '', '', '', '',
+    now(), now()
+);
+
+insert into auth.identities (
+    id, user_id, identity_data, provider, provider_id,
+    last_sign_in_at, created_at, updated_at
+) values (
+    gen_random_uuid(),
+    '000000ce-0000-0000-0000-000000000003',
+    jsonb_build_object(
+        'sub', '000000ce-0000-0000-0000-000000000003',
+        'email', 'rename@example.com',
+        'email_verified', true,
+        'phone_verified', false
+    ),
+    'email',
+    '000000ce-0000-0000-0000-000000000003',
     now(), now(), now()
 );
 

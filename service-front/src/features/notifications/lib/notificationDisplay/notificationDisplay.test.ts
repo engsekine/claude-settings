@@ -8,6 +8,7 @@ const buildItem = (overrides: Partial<NotificationItem> = {}): NotificationItem 
     type: 'followed',
     actorId: 'user-1',
     actorNickname: 'たろう',
+    actorHandle: 'たろう',
     resourceId: null,
     occurredAt: '2026-07-01T12:00:00+09:00',
     readAt: null,

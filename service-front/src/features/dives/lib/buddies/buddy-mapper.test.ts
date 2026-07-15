@@ -9,11 +9,13 @@ describe('mapDiveBuddy', () => {
             buddyUserId: 'u1',
             buddyName: null,
             nickname: 'たろう',
+            handle: 'taro',
         };
         expect(mapDiveBuddy(row)).toEqual({
             id: 'b1',
             userId: 'u1',
             name: 'たろう',
+            handle: 'taro',
             isRegistered: true,
         });
     });
@@ -24,11 +26,13 @@ describe('mapDiveBuddy', () => {
             buddyUserId: null,
             buddyName: '海太郎',
             nickname: null,
+            handle: null,
         };
         expect(mapDiveBuddy(row)).toEqual({
             id: 'b2',
             userId: null,
             name: '海太郎',
+            handle: null,
             isRegistered: false,
         });
     });
@@ -39,6 +43,7 @@ describe('mapDiveBuddy', () => {
             buddyUserId: 'u3',
             buddyName: null,
             nickname: null,
+            handle: null,
         };
         const result = mapDiveBuddy(row);
         expect(result.isRegistered).toBe(true);
@@ -50,8 +55,8 @@ describe('mapDiveBuddy', () => {
 describe('mapDiveBuddies', () => {
     it('複数行を順序を保って変換する', () => {
         const rows: BuddyRowInput[] = [
-            { id: 'b1', buddyUserId: 'u1', buddyName: null, nickname: 'A' },
-            { id: 'b2', buddyUserId: null, buddyName: 'B', nickname: null },
+            { id: 'b1', buddyUserId: 'u1', buddyName: null, nickname: 'A', handle: 'a' },
+            { id: 'b2', buddyUserId: null, buddyName: 'B', nickname: null, handle: null },
         ];
         const result = mapDiveBuddies(rows);
         expect(result.map((b) => b.name)).toEqual(['A', 'B']);

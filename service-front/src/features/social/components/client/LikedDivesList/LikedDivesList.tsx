@@ -8,6 +8,7 @@ import { loadMoreLikedDives } from '@/features/social/server/actions';
 import type { LikedDivesCursor, TimelineItem } from '@/features/social/types';
 import { Button } from '@/shared/components/ui/Button';
 import { formatJstDate } from '@/shared/lib/date';
+import { profilePath } from '@/shared/lib/profile-path';
 
 interface LikedDivesListProps {
     initialItems: TimelineItem[];
@@ -61,7 +62,7 @@ export const LikedDivesList = ({ initialItems, initialCursor }: LikedDivesListPr
                             </Link>
                             <span className="text-muted-foreground text-xs">
                                 <Link
-                                    href={`/users/${dive.ownerId}` as Route}
+                                    href={profilePath({ userId: dive.ownerId, handle: dive.ownerHandle }) as Route}
                                     className="hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
                                 >
                                     {dive.ownerNickname}

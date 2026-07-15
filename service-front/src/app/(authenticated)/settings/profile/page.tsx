@@ -32,6 +32,7 @@ export default async function ProfileEditPage() {
                         lastNameRomaji: profile.lastNameRomaji,
                         firstNameRomaji: profile.firstNameRomaji,
                         nickname: profile.nickname,
+                        handle: profile.handle,
                         birthOn: profile.birthOn,
                         gender: profile.gender,
                         heightCm: profile.heightCm,

@@ -145,6 +145,8 @@ export interface DiveBuddy {
     userId: string | null;
     /** 表示名（登録ユーザーは nickname、フリーテキストはそのテキスト） */
     name: string;
+    /** 登録ユーザーのユーザー ID（034。プロフィールリンク生成用。フリーテキスト・退会時は null） */
+    handle: string | null;
     /** 登録ユーザー由来か（true なら userId からプロフィールへ遷移可能） */
     isRegistered: boolean;
 }

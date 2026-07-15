@@ -11,6 +11,7 @@ const item = (id: string, diveDate: string): TimelineItem => ({
     bottomTimeMin: 40,
     ownerId: `owner-${id}`,
     ownerNickname: `nick-${id}`,
+    ownerHandle: 'h-x',
     likeCount: 0,
     likedByMe: false,
 });

@@ -23,6 +23,7 @@ const buildItem = (overrides: Partial<NotificationItem> = {}): NotificationItem 
     type: 'followed',
     actorId: 'user-1',
     actorNickname: 'たろう',
+    actorHandle: 'taro',
     resourceId: null,
     occurredAt: '2026-07-01T12:00:00+09:00',
     readAt: null,
@@ -144,14 +145,21 @@ describe('NotificationBellPanel', () => {
     describe('通知タップ時の既読化と遷移', () => {
         it('タップすると markNotificationRead → シートを閉じて遷移先へ移動する', async () => {
             markNotificationRead.mockResolvedValue({ success: true });
-            const item = buildItem({ id: 'n9', type: 'followed', actorId: 'user-9', actorNickname: 'きろう' });
+            const item = buildItem({
+                id: 'n9',
+                type: 'followed',
+                actorId: 'user-9',
+                actorNickname: 'きろう',
+                actorHandle: 'kiro',
+            });
             render(<NotificationBellPanel unreadCount={1} items={[item]} />);
 
             const { user, sheet } = await openSheet('通知（未読 1 件）');
             await user.click(within(sheet).getByRole('button', { name: /きろう/ }));
 
             expect(markNotificationRead).toHaveBeenCalledWith('n9');
-            expect(routerPush).toHaveBeenCalledWith('/users/user-9');
+            // 034: 遷移先はユーザー ID の URL になる
+            expect(routerPush).toHaveBeenCalledWith('/users/kiro');
             expect(screen.queryByRole('dialog', { name: '通知' })).not.toBeInTheDocument();
         });
 
@@ -164,7 +172,7 @@ describe('NotificationBellPanel', () => {
             const { user, sheet } = await openSheet('通知（未読 1 件）');
             await user.click(within(sheet).getByRole('button', { name: /たろう/ }));
 
-            expect(routerPush).toHaveBeenCalledWith('/users/user-1');
+            expect(routerPush).toHaveBeenCalledWith('/users/taro');
             expect(screen.queryByRole('dialog', { name: '通知' })).not.toBeInTheDocument();
             consoleError.mockRestore();
         });

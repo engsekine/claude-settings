@@ -16,6 +16,7 @@ export type ProfileRow = Pick<
     | 'last_name_romaji'
     | 'first_name_romaji'
     | 'nickname'
+    | 'handle'
     | 'birth_on'
     | 'gender'
     | 'height_cm'
@@ -33,6 +34,7 @@ export const toProfile = (row: ProfileRow, email: string): ProfileData => ({
     lastNameRomaji: row.last_name_romaji,
     firstNameRomaji: row.first_name_romaji,
     nickname: row.nickname,
+    handle: row.handle,
     birthOn: row.birth_on,
     gender: row.gender as Gender,
     heightCm: row.height_cm === null ? null : Number(row.height_cm),
@@ -67,6 +69,7 @@ export const toUserDetailsUpdate = (input: UpdateProfileInput, emailOptedInAt: s
     last_name_romaji: input.lastNameRomaji,
     first_name_romaji: input.firstNameRomaji,
     nickname: input.nickname,
+    handle: input.handle,
     birth_on: input.birthOn,
     gender: input.gender,
     height_cm: input.heightCm,

@@ -67,6 +67,21 @@ describe('SignupForm', () => {
         expect(screen.queryByLabelText('ダイバー番号')).not.toBeInTheDocument();
     });
 
+    it('不正な形式のユーザー ID はエラーを表示して signUp を呼ばない（034 / FR-002・003）', async () => {
+        const user = userEvent.setup();
+        render(<SignupForm />);
+
+        await user.type(screen.getByLabelText('ユーザー ID'), '1abc');
+        await user.click(screen.getByRole('button', { name: '新規登録' }));
+
+        expect(
+            await screen.findByText(
+                'ユーザー ID は半角英小文字・数字・ - _ の 3〜30 文字（先頭は英字）で入力してください',
+            ),
+        ).toBeInTheDocument();
+        expect(signUp).not.toHaveBeenCalled();
+    });
+
     it('利用規約に同意しないまま送信すると signUp は呼ばれずエラーが表示される（018）', async () => {
         const user = userEvent.setup();
         render(<SignupForm />);
@@ -76,6 +91,7 @@ describe('SignupForm', () => {
         await user.type(screen.getByLabelText('姓（ローマ字）'), 'Yamada');
         await user.type(screen.getByLabelText('名（ローマ字）'), 'Taro');
         await user.type(screen.getByLabelText('ニックネーム'), 'たろちゃん');
+        await user.type(screen.getByLabelText('ユーザー ID'), 'taro-diver');
         await user.type(screen.getByLabelText('生年月日'), '1990-01-01');
         await user.type(screen.getByLabelText('メールアドレス'), 'user@example.com');
         await user.type(screen.getByLabelText('パスワード（12文字以上・英大文字小文字と数字を含む）'), 'Password1234');
@@ -97,6 +113,7 @@ describe('SignupForm', () => {
         await user.type(screen.getByLabelText('姓（ローマ字）'), 'Yamada');
         await user.type(screen.getByLabelText('名（ローマ字）'), 'Taro');
         await user.type(screen.getByLabelText('ニックネーム'), 'たろちゃん');
+        await user.type(screen.getByLabelText('ユーザー ID'), 'taro-diver');
         await user.type(screen.getByLabelText('生年月日'), '1990-01-01');
         await user.type(screen.getByLabelText('メールアドレス'), 'user@example.com');
         await user.type(screen.getByLabelText('パスワード（12文字以上・英大文字小文字と数字を含む）'), 'Password1234');
@@ -119,6 +136,7 @@ describe('SignupForm', () => {
         await user.type(screen.getByLabelText('姓（ローマ字）'), 'Yamada');
         await user.type(screen.getByLabelText('名（ローマ字）'), 'Taro');
         await user.type(screen.getByLabelText('ニックネーム'), 'taro');
+        await user.type(screen.getByLabelText('ユーザー ID'), 'taro-diver');
         await user.type(screen.getByLabelText('生年月日'), '1990-01-01');
         await user.type(screen.getByLabelText('身長(cm)'), '170');
         await user.type(screen.getByLabelText('体重(kg)'), '60.5');
@@ -146,6 +164,7 @@ describe('SignupForm', () => {
         await user.type(screen.getByLabelText('姓（ローマ字）'), 'Yamada');
         await user.type(screen.getByLabelText('名（ローマ字）'), 'Taro');
         await user.type(screen.getByLabelText('ニックネーム'), 'taro');
+        await user.type(screen.getByLabelText('ユーザー ID'), 'taro-diver');
         await user.type(screen.getByLabelText('生年月日'), '1990-01-01');
         await user.type(screen.getByLabelText('メールアドレス'), 'user@example.com');
         await user.type(screen.getByLabelText('パスワード（12文字以上・英大文字小文字と数字を含む）'), 'Password1234');
@@ -169,6 +188,7 @@ describe('SignupForm', () => {
         await user.type(screen.getByLabelText('姓（ローマ字）'), 'Yamada');
         await user.type(screen.getByLabelText('名（ローマ字）'), 'Taro');
         await user.type(screen.getByLabelText('ニックネーム'), 'taro');
+        await user.type(screen.getByLabelText('ユーザー ID'), 'taro-diver');
         await user.type(screen.getByLabelText('生年月日'), '1990-01-01');
         await user.type(screen.getByLabelText('メールアドレス'), 'existing@example.com');
         await user.type(screen.getByLabelText('パスワード（12文字以上・英大文字小文字と数字を含む）'), 'Password1234');

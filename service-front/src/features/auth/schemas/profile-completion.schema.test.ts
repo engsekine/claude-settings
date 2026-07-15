@@ -8,6 +8,7 @@ const validInput = {
     lastNameRomaji: 'Yamada',
     firstNameRomaji: 'Taro',
     nickname: 'たろちゃん',
+    handle: 'taro-diver',
     birthOn: '1990-01-01',
     gender: 'male',
     heightCm: '',
