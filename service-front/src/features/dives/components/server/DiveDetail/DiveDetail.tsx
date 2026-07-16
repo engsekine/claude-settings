@@ -9,8 +9,10 @@ import { TANK_TYPE_LABEL_MAP, type TankTypeValue } from '@/features/dives/consta
 import { diveLocationLabel } from '@/features/dives/lib/diveLabel';
 import { calcSacRate, formatSacRate, SAC_INPUT_FIELD_LABELS } from '@/features/dives/lib/sacRate';
 import type { Dive, DiveBuddy, DivePhotoView } from '@/features/dives/types';
+import { SnsShareButtons } from '@/shared/components/social/SnsShareButtons';
 import { Heading } from '@/shared/components/typography/Heading';
 import { buttonVariants } from '@/shared/components/ui/Button';
+import { SITE_NAME, SITE_URL } from '@/shared/constants/site';
 import { formatJstDate } from '@/shared/lib/date';
 import { profilePath } from '@/shared/lib/profile-path';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
@@ -135,6 +137,19 @@ export const DiveDetail = ({ dive, photos = [], buddies = [], canManage = false,
                         公開設定
                     </h2>
                     <DiveVisibilityToggle diveId={dive.id} initialIsPublic={dive.isPublic} />
+                </section>
+            )}
+
+            {/* SNS 共有は公開ログのみ・閲覧者にも表示する（spec 035 FR-001。canManage に依存させない） */}
+            {dive.isPublic && (
+                <section aria-labelledby="dive-detail-share" className="flex flex-col gap-2">
+                    <h2 id="dive-detail-share" className="font-medium text-sm">
+                        SNSで共有
+                    </h2>
+                    <SnsShareButtons
+                        url={`${SITE_URL}/dives/${dive.id}`}
+                        text={`${diveLocationLabel(dive)}のダイビングログ（${formatJstDate(dive.diveDate)}）| ${SITE_NAME}`}
+                    />
                 </section>
             )}
 

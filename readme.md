@@ -2,23 +2,6 @@
 
 ## セットアップ
 
-このリポジトリのコマンド・スキル・エージェント設定をグローバルの Claude に反映するには、シンボリックリンクを作成します。
-
-```bash
-make link
-```
-
-`~/.claude/skills`, `~/.claude/agents`, `~/.claude/rules` がこのリポジトリの `.claude/` 配下にリンクされます。
-
-### その他の make コマンド
-
-| コマンド | 説明 |
-|---------|------|
-| `make link` | グローバル `~/.claude/` へシンボリックリンクを作成 |
-| `make unlink` | シンボリックリンクを削除 |
-| `make re` | リンクし直す（unlink → link） |
-| `make status` | 現在のリンク状態を確認 |
-
 ### devcontainer で使う
 
 以下のコマンドを実行すると、プロジェクトの `.devcontainer/devcontainer.json` にコピペできる `mounts` 設定が出力されます。

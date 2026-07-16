@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
 
 import type { Dive } from '@/features/dives/types';
+import { SITE_NAME, SITE_URL } from '@/shared/constants/site';
 
 import { DiveDetail } from './DiveDetail';
 
@@ -161,6 +162,24 @@ describe('DiveDetail', () => {
         expect(screen.queryByRole('link', { name: '編集' })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: '削除' })).not.toBeInTheDocument();
         expect(screen.queryByRole('link', { name: 'PDF出力' })).not.toBeInTheDocument();
+    });
+
+    it('公開ログには SNS 共有ボタンを表示し、共有 URL とテキストを渡す（spec 035 FR-001/006/007）', () => {
+        // canManage に依存しない（閲覧者にも表示される）ことを canManage=false で確認する
+        render(<DiveDetail dive={{ ...baseDive, isPublic: true }} />);
+
+        const xLink = screen.getByRole('link', { name: 'X で共有' });
+        const params = new URL(xLink.getAttribute('href') ?? '').searchParams;
+        expect(params.get('url')).toBe(`${SITE_URL}/dives/dive-1`);
+        expect(params.get('text')).toBe(`伊豆 / 大瀬崎のダイビングログ（2026/04/15）| ${SITE_NAME}`);
+        expect(screen.getByRole('link', { name: 'Facebook で共有' })).toBeInTheDocument();
+    });
+
+    it('非公開ログには SNS 共有ボタンを表示しない（spec 035 SC-003）', () => {
+        // 所有者（canManage）であっても非公開なら表示しない
+        render(<DiveDetail dive={baseDive} canManage />);
+        expect(screen.queryByRole('link', { name: 'X で共有' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('link', { name: 'Facebook で共有' })).not.toBeInTheDocument();
     });
 
     it('講習ダイブのときはバッジを表示する', () => {
