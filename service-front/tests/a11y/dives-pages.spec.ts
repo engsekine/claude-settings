@@ -40,6 +40,11 @@ test('/dives 系 2 画面 - WCAG 2.1 AA 違反なし（要認証）', async ({ p
     await page.waitForURL(/\/dives\/[0-9a-f-]+$/);
     await expectNoViolations(page);
 
+    // 公開に切り替え、SNS 共有ボタン（spec 035）表示状態でも違反がないことを検証
+    await page.getByRole('switch', { name: 'このログを公開する' }).click();
+    await expect(page.getByRole('link', { name: 'X で共有' })).toBeVisible();
+    await expectNoViolations(page);
+
     // 後始末: 作成したログを削除
     await page.getByRole('button', { name: /削除/ }).first().click();
     await page.getByRole('dialog').getByRole('button', { name: /削除/ }).click();
