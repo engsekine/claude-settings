@@ -226,7 +226,7 @@ export const fetchFollowLists = async (
 };
 
 /**
- * ユーザー検索（spec 021 / フォロー導線）。nickname 部分一致で他ユーザーを探す。
+ * ユーザー検索（spec 021 / フォロー導線）。ユーザー ID（handle）部分一致で他ユーザーを探す。
  * 呼び出し元自身は DB 関数側で除外。各行に閲覧者のフォロー状態を付与する。
  * 空クエリは即空配列。
  */
@@ -239,7 +239,7 @@ export const searchUsers = async (query: string): Promise<FollowUser[]> => {
         data: { user },
     } = await supabase.auth.getUser();
 
-    const { data, error } = await supabase.rpc('search_users_by_nickname', { p_query: trimmed });
+    const { data, error } = await supabase.rpc('search_users_by_handle', { p_query: trimmed });
     if (error) throw new Error(`ユーザー検索に失敗しました: ${error.message}`);
 
     const results = data ?? [];

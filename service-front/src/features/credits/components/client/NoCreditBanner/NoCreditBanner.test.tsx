@@ -24,14 +24,14 @@ describe('NoCreditBanner', () => {
         it('購入リンクを表示する', () => {
             render(<NoCreditBanner />);
 
-            const link = screen.getByRole('link', { name: 'ログパックを購入（10 枠 / ¥300）' });
+            const link = screen.getByRole('link', { name: 'ログパックを購入（¥480 から）' });
             expect(link).toBeInTheDocument();
         });
 
         it('購入リンクの href が /settings/log-credits である', () => {
             render(<NoCreditBanner />);
 
-            const link = screen.getByRole('link', { name: 'ログパックを購入（10 枠 / ¥300）' });
+            const link = screen.getByRole('link', { name: 'ログパックを購入（¥480 から）' });
             expect(link).toHaveAttribute('href', '/settings/log-credits');
         });
 

@@ -6,7 +6,7 @@
 
 ## Summary
 
-ダイビングログの新規作成を「ログ枠（クレジット）」の消費で管理する。枠の増減はすべて追記専用のレジャー（`log_credit_ledger`）に記録し、残高テーブル（`log_credit_balances`、`check (balance >= 0)`）と常に一致させる（FR-016）。**消費の強制は `public.dives` への AFTER INSERT トリガー**で行い（ledger の dive_id FK が行の存在を要求するため。同一トランザクションなので原子性は保たれる）、`createDive`・`createDiveFromPlan`（024）を含むすべての作成経路で原子的に 1 枠を消費、残枠 0 なら作成を拒否する（FR-001/002/012、同時多重リクエスト対策）。デイリーボーナスは認証済みレイアウトから冪等 RPC `grant_daily_bonus()` を呼び、JST 暦日ごとに 1 回だけ自動付与する（FR-003、ユニーク制約で二重付与防止）。購入は **Stripe Checkout（一回払い、10 枠 300 円）** を採用し、Server Action で Checkout Session を作成 → Stripe webhook（`/api/stripe/webhook`）で決済完了を検証してから枠を付与する（FR-005/007、セッション ID ユニーク制約で冪等）。初期枠 10 は新規ユーザーは既存 `handle_new_user` トリガーの拡張、既存ユーザーはマイグレーションのバックフィルで付与する（FR-008）。残枠はヘッダー/ログ作成導線に表示し、購入・履歴ページを `/settings/log-credits` に新設する。広告は導入しない（FR-015、実装作業なし＝方針の明文化のみ）。
+ダイビングログの新規作成を「ログ枠（クレジット）」の消費で管理する。枠の増減はすべて追記専用のレジャー（`log_credit_ledger`）に記録し、残高テーブル（`log_credit_balances`、`check (balance >= 0)`）と常に一致させる（FR-016）。**消費の強制は `public.dives` への AFTER INSERT トリガー**で行い（ledger の dive_id FK が行の存在を要求するため。同一トランザクションなので原子性は保たれる）、`createDive`・`createDiveFromPlan`（024）を含むすべての作成経路で原子的に 1 枠を消費、残枠 0 なら作成を拒否する（FR-001/002/012、同時多重リクエスト対策）。デイリーボーナスは認証済みレイアウトから冪等 RPC `grant_daily_bonus()` を呼び、JST 暦日ごとに 1 回だけ自動付与する（FR-003、ユニーク制約で二重付与防止）。購入は **Stripe Checkout（一回払い、お試し 10 枠 480 円 / おすすめ 30 枠 1,200 円 / たっぷり 100 枠 3,000 円の 3 パック）** を採用し、Server Action で選択パックの Checkout Session を作成（`metadata.pack_id` で webhook がパックを判別） → Stripe webhook（`/api/stripe/webhook`）で決済完了を検証してから枠を付与する（FR-005/007、セッション ID ユニーク制約で冪等）。初期枠 10 は新規ユーザーは既存 `handle_new_user` トリガーの拡張、既存ユーザーはマイグレーションのバックフィルで付与する（FR-008）。残枠はヘッダー/ログ作成導線に表示し、購入・履歴ページを `/settings/log-credits` に新設する。広告は導入しない（FR-015、実装作業なし＝方針の明文化のみ）。
 
 ## Technical Context
 
@@ -79,7 +79,7 @@ service-front/src/
 │   │   └── settings/log-credits/page.tsx   # ★新規: 残枠 + 購入 + 購入履歴ページ（決済結果 searchParams 受理）
 │   └── api/stripe/webhook/route.ts         # ★新規: 署名検証 → 購入確定 → 枠付与（冪等）
 ├── features/credits/                       # ★新規 feature
-│   ├── constants.ts                        # パック定義（10 枠 / 300 円）・Stripe 関連定数
+│   ├── constants.ts                        # パック定義（LOG_CREDIT_PACKS: 10/30/100 枠）・Stripe 関連定数
 │   ├── server/
 │   │   ├── queries.ts                      # getCreditBalance / getPurchaseHistory
 │   │   └── actions.ts                      # createCheckoutSession（Server Action）

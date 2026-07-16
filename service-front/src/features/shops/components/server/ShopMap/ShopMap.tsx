@@ -16,8 +16,9 @@ interface ShopMapProps {
  */
 export const ShopMap = ({ latitude, longitude, shopName }: ShopMapProps) => {
     if (latitude === null || longitude === null) {
+        // bg-muted 上の text-muted-foreground はコントラスト 4.34:1 で AA 未達のため text-foreground を使う
         return (
-            <p role="status" className="rounded-lg border border-border bg-muted p-4 text-muted-foreground text-sm">
+            <p role="status" className="rounded-lg border border-border bg-muted p-4 text-foreground text-sm">
                 {MAP_UNAVAILABLE_MESSAGE}
             </p>
         );

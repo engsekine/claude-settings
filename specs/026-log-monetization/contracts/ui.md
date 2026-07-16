@@ -22,14 +22,14 @@
 
 ## PurchasePackCard（client / features/credits/components/client/）
 
-- **内容**: パック内容（10 ログ枠）・価格（¥300）・「購入する」ボタン。押下で `createCheckoutSession()` を呼び `url` へフルページリダイレクト
+- **内容**: `pack` prop（`LogCreditPack`）で 1 パックを受け取り、パック名・価格・単価（円/ログ）・割引率（`discountLabel`）・「購入する」ボタンを表示。おすすめパック（`isRecommended`）は「おすすめ」バッジ + アクセント枠線。押下で `createCheckoutSession(pack.id)` を呼び `url` へフルページリダイレクト
 - **状態**: 送信中 disabled + ローディング表示。`checkout_failed` はカード内に `role="alert"` で失敗理由と再試行ボタン
-- **注記**: 価格・数量は表示専用（`features/credits/constants.ts` 由来）。ユーザー入力なし
+- **注記**: 価格・数量は表示専用（`features/credits/constants.ts` の `LOG_CREDIT_PACKS` 由来）。サーバーへ渡すのは packId のみ
 
 ## /settings/log-credits ページ（server）
 
-- **構成**: `generatePageMetadata` 使用。上から (1) CreditBalanceBadge（現在残枠）、(2) PurchasePackCard、(3) 購入履歴一覧
-- **購入履歴**: 日時（JST 表示）・内容（「ログ枠 10」）・金額（¥300）・状態（完了 / 返金済み）。`role="table"` 相当のセマンティクス（FR-014 / US3-AC2）
+- **構成**: `generatePageMetadata` 使用。上から (1) CreditBalanceBadge（現在残枠）、(2) PurchasePackCard × 3（`LOG_CREDIT_PACKS` を map。お試し 10 枠 ¥480 / おすすめ 30 枠 ¥1,200 / たっぷり 100 枠 ¥3,000）、(3) 購入履歴一覧
+- **購入履歴**: 日時（JST 表示）・内容（「ログ枠 {quantity}」）・金額（購入時スナップショット）・状態（完了 / 返金済み）。`role="table"` 相当のセマンティクス（FR-014 / US3-AC2）
 - **決済結果の受理**: `searchParams.checkout`
   - `success`: 「購入ありがとうございます」通知（`role="status"`）。webhook 反映前の可能性があるため「反映まで最大 1 分かかることがあります」を添え、残枠は都度サーバーフェッチ（SC-003 / spec Edge Case「反映待ち」）。「ログ作成に戻る」リンク（`/dives/new`）を併記し購入→作成復帰の動線を閉じる（US2-AC4）
   - `cancelled`: 「購入はキャンセルされました」通知
@@ -48,8 +48,8 @@
 | 残枠バッジ | 残りログ枠 {n} |
 | 残枠 0 タイトル | ログ枠がありません |
 | 残枠 0 本文 | ログ枠は毎日 1 つ自動で追加されます。今すぐ記録するにはログパックを購入してください。 |
-| 残枠 0 バナーの購入リンク | ログパックを購入（10 枠 / ¥300） |
-| 購入カードのボタン | 購入する（カード見出しにパック名「ログパック（10 枠）」と価格 ¥300 を表示。送信中は「手続きを開始しています...」） |
+| 残枠 0 バナーの購入リンク | ログパックを購入（¥480 から） |
+| 購入カードのボタン | 購入する（カード見出しにパック名「お試しパック（10 枠）」等と価格・単価・割引率を表示。送信中は「手続きを開始しています...」） |
 | 購入成功 | ご購入ありがとうございます / 残枠への反映まで最大 1 分ほどかかることがあります。反映されない場合はページを再読み込みしてください。 |
 | 購入キャンセル | 購入はキャンセルされました。 |
 | 枠不足の送信エラー（createDive） | ログ枠がないため作成できません |

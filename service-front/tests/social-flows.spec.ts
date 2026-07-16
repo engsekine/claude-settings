@@ -100,14 +100,15 @@ test('S2: 公開で共有リンク(/dives/[id])が出て直接コピーできる
 test('S7: ユーザー検索から相手を見つけてフォロー/解除できる', async ({ page }) => {
     await login(page);
 
-    // ニックネームで検索 → seed の admin がヒットする
+    // ユーザー ID（handle）で検索 → seed の admin（handle: admin-ops）がヒットする
     await page.goto('/users/search');
-    await page.getByRole('searchbox', { name: 'ニックネームで探す' }).fill('admin');
+    await page.getByRole('searchbox', { name: 'ユーザーIDで探す' }).fill('admin');
     await page.getByRole('button', { name: '検索' }).click();
     await page.waitForURL(/\/users\/search\?q=admin/);
 
-    // 結果にプロフィールリンクが出る
+    // 結果にプロフィールリンクが出る（ニックネームとユーザー ID の両方を表示）
     await expect(page.getByRole('link', { name: 'admin' })).toBeVisible();
+    await expect(page.getByText('@admin-ops')).toBeVisible();
 
     // 再実行耐性: 既にフォロー中なら一旦解除して初期状態へ
     const followingButton = page.getByRole('button', { name: 'フォロー中' });
