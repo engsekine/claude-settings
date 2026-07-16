@@ -6,7 +6,7 @@
 
 ## Summary
 
-未認証の訪問者向けに、サービス紹介と新規登録導線を持つランディングページを専用 URL `/lp` に追加する。構成はヒーロー（キャッチコピー + 登録 CTA）→ 主要機能紹介（画面イメージ付き）→ 料金（基本無料 + ログパック 10 枠 300 円）→ 最下部 CTA。既存の `(public)` ルートと同じパターン（`features/landing` + `generatePageMetadata` + sitemap 登録）で実装し、`proxy.ts` はデフォルトで `/lp` を素通しするため**既存ルーティングへの変更はゼロ**。全体を Server Components のみで構成し、クライアント JS に依存しない。
+未認証の訪問者向けに、サービス紹介と新規登録導線を持つランディングページを専用 URL `/lp` に追加する。構成はヒーロー（キャッチコピー + 登録 CTA）→ 主要機能紹介（画面イメージ付き）→ 料金（基本無料 + ログパック 3 種: お試し 10 枠 480 円 / おすすめ 30 枠 1,200 円 / たっぷり 100 枠 3,000 円）→ 最下部 CTA。既存の `(public)` ルートと同じパターン（`features/landing` + `generatePageMetadata` + sitemap 登録）で実装し、`proxy.ts` はデフォルトで `/lp` を素通しするため**既存ルーティングへの変更はゼロ**。全体を Server Components のみで構成し、クライアント JS に依存しない。
 
 ## Technical Context
 
@@ -99,7 +99,7 @@ service-front/
 ### コンテンツとデータフロー
 
 - コピー・機能紹介・画像パスは `features/landing/constants.ts` に静的定義（データフェッチなし）
-- 料金の数値（10 枠・300 円）は `page.tsx` が `features/credits` の `LOG_CREDIT_PACK` から読み取り `LandingPricing` に props 注入（feature 間 import 回避 / research.md Decision 3・4）
+- 料金の数値は `page.tsx` が `features/credits` の `LOG_CREDIT_PACKS` から読み取り `LandingPricing` に props 注入（feature 間 import 回避 / research.md Decision 3・4）
 - 無料枠の説明（初期 10 枠・デイリーボーナス 1 枠）も同様に `INITIAL_GRANT_AMOUNT` / `DAILY_BONUS_AMOUNT` を注入
 
 ### metadata / SEO（FR-009）

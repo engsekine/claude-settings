@@ -547,29 +547,29 @@ describe('searchUsers', () => {
         expect(from).not.toHaveBeenCalled();
     });
 
-    it('nickname 部分一致の結果に閲覧者のフォロー状態を付与して返す', async () => {
+    it('ユーザー ID（handle）部分一致の結果に閲覧者のフォロー状態を付与して返す', async () => {
         const { rpc, from, builders } = buildClient({
-            // rpc = search_users_by_nickname の結果, from = 閲覧者のフォロー集合
+            // rpc = search_users_by_handle の結果, from = 閲覧者のフォロー集合
             rpcResult: {
                 data: [
-                    { user_id: 'u1', nickname: 'たろう' },
-                    { user_id: 'u2', nickname: 'たけし' },
+                    { user_id: 'u1', nickname: 'たろう', handle: 'taro' },
+                    { user_id: 'u2', nickname: 'たけし', handle: 'takeshi' },
                 ],
                 error: null,
             },
             fromResults: [{ data: [{ followee_id: 'u2' }], error: null }],
         });
 
-        const result = await searchUsers('  た  ');
+        const result = await searchUsers('  ta  ');
 
         // trim して DB 関数へ渡す
-        expect(rpc).toHaveBeenCalledWith('search_users_by_nickname', { p_query: 'た' });
+        expect(rpc).toHaveBeenCalledWith('search_users_by_handle', { p_query: 'ta' });
         // フォロー判定は結果 id で user_follows を引く
         expect(from).toHaveBeenCalledWith('user_follows');
         expect(builders[0]?.in).toHaveBeenCalledWith('followee_id', ['u1', 'u2']);
         expect(result).toEqual([
-            { userId: 'u1', nickname: 'たろう', isFollowing: false },
-            { userId: 'u2', nickname: 'たけし', isFollowing: true },
+            { userId: 'u1', nickname: 'たろう', handle: 'taro', isFollowing: false },
+            { userId: 'u2', nickname: 'たけし', handle: 'takeshi', isFollowing: true },
         ]);
     });
 

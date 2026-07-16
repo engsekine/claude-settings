@@ -13,7 +13,7 @@ export const generateMetadata = () =>
         {
             slug: '/users/search',
             title: 'ユーザーを探す',
-            description: 'ニックネームでユーザーを検索してフォローする',
+            description: 'ユーザーIDでユーザーを検索してフォローする',
         },
         { noIndex: true },
     );

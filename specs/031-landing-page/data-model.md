@@ -37,8 +37,7 @@ DB エンティティの代わりに、`features/landing/constants.ts` で管理
 
 | フィールド | 型 | 供給元（唯一の情報源） |
 |-----------|----|----------------------|
-| `packQuantity` | `number` | `LOG_CREDIT_PACK.quantity`（= 10） |
-| `packAmountJpy` | `number` | `LOG_CREDIT_PACK.amountJpy`（= 300） |
+| `packs` | `readonly LandingPricingPack[]` | `LOG_CREDIT_PACKS`（quantity / amountJpy / displayName / discountLabel / isRecommended の 3 パック） |
 | `initialGrantAmount` | `number` | `INITIAL_GRANT_AMOUNT`（= 10） |
 | `dailyBonusAmount` | `number` | `DAILY_BONUS_AMOUNT`（= 1） |
 

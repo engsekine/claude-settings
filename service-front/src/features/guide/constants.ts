@@ -146,7 +146,7 @@ export const GUIDE_SECTIONS: GuideSection[] = [
             },
             {
                 title: '足りなくなったらログパックを購入する',
-                body: '残りのログ枠は設定画面でいつでも確認できます。枠が足りなくなったら、ログパック（10 枠）を購入して追加できます。',
+                body: '残りのログ枠は設定画面でいつでも確認できます。枠が足りなくなったら、ログパック（10 / 30 / 100 枠）を購入して追加できます。',
             },
         ],
         links: [{ href: '/settings/log-credits', label: 'ログ枠を確認・購入する', requiresAuth: true }],

@@ -1,4 +1,4 @@
-import { DAILY_BONUS_AMOUNT, INITIAL_GRANT_AMOUNT, LOG_CREDIT_PACK } from '@/features/credits';
+import { DAILY_BONUS_AMOUNT, INITIAL_GRANT_AMOUNT, LOG_CREDIT_PACKS } from '@/features/credits';
 import { LandingCta, LandingFeatures, LandingHero, LandingPricing, PAGE_DATA } from '@/features/landing';
 import { generatePageMetadata } from '@/shared/config/metadata';
 
@@ -19,8 +19,7 @@ export default function LandingPage() {
             <LandingHero />
             <LandingFeatures />
             <LandingPricing
-                packQuantity={LOG_CREDIT_PACK.quantity}
-                packAmountJpy={LOG_CREDIT_PACK.amountJpy}
+                packs={LOG_CREDIT_PACKS}
                 initialGrantAmount={INITIAL_GRANT_AMOUNT}
                 dailyBonusAmount={DAILY_BONUS_AMOUNT}
             />

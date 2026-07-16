@@ -54,7 +54,7 @@ SUPABASE_DB_TESTS=1 npx vitest run --project=unit src/features/credits/server/cr
 
 1. `/settings/log-credits` →「ログパックを購入」→ Stripe Checkout でテストカード `4242 4242 4242 4242` で支払い
 2. success で戻る → 「反映まで最大 1 分」の通知 → リロードで残枠 +10（US2-AC1 / SC-002・003）
-3. 購入履歴に日時・「ログ枠 10」・¥300・完了 が表示される（FR-014）
+3. 購入履歴に日時・「ログ枠 {枠数}」・購入時の金額・完了 が表示される（FR-014）
 4. **冪等性**: `stripe events resend <event_id>`（または `stripe trigger checkout.session.completed` の再送）→ 残枠が増えないこと（US2-AC3）
 5. **失敗系**: テストカード `4000 0000 0000 0002`（決済拒否）→ 枠が付与されず、Checkout 上で失敗が表示される（US2-AC2）
 6. **キャンセル**: Checkout で戻るボタン → `checkout=cancelled` の通知、枠は変化なし

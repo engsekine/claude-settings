@@ -297,33 +297,35 @@ grant execute on function public.get_user_public_profiles(uuid[]) to authenticat
 
 > 実装時に判明したギャップ（US1 のバディ表示で他ユーザー nickname が RLS で読めない）への対応。US1/US3/US4 の表示名解決で共用する。registered なバディ/フォロー/タイムラインの nickname はすべてこの関数経由で取得する。
 
-## 4c. ユーザー検索関数（`20260701100000_create_search_users_by_nickname_fn.sql`）
+## 4c. ユーザー検索関数（`20260716100000_create_search_users_by_handle_fn.sql`）
 
-フォロー相手を探す「ユーザー検索」用。`user_details` は本人のみ SELECT 可のため、nickname 部分一致で他ユーザーを引く SECURITY DEFINER 関数を最小公開する（§4b と同方針）。
+フォロー相手を探す「ユーザー検索」用。`user_details` は本人のみ SELECT 可のため、ユーザー ID（handle・034 で導入）の部分一致で他ユーザーを引く SECURITY DEFINER 関数を最小公開する（§4b と同方針）。
+
+> 変遷: 当初は nickname 部分一致の `search_users_by_nickname`（`20260701100000`）→ 034 で handle 返却を追加（`20260712150000`）→ 検索キー自体を handle に変更した `search_users_by_handle` に置き換え（旧関数は drop 済み）。
 
 ```sql
-create or replace function public.search_users_by_nickname(p_query text, p_limit integer default 20)
-returns table (user_id uuid, nickname text)
+create or replace function public.search_users_by_handle(p_query text, p_limit integer default 20)
+returns table (user_id uuid, nickname text, handle text)
 language sql
+stable
 security definer
 set search_path = ''
-stable
 as $$
-    select ud.user_id, ud.nickname
+    select ud.user_id, ud.nickname, ud.handle
     from public.user_details ud
     where length(trim(coalesce(p_query, ''))) > 0
-      and ud.nickname ilike '%' || trim(p_query) || '%'
+      and ud.handle ilike '%' || trim(p_query) || '%'
       and ud.user_id is distinct from (select auth.uid())
-    order by ud.nickname asc
+    order by ud.handle asc
     limit least(greatest(coalesce(p_limit, 20), 1), 50);
 $$;
 
-revoke all on function public.search_users_by_nickname(text, integer) from public;
-grant execute on function public.search_users_by_nickname(text, integer) to authenticated;
+revoke all on function public.search_users_by_handle(text, integer) from public;
+grant execute on function public.search_users_by_handle(text, integer) to authenticated;
 ```
 
-- 大文字小文字を無視した部分一致（`ilike`）。空クエリは 0 件。呼び出し元自身は除外。nickname 昇順で最大 50 件。
-- アプリ層 `searchUsers(query)`（`social/server/queries.ts`）が結果に閲覧者のフォロー状態を付与し、`/users/search`（`UserSearchBar` + `FollowList`）で表示する。
+- 大文字小文字を無視した部分一致（`ilike`）。空クエリは 0 件。呼び出し元自身は除外。handle 昇順で最大 50 件。
+- アプリ層 `searchUsers(query)`（`social/server/queries.ts`）が結果に閲覧者のフォロー状態を付与し、`/users/search`（`UserSearchBar` + `FollowList`）で表示する。nickname は表示専用。
 
 ## 4d. nickname 一意制約と使用可否判定（`20260701110000_add_user_details_nickname_unique.sql`）
 

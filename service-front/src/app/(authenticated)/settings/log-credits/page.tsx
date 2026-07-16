@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { LOG_CREDIT_PACKS } from '@/features/credits';
 import { PurchasePackCard } from '@/features/credits/components/client/PurchasePackCard';
 import { CreditBalanceBadge } from '@/features/credits/components/server/CreditBalanceBadge';
 import { getPurchaseHistory } from '@/features/credits/server/queries';
@@ -57,7 +58,11 @@ export default async function LogCreditsPage({ searchParams }: LogCreditsPagePro
                 </div>
             )}
 
-            <PurchasePackCard />
+            <div className="flex flex-col gap-4">
+                {LOG_CREDIT_PACKS.map((pack) => (
+                    <PurchasePackCard key={pack.id} pack={pack} />
+                ))}
+            </div>
 
             <section aria-labelledby="purchase-history-heading" className="flex flex-col gap-3">
                 <h2 id="purchase-history-heading" className="font-semibold text-lg">

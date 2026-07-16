@@ -7,5 +7,12 @@
 export { NoCreditBanner } from './components/client/NoCreditBanner';
 export { PurchasePackCard } from './components/client/PurchasePackCard';
 export { CreditBalanceBadge } from './components/server/CreditBalanceBadge';
-export { DAILY_BONUS_AMOUNT, INITIAL_GRANT_AMOUNT, LOG_CREDIT_PACK, NO_CREDIT_ACTION_CODE } from './constants';
+export type { LogCreditPack, LogCreditPackId } from './constants';
+export {
+    DAILY_BONUS_AMOUNT,
+    findLogCreditPack,
+    INITIAL_GRANT_AMOUNT,
+    LOG_CREDIT_PACKS,
+    NO_CREDIT_ACTION_CODE,
+} from './constants';
 export type { CreditLedgerKind, Purchase, PurchaseStatus } from './types';

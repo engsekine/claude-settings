@@ -25,9 +25,10 @@ export const FollowList = ({ items, currentUserId, emptyMessage = 'ユーザー�
                 <li key={user.userId} className="flex items-center justify-between gap-3 py-3">
                     <Link
                         href={profilePath({ userId: user.userId, handle: user.handle }) as Route}
-                        className="font-medium text-sm hover:underline"
+                        className="flex flex-col hover:underline"
                     >
-                        {user.nickname}
+                        <span className="font-medium text-sm">{user.nickname}</span>
+                        {user.handle && <span className="text-muted-foreground text-xs">@{user.handle}</span>}
                     </Link>
                     {user.userId !== currentUserId && (
                         <FollowButton targetUserId={user.userId} initialIsFollowing={user.isFollowing} />
