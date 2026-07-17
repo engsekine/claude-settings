@@ -1,11 +1,13 @@
-# 軽量品質チェック（PR + main push）
-# 仕様: specs/005-github-actions-ci/（ジョブ名は branch protection の required checks 名として使われる）
+# 軽量品質チェック（手動実行）
+# 仕様: specs/005-github-actions-ci/
+# 自動トリガー（PR / main push）は手動運用への移行で廃止（2026-07-17）。
+# Actions タブの「Run workflow」から対象ブランチを選んで実行する。
+# 注意: branch protection の required checks に CI のジョブを指定している場合、
+# チェックが自動では走らなくなるため保護設定側の見直しが必要。
 name: CI
 
 on:
-    pull_request:
-    push:
-        branches: [main]
+    workflow_dispatch:
 
 # 同一 ref の旧実行をキャンセル（FR-003）。main は完走させる
 concurrency:
