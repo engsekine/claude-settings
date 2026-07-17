@@ -84,7 +84,11 @@ const RENAME_HANDLE = 'rename-saburo';
 
 const changeHandle = async (page: Page, handle: string) => {
     await page.goto('/settings/profile');
-    await page.getByLabel('ユーザー ID').fill(handle);
+    const input = page.getByLabel('ユーザー ID');
+    // 前回実行の中断で既に目的の値になっている場合は送信しない
+    // （同値のままでは「更新する」が disabled でクリックできず、再実行不能になるため）
+    if ((await input.inputValue()) === handle) return;
+    await input.fill(handle);
     await page.getByRole('button', { name: '更新する' }).click();
     await expect(page.getByText('プロフィールを更新しました')).toBeVisible({ timeout: 15_000 });
 };

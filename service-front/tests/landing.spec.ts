@@ -21,7 +21,8 @@ const login = async (page: Page) => {
     await page.getByLabel('メールアドレス').fill(TEST_EMAIL);
     await page.getByLabel('パスワード').fill(TEST_PASSWORD);
     await page.getByRole('button', { name: 'ログイン', exact: true }).click();
-    await page.waitForURL(/\/dives/);
+    // ログイン後の遷移先は TOP ダッシュボード（/）。/dives だった頃の前提を更新
+    await page.waitForURL((url) => url.pathname === '/');
 };
 
 test.beforeEach(async ({ context }) => {

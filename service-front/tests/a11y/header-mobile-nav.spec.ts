@@ -29,7 +29,8 @@ test('HeaderMobileNav - トリガー表示状態（メニュー閉） - WCAG 2.1
     await page.waitForLoadState('networkidle');
 
     // トリガーボタンが表示されていることを確認
-    await expect(page.getByRole('button', { name: 'メニューを開く' })).toBeVisible();
+    // ヘッダー刷新で「ログイン/アカウントメニューを開く」ボタンが追加され部分一致だと 2 件になるため exact 指定
+    await expect(page.getByRole('button', { name: 'メニューを開く', exact: true })).toBeVisible();
 
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
 
@@ -42,11 +43,14 @@ test('HeaderMobileNav - Sheet 開状態（メニュー開） - WCAG 2.1 AA 違�
     await page.goto('/login');
     await page.waitForLoadState('networkidle');
 
-    // ハンバーガーボタンをクリックして Sheet を開く
-    await page.getByRole('button', { name: 'メニューを開く' }).click();
+    // ハンバーガーボタンをクリックして Sheet を開く（アカウントメニューと区別するため exact 指定）
+    await page.getByRole('button', { name: 'メニューを開く', exact: true }).click();
 
     // Sheet 内の nav が表示されるまで待機
     await expect(page.getByRole('navigation', { name: 'メインナビゲーション' })).toBeVisible();
+    // Sheet の開きアニメーション（opacity 遷移）が終わる前に axe が走ると
+    // 半透明状態の色で誤検知するため、opacity の収束を待つ
+    await expect(page.locator('[data-slot="sheet-content"]')).toHaveCSS('opacity', '1');
 
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
 
@@ -68,8 +72,10 @@ test('HeaderMobileNav - 認証済みページでの Sheet 開状態 - WCAG 2.1 A
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    await page.getByRole('button', { name: 'メニューを開く' }).click();
+    await page.getByRole('button', { name: 'メニューを開く', exact: true }).click();
     await expect(page.getByRole('navigation', { name: 'メインナビゲーション' })).toBeVisible();
+    // 開きアニメーション終了を待ってから axe を実行（半透明状態での誤検知防止）
+    await expect(page.locator('[data-slot="sheet-content"]')).toHaveCSS('opacity', '1');
 
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
 

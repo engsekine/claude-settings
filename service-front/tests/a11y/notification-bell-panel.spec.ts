@@ -41,6 +41,9 @@ test('NotificationBellPanel - Sheet 開状態 - WCAG 2.1 AA 違反なし（要�
     // SheetTitle と /notifications への導線が表示されるまで待機
     await expect(page.getByRole('dialog').getByRole('heading', { name: '通知' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'すべての通知を見る' })).toBeVisible();
+    // Sheet の開きアニメーション（opacity 遷移）が終わる前に axe が走ると、
+    // 半透明のコンテンツ越しにオーバーレイが透けた色でコントラストを誤検知するため収束を待つ
+    await expect(page.locator('[data-slot="sheet-content"]')).toHaveCSS('opacity', '1');
 
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
 

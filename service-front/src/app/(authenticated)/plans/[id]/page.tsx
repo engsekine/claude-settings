@@ -54,11 +54,13 @@ export default async function PlanPage({ params }: PlanPageProps) {
                         {remaining < 0 && (
                             <span className="rounded-md bg-muted px-2 py-0.5 text-foreground text-xs">終了済み</span>
                         )}
+                        {/* アクセント色 #1a73cc は淡色背景上で 4.21:1 と AA 未達のため、
+                            トークンの primary（DiveDetail の講習ダイブバッジと同パターン）を使う */}
                         {remaining === 0 && (
-                            <span className="rounded-md bg-[#1a73cc]/10 px-2 py-0.5 text-[#1a73cc] text-xs">今日</span>
+                            <span className="rounded-md bg-primary/10 px-2 py-0.5 text-primary text-xs">今日</span>
                         )}
                         {remaining > 0 && (
-                            <span className="rounded-md bg-[#1a73cc]/10 px-2 py-0.5 text-[#1a73cc] text-xs">
+                            <span className="rounded-md bg-primary/10 px-2 py-0.5 text-primary text-xs">
                                 あと{remaining}日
                             </span>
                         )}
