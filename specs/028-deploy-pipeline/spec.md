@@ -8,9 +8,13 @@
 
 **Input**: User description: "github actions経由でデプロイするci/cdを組みたい service-frontとadmin-frontはvercelにsupabaseはsupabaseにデプロイするように / developにマージされたらstg環境反映 / mainにマージされたらprod環境反映 / 必要な環境変数とかが合ったらreadmeに記載して readmeにデプロイの手順と解説を加えていって"
 
+## Clarifications
+
+- Session 2026-07-17: **全ワークフローを手動実行（workflow_dispatch）へ移行**。マージ（push）トリガーの自動デプロイを廃止し、Actions タブの「Run workflow」から実行する運用に変更（FR-001 / FR-002 改定）。誤ったブランチからのデプロイはワークフロー内のブランチガード（stg = develop / prod = main 固定）で防止する
+
 ## 概要
 
-ブランチへのマージをトリガーに、3 つのデプロイ対象（service-front / admin-front → Vercel、データベース → Supabase）を自動反映する CI/CD パイプラインを構築する。`develop` マージで検証用の stg 環境、`main` マージで本番の prod 環境へ反映される。デプロイに必要な資格情報・環境変数の一覧と、初期セットアップ手順・運用解説を README に整備し、チームの誰でもデプロイの仕組みを理解・再現できる状態にする。
+手動実行（workflow_dispatch）をトリガーに、3 つのデプロイ対象（service-front / admin-front → Vercel、データベース → Supabase）を反映する CI/CD パイプラインを構築する。stg は `develop`、prod は `main` をデプロイ元に固定する（2026-07-17 改定。当初はマージ連動の自動反映だった）。デプロイに必要な資格情報・環境変数の一覧と、初期セットアップ手順・運用解説を README に整備し、チームの誰でもデプロイの仕組みを理解・再現できる状態にする。
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -77,8 +81,8 @@
 
 ### Functional Requirements
 
-- **FR-001**: `develop` ブランチへのマージ（push）を契機に、stg 環境への反映が自動で開始されなければならない
-- **FR-002**: `main` ブランチへのマージ（push）を契機に、prod 環境への反映が開始されなければならない
+- **FR-001**: stg 環境への反映は手動実行（workflow_dispatch）で開始され、デプロイ元は `develop` ブランチに固定されなければならない（2026-07-17 改定。旧: develop push で自動開始）
+- **FR-002**: prod 環境への反映は手動実行（workflow_dispatch）で開始され、デプロイ元は `main` ブランチに固定されなければならない（2026-07-17 改定。旧: main push で自動開始）
 - **FR-003**: 反映対象は 3 つ: service-front（Vercel）・admin-front（Vercel）・データベースマイグレーション（Supabase）。データベースは stg / prod で**別の Supabase プロジェクト**に完全分離する。Vercel はアプリごとに 1 プロジェクトとし、stg は固定 URL の Preview 環境・prod は Production 環境として同一プロジェクト内で分離する
 - **FR-004**: データベースの反映はアプリの反映より**先**に完了しなければならず、DB 反映が失敗した場合はアプリの反映を実行してはならない
 - **FR-005**: マイグレーションの適用は冪等でなければならない（適用済みのものはスキップされ、再実行で二重適用されない）
@@ -103,7 +107,7 @@
 
 ### Measurable Outcomes
 
-- **SC-001**: develop へのマージから stg 反映完了まで、手作業ゼロ・15 分以内
+- **SC-001**: stg デプロイの手動実行から反映完了まで 15 分以内（2026-07-17 改定。旧: マージから手作業ゼロで反映）
 - **SC-002**: main へのマージから prod 反映完了まで、承認操作 1 回以外の手作業ゼロ
 - **SC-003**: リポジトリ内（コード・履歴・設定ファイル）に平文の資格情報が 0 件
 - **SC-004**: マイグレーション失敗時に「新アプリ + 旧スキーマ」の不整合状態が発生した回数 0 件

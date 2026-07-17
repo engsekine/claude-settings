@@ -1,10 +1,11 @@
-# 重いテスト（E2E / a11y / Storybook テスト）— main push のみ（FR-011）
+# 重いテスト（E2E / a11y / Storybook テスト）— 手動実行
+# 自動トリガー（main push / FR-011）は手動運用への移行で廃止（2026-07-17）。
+# Actions タブの「Run workflow」から対象ブランチを選んで実行する。
 # シークレット不使用: Supabase ローカルスタックの公開デフォルトキーをジョブ内で生成する（FR-008）
 name: Full Test
 
 on:
-    push:
-        branches: [main]
+    workflow_dispatch:
 
 concurrency:
     group: full-test-${{ github.ref }}
