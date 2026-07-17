@@ -105,27 +105,28 @@ make admin-dev
 
 ## デプロイ（stg / prod）
 
-GitHub Actions によるデプロイパイプライン（028-deploy-pipeline）。マージをトリガーに、DB マイグレーション → アプリの順で自動反映されます。
+GitHub Actions によるデプロイパイプライン（028-deploy-pipeline）。**手動実行（workflow_dispatch）** で、DB マイグレーション → アプリの順に反映されます（2026-07-17 にマージ連動の自動デプロイから移行）。
 
 ### 全体像
 
 ```text
-develop にマージ ──▶ Deploy (staging)     : 自動で stg へ反映
-main にマージ    ──▶ Deploy (production)  : 承認者の承認 1 回 → prod へ反映
+Actions > Deploy (staging)    > Run workflow（develop を選択）: stg へ反映
+Actions > Deploy (production) > Run workflow（main を選択）   : 承認者の承認 1 回 → prod へ反映
 
 各デプロイの流れ（_deploy.yml）:
   migrate（supabase db push）──成功後──▶ service-front / admin-front を並列デプロイ（Vercel）
   ※ マイグレーションが失敗したらアプリは反映されない（新アプリ + 旧スキーマの不整合防止）
 ```
 
-| ブランチ | 環境 | Vercel | Supabase | 承認 |
+| 実行時に選ぶブランチ | 環境 | Vercel | Supabase | 承認 |
 |---------|------|--------|----------|:---:|
 | `develop` | stg | Preview デプロイ + 固定エイリアス URL | stg プロジェクト | なし |
 | `main` | prod | Production | prod プロジェクト | ✓ 1 回 |
 
 - ワークフロー: [`_deploy.yml`](.github/workflows/_deploy.yml)（実体・reusable）/ [`deploy-stg.yml`](.github/workflows/deploy-stg.yml) / [`deploy-prod.yml`](.github/workflows/deploy-prod.yml)
-- テスト成功の前提はブランチ保護（PR 必須 + CI required checks）で担保。デプロイ内でテストは再実行しません
-- 同一環境への連続マージは直列化されます（実行中デプロイは完走・後続はキュー待ち）
+- デプロイ元ブランチはワークフロー内のガードで固定（stg = develop / prod = main）。他のブランチを選んで実行してもジョブはスキップされます
+- CI / Full Test も手動実行です。デプロイ前に対象ブランチで CI が通っていることを確認してから実行してください（自動の required checks は廃止）
+- 同一環境への連続実行は直列化されます（実行中デプロイは完走・後続はキュー待ち）
 
 ### 必要なシークレット（GitHub Environments）
 
@@ -158,19 +159,20 @@ GitHub リポジトリの **Settings > Environments** に 3 つの環境を作�
 2. **Vercel**: service-front / admin-front の 2 プロジェクトを作成。Root Directory をそれぞれ `service-front` / `admin-front` に設定し、**Git 連携の自動デプロイを無効化**（有効のままだと push で二重デプロイされ順序保証が壊れる）。Environment Variables を Preview / Production スコープで設定
 3. **Stripe**: テストモード（stg URL）/ 本番モード（prod URL）それぞれに webhook エンドポイント `https://<env-url>/api/stripe/webhook` を登録し、`whsec_...` を Vercel の該当スコープへ
 4. **GitHub Environments**: 上記 3 環境を作成し、シークレットと required reviewers を設定
-5. **ブランチ保護**: develop / main に PR 必須 + CI（lint / type-check / test 等）を required checks に設定
+5. **ブランチ保護**: develop / main に PR 必須を設定（CI が手動実行になったため required checks は設定しない。設定するとチェックが自動で走らずマージ不能になる）
 
 ### リリースの流れ
 
-1. 機能ブランチ → `develop` へ PR・マージ → stg に自動反映 → stg URL で動作確認
-2. `develop` → `main` へ PR・マージ → Actions の `Deploy (production)` が**承認待ちで停止**
-3. 承認者が Actions の Review deployments から承認 → DB → アプリの順で prod へ反映
+1. 機能ブランチ → `develop` へ PR・マージ → Actions の `CI`（必要なら `Full Test` も）を develop で手動実行して green を確認
+2. Actions の `Deploy (staging)` を **develop を選んで Run workflow** → stg URL で動作確認
+3. `develop` → `main` へ PR・マージ → Actions の `Deploy (production)` を **main を選んで Run workflow** → **承認待ちで停止**
+4. 承認者が Actions の Review deployments から承認 → DB → アプリの順で prod へ反映
 
 ### トラブルシューティング
 
 | 症状 | 対処 |
 |------|------|
-| migrate が失敗した | アプリは未反映のまま止まる（正常な安全動作）。マイグレーションを修正する場合は**逆方向の新規マイグレーション**を追加して再マージ（down は書かない / sql.md） |
+| migrate が失敗した | アプリは未反映のまま止まる（正常な安全動作）。マイグレーションを修正する場合は**逆方向の新規マイグレーション**を追加してマージし、デプロイを再実行（down は書かない / sql.md） |
 | アプリのデプロイだけ失敗した | Actions の「Re-run failed jobs」で該当ジョブのみ再実行（`db push` は適用済みをスキップするため再実行しても安全） |
 | 手動で再デプロイしたい | 対象ワークフローの実行履歴から「Re-run all jobs」（コードの再ビルド + 再デプロイ。DB は no-op） |
 | 承認依頼が来ない | Environment `production-approval` の required reviewers 設定を確認 |
