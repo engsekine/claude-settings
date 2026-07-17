@@ -1226,7 +1226,7 @@ export type Database = {
                     user_id: string;
                 }[];
             };
-            grant_daily_bonus: { Args: never; Returns: undefined };
+            grant_daily_bonus: { Args: never; Returns: boolean };
             is_admin: { Args: never; Returns: boolean };
             is_handle_taken: {
                 Args: { p_exclude_user_id?: string; p_handle: string };
