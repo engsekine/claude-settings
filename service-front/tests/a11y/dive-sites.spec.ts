@@ -41,10 +41,12 @@ test('ダイブサイト詳細 - WCAG 2.1 AA 違反なし（要認証）', async
     await page.getByRole('button', { name: '作成する' }).click();
     await page.waitForURL(/\/dives\/[0-9a-f-]+$/);
 
-    // 詳細のサイト名リンクからダイブサイト詳細へ遷移し a11y を検証
+    // 詳細のサイト名リンク（h1 内）からダイブサイト詳細へ遷移し a11y を検証。
+    // ヘッダー刷新後はパンくずの現在ページ（span[role="link"][aria-disabled]）が
+    // /大瀬崎/ に部分一致してしまうため、見出しにスコープする
     await page
+        .getByRole('heading', { level: 1 })
         .getByRole('link', { name: /大瀬崎/ })
-        .first()
         .click();
     await page.waitForURL(/\/dive-sites\/[0-9a-f-]+$/);
     await expectNoViolations(page);
