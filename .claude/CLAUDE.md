@@ -205,5 +205,5 @@ npx biome check .
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at specs/035-sns-share-buttons/plan.md
+at specs/036-daily-bonus-modal/plan.md
 <!-- SPECKIT END -->

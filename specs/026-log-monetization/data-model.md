@@ -64,9 +64,11 @@
 2. `log_credit_ledger` へ 1 行 insert
 3. `balance = balance + p_amount` で更新（負になる場合は `check` 違反で全体ロールバック）
 
-### grant_daily_bonus() → void（RPC・authenticated から実行可）
+### grant_daily_bonus() → boolean（RPC・authenticated から実行可）
 
-`security definer`。`auth.uid()` の当日（`(now() at time zone 'Asia/Tokyo')::date`）分を `on conflict do nothing` で +1。戻り値は持たない（残高表示は `getCreditBalance()` が担う）。
+`security definer`。`auth.uid()` の当日（`(now() at time zone 'Asia/Tokyo')::date`）分を冪等に +1。
+
+> **036 改定（2026-07-17）**: 獲得モーダルの表示判定のため、返り値を `void` → `boolean`（付与発生で `true` / 当日分付与済みで `false`）に変更（`20260717100000_alter_grant_daily_bonus_return_granted.sql`、[specs/036-daily-bonus-modal](../036-daily-bonus-modal/data-model.md) 参照）。付与ロジック・冪等性は不変。残高表示は従来どおり `getCreditBalance()` が担う。
 
 ### consume_log_credit() → trigger（dives **AFTER INSERT**）
 
