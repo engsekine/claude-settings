@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { DEFAULT_PACKING_ITEMS } from '@/features/plans/lib/default-packing-items';
 import type { PlanFormValues } from '@/features/plans/schemas/plan.schema';
 import { requireUser } from '@/shared/lib/auth';
+import { todayInJst } from '@/shared/lib/date';
 import { createClient } from '@/shared/lib/supabase/server';
 import { type ActionResult, actionFailure, actionSuccess } from '@/shared/types/action-result';
 
@@ -131,6 +132,131 @@ export const togglePackingItem = async (itemId: string, isChecked: boolean): Pro
     }
 
     revalidatePlanPaths();
+    return actionSuccess();
+};
+
+/**
+ * 持ち物準備を完了にし、忘れ物確認フェーズへ移行する（037 / FR-001〜003）。
+ * 準備チェック（is_checked）の状態は問わない（FR-002）。UI 側の非表示と合わせた二重ガード。
+ */
+export const completePacking = async (planId: string): Promise<ActionResult> => {
+    const supabase = await createClient();
+
+    const { failure } = await requireUser(supabase);
+    if (failure) return failure;
+
+    // 所有チェックは RLS に委ねる（他人の予定は取得できず「見つかりません」になる）
+    const { data: plan, error: planError } = await supabase
+        .from('dive_plans')
+        .select('id, planned_on, packing_completed_at, plan_packing_items(id)')
+        .eq('id', planId)
+        .maybeSingle();
+
+    if (planError) {
+        console.error('[completePacking] supabase error:', planError);
+        return actionFailure('完了の保存に失敗しました。時間をおいて再度お試しください');
+    }
+    if (!plan) return actionFailure('予定が見つかりません');
+    if (plan.planned_on < todayInJst()) return actionFailure('終了済みの予定では完了できません');
+    if (plan.plan_packing_items.length === 0) return actionFailure('持ち物がないため完了できません');
+    // 完了済みへの再実行は状態を変えず成功扱い（冪等）
+    if (plan.packing_completed_at) return actionSuccess();
+
+    const { error } = await supabase
+        .from('dive_plans')
+        .update({ packing_completed_at: new Date().toISOString() })
+        .eq('id', planId);
+
+    if (error) {
+        console.error('[completePacking] supabase error:', error);
+        return actionFailure('完了の保存に失敗しました。時間をおいて再度お試しください');
+    }
+
+    revalidatePlanPaths(planId);
+    return actionSuccess();
+};
+
+/**
+ * 完了を解除し、通常の持ち物リストへ戻す（037 / FR-005）。
+ * 忘れ物確認の確認状態は破棄する（Clarifications Q1）。準備チェック（is_checked）は変更しない。
+ */
+export const uncompletePacking = async (planId: string): Promise<ActionResult> => {
+    const supabase = await createClient();
+
+    const { failure } = await requireUser(supabase);
+    if (failure) return failure;
+
+    const { data: plan, error: planError } = await supabase
+        .from('dive_plans')
+        .select('id, packing_completed_at')
+        .eq('id', planId)
+        .maybeSingle();
+
+    if (planError) {
+        console.error('[uncompletePacking] supabase error:', planError);
+        return actionFailure('解除に失敗しました。時間をおいて再度お試しください');
+    }
+    if (!plan) return actionFailure('予定が見つかりません');
+    // 未完了への解除は状態を変えず成功扱い（冪等）
+    if (!plan.packing_completed_at) return actionSuccess();
+
+    const { error: planUpdateError } = await supabase
+        .from('dive_plans')
+        .update({ packing_completed_at: null })
+        .eq('id', planId);
+
+    if (planUpdateError) {
+        console.error('[uncompletePacking] supabase error:', planUpdateError);
+        return actionFailure('解除に失敗しました。時間をおいて再度お試しください');
+    }
+
+    // 確認状態のリセット（Q1）。失敗しても解除自体は成立しており、次の完了時に UI 上は未確認から始まる
+    const { error: itemsUpdateError } = await supabase
+        .from('plan_packing_items')
+        .update({ is_confirmed: false })
+        .eq('plan_id', planId);
+
+    if (itemsUpdateError) {
+        console.error('[uncompletePacking] supabase error (reset confirmations):', itemsUpdateError);
+    }
+
+    revalidatePlanPaths(planId);
+    return actionSuccess();
+};
+
+/**
+ * 忘れ物確認リストの項目の確認状態を切り替える（037 / FR-006）。
+ * 親予定が完了中かつ終了済みでない場合のみ操作できる（FR-009）。
+ */
+export const toggleConfirmItem = async (itemId: string, isConfirmed: boolean): Promise<ActionResult> => {
+    const supabase = await createClient();
+
+    const { failure } = await requireUser(supabase);
+    if (failure) return failure;
+
+    // 親予定の状態を join で取得（所有チェックは RLS に委ねる）
+    const { data: item, error: itemError } = await supabase
+        .from('plan_packing_items')
+        .select('id, dive_plans(id, planned_on, packing_completed_at)')
+        .eq('id', itemId)
+        .maybeSingle();
+
+    if (itemError) {
+        console.error('[toggleConfirmItem] supabase error:', itemError);
+        return actionFailure('確認状態の保存に失敗しました。時間をおいて再度お試しください');
+    }
+    if (!item?.dive_plans) return actionFailure('持ち物が見つかりません');
+    if (!item.dive_plans.packing_completed_at) return actionFailure('準備完了後に確認できます');
+    if (item.dive_plans.planned_on < todayInJst()) return actionFailure('終了済みの予定では操作できません');
+
+    const { error } = await supabase.from('plan_packing_items').update({ is_confirmed: isConfirmed }).eq('id', itemId);
+
+    if (error) {
+        console.error('[toggleConfirmItem] supabase error:', error);
+        return actionFailure('確認状態の保存に失敗しました。時間をおいて再度お試しください');
+    }
+
+    revalidatePlanPaths(item.dive_plans.id);
     return actionSuccess();
 };
 

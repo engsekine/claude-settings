@@ -7,6 +7,9 @@ const routerRefresh = vi.fn();
 
 vi.mock('@/features/plans/server/actions', () => ({
     togglePackingItem: vi.fn(),
+    completePacking: vi.fn(),
+    toggleConfirmItem: vi.fn(),
+    uncompletePacking: vi.fn(),
 }));
 
 vi.mock('next/navigation', () => ({
@@ -20,6 +23,7 @@ const buildItems = (checkedCount: number, totalCount: number): PackingItem[] =>
         id: `item-${index + 1}`,
         name: `持ち物${index + 1}`,
         isChecked: index < checkedCount,
+        isConfirmed: false,
         position: index,
     }));
 
@@ -30,12 +34,13 @@ const buildSummary = (overrides: Partial<NextPlanSummary> = {}): NextPlanSummary
     notes: '夏の遠征。ボートダイブ予定。',
     daysUntil: 6,
     packingItems: [
-        { id: 'item-1', name: 'マスク', isChecked: true, position: 0 },
-        { id: 'item-2', name: 'フィン', isChecked: true, position: 1 },
-        { id: 'item-3', name: 'ログブック', isChecked: true, position: 2 },
-        { id: 'item-4', name: 'シュノーケル', isChecked: false, position: 3 },
-        { id: 'item-5', name: 'ウェットスーツ', isChecked: false, position: 4 },
+        { id: 'item-1', name: 'マスク', isChecked: true, isConfirmed: false, position: 0 },
+        { id: 'item-2', name: 'フィン', isChecked: true, isConfirmed: false, position: 1 },
+        { id: 'item-3', name: 'ログブック', isChecked: true, isConfirmed: false, position: 2 },
+        { id: 'item-4', name: 'シュノーケル', isChecked: false, isConfirmed: false, position: 3 },
+        { id: 'item-5', name: 'ウェットスーツ', isChecked: false, isConfirmed: false, position: 4 },
     ],
+    packingCompletedAt: null,
     ...overrides,
 });
 
@@ -106,6 +111,24 @@ describe('NextPlanCardView', () => {
         const { container } = render(<NextPlanCardView summary={buildSummary()} />);
 
         expect(container.querySelector('section')).toHaveClass('bg-background');
+    });
+
+    it('未完了のとき「準備完了にする」ボタンを表示する（037）', () => {
+        render(<NextPlanCardView summary={buildSummary()} />);
+
+        expect(screen.getByRole('button', { name: '準備完了にする' })).toBeInTheDocument();
+        expect(screen.queryByText(/確認済み/)).not.toBeInTheDocument();
+    });
+
+    it('完了中（packingCompletedAt あり）は持ち物の準備の代わりに忘れ物確認を表示する（037 / FR-003）', () => {
+        render(<NextPlanCardView summary={buildSummary({ packingCompletedAt: '2026-08-07T00:00:00Z' })} />);
+
+        expect(screen.getByRole('heading', { level: 4, name: '忘れ物確認' })).toBeInTheDocument();
+        expect(screen.getByText('/ 5 確認済み')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: '完了を解除' })).toBeInTheDocument();
+        // 準備チェック側の UI は表示しない（置き換え表示 / Q2）
+        expect(screen.queryByRole('heading', { level: 4, name: '持ち物の準備' })).not.toBeInTheDocument();
+        expect(screen.queryByText(/準備済み/)).not.toBeInTheDocument();
     });
 
     it('summary が null のときは空状態と予定作成の導線を表示する', () => {

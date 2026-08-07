@@ -26,12 +26,16 @@ export interface PackingItem {
     id: string;
     name: string;
     isChecked: boolean;
+    /** 忘れ物確認（2 周目チェック）の確認状態（037）。準備チェック isChecked とは独立 */
+    isConfirmed: boolean;
     position: number;
 }
 
 /** 予定詳細（持ち物込み） */
 export interface PlanWithPacking extends Plan {
     packingItems: PackingItem[];
+    /** 持ち物準備の完了日時（037）。null = 未完了。値あり = 完了中（忘れ物確認リストを表示） */
+    packingCompletedAt: string | null;
     /** 紐付けたショップの要約（033）。未紐付けは null。本人向け詳細でのみ使用する */
     shop: PlanShopSummary | null;
 }
@@ -47,6 +51,8 @@ export interface NextPlanSummary {
     daysUntil: number;
     /** 持ち物（表示順）。カード上でチェック操作するため全件持つ */
     packingItems: PackingItem[];
+    /** 持ち物準備の完了日時（037）。null = 未完了。値あり = 完了中（忘れ物確認リストを表示） */
+    packingCompletedAt: string | null;
 }
 
 /** DB row → Plan 変換 */
@@ -65,5 +71,6 @@ export const mapPackingItem = (row: PackingItemRow): PackingItem => ({
     id: row.id,
     name: row.name,
     isChecked: row.is_checked,
+    isConfirmed: row.is_confirmed,
     position: row.position,
 });

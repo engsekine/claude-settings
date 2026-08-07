@@ -5,11 +5,11 @@ import type { NextPlanSummary, PackingItem } from '@/features/plans/types';
 import { NextPlanCardView } from './NextPlanCardView';
 
 const basePackingItems: PackingItem[] = [
-    { id: 'item-1', name: 'マスク', isChecked: true, position: 0 },
-    { id: 'item-2', name: 'フィン', isChecked: true, position: 1 },
-    { id: 'item-3', name: 'ログブック', isChecked: false, position: 2 },
-    { id: 'item-4', name: 'シュノーケル', isChecked: false, position: 3 },
-    { id: 'item-5', name: 'ウェットスーツ', isChecked: false, position: 4 },
+    { id: 'item-1', name: 'マスク', isChecked: true, isConfirmed: false, position: 0 },
+    { id: 'item-2', name: 'フィン', isChecked: true, isConfirmed: false, position: 1 },
+    { id: 'item-3', name: 'ログブック', isChecked: false, isConfirmed: false, position: 2 },
+    { id: 'item-4', name: 'シュノーケル', isChecked: false, isConfirmed: false, position: 3 },
+    { id: 'item-5', name: 'ウェットスーツ', isChecked: false, isConfirmed: false, position: 4 },
 ];
 
 const baseSummary: NextPlanSummary = {
@@ -19,6 +19,7 @@ const baseSummary: NextPlanSummary = {
     notes: '夏の遠征。ボートダイブ予定。',
     daysUntil: 9,
     packingItems: basePackingItems,
+    packingCompletedAt: null,
 };
 
 const meta = {

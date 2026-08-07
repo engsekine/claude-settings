@@ -1,4 +1,5 @@
 export { DeletePlanButton } from './components/client/DeletePlanButton';
+export { ForgottenItemChecklist } from './components/client/ForgottenItemChecklist';
 export { PackingChecklist } from './components/client/PackingChecklist';
 export { PackingList } from './components/client/PackingList';
 export { PlanForm } from './components/client/PlanForm';

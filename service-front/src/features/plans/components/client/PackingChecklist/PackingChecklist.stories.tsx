@@ -5,11 +5,11 @@ import type { PackingItem } from '@/features/plans/types';
 import { PackingChecklist } from './PackingChecklist';
 
 const mixedItems: PackingItem[] = [
-    { id: 'item-1', name: 'マスク', isChecked: true, position: 0 },
-    { id: 'item-2', name: 'フィン', isChecked: false, position: 1 },
-    { id: 'item-3', name: 'レギュレーター', isChecked: true, position: 2 },
-    { id: 'item-4', name: 'BCD', isChecked: false, position: 3 },
-    { id: 'item-5', name: 'ウェットスーツ', isChecked: false, position: 4 },
+    { id: 'item-1', name: 'マスク', isChecked: true, isConfirmed: false, position: 0 },
+    { id: 'item-2', name: 'フィン', isChecked: false, isConfirmed: false, position: 1 },
+    { id: 'item-3', name: 'レギュレーター', isChecked: true, isConfirmed: false, position: 2 },
+    { id: 'item-4', name: 'BCD', isChecked: false, isConfirmed: false, position: 3 },
+    { id: 'item-5', name: 'ウェットスーツ', isChecked: false, isConfirmed: false, position: 4 },
 ];
 
 const meta = {
@@ -43,18 +43,18 @@ export const Empty: Story = {
 export const ManyItems: Story = {
     args: {
         items: [
-            { id: 'item-1', name: 'マスク', isChecked: true, position: 0 },
-            { id: 'item-2', name: 'フィン', isChecked: false, position: 1 },
-            { id: 'item-3', name: 'レギュレーター', isChecked: true, position: 2 },
-            { id: 'item-4', name: 'BCD', isChecked: false, position: 3 },
-            { id: 'item-5', name: 'ウェットスーツ', isChecked: true, position: 4 },
-            { id: 'item-6', name: 'ダイブコンピューター', isChecked: false, position: 5 },
-            { id: 'item-7', name: 'タンク', isChecked: false, position: 6 },
-            { id: 'item-8', name: 'ウェイト', isChecked: true, position: 7 },
-            { id: 'item-9', name: 'ライト', isChecked: false, position: 8 },
-            { id: 'item-10', name: 'カメラ', isChecked: false, position: 9 },
-            { id: 'item-11', name: 'ログブック', isChecked: true, position: 10 },
-            { id: 'item-12', name: 'Cカード', isChecked: false, position: 11 },
+            { id: 'item-1', name: 'マスク', isChecked: true, isConfirmed: false, position: 0 },
+            { id: 'item-2', name: 'フィン', isChecked: false, isConfirmed: false, position: 1 },
+            { id: 'item-3', name: 'レギュレーター', isChecked: true, isConfirmed: false, position: 2 },
+            { id: 'item-4', name: 'BCD', isChecked: false, isConfirmed: false, position: 3 },
+            { id: 'item-5', name: 'ウェットスーツ', isChecked: true, isConfirmed: false, position: 4 },
+            { id: 'item-6', name: 'ダイブコンピューター', isChecked: false, isConfirmed: false, position: 5 },
+            { id: 'item-7', name: 'タンク', isChecked: false, isConfirmed: false, position: 6 },
+            { id: 'item-8', name: 'ウェイト', isChecked: true, isConfirmed: false, position: 7 },
+            { id: 'item-9', name: 'ライト', isChecked: false, isConfirmed: false, position: 8 },
+            { id: 'item-10', name: 'カメラ', isChecked: false, isConfirmed: false, position: 9 },
+            { id: 'item-11', name: 'ログブック', isChecked: true, isConfirmed: false, position: 10 },
+            { id: 'item-12', name: 'Cカード', isChecked: false, isConfirmed: false, position: 11 },
         ],
     },
 };
