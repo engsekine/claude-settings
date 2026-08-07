@@ -42,6 +42,18 @@ export const Today: Story = {
     args: { summary: { ...baseSummary, daysUntil: 0 } },
 };
 
+/** hero バリアント（TOP の FV・写真背景上のすりガラス配色）。背景を暗くして視認性を再現する */
+export const Hero: Story = {
+    args: { summary: { ...baseSummary, daysUntil: 0 }, variant: 'hero' },
+    decorators: [
+        (StoryComponent) => (
+            <div className="bg-[oklch(0.28_0.08_255)] p-6">
+                <StoryComponent />
+            </div>
+        ),
+    ],
+};
+
 /** 持ち物が全件チェック済み */
 export const AllPacked: Story = {
     args: {

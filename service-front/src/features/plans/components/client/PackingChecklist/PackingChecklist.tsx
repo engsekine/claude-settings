@@ -9,6 +9,8 @@ import type { PackingItem } from '@/features/plans/types';
 interface PackingChecklistProps {
     /** 持ち物（表示順）。チェック済み・未チェックの全件を渡す */
     items: PackingItem[];
+    /** hero: FV（写真背景）上のすりガラスカード用の白文字配色。default: 通常背景用 */
+    variant?: 'default' | 'hero';
 }
 
 /**
@@ -16,7 +18,8 @@ interface PackingChecklistProps {
  * 全項目をスクロール可能なリストで表示し、その場でチェック状態を切り替えられる。
  * 追加・削除は予定詳細（PackingList）に任せ、ここではトグルのみ提供する。
  */
-export const PackingChecklist = ({ items }: PackingChecklistProps) => {
+export const PackingChecklist = ({ items, variant = 'default' }: PackingChecklistProps) => {
+    const isHero = variant === 'hero';
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [serverError, setServerError] = useState<string | null>(null);
@@ -34,13 +37,14 @@ export const PackingChecklist = ({ items }: PackingChecklistProps) => {
     };
 
     if (items.length === 0) {
-        return <p className="text-muted-foreground">持ち物はまだありません</p>;
+        return <p className={isHero ? 'text-white/70' : 'text-muted-foreground'}>持ち物はまだありません</p>;
     }
 
     return (
         <div className="flex flex-col gap-2">
             {serverError && (
-                <p role="alert" className="text-red-600">
+                // 写真背景上では text-red-600 がコントラスト不足のため明るい赤に切り替える
+                <p role="alert" className={isHero ? 'text-red-300' : 'text-red-600'}>
                     {serverError}
                 </p>
             )}
@@ -57,7 +61,10 @@ export const PackingChecklist = ({ items }: PackingChecklistProps) => {
                                 onChange={() => handleToggle(item)}
                                 className="size-4 shrink-0"
                             />
-                            <label htmlFor={checkboxId} className="flex-1 text-foreground">
+                            <label
+                                htmlFor={checkboxId}
+                                className={isHero ? 'flex-1 text-white' : 'flex-1 text-foreground'}
+                            >
                                 {item.name}
                             </label>
                         </li>

@@ -66,7 +66,7 @@ export default async function RootLayout({
                             </>
                         }
                     />
-                    <main className="flex flex-1 justify-center bg-background">{children}</main>
+                    <main className="bg-background">{children}</main>
                     <Footer />
                     <CookieConsentBanner initialConsent={consent} />
                 </Providers>

@@ -1,5 +1,6 @@
 # Base image (using Node.js and Alpine Linux)
-FROM node:22-alpine AS base
+# ルート package.json の engines（node >=24 <25 / npm >=11）に合わせる
+FROM node:24-alpine AS base
 
 # Install curl for healthcheck
 RUN apk add --no-cache curl
@@ -17,9 +18,13 @@ WORKDIR /app
 ARG TARGETARCH
 
 # 先に package.json 群だけコピー（変更頻度が低いため npm ci のキャッシュが効きやすい）
+# service-front が依存する workspace パッケージ（@repo/*）はすべて列挙する。
+# 漏れると npm ci で node_modules/@repo/<name> のリンクが作られず Module not found になる
 COPY package.json package-lock.json ./
 COPY service-front/package.json ./service-front/
+COPY packages/core/package.json ./packages/core/
 COPY packages/supabase/package.json ./packages/supabase/
+COPY packages/ui/package.json ./packages/ui/
 
 # npm の optional dependencies バグ（https://github.com/npm/cli/issues/4828）の対処:
 # Mac (darwin-arm64) で生成した package-lock.json には Linux 向けプラットフォーム固有
@@ -98,7 +103,9 @@ COPY --from=deps /app/service-front/node_modules ./service-front/node_modules
 # workspace 構造を再現
 COPY package.json package-lock.json ./
 COPY service-front/package.json ./service-front/
+COPY packages/core ./packages/core
 COPY packages/supabase ./packages/supabase
+COPY packages/ui ./packages/ui
 
 # .next ディレクトリを作成し権限を node ユーザーに付与
 RUN mkdir -p service-front/.next && chown -R node:node /app
@@ -123,7 +130,9 @@ WORKDIR /app
 # 本番依存のみインストール（workspace 構造を再現してから）
 COPY package.json package-lock.json ./
 COPY service-front/package.json ./service-front/
+COPY packages/core ./packages/core
 COPY packages/supabase ./packages/supabase
+COPY packages/ui ./packages/ui
 RUN npm ci --omit=dev --workspace=service-front --include-workspace-root
 
 # ビルド成果物をコピー

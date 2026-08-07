@@ -5,6 +5,10 @@
 -- 仕様: specs/034-profile-user-id/data-model.md
 -- ========================================
 
+-- drop if exists の空振り時に出る「does not exist, skipping」NOTICE を抑制する
+-- （set local のためこのマイグレーションのトランザクション内のみ有効）
+set local client_min_messages = warning;
+
 -- Rev.1（ニックネーム URL・未リリース）の解決関数を適用済みローカル DB から掃除する
 drop function if exists public.get_user_id_by_nickname(text);
 

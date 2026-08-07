@@ -12,6 +12,12 @@ interface DashboardHeroProps {
     badge?: ReactNode;
     /** FV に表示する直近の次のダイビング予定。feature 間 import 禁止のためページ側から注入する。予定なしは null */
     nextPlan?: HeroNextPlan | null;
+    /**
+     * 当日（予定日 = 今日）の予定を表示する詳細カード（持ち物準備付き）。
+     * 指定時は見出しを「今日のダイビング予定」に切り替え、nextPlan の簡素カードの代わりに表示する。
+     * feature 間 import 禁止のため NextPlanCardView はページ側から注入する
+     */
+    todayPlanCard?: ReactNode;
 }
 
 /** 残り日数の表示（表記は NextPlanCard と統一: 今日 / あと N 日） */
@@ -27,7 +33,7 @@ const formatDaysUntil = (daysUntil: number): string => {
  * 直近の次のダイビング予定 1 件と予定作成ボタン（常時表示）を続ける。
  * 写真の上に固定の白文字を置くため、ダークモードでもスクリムの濃さだけを変える。
  */
-export const DashboardHero = async ({ badge, nextPlan }: DashboardHeroProps) => {
+export const DashboardHero = async ({ badge, nextPlan, todayPlanCard }: DashboardHeroProps) => {
     const hero = await getDashboardHero();
 
     // 集計失敗時は「—」表示に落とす（FV 全体は出す）
@@ -90,16 +96,21 @@ export const DashboardHero = async ({ badge, nextPlan }: DashboardHeroProps) => 
                 <div className="flex flex-col gap-3">
                     <div className="flex items-center justify-between gap-4">
                         <Heading level={2} className="text-white">
-                            次のダイビング予定
+                            {todayPlanCard ? '今日のダイビング予定' : '次のダイビング予定'}
                         </Heading>
-                        <Link
-                            href="/plans/new"
-                            className="inline-flex h-9 shrink-0 items-center justify-center rounded-lg border border-white/40 px-4 font-bold text-sm text-white transition-colors hover:bg-white/10"
-                        >
-                            予定を作成する
-                        </Link>
+                        {/* 当日はカード内の導線（予定の詳細 / 持ち物を準備する）に集中させるため作成ボタンは出さない */}
+                        {!todayPlanCard && (
+                            <Link
+                                href="/plans/new"
+                                className="inline-flex h-9 shrink-0 items-center justify-center rounded-lg border border-white/40 px-4 font-bold text-sm text-white transition-colors hover:bg-white/10"
+                            >
+                                予定を作成する
+                            </Link>
+                        )}
                     </div>
-                    {nextPlan ? (
+                    {todayPlanCard ? (
+                        todayPlanCard
+                    ) : nextPlan ? (
                         <Link
                             href={`/plans/${nextPlan.id}`}
                             className="flex items-center justify-between gap-4 rounded-xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm transition-colors hover:bg-white/15"

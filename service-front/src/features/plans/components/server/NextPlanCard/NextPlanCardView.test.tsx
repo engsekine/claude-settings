@@ -94,6 +94,20 @@ describe('NextPlanCardView', () => {
         expect(screen.queryByText('夏の遠征。ボートダイブ予定。')).not.toBeInTheDocument();
     });
 
+    it('variant="hero" のときはすりガラス配色（bg-white/10 + backdrop-blur）を適用する', () => {
+        const { container } = render(<NextPlanCardView summary={buildSummary()} variant="hero" />);
+
+        const section = container.querySelector('section');
+        expect(section).toHaveClass('bg-white/10', 'backdrop-blur-sm');
+        expect(section).not.toHaveClass('bg-background');
+    });
+
+    it('variant 未指定のときは通常配色（bg-background）を適用する', () => {
+        const { container } = render(<NextPlanCardView summary={buildSummary()} />);
+
+        expect(container.querySelector('section')).toHaveClass('bg-background');
+    });
+
     it('summary が null のときは空状態と予定作成の導線を表示する', () => {
         render(<NextPlanCardView summary={null} />);
 

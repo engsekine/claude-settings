@@ -87,6 +87,27 @@ describe('DashboardHero', () => {
         expect(screen.getByText('今日')).toBeInTheDocument();
     });
 
+    it('todayPlanCard 指定時は見出しが「今日のダイビング予定」になり、カードスロットを表示する', async () => {
+        render(
+            await DashboardHero({
+                todayPlanCard: <div>今日の予定詳細カード</div>,
+                nextPlan: { id: 'plan-1', plannedOn: '2026-07-07', location: '伊豆・大瀬崎', daysUntil: 0 },
+            }),
+        );
+
+        expect(screen.getByRole('heading', { level: 2, name: '今日のダイビング予定' })).toBeInTheDocument();
+        expect(screen.getByText('今日の予定詳細カード')).toBeInTheDocument();
+        // 簡素カード（予定詳細への 1 行リンク）は詳細カードに置き換わるため表示しない
+        expect(screen.queryByRole('heading', { level: 2, name: '次のダイビング予定' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('link', { name: /伊豆・大瀬崎/ })).not.toBeInTheDocument();
+    });
+
+    it('todayPlanCard 指定時は予定作成ボタンを表示しない', async () => {
+        render(await DashboardHero({ todayPlanCard: <div>今日の予定詳細カード</div> }));
+
+        expect(screen.queryByRole('link', { name: '予定を作成する' })).not.toBeInTheDocument();
+    });
+
     it('予定がなくても見出し・作成ボタンは表示され、空メッセージが出る', async () => {
         render(await DashboardHero({ nextPlan: null }));
 

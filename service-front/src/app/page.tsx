@@ -5,7 +5,7 @@ import { DashboardHero, RecordOverhaulButton, TopDashboard } from '@/features/da
 import { diveLocationLabel, getCoverThumbUrls, listDives } from '@/features/dives';
 import { GuideIntroSection } from '@/features/guide';
 import { ensureTimedNotifications } from '@/features/notifications/server/queries';
-import { listNextPlansWithProgress, NextPlanCardView } from '@/features/plans';
+import { listNextPlansWithProgress, NextPlanCardView, NextPlanList, splitTodayPlan } from '@/features/plans';
 import { recordOverhaul } from '@/features/regulators';
 import { fetchLikedDives, fetchTimeline, LikedDivesList, Timeline, TimelineTabsSwitcher } from '@/features/social';
 import { Heading } from '@/shared/components/typography/Heading';
@@ -37,14 +37,18 @@ export default async function Home() {
         data: { user },
     } = await supabase.auth.getUser();
 
-    // 次の予定は FV（先頭 1 件）と「次のダイビング予定」セクション（最大 3 件）で共有する。
+    // 次の予定は FV（先頭 1 件・当日は詳細カード）と「次のダイビング予定」セクション（一覧・最大 5 件）で共有する。
     // タイムラインといいねしたログは TOP 内タブで切り替えるため、両方をここで取得する
     const [recentPage, timeline, likedDives, nextPlans] = await Promise.all([
         listDives({ limit: 3 }),
         fetchTimeline({ limit: 20 }),
         fetchLikedDives(),
-        listNextPlansWithProgress(3),
+        // FV の当日詳細カード 1 件 + FV 下の一覧 5 件をまかなうため 6 件取得する
+        listNextPlansWithProgress(6),
     ]);
+    // 当日の予定は FV に詳細カード（持ち物準備付き）で表示し、FV 下は残りの予定のみにする
+    const { todayPlan, upcomingPlans } = splitTodayPlan(nextPlans);
+
     // 最近のログのカードに代表写真を出すため、対象ダイブのカバーサムネイルをまとめて解決する
     const coverThumbByDive = await getCoverThumbUrls(recentPage.items.map((dive) => dive.id));
     const recentDives = recentPage.items.map((dive) => ({
@@ -59,7 +63,11 @@ export default async function Home() {
     return (
         <div className="flex flex-1 flex-col">
             {/* FV は全幅（コンテナ外）。残枠バッジ（026 / FR-013）はログ作成ボタンの上に注入 */}
-            <DashboardHero badge={<CreditBalanceBadge variant="hero" />} nextPlan={nextPlans[0] ?? null} />
+            <DashboardHero
+                badge={<CreditBalanceBadge variant="hero" />}
+                nextPlan={upcomingPlans[0] ?? null}
+                todayPlanCard={todayPlan ? <NextPlanCardView summary={todayPlan} variant="hero" /> : undefined}
+            />
             {/* セクション間の余白は各セクション側（pt-20 / mt-20）で取る */}
             <div className="mx-auto flex w-full max-w-5xl flex-col px-4">
                 <TopDashboard
@@ -83,11 +91,8 @@ export default async function Home() {
                                     </Link>
                                 </div>
                             </div>
-                            {nextPlans.length > 0 ? (
-                                nextPlans.map((plan) => <NextPlanCardView key={plan.id} summary={plan} />)
-                            ) : (
-                                <NextPlanCardView summary={null} />
-                            )}
+                            {/* FV 下は持ち物なしの簡素な一覧（最大 5 件）。持ち物付きの詳細カードは FV の当日表示のみ */}
+                            <NextPlanList plans={upcomingPlans.slice(0, 5)} />
                         </section>
                     }
                     timelineSection={
