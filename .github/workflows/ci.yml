@@ -1,12 +1,15 @@
-# 軽量品質チェック（手動実行）
+# 軽量品質チェック
 # 仕様: specs/005-github-actions-ci/
-# 自動トリガー（PR / main push）は手動運用への移行で廃止（2026-07-17）。
-# Actions タブの「Run workflow」から対象ブランチを選んで実行する。
-# 注意: branch protection の required checks に CI のジョブを指定している場合、
-# チェックが自動では走らなくなるため保護設定側の見直しが必要。
+# ブランチ更新（push）のたびに自動実行する（2026-08-08 に手動運用から復帰）。
+# 重いテスト（E2E / Storybook）は full-test.yml のまま手動実行で分離している。
+# Actions タブの「Run workflow」からの手動実行も引き続き可能。
 name: CI
 
 on:
+    push:
+        # タグ push では実行しない（ブランチのみ対象）
+        branches:
+            - '**'
     workflow_dispatch:
 
 # 同一 ref の旧実行をキャンセル（FR-003）。main は完走させる
