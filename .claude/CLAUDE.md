@@ -162,7 +162,7 @@ npx biome check .
 | `/code-fix [ファイル]` | コード規約に基づいてコードを修正する |
 | `/sync-spec [ファイル]` | 変更コードと `specs/` のずれを検出し、仕様書を実装に合わせて修正する |
 | `/summary` | PRディスクリプションを生成する |
-| `/suggest-commit` | 変更差分からコミット名を提案する |
+| `/create-commit-message` | 変更差分からコミット名を提案し、選択されたメッセージでコミットする |
 | `/reply-review <コメント>` | レビューコメントへの返信ドラフトを生成する |
 | `/empirical-prompt-tuning` | プロンプトやskillを実行・評価し反復改善する |
 | `/generate-with-tests <path>` | コンポーネントに対し Vitest / Storybook / Playwright テストを並列生成する |
