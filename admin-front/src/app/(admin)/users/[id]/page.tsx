@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 
-import { getUserDetail } from '@/features/users-admin';
+import { getUserDetail, getUserMfaStatus } from '@/features/users-admin';
+import { RemoveMfaButton } from '@/features/users-admin/components/client/RemoveMfaButton';
 import { generatePageMetadata } from '@/shared/config/metadata';
 
 export const metadata = generatePageMetadata({
@@ -13,7 +14,8 @@ const GENDER_LABEL: Record<string, string> = { male: '男性', female: '女性',
 
 export default async function UserDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const view = await getUserDetail(id);
+    /** 両クエリは独立（それぞれ requireAdmin を通る）ため並列で取得する */
+    const [view, mfaStatus] = await Promise.all([getUserDetail(id), getUserMfaStatus(id)]);
     if (!view) notFound();
 
     const { detail, diveCount } = view;
@@ -39,6 +41,22 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
                     </div>
                 ))}
             </dl>
+
+            <section aria-labelledby="mfa-heading" className="flex max-w-xl flex-col gap-2 border-border border-t pt-4">
+                <h2 id="mfa-heading" className="font-semibold text-lg">
+                    2 要素認証
+                </h2>
+                {mfaStatus.enabled ? (
+                    <>
+                        <p className="text-muted-foreground text-sm">
+                            このユーザーは 2 要素認証（電話番号）が有効です。電話紛失時などは下のボタンで解除できます。
+                        </p>
+                        <RemoveMfaButton userId={detail.user_id} />
+                    </>
+                ) : (
+                    <p className="text-muted-foreground text-sm">このユーザーは 2 要素認証を有効化していません。</p>
+                )}
+            </section>
         </div>
     );
 }

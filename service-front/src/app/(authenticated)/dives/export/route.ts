@@ -1,3 +1,5 @@
+import type { Database } from '@repo/supabase';
+import { createClient as createSupabaseJsClient } from '@supabase/supabase-js';
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { diveLocationLabel } from '@/features/dives/lib/diveLabel';
@@ -16,15 +18,37 @@ const singleFilenameInput = (ids: string[] | null, dives: Dive[]) => {
     return { diveDate: dive.diveDate, label: diveLocationLabel({ location: dive.location, diveSite: dive.diveSite }) };
 };
 
+/** Authorization: Bearer <token> を取り出す（無ければ null = cookie 認証にフォールバック） */
+const bearerToken = (request: NextRequest): string | null => {
+    const header = request.headers.get('authorization');
+    if (!header?.toLowerCase().startsWith('bearer ')) return null;
+    return header.slice('bearer '.length).trim() || null;
+};
+
+/**
+ * Bearer トークン用の Supabase クライアント（029 モバイル / anon キー + RLS）。
+ * PostgREST へのリクエストにトークンを載せることで RLS が本人として評価される。
+ */
+const createBearerClient = (token: string) => {
+    const url = process.env['SUPABASE_INTERNAL_URL'] ?? process.env['NEXT_PUBLIC_SUPABASE_URL'] ?? '';
+    const anonKey = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'] ?? '';
+    return createSupabaseJsClient<Database>(url, anonKey, {
+        global: { headers: { Authorization: `Bearer ${token}` } },
+        auth: { persistSession: false, autoRefreshToken: false },
+    });
+};
+
 /**
  * GET /dives/export — ダイブログを CSV / PDF でダウンロードする。
  * 認証必須（RLS により本人のログのみ対象）。契約は specs/014-log-export/contracts/export-endpoint.md。
+ * Web は cookie セッション、モバイル（029）は Authorization: Bearer で認証する。
  */
 export const GET = async (request: NextRequest): Promise<Response> => {
-    const supabase = await createClient();
+    const token = bearerToken(request);
+    const supabase = token ? createBearerClient(token) : await createClient();
     const {
         data: { user },
-    } = await supabase.auth.getUser();
+    } = await supabase.auth.getUser(token ?? undefined);
     if (!user) {
         return new NextResponse('認証が必要です', { status: 401 });
     }
@@ -37,7 +61,7 @@ export const GET = async (request: NextRequest): Promise<Response> => {
     const { format, ids, filter } = parsed;
 
     try {
-        const dives = await fetchDivesForExport(supabase, { ids, filter });
+        const dives = await fetchDivesForExport(supabase, { ids, filter, ownerId: user.id });
         const filename = buildExportFilename({ format, date: new Date(), single: singleFilenameInput(ids, dives) });
 
         if (format === 'csv') {
