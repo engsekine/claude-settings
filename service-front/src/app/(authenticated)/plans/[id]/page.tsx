@@ -1,6 +1,13 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { canMovePlanToLog, DeletePlanButton, daysUntil, getPlan, PackingList } from '@/features/plans';
+import {
+    canMovePlanToLog,
+    DeletePlanButton,
+    daysUntil,
+    ForgottenItemChecklist,
+    getPlan,
+    PackingList,
+} from '@/features/plans';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
 import { Heading } from '@/shared/components/typography/Heading';
 import { buttonVariants } from '@/shared/components/ui/Button';
@@ -96,9 +103,14 @@ export default async function PlanPage({ params }: PlanPageProps) {
 
                 <section aria-labelledby="packing-list-heading" className="flex flex-col gap-3">
                     <h2 id="packing-list-heading" className="font-semibold text-lg">
-                        持ち物リスト
+                        {plan.packingCompletedAt ? '忘れ物確認リスト' : '持ち物リスト'}
                     </h2>
-                    <PackingList planId={plan.id} items={plan.packingItems} />
+                    {/* 完了中は忘れ物確認リストに置き換える（037 / FR-003・Q2）。終了済み予定は操作不可（FR-009） */}
+                    {plan.packingCompletedAt ? (
+                        <ForgottenItemChecklist planId={plan.id} items={plan.packingItems} readOnly={remaining < 0} />
+                    ) : (
+                        <PackingList planId={plan.id} items={plan.packingItems} canComplete={remaining >= 0} />
+                    )}
                 </section>
             </div>
         </div>

@@ -99,8 +99,8 @@ export type Database = {
                     birth_on: string | null;
                     contact_lens_type: string | null;
                     created_at: string;
-                    dive_shop_id: string | null;
                     dive_count: number | null;
+                    dive_shop_id: string | null;
                     dry_suit_dive_count: number | null;
                     emergency_contact_phone: string;
                     emergency_contact_relation: string;
@@ -130,8 +130,8 @@ export type Database = {
                     birth_on?: string | null;
                     contact_lens_type?: string | null;
                     created_at?: string;
-                    dive_shop_id?: string | null;
                     dive_count?: number | null;
+                    dive_shop_id?: string | null;
                     dry_suit_dive_count?: number | null;
                     emergency_contact_phone?: string;
                     emergency_contact_relation?: string;
@@ -161,8 +161,8 @@ export type Database = {
                     birth_on?: string | null;
                     contact_lens_type?: string | null;
                     created_at?: string;
-                    dive_shop_id?: string | null;
                     dive_count?: number | null;
+                    dive_shop_id?: string | null;
                     dry_suit_dive_count?: number | null;
                     emergency_contact_phone?: string;
                     emergency_contact_relation?: string;
@@ -432,6 +432,7 @@ export type Database = {
                     id: string;
                     location: string;
                     notes: string | null;
+                    packing_completed_at: string | null;
                     planned_on: string;
                     updated_at: string;
                     user_id: string;
@@ -442,6 +443,7 @@ export type Database = {
                     id?: string;
                     location: string;
                     notes?: string | null;
+                    packing_completed_at?: string | null;
                     planned_on: string;
                     updated_at?: string;
                     user_id: string;
@@ -452,6 +454,7 @@ export type Database = {
                     id?: string;
                     location?: string;
                     notes?: string | null;
+                    packing_completed_at?: string | null;
                     planned_on?: string;
                     updated_at?: string;
                     user_id?: string;
@@ -564,11 +567,11 @@ export type Database = {
                     buddy_name: string | null;
                     certification_dive: boolean;
                     created_at: string;
-                    dive_shop_id: string | null;
                     current_condition: string | null;
                     deleted_at: string | null;
                     dive_date: string;
                     dive_number: number | null;
+                    dive_shop_id: string | null;
                     dive_site_id: string | null;
                     dive_type: string | null;
                     entry_time: string | null;
@@ -603,11 +606,11 @@ export type Database = {
                     buddy_name?: string | null;
                     certification_dive?: boolean;
                     created_at?: string;
-                    dive_shop_id?: string | null;
                     current_condition?: string | null;
                     deleted_at?: string | null;
                     dive_date: string;
                     dive_number?: number | null;
+                    dive_shop_id?: string | null;
                     dive_site_id?: string | null;
                     dive_type?: string | null;
                     entry_time?: string | null;
@@ -642,11 +645,11 @@ export type Database = {
                     buddy_name?: string | null;
                     certification_dive?: boolean;
                     created_at?: string;
-                    dive_shop_id?: string | null;
                     current_condition?: string | null;
                     deleted_at?: string | null;
                     dive_date?: string;
                     dive_number?: number | null;
+                    dive_shop_id?: string | null;
                     dive_site_id?: string | null;
                     dive_type?: string | null;
                     entry_time?: string | null;
@@ -947,6 +950,7 @@ export type Database = {
                     created_at: string;
                     id: string;
                     is_checked: boolean;
+                    is_confirmed: boolean;
                     name: string;
                     plan_id: string;
                     position: number;
@@ -956,6 +960,7 @@ export type Database = {
                     created_at?: string;
                     id?: string;
                     is_checked?: boolean;
+                    is_confirmed?: boolean;
                     name: string;
                     plan_id: string;
                     position?: number;
@@ -965,6 +970,7 @@ export type Database = {
                     created_at?: string;
                     id?: string;
                     is_checked?: boolean;
+                    is_confirmed?: boolean;
                     name?: string;
                     plan_id?: string;
                     position?: number;
@@ -1210,7 +1216,6 @@ export type Database = {
                     visited_locations: number;
                 }[];
             };
-            get_user_id_by_handle: { Args: { p_handle: string }; Returns: string };
             get_dive_yearly_counts: {
                 Args: never;
                 Returns: {
@@ -1218,6 +1223,7 @@ export type Database = {
                     year: number;
                 }[];
             };
+            get_user_id_by_handle: { Args: { p_handle: string }; Returns: string };
             get_user_public_profiles: {
                 Args: { p_ids: string[] };
                 Returns: {

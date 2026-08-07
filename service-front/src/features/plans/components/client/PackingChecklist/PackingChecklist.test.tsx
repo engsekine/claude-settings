@@ -5,10 +5,12 @@ import { vi } from 'vitest';
 import type { PackingItem } from '@/features/plans/types';
 
 const togglePackingItem = vi.fn();
+const completePacking = vi.fn();
 const routerRefresh = vi.fn();
 
 vi.mock('@/features/plans/server/actions', () => ({
     togglePackingItem: (...args: unknown[]) => togglePackingItem(...args),
+    completePacking: (...args: unknown[]) => completePacking(...args),
 }));
 
 vi.mock('next/navigation', () => ({
@@ -21,6 +23,7 @@ const createItem = (overrides: Partial<PackingItem> = {}): PackingItem => ({
     id: 'item-1',
     name: 'マスク',
     isChecked: false,
+    isConfirmed: false,
     position: 0,
     ...overrides,
 });
@@ -34,7 +37,44 @@ const defaultItems: PackingItem[] = [
 describe('PackingChecklist', () => {
     beforeEach(() => {
         togglePackingItem.mockReset();
+        completePacking.mockReset();
         routerRefresh.mockReset();
+    });
+
+    describe('準備完了ボタン（037）', () => {
+        it('planId と canComplete=true が指定されたとき「準備完了にする」ボタンを表示し、クリックで completePacking を呼ぶ', async () => {
+            completePacking.mockResolvedValueOnce({ success: true });
+            const user = userEvent.setup();
+            render(<PackingChecklist planId="plan-1" items={defaultItems} canComplete />);
+
+            await user.click(screen.getByRole('button', { name: '準備完了にする' }));
+
+            expect(completePacking).toHaveBeenCalledWith('plan-1');
+            expect(routerRefresh).toHaveBeenCalled();
+        });
+
+        it('canComplete 未指定では「準備完了にする」ボタンを表示しない（既存利用への影響なし）', () => {
+            render(<PackingChecklist items={defaultItems} />);
+
+            expect(screen.queryByRole('button', { name: '準備完了にする' })).not.toBeInTheDocument();
+        });
+
+        it('持ち物 0 件では canComplete=true でもボタンを表示しない（FR-007）', () => {
+            render(<PackingChecklist planId="plan-1" items={[]} canComplete />);
+
+            expect(screen.queryByRole('button', { name: '準備完了にする' })).not.toBeInTheDocument();
+        });
+
+        it('completePacking が失敗すると role="alert" でエラーを表示する', async () => {
+            completePacking.mockResolvedValueOnce({ success: false, error: '完了の保存に失敗しました' });
+            const user = userEvent.setup();
+            render(<PackingChecklist planId="plan-1" items={defaultItems} canComplete />);
+
+            await user.click(screen.getByRole('button', { name: '準備完了にする' }));
+
+            expect(await screen.findByRole('alert')).toHaveTextContent('完了の保存に失敗しました');
+            expect(routerRefresh).not.toHaveBeenCalled();
+        });
     });
 
     describe('items が空のとき', () => {

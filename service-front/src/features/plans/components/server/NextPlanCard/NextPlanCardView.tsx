@@ -6,6 +6,7 @@ import { buttonVariants } from '@/shared/components/ui/Button';
 import { formatJstDateWithWeekday } from '@/shared/lib/date';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
 
+import { ForgottenItemChecklist } from '../../client/ForgottenItemChecklist';
 import { PackingChecklist } from '../../client/PackingChecklist';
 
 interface NextPlanCardViewProps {
@@ -129,37 +130,60 @@ export const NextPlanCardView = ({ summary, variant = 'default' }: NextPlanCardV
                     </div>
                 </div>
 
-                {/* 右ペイン: 持ち物の準備状況 */}
+                {/* 右ペイン: 持ち物の準備状況。完了中は忘れ物確認リストに置き換える（037 / FR-003・Q2） */}
                 <div
                     className={cn(
                         'flex flex-col gap-3 border-t p-5 sm:border-t-0 sm:border-l',
                         isHero ? 'border-white/15 bg-white/5' : 'border-border bg-muted/40',
                     )}
                 >
-                    <Heading level={4} className={isHero ? 'text-white' : 'text-foreground'}>
-                        持ち物の準備
-                    </Heading>
-                    <p className={cn('font-semibold text-2xl', isHero ? 'text-white' : 'text-foreground')}>
-                        {checkedCount}{' '}
-                        <span className={cn('font-normal', isHero ? 'text-white/70' : 'text-muted-foreground')}>
-                            / {totalCount} 準備済み
-                        </span>
-                    </p>
-                    <div
-                        role="progressbar"
-                        aria-valuenow={checkedCount}
-                        aria-valuemin={0}
-                        aria-valuemax={totalCount}
-                        aria-label="持ち物の準備進捗"
-                        className={cn('h-2 w-full overflow-hidden rounded-full', isHero ? 'bg-white/20' : 'bg-border')}
-                    >
-                        {/* 進捗率は動的値のためインライン style を許容（css.md） */}
-                        <div
-                            className={cn('h-full rounded-full', isHero ? 'bg-white' : 'bg-primary')}
-                            style={{ width: `${progressPercent}%` }}
-                        />
-                    </div>
-                    <PackingChecklist items={summary.packingItems} variant={variant} />
+                    {summary.packingCompletedAt ? (
+                        <>
+                            <Heading level={4} className={isHero ? 'text-white' : 'text-foreground'}>
+                                忘れ物確認
+                            </Heading>
+                            <ForgottenItemChecklist
+                                planId={summary.id}
+                                items={summary.packingItems}
+                                variant={variant}
+                            />
+                        </>
+                    ) : (
+                        <>
+                            <Heading level={4} className={isHero ? 'text-white' : 'text-foreground'}>
+                                持ち物の準備
+                            </Heading>
+                            <p className={cn('font-semibold text-2xl', isHero ? 'text-white' : 'text-foreground')}>
+                                {checkedCount}{' '}
+                                <span className={cn('font-normal', isHero ? 'text-white/70' : 'text-muted-foreground')}>
+                                    / {totalCount} 準備済み
+                                </span>
+                            </p>
+                            <div
+                                role="progressbar"
+                                aria-valuenow={checkedCount}
+                                aria-valuemin={0}
+                                aria-valuemax={totalCount}
+                                aria-label="持ち物の準備進捗"
+                                className={cn(
+                                    'h-2 w-full overflow-hidden rounded-full',
+                                    isHero ? 'bg-white/20' : 'bg-border',
+                                )}
+                            >
+                                {/* 進捗率は動的値のためインライン style を許容（css.md） */}
+                                <div
+                                    className={cn('h-full rounded-full', isHero ? 'bg-white' : 'bg-primary')}
+                                    style={{ width: `${progressPercent}%` }}
+                                />
+                            </div>
+                            <PackingChecklist
+                                items={summary.packingItems}
+                                variant={variant}
+                                planId={summary.id}
+                                canComplete
+                            />
+                        </>
+                    )}
                 </div>
             </div>
         </section>

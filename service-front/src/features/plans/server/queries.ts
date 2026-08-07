@@ -43,7 +43,12 @@ export const getPlan = async (id: string): Promise<PlanWithPacking | null> => {
     const { plan_packing_items: itemRows, dive_shops: shopRow, ...planRow } = data;
     const packingItems = [...itemRows].sort((a, b) => a.position - b.position).map(mapPackingItem);
 
-    return { ...mapPlan(planRow), packingItems, shop: shopRow ? { id: shopRow.id, name: shopRow.name } : null };
+    return {
+        ...mapPlan(planRow),
+        packingItems,
+        packingCompletedAt: planRow.packing_completed_at,
+        shop: shopRow ? { id: shopRow.id, name: shopRow.name } : null,
+    };
 };
 
 /**
@@ -58,7 +63,7 @@ export const listNextPlansWithProgress = async (limit?: number): Promise<NextPla
 
     const query = supabase
         .from('dive_plans')
-        .select('id, planned_on, location, notes, plan_packing_items(*)')
+        .select('id, planned_on, location, notes, packing_completed_at, plan_packing_items(*)')
         .gte('planned_on', today)
         .order('planned_on', { ascending: true })
         .order('created_at', { ascending: false });
@@ -77,5 +82,6 @@ export const listNextPlansWithProgress = async (limit?: number): Promise<NextPla
         notes: row.notes,
         daysUntil: daysUntil(row.planned_on, today),
         packingItems: [...row.plan_packing_items].sort((a, b) => a.position - b.position).map(mapPackingItem),
+        packingCompletedAt: row.packing_completed_at,
     }));
 };

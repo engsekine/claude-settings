@@ -9,6 +9,7 @@ const makePlan = (overrides: Partial<NextPlanSummary>): NextPlanSummary => ({
     notes: null,
     daysUntil: 0,
     packingItems: [],
+    packingCompletedAt: null,
     ...overrides,
 });
 
