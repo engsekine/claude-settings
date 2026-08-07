@@ -3,7 +3,9 @@ import { getCreditBalance } from '@/features/credits/server/queries';
 import { listDiveSites, siteLabel } from '@/features/dive-sites';
 import { DiveForm, type DiveFormValues, getLatestDiveNumber, planToDiveDefaults } from '@/features/dives';
 import { canMovePlanToLog, getPlan } from '@/features/plans';
+import { getShopOptions } from '@/features/shops';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
+import { Heading } from '@/shared/components/typography/Heading';
 import { generatePageMetadata } from '@/shared/config/metadata';
 import { todayInJst } from '@/shared/lib/date';
 
@@ -22,10 +24,12 @@ interface NewDivePageProps {
 
 export default async function NewDivePage({ searchParams }: NewDivePageProps) {
     const { fromPlanId } = await searchParams;
-    const [latestDiveNumber, sites, creditBalance] = await Promise.all([
+    const [latestDiveNumber, sites, creditBalance, shopOptions] = await Promise.all([
         getLatestDiveNumber(),
         listDiveSites(),
         getCreditBalance(),
+        // ショップ選択肢は page 合成で注入する（feature 間 import 禁止 / 033 research.md Decision 5）
+        getShopOptions(),
     ]);
     const nextDiveNumber = (latestDiveNumber ?? 0) + 1;
     const siteOptions = sites.map((site) => ({ value: site.id, label: siteLabel(site) }));
@@ -47,13 +51,14 @@ export default async function NewDivePage({ searchParams }: NewDivePageProps) {
             <Breadcrumbs breadcrumbs={[{ name: 'ダイビングログ', slug: '/dives' }, { name: '新規作成' }]} />
             <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
                 <div className="flex items-center justify-between">
-                    <h1 className="font-semibold text-2xl">新規ダイビングログ</h1>
+                    <Heading level={1}>新規ダイビングログ</Heading>
                     <CreditBalanceBadge />
                 </div>
                 <DiveForm
                     defaultValues={{ diveNumber: nextDiveNumber, ...planDefaults }}
                     siteOptions={siteOptions}
                     creditBalance={creditBalance}
+                    shopOptions={shopOptions}
                     {...(movingPlanId ? { fromPlanId: movingPlanId } : {})}
                 />
             </div>

@@ -2,14 +2,14 @@
 
 配置: `service-front/src/features/credits/server/`。すべて認証必須（`auth.getUser()` で本人確認、未認証は失敗を返す）。
 
-## createCheckoutSession() → { url: string } | { error: CreditsErrorCode }
+## createCheckoutSession(packId) → { url: string } | { error: CreditsErrorCode }
 
 購入フローの起点（Server Action）。
 
-- **入力**: なし（パックは単一のため選択パラメータを受け取らない。金額・数量はクライアントから一切受け取らない）
+- **入力**: `packId: string`（`LOG_CREDIT_PACKS` の id: `trial` / `standard` / `bulk`）。金額・数量はクライアントから一切受け取らず、packId をサーバー定数で検証して解決する（未知の packId は失敗を返す）
 - **処理**:
-  1. `features/credits/constants.ts` の `LOG_CREDIT_PACK`（quantity: 10, amountJpy: 300）を参照
-  2. Stripe Checkout Session を作成: `mode: 'payment'`、`currency: 'jpy'`、`line_items` は `price_data` インライン、`client_reference_id: user.id`、`success_url: /settings/log-credits?checkout=success&session_id={CHECKOUT_SESSION_ID}`、`cancel_url: /settings/log-credits?checkout=cancelled`
+  1. `features/credits/constants.ts` の `LOG_CREDIT_PACKS`（お試し 10 枠 480 円 / おすすめ 30 枠 1,200 円 / たっぷり 100 枠 3,000 円）から `findLogCreditPack(packId)` で解決
+  2. Stripe Checkout Session を作成: `mode: 'payment'`、`currency: 'jpy'`、`line_items` は `price_data` インライン、`client_reference_id: user.id`、`metadata: { pack_id }`（webhook のパック判別用）、`success_url: /settings/log-credits?checkout=success&session_id={CHECKOUT_SESSION_ID}`、`cancel_url: /settings/log-credits?checkout=cancelled`
   3. `create_pending_purchase(session_id, quantity, amount_jpy)`（security definer RPC）で `status='pending'` の購入レコードを作成
   4. Checkout の `url` を返し、クライアントはフルページリダイレクト
 - **失敗系**: Stripe API エラー → `{ error: 'checkout_failed' }`（画面は再試行案内 / US2-AC2）。purchase レコード作成失敗 → セッションは破棄扱いで同エラー

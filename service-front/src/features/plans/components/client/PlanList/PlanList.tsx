@@ -1,11 +1,11 @@
 'use client';
 
-import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
-
 import { canMovePlanToLog } from '@/features/plans/lib/canMovePlanToLog';
 import { daysUntil } from '@/features/plans/lib/days-until';
 import type { Plan } from '@/features/plans/types';
+import { Heading } from '@/shared/components/typography/Heading';
+import { buttonVariants } from '@/shared/components/ui/Button';
 import { formatJstDate } from '@/shared/lib/date';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
 
@@ -36,10 +36,7 @@ export const PlanList = ({ plans, today }: PlanListProps) => {
         return (
             <div className="flex flex-col items-center gap-3 rounded-lg border border-border border-dashed bg-background p-12 text-center">
                 <p className="text-muted-foreground">予定がまだありません</p>
-                <Link
-                    href="/plans/new"
-                    className="rounded-md bg-primary px-4 py-2 text-primary-foreground text-sm transition-opacity hover:opacity-90"
-                >
+                <Link href="/plans/new" className={buttonVariants({ variant: 'default' })}>
                     次のダイビングを計画しよう
                 </Link>
             </div>
@@ -50,9 +47,9 @@ export const PlanList = ({ plans, today }: PlanListProps) => {
         <div className="flex flex-col gap-6">
             {upcomingPlans.length > 0 && (
                 <section aria-labelledby="upcoming-plans-heading" className="flex flex-col gap-3">
-                    <h2 id="upcoming-plans-heading" className="font-semibold text-foreground text-lg">
+                    <Heading level={2} id="upcoming-plans-heading">
                         これからの予定
-                    </h2>
+                    </Heading>
                     <ul className="flex flex-col gap-3">
                         {upcomingPlans.map((plan) => (
                             <li key={plan.id}>
@@ -69,9 +66,9 @@ export const PlanList = ({ plans, today }: PlanListProps) => {
 
             {finishedPlans.length > 0 && (
                 <section aria-labelledby="finished-plans-heading" className="flex flex-col gap-3">
-                    <h2 id="finished-plans-heading" className="font-semibold text-foreground text-lg">
+                    <Heading level={2} id="finished-plans-heading">
                         終了済み
-                    </h2>
+                    </Heading>
                     <ul className="flex flex-col gap-3">
                         {finishedPlans.map((plan) => (
                             <li key={plan.id}>
@@ -118,10 +115,12 @@ const PlanCard = ({ plan, daysLabel, today }: PlanCardProps) => {
                             終了済み
                         </span>
                     ) : (
-                        <span className="font-medium text-primary text-sm">{daysLabel}</span>
+                        <span className="font-medium text-[#1a73cc] text-sm">{daysLabel}</span>
                     )}
                 </div>
-                <h3 className="font-semibold text-base text-foreground">{plan.location}</h3>
+                <Heading level={3} className="text-foreground">
+                    {plan.location}
+                </Heading>
             </Link>
             {canMove && (
                 <div className="flex">

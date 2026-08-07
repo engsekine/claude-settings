@@ -1,9 +1,8 @@
 'use client';
 
-import { Button } from '@repo/ui/components/button';
 import { useState, useTransition } from 'react';
-
 import { followUser, unfollowUser } from '@/features/social/server/actions';
+import { Button } from '@/shared/components/ui/Button';
 
 interface FollowButtonProps {
     targetUserId: string;

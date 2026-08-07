@@ -1,9 +1,9 @@
-import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-
 import { canMovePlanToLog, DeletePlanButton, daysUntil, getPlan, PackingList } from '@/features/plans';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
+import { Heading } from '@/shared/components/typography/Heading';
+import { buttonVariants } from '@/shared/components/ui/Button';
 import { generatePageMetadata } from '@/shared/config/metadata';
 import { formatJstDate, todayInJst } from '@/shared/lib/date';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
@@ -54,6 +54,8 @@ export default async function PlanPage({ params }: PlanPageProps) {
                         {remaining < 0 && (
                             <span className="rounded-md bg-muted px-2 py-0.5 text-foreground text-xs">終了済み</span>
                         )}
+                        {/* アクセント色 #1a73cc は淡色背景上で 4.21:1 と AA 未達のため、
+                            トークンの primary（DiveDetail の講習ダイブバッジと同パターン）を使う */}
                         {remaining === 0 && (
                             <span className="rounded-md bg-primary/10 px-2 py-0.5 text-primary text-xs">今日</span>
                         )}
@@ -63,7 +65,16 @@ export default async function PlanPage({ params }: PlanPageProps) {
                             </span>
                         )}
                     </div>
-                    <h1 className="font-semibold text-2xl text-foreground">{plan.location}</h1>
+                    <Heading level={1}>{plan.location}</Heading>
+                    {/* 紐付けたショップ（033 / FR-007）。本人向け詳細のみに表示する */}
+                    {plan.shop && (
+                        <p className="text-muted-foreground text-sm">
+                            <span className="sr-only">ショップ: </span>
+                            <Link href={`/shops/${plan.shop.id}`} className="text-primary underline">
+                                {plan.shop.name}
+                            </Link>
+                        </p>
+                    )}
                     {plan.notes && <p className="whitespace-pre-wrap text-muted-foreground text-sm">{plan.notes}</p>}
                     <div className="flex flex-wrap items-center gap-2">
                         {/* 当日以前の予定のみ「ログに記録する」を表示（未来日は非表示 / 024 FR-001,002） */}

@@ -1,6 +1,7 @@
 import { LikedDivesList } from '@/features/social/components/client/LikedDivesList';
 import { TimelineTabs } from '@/features/social/components/server/TimelineTabs';
 import { fetchLikedDives } from '@/features/social/server/queries';
+import { Heading } from '@/shared/components/typography/Heading';
 import { generatePageMetadata } from '@/shared/config/metadata';
 
 export const metadata = generatePageMetadata(
@@ -22,7 +23,7 @@ export default async function LikesPage() {
 
     return (
         <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-8">
-            <h1 className="font-semibold text-2xl">いいねしたログ</h1>
+            <Heading level={1}>いいねしたログ</Heading>
             <TimelineTabs active="likes" />
             <LikedDivesList initialItems={page.items} initialCursor={page.nextCursor} />
         </div>

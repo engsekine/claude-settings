@@ -1,5 +1,6 @@
 export { LikeButton } from './components/client/LikeButton';
 export { LikedDivesList } from './components/client/LikedDivesList';
+export { TimelineTabsSwitcher } from './components/client/TimelineTabsSwitcher';
 export { UserSearchBar } from './components/client/UserSearchBar';
 export { FollowCounts } from './components/server/FollowCounts';
 export { FollowList } from './components/server/FollowList';
@@ -22,6 +23,8 @@ export {
     fetchPublicProfile,
     fetchTimeline,
     fetchUserPublicDives,
+    requireProfileBySlug,
+    resolveProfileSlug,
     searchUsers,
 } from './server/queries';
 export type {

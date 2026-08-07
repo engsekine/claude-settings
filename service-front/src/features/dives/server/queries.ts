@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { type BuddyRowInput, mapDiveBuddies } from '@/features/dives/lib/buddies/buddy-mapper';
-import { DIVE_SITE_JOIN, type DiveRowWithSite, mapDive } from '@/features/dives/lib/dive-mapper';
+import { DIVE_FULL_COLUMNS, DIVE_SITE_JOIN, type DiveRowWithSite, mapDive } from '@/features/dives/lib/dive-mapper';
 import { diveLocationLabel } from '@/features/dives/lib/diveLabel';
 import { fetchDiveListPage } from '@/features/dives/lib/list-query';
 import type { Dive, DiveBuddy, DiveCursor, DiveListFilter, DiveListPage } from '@/features/dives/types';
@@ -59,7 +59,8 @@ export const getLatestDiveNumber = async (): Promise<number | null> => {
 export const getDive = async (id: string): Promise<Dive | null> => {
     const supabase = await createClient();
 
-    const { data, error } = await supabase.from('dives').select(`*, ${DIVE_SITE_JOIN}`).eq('id', id).maybeSingle();
+    // dive_shop の join は RLS により本人以外には null になる（他ユーザーの公開ログ閲覧でショップは漏れない / 033 FR-015）
+    const { data, error } = await supabase.from('dives').select(DIVE_FULL_COLUMNS).eq('id', id).maybeSingle();
 
     if (error) throw new Error(`dive の取得に失敗しました: ${error.message}`);
     if (!data) return null;
@@ -91,12 +92,16 @@ export const getDiveBuddies = async (diveId: string): Promise<DiveBuddy[]> => {
     // get_user_public_profiles（SECURITY DEFINER）経由で取得する。
     const userIds = [...new Set(rows.map((r) => r.buddy_user_id).filter((id): id is string => id !== null))];
     const nicknameById = new Map<string, string>();
+    const handleById = new Map<string, string>();
     if (userIds.length > 0) {
         const { data: profiles, error: profileError } = await supabase.rpc('get_user_public_profiles', {
             p_ids: userIds,
         });
         if (profileError) throw new Error(`バディの表示名取得に失敗しました: ${profileError.message}`);
-        for (const profile of profiles ?? []) nicknameById.set(profile.user_id, profile.nickname);
+        for (const profile of profiles ?? []) {
+            nicknameById.set(profile.user_id, profile.nickname);
+            handleById.set(profile.user_id, profile.handle);
+        }
     }
 
     const inputs: BuddyRowInput[] = rows.map((r) => ({
@@ -104,6 +109,7 @@ export const getDiveBuddies = async (diveId: string): Promise<DiveBuddy[]> => {
         buddyUserId: r.buddy_user_id,
         buddyName: r.buddy_name,
         nickname: r.buddy_user_id ? (nicknameById.get(r.buddy_user_id) ?? null) : null,
+        handle: r.buddy_user_id ? (handleById.get(r.buddy_user_id) ?? null) : null,
     }));
 
     return mapDiveBuddies(inputs);

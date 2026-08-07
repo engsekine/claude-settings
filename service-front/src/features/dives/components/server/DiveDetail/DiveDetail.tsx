@@ -1,8 +1,6 @@
-import { buttonVariants } from '@repo/ui/components/button';
 import type { Route } from 'next';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-
 import { DeleteDiveButton } from '@/features/dives/components/client/DeleteDiveButton';
 import { DivePhotoGallery } from '@/features/dives/components/client/DivePhotoGallery';
 import { DivePhotoUploader } from '@/features/dives/components/client/DivePhotoUploader';
@@ -11,7 +9,12 @@ import { TANK_TYPE_LABEL_MAP, type TankTypeValue } from '@/features/dives/consta
 import { diveLocationLabel } from '@/features/dives/lib/diveLabel';
 import { calcSacRate, formatSacRate, SAC_INPUT_FIELD_LABELS } from '@/features/dives/lib/sacRate';
 import type { Dive, DiveBuddy, DivePhotoView } from '@/features/dives/types';
+import { SnsShareButtons } from '@/shared/components/social/SnsShareButtons';
+import { Heading } from '@/shared/components/typography/Heading';
+import { buttonVariants } from '@/shared/components/ui/Button';
+import { SITE_NAME, SITE_URL } from '@/shared/constants/site';
 import { formatJstDate } from '@/shared/lib/date';
+import { profilePath } from '@/shared/lib/profile-path';
 import { getTidePhase, TIDE_PHASE_LABELS } from '@/shared/lib/tide';
 
 interface DiveDetailProps {
@@ -38,7 +41,8 @@ const BuddyList = ({ buddies }: { buddies: DiveBuddy[] }) => {
                 buddy.isRegistered && buddy.userId ? (
                     <li key={buddy.id}>
                         <Link
-                            href={`/users/${buddy.userId}` as Route}
+                            // リンクはユーザー ID（034）。未解決時は内部 ID URL → ページ側転送で正規化される
+                            href={profilePath({ userId: buddy.userId, handle: buddy.handle }) as Route}
                             className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-sm hover:bg-muted/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
                         >
                             {buddy.name}
@@ -108,7 +112,7 @@ export const DiveDetail = ({ dive, photos = [], buddies = [], canManage = false,
                     </div>
                     {likeAction}
                 </div>
-                <h1 className="flex items-baseline gap-2 font-semibold text-2xl">
+                <Heading level={1} className="items-baseline gap-2">
                     {dive.diveSite ? (
                         <Link href={`/dive-sites/${dive.diveSite.id}` as Route} className="text-primary underline">
                             {diveLocationLabel(dive)}
@@ -119,7 +123,7 @@ export const DiveDetail = ({ dive, photos = [], buddies = [], canManage = false,
                     {dive.diveNumber !== null && (
                         <span className="font-normal text-muted-foreground text-xl">#{dive.diveNumber}</span>
                     )}
-                </h1>
+                </Heading>
                 {dive.certificationDive && (
                     <span className="inline-block w-fit rounded-md bg-primary/10 px-2 py-0.5 text-primary text-xs">
                         講習ダイブ
@@ -133,6 +137,19 @@ export const DiveDetail = ({ dive, photos = [], buddies = [], canManage = false,
                         公開設定
                     </h2>
                     <DiveVisibilityToggle diveId={dive.id} initialIsPublic={dive.isPublic} />
+                </section>
+            )}
+
+            {/* SNS 共有は公開ログのみ・閲覧者にも表示する（spec 035 FR-001。canManage に依存させない） */}
+            {dive.isPublic && (
+                <section aria-labelledby="dive-detail-share" className="flex flex-col gap-2">
+                    <h2 id="dive-detail-share" className="font-medium text-sm">
+                        SNSで共有
+                    </h2>
+                    <SnsShareButtons
+                        url={`${SITE_URL}/dives/${dive.id}`}
+                        text={`${diveLocationLabel(dive)}のダイビングログ（${formatJstDate(dive.diveDate)}）| ${SITE_NAME}`}
+                    />
                 </section>
             )}
 
@@ -155,6 +172,18 @@ export const DiveDetail = ({ dive, photos = [], buddies = [], canManage = false,
                 </div>
 
                 <Field label="ダイブタイプ" value={dive.diveType} />
+
+                {/* 紐付けたショップ（033 / FR-008）。RLS により本人以外では shop が null になるため公開ビューには出ない */}
+                {dive.shop && (
+                    <dl className="flex flex-col gap-1">
+                        <dt className="font-medium text-sm">ショップ</dt>
+                        <dd>
+                            <Link href={`/shops/${dive.shop.id}` as Route} className="text-primary underline">
+                                {dive.shop.name}
+                            </Link>
+                        </dd>
+                    </dl>
+                )}
             </section>
 
             <section aria-labelledby="dive-detail-numbers" className="flex flex-col gap-4">

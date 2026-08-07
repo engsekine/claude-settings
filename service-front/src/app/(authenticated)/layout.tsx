@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation';
 
+import { DailyBonusModal } from '@/features/credits/components/client/DailyBonusModal';
+import { getCreditBalance } from '@/features/credits/server/queries';
 import { isMfaChallengePending } from '@/features/mfa/lib/aalGuard';
 import { createClient } from '@/shared/lib/supabase/server';
 
@@ -68,9 +70,23 @@ export default async function AuthenticatedLayout({
      * ログ枠を 1 つ自動付与する。RPC は冪等（付与済みなら no-op）なので
      * 並行リクエスト・リロードで二重付与されない。
      * 失敗してもレイアウトは落とさない（ボーナスは次回訪問で回復する）。
+     *
+     * 返り値 granted は「この訪問で付与が発生したか」（036 FR-001）。
+     * 付与が発生した訪問でのみ獲得モーダルを表示する。リロード・同日再訪問は
+     * false が返るため再表示されず、layout はクライアント遷移で再実行されない
+     * ためページ移動でも再表示されない（036 FR-003）。
      */
-    const { error: bonusError } = await supabase.rpc('grant_daily_bonus');
+    const { data: granted, error: bonusError } = await supabase.rpc('grant_daily_bonus');
     if (bonusError) console.error('[AuthenticatedLayout] デイリーボーナスの付与に失敗しました:', bonusError);
 
-    return <>{children}</>;
+    // 残枠は付与が発生したときだけ取得する（通常アクセスにコストを足さない）。
+    // 取得失敗時は null でモーダル表示自体は続行する（枠数表示のみ省略 / 036 SC-004）
+    const remainingCredits = granted === true ? await getCreditBalance().catch(() => null) : null;
+
+    return (
+        <>
+            {granted === true && <DailyBonusModal remainingCredits={remainingCredits} />}
+            {children}
+        </>
+    );
 }

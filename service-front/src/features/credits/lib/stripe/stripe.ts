@@ -4,7 +4,7 @@ import type { Database } from '@repo/supabase';
 import { createClient as createSupabaseClient, type SupabaseClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
 
-import { LOG_CREDIT_PACK } from '@/features/credits/constants';
+import { findLogCreditPack } from '@/features/credits/constants';
 
 /** webhook / 付与処理で使う service_role クライアントの型 */
 export type ServiceRoleClient = SupabaseClient<Database>;
@@ -39,6 +39,12 @@ interface FulfillResult {
 }
 
 /**
+ * 複数パック化（2026-07 価格改定）以前に作成された Checkout Session の内容。
+ * 旧セッションは metadata.pack_id を持たないため、当時の単一パック定義で付与する
+ */
+const LEGACY_PACK = { quantity: 10, amountJpy: 300 } as const;
+
+/**
  * checkout.session.completed の枠付与（026 / FR-005・007）。
  * 冪等性は DB 側（session_id ユニーク + credited_at 条件付き更新）が担保するため、
  * 重複 webhook でも安全に何度でも呼べる。DB エラーは throw し、
@@ -56,12 +62,16 @@ export const fulfillCheckoutSession = async (
     const paymentIntentId =
         typeof session.payment_intent === 'string' ? session.payment_intent : (session.payment_intent?.id ?? '');
 
+    // p_quantity / p_amount_jpy は pending レコードが無い場合の自己修復作成でのみ使われる
+    // （complete_purchase は既存レコードのスナップショット値を優先して付与する）
+    const pack = findLogCreditPack(session.metadata?.['pack_id'] ?? '') ?? LEGACY_PACK;
+
     const { data: credited, error } = await supabase.rpc('complete_purchase', {
         p_session_id: session.id,
         p_payment_intent_id: paymentIntentId,
         p_user_id: userId,
-        p_quantity: LOG_CREDIT_PACK.quantity,
-        p_amount_jpy: LOG_CREDIT_PACK.amountJpy,
+        p_quantity: pack.quantity,
+        p_amount_jpy: pack.amountJpy,
     });
     if (error) throw new Error(`complete_purchase に失敗: ${error.message}`);
 

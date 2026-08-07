@@ -8,6 +8,7 @@ const TODAY = '2026-06-10';
 
 const buildPlan = (overrides: Partial<Plan> & Pick<Plan, 'id' | 'plannedOn' | 'location'>): Plan => ({
     notes: null,
+    diveShopId: null,
     createdAt: '2026-06-01T00:00:00Z',
     updatedAt: '2026-06-01T00:00:00Z',
     ...overrides,

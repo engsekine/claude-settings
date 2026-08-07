@@ -17,6 +17,7 @@ const defaultValues: ProfileFormValues = {
     lastNameRomaji: 'Yamada',
     firstNameRomaji: 'Taro',
     nickname: 'たろちゃん',
+    handle: 'taro-diver',
     birthOn: '1990-01-01',
     gender: 'male',
     heightCm: null,
@@ -115,6 +116,27 @@ describe('ProfileEditForm', () => {
 
         await screen.findByRole('status');
         expect(updateProfile).toHaveBeenCalledWith(expect.objectContaining({ emailOptIn: false }));
+    });
+
+    it('不正な形式・予約語のユーザー ID はエラーを表示して送信しない（034 / FR-002・003）', async () => {
+        const user = userEvent.setup();
+        render(<ProfileEditForm email="user@example.com" defaultValues={defaultValues} />);
+
+        await user.clear(screen.getByLabelText('ユーザー ID'));
+        await user.type(screen.getByLabelText('ユーザー ID'), 'a/b');
+        await user.click(screen.getByRole('button', { name: '更新する' }));
+        expect(
+            await screen.findByText(
+                'ユーザー ID は半角英小文字・数字・ - _ の 3〜30 文字（先頭は英字）で入力してください',
+            ),
+        ).toBeInTheDocument();
+
+        await user.clear(screen.getByLabelText('ユーザー ID'));
+        await user.type(screen.getByLabelText('ユーザー ID'), 'search');
+        await user.click(screen.getByRole('button', { name: '更新する' }));
+        expect(await screen.findByText('このユーザー ID は使用できません')).toBeInTheDocument();
+
+        expect(updateProfile).not.toHaveBeenCalled();
     });
 
     it('updateProfile が成功すると status メッセージを表示する', async () => {

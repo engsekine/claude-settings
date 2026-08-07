@@ -1,11 +1,10 @@
 'use client';
 
-import { Button } from '@repo/ui/components/button';
 import Link from 'next/link';
 import { useState } from 'react';
-
 import { type ConsentState, setCookieConsent } from '@/features/consent/lib/cookie-consent';
 import { useCookieConsentStore } from '@/features/consent/lib/store';
+import { Button } from '@/shared/components/ui/Button';
 
 interface CookieConsentBannerProps {
     /** サーバーが Cookie から判定した初期同意状態（未選択は null） */

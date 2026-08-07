@@ -1,7 +1,7 @@
 'use client';
 
-import { Button } from '@repo/ui/components/button';
 import { XIcon } from 'lucide-react';
+import { Button } from '@/shared/components/ui/Button';
 
 /** フォームのバディ 1 件（登録ユーザー userId か フリーテキスト name の一方）。spec 021 FR-002 */
 export interface DiveBuddyValue {

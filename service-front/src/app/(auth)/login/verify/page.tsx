@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 
 import { getMfaStatus, MfaChallengeForm } from '@/features/mfa';
 import { isMfaChallengePending } from '@/features/mfa/lib/aalGuard';
+import { Heading } from '@/shared/components/typography/Heading';
 import { generatePageMetadata } from '@/shared/config/metadata';
 import { createClient } from '@/shared/lib/supabase/server';
 
@@ -28,18 +29,18 @@ export default async function MfaVerifyPage() {
     if (!user) redirect('/login');
 
     const { data: aal, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-    /** AAL 取得失敗はログに残す。失敗時も /dives へ流し、(authenticated)/layout の再チェックに委ねる */
+    /** AAL 取得失敗はログに残す。失敗時も TOP へ流し、(authenticated)/layout の再チェックに委ねる */
     if (aalError) console.error('[MfaVerifyPage] AAL の取得に失敗しました:', aalError);
     const pending = isMfaChallengePending(aal ? { currentLevel: aal.currentLevel, nextLevel: aal.nextLevel } : null);
     /** 2 段階目が不要（未有効化 or 既に AAL2）なら通常のトップへ */
-    if (!pending) redirect('/dives');
+    if (!pending) redirect('/');
 
     const status = await getMfaStatus();
-    if (!status.factorId) redirect('/dives');
+    if (!status.factorId) redirect('/');
 
     return (
         <div className="mx-auto flex w-full max-w-sm flex-col gap-6 px-4 py-12">
-            <h1 className="font-semibold text-2xl">2 段階認証</h1>
+            <Heading level={1}>2 段階認証</Heading>
             <MfaChallengeForm factorId={status.factorId} />
         </div>
     );

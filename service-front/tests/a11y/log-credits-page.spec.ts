@@ -30,7 +30,7 @@ const login = async (page: Page) => {
     await page.getByLabel('メールアドレス').fill(TEST_EMAIL);
     await page.getByLabel('パスワード').fill(TEST_PASSWORD);
     await page.getByRole('button', { name: 'ログイン', exact: true }).click();
-    await page.waitForURL(/\/dives/);
+    await page.waitForURL((url) => url.pathname === '/');
 };
 
 test('/settings/log-credits - 購入カードと残枠を表示し WCAG 2.1 AA 違反なし（要認証）', async ({ page }) => {
@@ -39,7 +39,11 @@ test('/settings/log-credits - 購入カードと残枠を表示し WCAG 2.1 AA �
     await page.goto('/settings/log-credits');
     await expect(page.getByRole('heading', { name: 'ログ枠の購入' })).toBeVisible();
     await expect(page.getByText('残りログ枠')).toBeVisible();
-    await expect(page.getByRole('button', { name: '購入する' })).toBeVisible();
+    // 3 パック（お試し / おすすめ / たっぷり）それぞれに購入ボタンが表示される
+    await expect(page.getByRole('heading', { name: 'お試しパック（10 枠）' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'おすすめパック（30 枠）' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'たっぷりパック（100 枠）' })).toBeVisible();
+    await expect(page.getByRole('button', { name: '購入する' })).toHaveCount(3);
     await expect(page.getByRole('heading', { name: '購入履歴' })).toBeVisible();
     await expectNoViolations(page);
 

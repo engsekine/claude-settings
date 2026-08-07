@@ -18,7 +18,7 @@ beforeEach(() => {
 describe('UserSearchBar', () => {
     it('検索フォーム（入力欄と送信ボタン）を表示する', () => {
         render(<UserSearchBar />);
-        expect(screen.getByRole('searchbox', { name: 'ニックネームで探す' })).toBeInTheDocument();
+        expect(screen.getByRole('searchbox', { name: 'ユーザーIDで探す' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: '検索' })).toBeInTheDocument();
     });
 
@@ -26,7 +26,7 @@ describe('UserSearchBar', () => {
         const user = userEvent.setup();
         render(<UserSearchBar />);
 
-        await user.type(screen.getByRole('searchbox', { name: 'ニックネームで探す' }), 'taro');
+        await user.type(screen.getByRole('searchbox', { name: 'ユーザーIDで探す' }), 'taro');
         await user.click(screen.getByRole('button', { name: '検索' }));
 
         expect(push).toHaveBeenCalledWith('/users/search?q=taro');
@@ -36,7 +36,7 @@ describe('UserSearchBar', () => {
         const user = userEvent.setup();
         render(<UserSearchBar />);
 
-        await user.type(screen.getByRole('searchbox', { name: 'ニックネームで探す' }), '  taro  ');
+        await user.type(screen.getByRole('searchbox', { name: 'ユーザーIDで探す' }), '  taro  ');
         await user.click(screen.getByRole('button', { name: '検索' }));
 
         expect(push).toHaveBeenCalledWith('/users/search?q=taro');

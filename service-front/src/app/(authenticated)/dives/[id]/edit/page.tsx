@@ -8,7 +8,9 @@ import {
     getDivePhotos,
     mapDiveToFormValues,
 } from '@/features/dives';
+import { getShopOptions } from '@/features/shops';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
+import { Heading } from '@/shared/components/typography/Heading';
 import { generatePageMetadata } from '@/shared/config/metadata';
 import { createClient } from '@/shared/lib/supabase/server';
 
@@ -30,7 +32,8 @@ export const generateMetadata = async ({ params }: EditDivePageProps) => {
 
 export default async function EditDivePage({ params }: EditDivePageProps) {
     const { id } = await params;
-    const [dive, sites] = await Promise.all([getDive(id), listDiveSites()]);
+    // ショップ選択肢は page 合成で注入する（feature 間 import 禁止 / 033 research.md Decision 5）
+    const [dive, sites, shopOptions] = await Promise.all([getDive(id), listDiveSites(), getShopOptions()]);
     if (!dive) notFound();
 
     // getDive は公開ログ（他人のログ）も返すため、編集は作成者本人に限定する。
@@ -63,8 +66,14 @@ export default async function EditDivePage({ params }: EditDivePageProps) {
                 ]}
             />
             <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
-                <h1 className="font-semibold text-2xl">ダイビングログ編集</h1>
-                <DiveForm diveId={id} defaultValues={defaultValues} siteOptions={siteOptions} existingPhotos={photos} />
+                <Heading level={1}>ダイビングログ編集</Heading>
+                <DiveForm
+                    diveId={id}
+                    defaultValues={defaultValues}
+                    siteOptions={siteOptions}
+                    existingPhotos={photos}
+                    shopOptions={shopOptions}
+                />
             </div>
         </div>
     );

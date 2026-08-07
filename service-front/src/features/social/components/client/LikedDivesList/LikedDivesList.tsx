@@ -1,14 +1,14 @@
 'use client';
 
-import { Button } from '@repo/ui/components/button';
 import { Heart } from 'lucide-react';
 import type { Route } from 'next';
 import Link from 'next/link';
 import { useState, useTransition } from 'react';
-
 import { loadMoreLikedDives } from '@/features/social/server/actions';
 import type { LikedDivesCursor, TimelineItem } from '@/features/social/types';
+import { Button } from '@/shared/components/ui/Button';
 import { formatJstDate } from '@/shared/lib/date';
+import { profilePath } from '@/shared/lib/profile-path';
 
 interface LikedDivesListProps {
     initialItems: TimelineItem[];
@@ -42,7 +42,7 @@ export const LikedDivesList = ({ initialItems, initialCursor }: LikedDivesListPr
 
     if (items.length === 0) {
         return (
-            <p className="rounded-md border border-border border-dashed bg-muted/30 px-4 py-6 text-center text-muted-foreground text-sm">
+            <p className="rounded-md border border-border border-dashed bg-muted/30 px-4 py-6 text-center text-muted-foreground">
                 いいねしたログはありません。タイムラインで気になるログにいいねしてみましょう。
             </p>
         );
@@ -56,13 +56,13 @@ export const LikedDivesList = ({ initialItems, initialCursor }: LikedDivesListPr
                         <div className="flex flex-col gap-1">
                             <Link
                                 href={`/dives/${dive.diveId}` as Route}
-                                className="font-medium text-sm hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+                                className="font-medium hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
                             >
                                 {dive.location}
                             </Link>
                             <span className="text-muted-foreground text-xs">
                                 <Link
-                                    href={`/users/${dive.ownerId}` as Route}
+                                    href={profilePath({ userId: dive.ownerId, handle: dive.ownerHandle }) as Route}
                                     className="hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
                                 >
                                     {dive.ownerNickname}
@@ -73,7 +73,7 @@ export const LikedDivesList = ({ initialItems, initialCursor }: LikedDivesListPr
                             </span>
                         </div>
                         {/* いいね済みの一覧なので塗りアイコン + 件数のみ（操作は詳細ページで） */}
-                        <span className="inline-flex items-center gap-1.5 px-2 text-muted-foreground text-sm">
+                        <span className="inline-flex items-center gap-1.5 px-2 text-muted-foreground">
                             <Heart aria-hidden="true" className="size-5 fill-rose-500 text-rose-500" />
                             <span aria-hidden="true">{dive.likeCount}</span>
                             <span className="sr-only">いいね {dive.likeCount} 件</span>
@@ -93,7 +93,7 @@ export const LikedDivesList = ({ initialItems, initialCursor }: LikedDivesListPr
                 </Button>
             )}
             {error && (
-                <p role="alert" className="text-destructive text-sm">
+                <p role="alert" className="text-destructive">
                     {error}
                 </p>
             )}

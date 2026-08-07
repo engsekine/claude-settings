@@ -1,15 +1,14 @@
 'use client';
 
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button } from '@repo/ui/components/button';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-
 import { DIVE_TYPE_OPTIONS } from '@/features/dives/constants';
 import { blockNonIntegerKeys, blurOnWheel } from '@/features/dives/lib/numericInput';
 import { type DiveSearchValues, diveSearchSchema } from '@/features/dives/schemas/dive.schema';
 import type { DiveListFilter } from '@/features/dives/types';
 import { FormField } from '@/shared/components/form';
+import { Button } from '@/shared/components/ui/Button';
 
 interface DiveSearchBarProps {
     initialFilter?: DiveListFilter;

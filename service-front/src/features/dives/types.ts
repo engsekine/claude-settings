@@ -7,6 +7,18 @@ export interface DiveSiteRef {
     area: string | null;
 }
 
+/** ログに紐付けたショップの最小参照（033。feature 間 import を避けるため独自定義） */
+export interface DiveShopRef {
+    id: string;
+    name: string;
+}
+
+/** ログに紐付けたショップの最小参照（033。feature 間 import を避けるため独自定義） */
+export interface DiveShopRef {
+    id: string;
+    name: string;
+}
+
 /** ダイビングログのドメイン型。DB スキーマ（snake_case）はマッピング層で camelCase に変換する */
 export interface Dive {
     id: string;
@@ -24,6 +36,10 @@ export interface Dive {
     diveSiteId: string | null;
     /** 参照中ダイブサイトの要約（表示用）。自由入力時は null */
     diveSite: DiveSiteRef | null;
+    /** 紐付けたショップ id（033）。未紐付けは null */
+    diveShopId: string | null;
+    /** 紐付けたショップの要約（本人向け表示用）。未紐付けは null */
+    shop: DiveShopRef | null;
     diveType: string | null;
     weather: string | null;
     airTempC: number | null;
@@ -129,6 +145,8 @@ export interface DiveBuddy {
     userId: string | null;
     /** 表示名（登録ユーザーは nickname、フリーテキストはそのテキスト） */
     name: string;
+    /** 登録ユーザーのユーザー ID（034。プロフィールリンク生成用。フリーテキスト・退会時は null） */
+    handle: string | null;
     /** 登録ユーザー由来か（true なら userId からプロフィールへ遷移可能） */
     isRegistered: boolean;
 }

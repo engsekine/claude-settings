@@ -23,7 +23,7 @@ spec の Deferred 項目と Technical Context の未確定点を解決する。�
 ## 4. 確認メールの再送手段（FR-004）
 
 - **Decision**: `supabase.auth.resend({ type: 'signup', email })` を呼ぶサーバーアクション `resendConfirmationEmail(email)` を追加し、サインアップ直後の「確認メールを送信しました」画面と `/login?error=email_not_verified` 画面に再送ボタンを置く。連続再送は `[auth.email] max_frequency` と UI 側のクールダウンで保護。
-- **Rationale**: 既存 `signUp` は `emailRedirectTo=/api/auth/callback?next=/dives` を使用済みで、`resend` も同じ redirect 設定を踏襲できる。
+- **Rationale**: 既存 `signUp` は `emailRedirectTo=/api/auth/callback?next=/` を使用済みで、`resend` も同じ redirect 設定を踏襲できる。
 - **Alternatives considered**: 独自トークン再発行 → Supabase 標準の resend で十分。
 
 ## 5. SMS プロバイダ（MFA phone）

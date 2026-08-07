@@ -1,7 +1,7 @@
 import type { Route } from 'next';
 import Link from 'next/link';
-
 import type { FollowUser } from '@/features/social/types';
+import { profilePath } from '@/shared/lib/profile-path';
 
 import { FollowButton } from '../../client/FollowButton';
 
@@ -23,8 +23,12 @@ export const FollowList = ({ items, currentUserId, emptyMessage = 'ユーザー�
         <ul className="flex flex-col divide-y divide-border">
             {items.map((user) => (
                 <li key={user.userId} className="flex items-center justify-between gap-3 py-3">
-                    <Link href={`/users/${user.userId}` as Route} className="font-medium text-sm hover:underline">
-                        {user.nickname}
+                    <Link
+                        href={profilePath({ userId: user.userId, handle: user.handle }) as Route}
+                        className="flex flex-col hover:underline"
+                    >
+                        <span className="font-medium text-sm">{user.nickname}</span>
+                        {user.handle && <span className="text-muted-foreground text-xs">@{user.handle}</span>}
                     </Link>
                     {user.userId !== currentUserId && (
                         <FollowButton targetUserId={user.userId} initialIsFollowing={user.isFollowing} />

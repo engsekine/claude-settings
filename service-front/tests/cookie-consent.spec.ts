@@ -11,7 +11,7 @@ const login = async (page: Page) => {
     await page.getByLabel('メールアドレス').fill(TEST_EMAIL);
     await page.getByLabel('パスワード').fill(TEST_PASSWORD);
     await page.getByRole('button', { name: 'ログイン', exact: true }).click();
-    await page.waitForURL(/\/dives/);
+    await page.waitForURL((url) => url.pathname === '/');
 };
 
 test.beforeEach(async ({ context }) => {

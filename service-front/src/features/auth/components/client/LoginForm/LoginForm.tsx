@@ -1,15 +1,14 @@
 'use client';
 
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button } from '@repo/ui/components/button';
 import Link from 'next/link';
 import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
-
 import { GoogleAuthButton } from '@/features/auth/components/client/GoogleAuthButton';
 import { type LoginFormValues, loginSchema } from '@/features/auth/schemas/login.schema';
 import { signIn } from '@/features/auth/server/actions';
 import { FormField } from '@/shared/components/form';
+import { Button } from '@/shared/components/ui/Button';
 
 interface LoginFormProps {
     /** コールバックの error クエリに対応する表示用メッセージ（016-google-login） */

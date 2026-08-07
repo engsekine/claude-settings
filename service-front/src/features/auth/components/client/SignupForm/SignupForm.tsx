@@ -1,17 +1,16 @@
 'use client';
 
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button } from '@repo/ui/components/button';
 import Link from 'next/link';
 import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
-
 import { GoogleAuthButton } from '@/features/auth/components/client/GoogleAuthButton';
 import { ResendConfirmationButton } from '@/features/auth/components/client/ResendConfirmationButton';
 import { TermsAgreementField } from '@/features/auth/components/client/TermsAgreementField';
 import { type SignupFormValues, signupSchema } from '@/features/auth/schemas/signup.schema';
 import { signUp } from '@/features/auth/server/actions';
 import { EmailOptInField, FormField, FormRadioGroup } from '@/shared/components/form';
+import { Button } from '@/shared/components/ui/Button';
 import { DIVER_TYPE_OPTIONS } from '@/shared/constants/diver-type';
 import { DEFAULT_GENDER, GENDER_OPTIONS } from '@/shared/constants/gender';
 
@@ -42,6 +41,7 @@ export const SignupForm = () => {
                 lastNameRomaji: values.lastNameRomaji,
                 firstNameRomaji: values.firstNameRomaji,
                 nickname: values.nickname,
+                handle: values.handle,
                 birthOn: values.birthOn,
                 gender: values.gender,
                 heightCm: values.heightCm,
@@ -144,6 +144,20 @@ export const SignupForm = () => {
                 error={errors.nickname?.message}
                 {...register('nickname')}
             />
+
+            <FormField
+                id="handle"
+                label="ユーザー ID"
+                type="text"
+                autoComplete="off"
+                aria-required="true"
+                placeholder="例: taro-diver"
+                error={errors.handle?.message}
+                {...register('handle')}
+            />
+            <p className="text-muted-foreground text-xs">
+                半角英小文字・数字・ハイフン・アンダースコアの 3〜30 文字（先頭は英字）。プロフィールの URL に使われます
+            </p>
 
             <FormField
                 id="birthOn"

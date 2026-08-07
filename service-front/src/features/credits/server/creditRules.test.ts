@@ -162,6 +162,19 @@ describe.runIf(process.env['SUPABASE_DB_TESTS'] === '1')('ログ枠ルール（D
         expect(await getBalance(userId)).toBe(11);
     });
 
+    it('grant_daily_bonus は付与発生の有無を返す（036 FR-001: 初回 true / 同日 2 回目 false）', async () => {
+        const { asUser } = await createTestUser();
+
+        const first = await asUser.rpc('grant_daily_bonus');
+        expect(first.error).toBeNull();
+        expect(first.data).toBe(true);
+
+        // 同日 2 回目は付与済みのため false（付与量が増えないことは既存の冪等テストで担保）
+        const second = await asUser.rpc('grant_daily_bonus');
+        expect(second.error).toBeNull();
+        expect(second.data).toBe(false);
+    });
+
     it('前日分のボーナスがあれば新しい日の分は付与される（FR-003）', async () => {
         const { userId, asUser } = await createTestUser();
         await asUser.rpc('grant_daily_bonus');

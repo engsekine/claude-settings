@@ -1,11 +1,10 @@
 'use client';
 
-import { Button } from '@repo/ui/components/button';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-
 import { deleteCertification } from '@/features/certifications/server/actions';
 import { ConfirmDialog } from '@/shared/components/feedback/ConfirmDialog';
+import { Button } from '@/shared/components/ui/Button';
 
 interface DeleteCertificationButtonProps {
     certificationId: string;

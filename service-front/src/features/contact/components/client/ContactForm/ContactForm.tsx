@@ -1,11 +1,9 @@
 'use client';
 
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button } from '@repo/ui/components/button';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
-
 import {
     CONTACT_BODY_MAX_LENGTH,
     CONTACT_COMPLETE_PATH,
@@ -15,6 +13,7 @@ import {
 import { type ContactFormValues, contactSchema } from '@/features/contact/schemas/contact.schema';
 import { submitInquiry } from '@/features/contact/server/actions';
 import { FormField, FormSelect, FormTextarea } from '@/shared/components/form';
+import { Button } from '@/shared/components/ui/Button';
 
 interface ContactFormProps {
     /** 初期値（ログイン中は氏名・メールが補完される。未ログインは空 / FR-013） */

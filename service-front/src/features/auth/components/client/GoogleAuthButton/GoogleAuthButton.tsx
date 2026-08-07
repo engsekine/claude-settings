@@ -1,9 +1,8 @@
 'use client';
 
-import { Button } from '@repo/ui/components/button';
 import { useState, useTransition } from 'react';
-
 import { signInWithGoogle } from '@/features/auth/server/actions';
+import { Button } from '@/shared/components/ui/Button';
 
 interface GoogleAuthButtonProps {
     /** ボタン文言。ログインは「Google でログイン」、サインアップは「Google で続行」 */

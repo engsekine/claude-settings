@@ -50,14 +50,14 @@ Web アプリ（モノレポ）: `service-front/src/`、`admin-front/src/`、`su
 
 **Goal**: 本番環境でサインアップ確認メール（および全認証メール）を実受信箱へ確実に届け、再送導線を提供する（FR-001〜007a）。
 
-**Independent Test**: 本番相当環境で実在アドレスで `/signup` を完了 → 確認メールが 2 分以内に届き、リンクから `/dives` に到達。届かない場合は再送ボタンで再送できる（quickstart シナリオ 1）。
+**Independent Test**: 本番相当環境で実在アドレスで `/signup` を完了 → 確認メールが 2 分以内に届き、リンクから TOP（`/`）に到達。届かない場合は再送ボタンで再送できる（quickstart シナリオ 1）。
 
 ### Implementation for User Story 1
 
 - [X] T004 [US1] `supabase/config.toml` の `[auth.email.smtp]` を有効化。**プロジェクト既存の Resend を SMTP 送信元に利用**（`host=smtp.resend.com` / `port=587` / `user=resend` / `pass=env(RESEND_API_KEY)` / `admin_email=env(CONTACT_MAIL_FROM)` / `sender_name="ダイビングログ"`）し、`[auth.email.template.confirmation]` で日本語テンプレートを参照。※ research.md の SendGrid 案は実コード確認の結果 Resend に変更（既存 email プロバイダに統一）
 - [X] T005 [P] [US1] `supabase/templates/confirmation.html` を日本語で作成（件名・本文・確認リンク・サービス名。FR-003）
 - [X] T006 [P] [US1] `resendConfirmationEmail` の Vitest テストを `service-front/src/features/auth/server/actions.test.ts` に追加（成功 / レート制限 / ユーザー列挙回避）。実装前に FAIL させる
-- [X] T007 [US1] `resendConfirmationEmail(email)` を `service-front/src/features/auth/server/actions.ts` に実装（`supabase.auth.resend({ type:'signup', email, options:{ emailRedirectTo:'/api/auth/callback?next=/dives' }})`。契約: `contracts/service-front-email.md`。T006 に依存）
+- [X] T007 [US1] `resendConfirmationEmail(email)` を `service-front/src/features/auth/server/actions.ts` に実装（`supabase.auth.resend({ type:'signup', email, options:{ emailRedirectTo:'/api/auth/callback?next=/' }})`。契約: `contracts/service-front-email.md`。T006 に依存）
 - [X] T008 [P] [US1] `ResendConfirmationButton` の Vitest + a11y テスト（`ResendConfirmationButton.test.tsx`）と Storybook story（`ResendConfirmationButton.stories.tsx`）を `service-front/src/features/auth/components/client/ResendConfirmationButton/` に作成（クールダウン中 `disabled`・`aria-live` 通知）。`/generate-with-tests` を利用可。Vitest/a11y は実装前に FAIL させる（Constitution III: service-front は Storybook 同梱必須）
 - [X] T009 [US1] `ResendConfirmationButton` Client Component を `service-front/src/features/auth/components/client/ResendConfirmationButton/`（本体 + `index.ts`）に実装（T008 に依存）
 - [X] T010 [US1] サインアップ完了状態（「確認メールを送信しました」）に再送ボタンを組み込む: `service-front/src/features/auth/components/client/SignupForm/SignupForm.tsx`（`ResendConfirmationButton email={sentTo}`）
@@ -73,7 +73,7 @@ Web アプリ（モノレポ）: `service-front/src/`、`admin-front/src/`、`su
 
 **Goal**: 電話番号を登録して 2 要素認証を有効化し、ログイン時に SMS ワンタイムコードで 2 段階目を必須化する。無効化・管理者による解除（FR-016）も提供する（FR-008〜016）。
 
-**Independent Test**: 設定画面で電話番号を登録・有効化 → 再ログインで 1 段階目成功後に SMS コード入力を要求され、正しいコードで `/dives` 到達。無効化で 2 段階目が消える。管理者はユーザー詳細から要素を解除できる（quickstart シナリオ 2・3）。
+**Independent Test**: 設定画面で電話番号を登録・有効化 → 再ログインで 1 段階目成功後に SMS コード入力を要求され、正しいコードで TOP（`/`）到達。無効化で 2 段階目が消える。管理者はユーザー詳細から要素を解除できる（quickstart シナリオ 2・3）。
 
 ### Implementation for User Story 2
 

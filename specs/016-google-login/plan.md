@@ -6,7 +6,7 @@
 
 ## Summary
 
-`001-auth`（メール + パスワード）を拡張し、Supabase Auth の OAuth プロバイダ機能で **Google ログイン**を追加する。`/login` `/signup` に「Google でログイン / 続行」導線を置き、Server Action `signInWithGoogle()` から `signInWithOAuth({ provider: 'google' })` を呼び、既存の `/api/auth/callback`（`exchangeCodeForSession`）で戻りを処理する。初回 OAuth サインアップでは Google が氏名・メールしか返さないため、`handle_new_user` トリガーを分岐させ `user_details` 行を作らず（＝プロフィール未補完）、`/profile-completion` でニックネーム・生年月日・性別・姓名を **必須入力**させてから `/dives` に到達させる（確定論点 ①）。同一メールの既存メール+パスワードアカウントへは Supabase の自動アイデンティティ紐付けに委譲し、重複アカウントを作らない（確定論点 ②）。
+`001-auth`（メール + パスワード）を拡張し、Supabase Auth の OAuth プロバイダ機能で **Google ログイン**を追加する。`/login` `/signup` に「Google でログイン / 続行」導線を置き、Server Action `signInWithGoogle()` から `signInWithOAuth({ provider: 'google' })` を呼び、既存の `/api/auth/callback`（`exchangeCodeForSession`）で戻りを処理する。初回 OAuth サインアップでは Google が氏名・メールしか返さないため、`handle_new_user` トリガーを分岐させ `user_details` 行を作らず（＝プロフィール未補完）、`/profile-completion` でニックネーム・生年月日・性別・姓名を **必須入力**させてから TOP（`/`）に到達させる（確定論点 ①）。同一メールの既存メール+パスワードアカウントへは Supabase の自動アイデンティティ紐付けに委譲し、重複アカウントを作らない（確定論点 ②）。
 
 ## Technical Context
 
@@ -72,7 +72,7 @@ service-front/src/app/
 ├── (authenticated)/
 │   ├── layout.tsx                     # ★変更: user_details 未作成なら /profile-completion へ redirect
 │   ├── profile-completion/
-│   │   └── page.tsx                   # ★新規: 補完フォーム画面（補完済みは /dives へ戻す）
+│   │   └── page.tsx                   # ★新規: 補完フォーム画面（補完済みは TOP（/）へ戻す）
 │   └── dives/...                      # 既存
 └── api/auth/
     └── callback/route.ts              # ★軽微変更: OAuth code を exchangeCodeForSession で処理（既存）+ error クエリ転送（キャンセル時 /login?error=oauth_cancelled）
@@ -106,8 +106,8 @@ supabase/
 
 | Action | 役割 |
 |--------|------|
-| `signInWithGoogle()` | `signInWithOAuth({ provider: 'google', options: { redirectTo: '{site_url}/api/auth/callback?next=/dives' } })` を呼び、`data.url` へリダイレクト。失敗時は `ActionResult` で差し戻し |
-| `completeProfile(input)` | yup 検証後、`public.user_details` に本人行を INSERT（RLS の `with check` で本人限定）。成功で `/dives` へ |
+| `signInWithGoogle()` | `signInWithOAuth({ provider: 'google', options: { redirectTo: '{site_url}/api/auth/callback?next=/' } })` を呼び、`data.url` へリダイレクト。失敗時は `ActionResult` で差し戻し |
+| `completeProfile(input)` | yup 検証後、`public.user_details` に本人行を INSERT（RLS の `with check` で本人限定）。成功で TOP（`/`）へ |
 
 既存の `signIn` / `signUp` / `signOut` / `requestPasswordReset` は変更しない。契約詳細は [contracts/server-actions.md](contracts/server-actions.md)。
 
@@ -115,12 +115,12 @@ supabase/
 
 1. ユーザーが `/login`（または `/signup`）の「Google でログイン」を押す
 2. `signInWithGoogle()` が `signInWithOAuth` を呼び、返却 URL（Google 同意画面）へリダイレクト
-3. ユーザーが Google で認証・同意 → Supabase 経由で `{site_url}/api/auth/callback?code=...&next=/dives` に戻る
+3. ユーザーが Google で認証・同意 → Supabase 経由で `{site_url}/api/auth/callback?code=...&next=/` に戻る
 4. 既存 callback route が `exchangeCodeForSession(code)` でセッション cookie を発行
-5. `/dives` へリダイレクト → `(authenticated)/layout.tsx` が `user_details` 行の有無を確認
-   - 行あり（既存ユーザー / 補完済み / 自動紐付け先）→ `/dives` 表示
+5. TOP（`/`）へリダイレクト → `(authenticated)/layout.tsx` が `user_details` 行の有無を確認
+   - 行あり（既存ユーザー / 補完済み / 自動紐付け先）→ TOP（`/`）表示
    - 行なし（OAuth 初回）→ `/profile-completion` へ redirect
-6. 補完フォーム送信 → `completeProfile()` が `user_details` を INSERT → `/dives`
+6. 補完フォーム送信 → `completeProfile()` が `user_details` を INSERT → TOP（`/`）
 
 #### キャンセル / 失敗 / 未確認メールの扱い（FR-006 / FR-009 / FR-010）
 
@@ -134,7 +134,7 @@ supabase/
 
 ### 補完ゲート（`(authenticated)/layout.tsx`）
 
-ログインユーザーの `user_details` 行存在を 1 回 SELECT し、無ければ `/profile-completion` へ `redirect()`。`/profile-completion` 自身は未補完を許容し、補完済みアクセス時は `/dives` へ戻す。middleware（`proxy.ts`）には DB 往復を追加しない。
+ログインユーザーの `user_details` 行存在を 1 回 SELECT し、無ければ `/profile-completion` へ `redirect()`。`/profile-completion` 自身は未補完を許容し、補完済みアクセス時は TOP（`/`）へ戻す。middleware（`proxy.ts`）には DB 往復を追加しない。
 
 ### config.toml（Google プロバイダ）
 

@@ -12,5 +12,5 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** 既定表示（ニックネーム入力欄 + 検索ボタン）。送信すると /users/search?q=... へ遷移する */
+/** 既定表示（ユーザーID入力欄 + 検索ボタン）。送信すると /users/search?q=... へ遷移する */
 export const Default: Story = {};

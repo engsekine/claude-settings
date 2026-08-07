@@ -40,7 +40,7 @@ Technical Context の未確定点を解決する。各項目は Decision / Ratio
 
 ## 7. 通知からの遷移先解決と消滅時フォールバック（FR-012）
 
-- **Decision**: 遷移先は表示時に種別から静的に組み立てる（`followed` → `/users/[actor_id]`、`buddy_tagged` → `/dives/[resource_id]`、`plan_reminder` → `/plans/[resource_id]`、`overhaul_reminder` → `/settings/equipment`）。対象が消えている場合は各遷移先ページの既存 404 / フォールバック（`notFound()` や一覧リダイレクト）に委ね、通知一覧側では事前の存在チェックをしない。
+- **Decision**: 遷移先は表示時に種別から静的に組み立てる（`followed` → プロフィール URL（034 以降は actor のユーザー ID の URL・未取得時は内部 ID フォールバック）、`buddy_tagged` → `/dives/[resource_id]`、`plan_reminder` → `/plans/[resource_id]`、`overhaul_reminder` → `/settings/equipment`）。対象が消えている場合は各遷移先ページの既存 404 / フォールバック（`notFound()` や一覧リダイレクト）に委ね、通知一覧側では事前の存在チェックをしない。
 - **Rationale**: 一覧表示のたびに対象の存在確認 JOIN を行うとコストが高い。既存ページは削除・非公開化に対して適切な 404 / 案内を既に持っており（021/024 で検証済み）、通知はそこへ委譲すれば FR-012 の「エラー画面にしない」を満たせる。actor 退会時は `actor_id` が `on delete set null` になるため、一覧側で「退会したユーザー」表示 + 遷移無効化を行う。
 - **Alternatives considered**: 一覧クエリで対象テーブルへ LEFT JOIN して存在フラグを返す（クエリ複雑化。v1 では過剰）。
 

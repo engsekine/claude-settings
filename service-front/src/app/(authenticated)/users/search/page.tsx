@@ -1,5 +1,6 @@
 import { FollowList, searchUsers, UserSearchBar } from '@/features/social';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
+import { Heading } from '@/shared/components/typography/Heading';
 import { generatePageMetadata } from '@/shared/config/metadata';
 import { createClient } from '@/shared/lib/supabase/server';
 
@@ -12,7 +13,7 @@ export const generateMetadata = () =>
         {
             slug: '/users/search',
             title: 'ユーザーを探す',
-            description: 'ニックネームでユーザーを検索してフォローする',
+            description: 'ユーザーIDでユーザーを検索してフォローする',
         },
         { noIndex: true },
     );
@@ -31,7 +32,7 @@ export default async function UserSearchPage({ searchParams }: UserSearchPagePro
         <div className="flex flex-1 flex-col">
             <Breadcrumbs breadcrumbs={[{ name: 'ユーザーを探す' }]} />
             <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-8">
-                <h1 className="font-semibold text-2xl">ユーザーを探す</h1>
+                <Heading level={1}>ユーザーを探す</Heading>
                 <UserSearchBar />
 
                 {query.length > 0 && (

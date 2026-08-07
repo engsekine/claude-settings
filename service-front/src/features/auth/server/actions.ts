@@ -31,6 +31,8 @@ export interface SignUpInput {
     lastNameRomaji: string;
     firstNameRomaji: string;
     nickname: string;
+    /** ユーザー ID（034。プロフィール URL の識別子。小文字英数字と - _） */
+    handle: string;
     /** ISO 8601 date string (YYYY-MM-DD) */
     birthOn: string;
     gender: Gender;
@@ -60,7 +62,7 @@ export const signIn = async (email: string, password: string): Promise<ActionRes
         return actionFailure('メールアドレスまたはパスワードが間違っています');
     }
 
-    redirect('/dives');
+    redirect('/');
 };
 
 export const signUp = async (input: SignUpInput): Promise<ActionResult<SignUpPayload>> => {
@@ -77,11 +79,17 @@ export const signUp = async (input: SignUpInput): Promise<ActionResult<SignUpPay
         return actionFailure('このニックネームは既に使われています。別のニックネームをお試しください');
     }
 
+    /** ユーザー ID の一意制約（034）も同様に事前チェックする */
+    const { data: handleTaken } = await supabase.rpc('is_handle_taken', { p_handle: input.handle });
+    if (handleTaken) {
+        return actionFailure('このユーザー ID は既に使われています。別のユーザー ID をお試しください');
+    }
+
     const { data, error } = await supabase.auth.signUp({
         email: input.email,
         password: input.password,
         options: {
-            emailRedirectTo: `${getSiteUrl()}/api/auth/callback?next=/dives`,
+            emailRedirectTo: `${getSiteUrl()}/api/auth/callback?next=/`,
             /**
              * raw_user_meta_data に格納され、handle_new_user トリガーが
              * user_details への INSERT で参照する。
@@ -92,6 +100,8 @@ export const signUp = async (input: SignUpInput): Promise<ActionResult<SignUpPay
                 last_name_romaji: input.lastNameRomaji,
                 first_name_romaji: input.firstNameRomaji,
                 nickname: input.nickname,
+                /** handle_new_user トリガーが user_details.handle に記録する（034） */
+                handle: input.handle,
                 birth_on: input.birthOn,
                 gender: input.gender,
                 height_cm: input.heightCm,
@@ -199,7 +209,7 @@ export const resendConfirmationEmail = async (email: string): Promise<ActionResu
         type: 'signup',
         email,
         options: {
-            emailRedirectTo: `${getSiteUrl()}/api/auth/callback?next=/dives`,
+            emailRedirectTo: `${getSiteUrl()}/api/auth/callback?next=/`,
         },
     });
 
@@ -222,7 +232,7 @@ export const signInWithGoogle = async (): Promise<ActionResult> => {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            redirectTo: `${getSiteUrl()}/api/auth/callback?next=/dives`,
+            redirectTo: `${getSiteUrl()}/api/auth/callback?next=/`,
         },
     });
 
@@ -258,7 +268,7 @@ const toBrowserReachableAuthorizeUrl = (authorizeUrl: string): string => {
 /**
  * Google ログイン初回ユーザーのプロフィールを補完し、user_details に本人行を INSERT する。
  * user_id はクライアント入力ではなく auth.uid()（セッションユーザー）を使う。
- * 補完済みユーザーの再送（一意制約違反）は冪等に /dives へ流す。
+ * 補完済みユーザーの再送（一意制約違反）は冪等に TOP（`/`）へ流す。
  */
 export const completeProfile = async (input: CompleteProfileInput): Promise<ActionResult> => {
     /** クライアントの無効化に依存せず、サーバー側でも未同意を拒否する（018 / FR-008） */
@@ -280,6 +290,15 @@ export const completeProfile = async (input: CompleteProfileInput): Promise<Acti
         return actionFailure('このニックネームは既に使われています。別のニックネームをお試しください');
     }
 
+    /** ユーザー ID の一意制約（034）も同様に事前チェックする */
+    const { data: handleTaken } = await supabase.rpc('is_handle_taken', {
+        p_handle: input.handle,
+        p_exclude_user_id: user.id,
+    });
+    if (handleTaken) {
+        return actionFailure('このユーザー ID は既に使われています。別のユーザー ID をお試しください');
+    }
+
     const { error } = await supabase.from('user_details').insert(toUserDetailsInsert(user.id, input));
 
     if (error) {
@@ -287,9 +306,13 @@ export const completeProfile = async (input: CompleteProfileInput): Promise<Acti
         if (error.code === '23505' && error.message.includes('user_details_nickname_key')) {
             return actionFailure('このニックネームは既に使われています。別のニックネームをお試しください');
         }
-        /** 既に補完済み（PK user_id 重複）の場合は冪等に成功扱いとし /dives へ */
+        /** handle 一意制約違反（034。競合時のフォールバック） */
+        if (error.code === '23505' && error.message.includes('user_details_handle_key')) {
+            return actionFailure('このユーザー ID は既に使われています。別のユーザー ID をお試しください');
+        }
+        /** 既に補完済み（PK user_id 重複）の場合は冪等に成功扱いとし TOP へ */
         if (error.code === '23505') {
-            redirect('/dives');
+            redirect('/');
         }
         console.error('[completeProfile] supabase error:', {
             message: error.message,
@@ -298,5 +321,14 @@ export const completeProfile = async (input: CompleteProfileInput): Promise<Acti
         return actionFailure('プロフィールの保存に失敗しました。時間をおいて再度お試しください');
     }
 
-    redirect('/dives');
+    /**
+     * ヘッダー（AuthNav）がユーザー ID の URL を生成できるよう metadata に同期する（034）。
+     * 同期失敗は致命的でない（内部 ID URL → ページ側転送で正規化される）ため成功扱いにする。
+     */
+    const { error: metadataError } = await supabase.auth.updateUser({ data: { handle: input.handle } });
+    if (metadataError) {
+        console.error('[completeProfile] auth metadata sync error:', { message: metadataError.message });
+    }
+
+    redirect('/');
 };

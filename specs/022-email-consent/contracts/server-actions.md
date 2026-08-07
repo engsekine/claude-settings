@@ -19,7 +19,7 @@
 |------|------|
 | 入力追加 | `CompleteProfileInput` に `emailOptIn: boolean` を追加 |
 | 記録 | `toUserDetailsInsert` を拡張し `is_email_opted_in = input.emailOptIn` / `email_opted_in_at = input.emailOptIn ? now : null` を INSERT に含める |
-| 既存挙動 | 本人 INSERT・PK 重複の冪等処理・`/dives` redirect・利用規約記録は変更なし |
+| 既存挙動 | 本人 INSERT・PK 重複の冪等処理・TOP（`/`）redirect・利用規約記録は変更なし |
 
 ## `getProfile()` 変更（account）
 

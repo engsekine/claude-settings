@@ -17,6 +17,8 @@ export interface FollowState {
 export interface FollowUser {
     userId: string;
     nickname: string;
+    /** ユーザー ID（034。プロフィールリンク生成用） */
+    handle: string;
     /** 閲覧者がこのユーザーをフォロー中か（一覧上のフォローボタン用） */
     isFollowing: boolean;
 }
@@ -31,6 +33,8 @@ export interface TimelineItem {
     bottomTimeMin: number;
     ownerId: string;
     ownerNickname: string;
+    /** 所有者のユーザー ID（034。プロフィールリンク生成用） */
+    ownerHandle: string;
     /** いいね件数（spec 027 FR-004） */
     likeCount: number;
     /** 閲覧者がこのログをいいね済みか（spec 027 FR-005） */
@@ -66,6 +70,8 @@ export interface LikedDivesPage {
 export interface PublicProfile {
     userId: string;
     nickname: string;
+    /** ユーザー ID（034。プロフィール URL の識別子） */
+    handle: string;
     followState: FollowState;
 }
 

@@ -19,6 +19,8 @@ export interface NotificationItem {
     actorId: string | null;
     /** 発生元ユーザーの表示名。退会・解決不可は null（「退会したユーザー」表示に使う） */
     actorNickname: string | null;
+    /** actor のユーザー ID（034。プロフィールリンク生成用。退会・未解決時は null） */
+    actorHandle: string | null;
     /** 対象リソース ID（dive / plan / regulator） */
     resourceId: string | null;
     occurredAt: string;
@@ -37,10 +39,13 @@ export interface NotificationPage {
     nextCursor: NotificationCursor | null;
 }
 
-/** user_id 配列 → nickname の Map を get_user_public_profiles（SECURITY DEFINER）で解決する */
-const resolveNicknames = async (supabase: Client, userIds: string[]): Promise<Map<string, string>> => {
+/** user_id 配列 → { nickname, handle } の Map を get_user_public_profiles（SECURITY DEFINER）で解決する */
+const resolveProfiles = async (
+    supabase: Client,
+    userIds: string[],
+): Promise<Map<string, { nickname: string; handle: string }>> => {
     const unique = [...new Set(userIds)];
-    const map = new Map<string, string>();
+    const map = new Map<string, { nickname: string; handle: string }>();
     if (unique.length === 0) return map;
     const { data, error } = await supabase.rpc('get_user_public_profiles', { p_ids: unique });
     if (error) {
@@ -48,7 +53,7 @@ const resolveNicknames = async (supabase: Client, userIds: string[]): Promise<Ma
         console.error('[listNotifications] nickname 解決に失敗しました:', error);
         return map;
     }
-    for (const profile of data ?? []) map.set(profile.user_id, profile.nickname);
+    for (const profile of data ?? []) map.set(profile.user_id, { nickname: profile.nickname, handle: profile.handle });
     return map;
 };
 
@@ -86,7 +91,7 @@ export const listNotifications = async (
     const hasNext = (rows?.length ?? 0) > NOTIFICATIONS_PAGE_SIZE;
     const pageRows = (hasNext ? rows?.slice(0, NOTIFICATIONS_PAGE_SIZE) : rows) ?? [];
 
-    const nicknames = await resolveNicknames(
+    const profiles = await resolveProfiles(
         supabase,
         pageRows.map((row) => row.actor_id).filter((id): id is string => id !== null),
     );
@@ -95,7 +100,8 @@ export const listNotifications = async (
         id: row.id,
         type: row.type as NotificationType,
         actorId: row.actor_id,
-        actorNickname: row.actor_id ? (nicknames.get(row.actor_id) ?? null) : null,
+        actorNickname: row.actor_id ? (profiles.get(row.actor_id)?.nickname ?? null) : null,
+        actorHandle: row.actor_id ? (profiles.get(row.actor_id)?.handle ?? null) : null,
         resourceId: row.resource_id,
         occurredAt: row.occurred_at,
         readAt: row.read_at,

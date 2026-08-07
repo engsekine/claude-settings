@@ -1,11 +1,13 @@
 'use client';
 
-import { Button } from '@repo/ui/components/button';
 import type { Route } from 'next';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-
-import { DELETED_USER_LABEL, NOTIFICATION_MESSAGES } from '@/features/notifications/constants';
+import {
+    buildNotificationMessage,
+    formatOccurredAtJst,
+    isNotificationActorDeleted,
+} from '@/features/notifications/lib/notificationDisplay';
 import { getNotificationTarget } from '@/features/notifications/lib/notificationTarget';
 import {
     loadMoreNotifications,
@@ -13,7 +15,7 @@ import {
     markNotificationRead,
 } from '@/features/notifications/server/actions';
 import type { NotificationCursor, NotificationItem } from '@/features/notifications/server/queries';
-import { formatJstDate } from '@/shared/lib/date';
+import { Button } from '@/shared/components/ui/Button';
 
 interface NotificationListProps {
     /** Server Component（listNotifications）で取得した初回ページ */
@@ -23,18 +25,6 @@ interface NotificationListProps {
     /** 未読件数（「すべて既読にする」の活性判定に使う） */
     unreadCount: number;
 }
-
-/** occurred_at（timestamptz）を JST の暦日に変換して YYYY/MM/DD 表示にする */
-const formatOccurredAtJst = (occurredAt: string): string =>
-    formatJstDate(new Date(occurredAt).toLocaleDateString('en-CA', { timeZone: 'Asia/Tokyo' }));
-
-/** 通知メッセージを組み立てる（{nickname} は退会時 DELETED_USER_LABEL に落ちる） */
-const buildMessage = (item: NotificationItem): string =>
-    NOTIFICATION_MESSAGES[item.type].replace('{nickname}', item.actorNickname ?? DELETED_USER_LABEL);
-
-/** actor 退会（nickname 解決不可）のソーシャル通知か。リンク無効化の判定に使う（FR-012） */
-const isActorDeleted = (item: NotificationItem): boolean =>
-    (item.type === 'followed' || item.type === 'buddy_tagged') && item.actorNickname === null;
 
 /**
  * 通知一覧（025 / US1 / FR-003〜005・FR-012）。
@@ -113,19 +103,23 @@ export const NotificationList = ({ initialItems, initialCursor, unreadCount }: N
                     {items.map((item) => {
                         const { href } = getNotificationTarget(item);
                         const isUnread = item.readAt === null;
-                        const isClickable = href !== null && !isActorDeleted(item);
+                        const isClickable = href !== null && !isNotificationActorDeleted(item);
 
                         const content = (
                             <>
                                 <span className="flex items-center gap-2">
+                                    {/* red-600 だと未読行の bg-blue-50 上でコントラスト AA 未達（4.38）のため red-700 を使う */}
                                     {isUnread && (
-                                        <span className="inline-flex shrink-0 rounded-full border border-red-600 px-1.5 text-red-600 text-xs">
+                                        <span className="inline-flex shrink-0 rounded-full border border-red-700 px-1.5 text-red-700 text-xs">
                                             未読
                                         </span>
                                     )}
-                                    <span className="text-sm">{buildMessage(item)}</span>
+                                    <span className="text-sm">{buildNotificationMessage(item)}</span>
                                 </span>
-                                <span className="text-muted-foreground text-xs">
+                                {/* 未読行の bg-blue-50 上では text-muted-foreground がコントラスト AA 未達のため text-foreground を使う */}
+                                <span
+                                    className={isUnread ? 'text-foreground text-xs' : 'text-muted-foreground text-xs'}
+                                >
                                     {formatOccurredAtJst(item.occurredAt)}
                                 </span>
                             </>

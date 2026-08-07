@@ -1,7 +1,11 @@
 'use client';
 
-import { buttonVariants } from '@repo/ui/components/button';
 import Link from 'next/link';
+import { LOG_CREDIT_PACKS } from '@/features/credits/constants';
+import { buttonVariants } from '@/shared/components/ui/Button';
+
+/** 購入導線に表示する最安パックの価格（円） */
+const MIN_PACK_AMOUNT_JPY = Math.min(...LOG_CREDIT_PACKS.map((pack) => pack.amountJpy));
 
 interface NoCreditBannerProps {
     /**
@@ -26,7 +30,7 @@ export const NoCreditBanner = ({ showPurchaseLink = true }: NoCreditBannerProps)
             </p>
             {showPurchaseLink && (
                 <Link href="/settings/log-credits" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
-                    ログパックを購入（10 枠 / ¥300）
+                    ログパックを購入（¥{MIN_PACK_AMOUNT_JPY.toLocaleString('ja-JP')} から）
                 </Link>
             )}
         </div>

@@ -21,13 +21,13 @@
 4. チェックを入れて送信 → **期待**: 確認メール送信フローに進む（既存どおり）
 
 ### シナリオ B: メール登録 — 同意の記録（SC-005）
-1. シナリオ A でチェックして登録完了（確認メールのリンクで `/dives` まで）
+1. シナリオ A でチェックして登録完了（確認メールのリンクで TOP（`/`）まで）
 2. **期待**: 当該ユーザーの `user_details.terms_version` が `CURRENT_TERMS_VERSION`、`terms_agreed_at` に日時が記録されている（Supabase Studio で確認）
 
 ### シナリオ C: Google 初回ログイン — 未チェックは利用開始不可（US2）
 1. 未登録 Google アカウントで初回ログイン → `/profile-completion`
 2. 同意チェックを**入れずに**送信 → **期待**: 補完が完了せず同意を促す
-3. チェックを入れて送信 → **期待**: `/dives` 到達。`user_details` に `terms_version` / `terms_agreed_at` が記録される
+3. チェックを入れて送信 → **期待**: TOP（`/`）到達。`user_details` に `terms_version` / `terms_agreed_at` が記録される
 
 ### シナリオ D: 規約リンクと入力保持（FR-005）
 1. `/signup` で数項目入力後、チェックボックス内の「利用規約」リンクを押す

@@ -93,6 +93,117 @@ export type Database = {
                 };
                 Relationships: [];
             };
+            application_sheets: {
+                Row: {
+                    age: number | null;
+                    birth_on: string | null;
+                    contact_lens_type: string | null;
+                    created_at: string;
+                    dive_shop_id: string | null;
+                    dive_count: number | null;
+                    dry_suit_dive_count: number | null;
+                    emergency_contact_phone: string;
+                    emergency_contact_relation: string;
+                    foot_size_cm: number | null;
+                    full_name: string;
+                    gender: string | null;
+                    has_contact_lens: boolean | null;
+                    has_dry_suit_experience: boolean | null;
+                    has_rental: boolean | null;
+                    height_cm: number | null;
+                    id: string;
+                    kind: string;
+                    last_dive_year_month: string | null;
+                    license_rank: string;
+                    name: string;
+                    nearest_station: string;
+                    needs_prescription_mask: boolean | null;
+                    omit_rental_block: boolean;
+                    phone: string;
+                    rental_items: Json;
+                    updated_at: string;
+                    user_id: string;
+                    weight_kg: number | null;
+                };
+                Insert: {
+                    age?: number | null;
+                    birth_on?: string | null;
+                    contact_lens_type?: string | null;
+                    created_at?: string;
+                    dive_shop_id?: string | null;
+                    dive_count?: number | null;
+                    dry_suit_dive_count?: number | null;
+                    emergency_contact_phone?: string;
+                    emergency_contact_relation?: string;
+                    foot_size_cm?: number | null;
+                    full_name?: string;
+                    gender?: string | null;
+                    has_contact_lens?: boolean | null;
+                    has_dry_suit_experience?: boolean | null;
+                    has_rental?: boolean | null;
+                    height_cm?: number | null;
+                    id?: string;
+                    kind?: string;
+                    last_dive_year_month?: string | null;
+                    license_rank?: string;
+                    name: string;
+                    nearest_station?: string;
+                    needs_prescription_mask?: boolean | null;
+                    omit_rental_block?: boolean;
+                    phone?: string;
+                    rental_items?: Json;
+                    updated_at?: string;
+                    user_id: string;
+                    weight_kg?: number | null;
+                };
+                Update: {
+                    age?: number | null;
+                    birth_on?: string | null;
+                    contact_lens_type?: string | null;
+                    created_at?: string;
+                    dive_shop_id?: string | null;
+                    dive_count?: number | null;
+                    dry_suit_dive_count?: number | null;
+                    emergency_contact_phone?: string;
+                    emergency_contact_relation?: string;
+                    foot_size_cm?: number | null;
+                    full_name?: string;
+                    gender?: string | null;
+                    has_contact_lens?: boolean | null;
+                    has_dry_suit_experience?: boolean | null;
+                    has_rental?: boolean | null;
+                    height_cm?: number | null;
+                    id?: string;
+                    kind?: string;
+                    last_dive_year_month?: string | null;
+                    license_rank?: string;
+                    name?: string;
+                    nearest_station?: string;
+                    needs_prescription_mask?: boolean | null;
+                    omit_rental_block?: boolean;
+                    phone?: string;
+                    rental_items?: Json;
+                    updated_at?: string;
+                    user_id?: string;
+                    weight_kg?: number | null;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'application_sheets_dive_shop_id_fkey';
+                        columns: ['dive_shop_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'dive_shops';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'application_sheets_user_id_fkey';
+                        columns: ['user_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
             certification_tags: {
                 Row: {
                     certification_id: string;
@@ -317,6 +428,7 @@ export type Database = {
             dive_plans: {
                 Row: {
                     created_at: string;
+                    dive_shop_id: string | null;
                     id: string;
                     location: string;
                     notes: string | null;
@@ -326,6 +438,7 @@ export type Database = {
                 };
                 Insert: {
                     created_at?: string;
+                    dive_shop_id?: string | null;
                     id?: string;
                     location: string;
                     notes?: string | null;
@@ -335,6 +448,7 @@ export type Database = {
                 };
                 Update: {
                     created_at?: string;
+                    dive_shop_id?: string | null;
                     id?: string;
                     location?: string;
                     notes?: string | null;
@@ -344,7 +458,64 @@ export type Database = {
                 };
                 Relationships: [
                     {
+                        foreignKeyName: 'dive_plans_dive_shop_id_fkey';
+                        columns: ['dive_shop_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'dive_shops';
+                        referencedColumns: ['id'];
+                    },
+                    {
                         foreignKeyName: 'dive_plans_user_id_fkey';
+                        columns: ['user_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
+            dive_shops: {
+                Row: {
+                    address: string;
+                    created_at: string;
+                    id: string;
+                    latitude: number | null;
+                    longitude: number | null;
+                    memo: string;
+                    name: string;
+                    phone: string;
+                    updated_at: string;
+                    user_id: string;
+                    website_url: string;
+                };
+                Insert: {
+                    address?: string;
+                    created_at?: string;
+                    id?: string;
+                    latitude?: number | null;
+                    longitude?: number | null;
+                    memo?: string;
+                    name: string;
+                    phone?: string;
+                    updated_at?: string;
+                    user_id: string;
+                    website_url?: string;
+                };
+                Update: {
+                    address?: string;
+                    created_at?: string;
+                    id?: string;
+                    latitude?: number | null;
+                    longitude?: number | null;
+                    memo?: string;
+                    name?: string;
+                    phone?: string;
+                    updated_at?: string;
+                    user_id?: string;
+                    website_url?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'dive_shops_user_id_fkey';
                         columns: ['user_id'];
                         isOneToOne: false;
                         referencedRelation: 'users';
@@ -393,6 +564,7 @@ export type Database = {
                     buddy_name: string | null;
                     certification_dive: boolean;
                     created_at: string;
+                    dive_shop_id: string | null;
                     current_condition: string | null;
                     deleted_at: string | null;
                     dive_date: string;
@@ -431,6 +603,7 @@ export type Database = {
                     buddy_name?: string | null;
                     certification_dive?: boolean;
                     created_at?: string;
+                    dive_shop_id?: string | null;
                     current_condition?: string | null;
                     deleted_at?: string | null;
                     dive_date: string;
@@ -469,6 +642,7 @@ export type Database = {
                     buddy_name?: string | null;
                     certification_dive?: boolean;
                     created_at?: string;
+                    dive_shop_id?: string | null;
                     current_condition?: string | null;
                     deleted_at?: string | null;
                     dive_date?: string;
@@ -501,6 +675,13 @@ export type Database = {
                     weight_kg?: number | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: 'dives_dive_shop_id_fkey';
+                        columns: ['dive_shop_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'dive_shops';
+                        referencedColumns: ['id'];
+                    },
                     {
                         foreignKeyName: 'dives_dive_site_id_fkey';
                         columns: ['dive_site_id'];
@@ -862,6 +1043,7 @@ export type Database = {
                     first_name: string;
                     first_name_romaji: string;
                     gender: string;
+                    handle: string;
                     height_cm: number | null;
                     is_email_opted_in: boolean;
                     last_name: string;
@@ -882,6 +1064,7 @@ export type Database = {
                     first_name: string;
                     first_name_romaji: string;
                     gender?: string;
+                    handle: string;
                     height_cm?: number | null;
                     is_email_opted_in?: boolean;
                     last_name: string;
@@ -902,6 +1085,7 @@ export type Database = {
                     first_name?: string;
                     first_name_romaji?: string;
                     gender?: string;
+                    handle?: string;
                     height_cm?: number | null;
                     is_email_opted_in?: boolean;
                     last_name?: string;
@@ -1013,9 +1197,7 @@ export type Database = {
             get_dive_monthly_stats: {
                 Args: { months_back?: number };
                 Returns: {
-                    avg_water_temp_c: number;
                     dive_count: number;
-                    max_depth_m: number;
                     month: string;
                 }[];
             };
@@ -1028,6 +1210,7 @@ export type Database = {
                     visited_locations: number;
                 }[];
             };
+            get_user_id_by_handle: { Args: { p_handle: string }; Returns: string };
             get_dive_yearly_counts: {
                 Args: never;
                 Returns: {
@@ -1038,21 +1221,27 @@ export type Database = {
             get_user_public_profiles: {
                 Args: { p_ids: string[] };
                 Returns: {
+                    handle: string;
                     nickname: string;
                     user_id: string;
                 }[];
             };
-            grant_daily_bonus: { Args: never; Returns: undefined };
+            grant_daily_bonus: { Args: never; Returns: boolean };
             is_admin: { Args: never; Returns: boolean };
+            is_handle_taken: {
+                Args: { p_exclude_user_id?: string; p_handle: string };
+                Returns: boolean;
+            };
             is_nickname_taken: {
                 Args: { p_exclude_user_id?: string; p_nickname: string };
                 Returns: boolean;
             };
             is_public_dive_photo: { Args: { object_name: string }; Returns: boolean };
             is_superadmin: { Args: never; Returns: boolean };
-            search_users_by_nickname: {
+            search_users_by_handle: {
                 Args: { p_limit?: number; p_query: string };
                 Returns: {
+                    handle: string;
                     nickname: string;
                     user_id: string;
                 }[];

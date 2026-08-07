@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-
 import { AGENCY_LABELS } from '@/features/certifications/constants';
 import { calcHeldPeriod, formatHeldPeriod } from '@/features/certifications/lib/heldPeriod';
 import type { Certification } from '@/features/certifications/types';
+import { buttonVariants } from '@/shared/components/ui/Button';
 import { formatJstDate } from '@/shared/lib/date';
 
 interface CertificationListProps {
@@ -86,10 +86,7 @@ export const CertificationList = ({ certifications, today, renderActions }: Cert
         return (
             <div className="flex flex-col items-center gap-3 rounded-lg border border-border border-dashed bg-background p-12 text-center">
                 <p className="text-muted-foreground">保有資格が登録されていません</p>
-                <Link
-                    href="/settings/certifications/new"
-                    className="rounded-md bg-primary px-4 py-2 text-primary-foreground text-sm transition-opacity hover:opacity-90"
-                >
+                <Link href="/settings/certifications/new" className={buttonVariants({ variant: 'default' })}>
                     資格を登録する
                 </Link>
             </div>

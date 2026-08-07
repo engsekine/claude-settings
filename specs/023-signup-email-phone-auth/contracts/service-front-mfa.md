@@ -48,10 +48,10 @@ getMfaStatus(): Promise<{ enabled: boolean, factorId: string | null }>
 
 ```
 challengeLoginFactor(factorId: string): Promise<ActionResult<{ challengeId: string }>>   // SMS 再送含む（FR-012）
-verifyLogin(factorId: string, challengeId: string, code: string): Promise<ActionResult>  // 成功で AAL2 昇格 → redirect('/dives')（呼び出し元には戻らない）
+verifyLogin(factorId: string, challengeId: string, code: string): Promise<ActionResult>  // 成功で AAL2 昇格 → redirect('/')（呼び出し元には戻らない）
 ```
 
-- **フロー**: 1 段階目（`signIn`/Google）成功後、`getAuthenticatorAssuranceLevel()` が `aal1→aal2` の場合に 2 段階目 UI を表示。`challenge` で SMS 送信、`verify` で昇格し `/dives`（FR-010/011）。
+- **フロー**: 1 段階目（`signIn`/Google）成功後、`getAuthenticatorAssuranceLevel()` が `aal1→aal2` の場合に 2 段階目 UI を表示。`challenge` で SMS 送信、`verify` で昇格し TOP（`/`）（FR-010/011）。
 - **再送**: `challengeLoginFactor` の再呼び出し（クールダウン + `max_frequency`、FR-013）。
 
 ## ルートガード（AAL2 強制）

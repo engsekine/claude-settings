@@ -18,6 +18,7 @@ const item = (id: string, diveDate: string): TimelineItem => ({
     bottomTimeMin: 40,
     ownerId: `owner-${id}`,
     ownerNickname: `ニック${id}`,
+    ownerHandle: `handle-${id}`,
     likeCount: 0,
     likedByMe: false,
 });
@@ -39,7 +40,8 @@ describe('Timeline', () => {
     it('所有者の nickname はプロフィールへリンクし、深度・時間も表示する', () => {
         render(<Timeline items={[item('1', '2026-06-30')]} />);
         const ownerLink = screen.getByRole('link', { name: 'ニック1' });
-        expect(ownerLink).toHaveAttribute('href', '/users/owner-1');
+        // 034: プロフィールリンクはユーザー ID の URL になる
+        expect(ownerLink).toHaveAttribute('href', '/users/handle-1');
         expect(screen.getByText(/最大 18m ・ 40分/, { selector: 'span' })).toBeInTheDocument();
     });
 

@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import { NotificationList } from '@/features/notifications';
 import { ensureTimedNotifications, listNotifications } from '@/features/notifications/server/queries';
+import { Heading } from '@/shared/components/typography/Heading';
 import { generatePageMetadata } from '@/shared/config/metadata';
 
 export const metadata = generatePageMetadata(
@@ -27,7 +28,7 @@ export default async function NotificationsPage() {
     return (
         <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-8">
             <div className="flex items-center justify-between gap-2">
-                <h1 className="font-semibold text-2xl">通知</h1>
+                <Heading level={1}>通知</Heading>
                 <Link
                     href="/settings/notifications"
                     aria-label="通知設定"

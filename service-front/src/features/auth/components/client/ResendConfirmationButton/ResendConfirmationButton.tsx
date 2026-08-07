@@ -1,9 +1,8 @@
 'use client';
 
-import { Button } from '@repo/ui/components/button';
 import { useState, useTransition } from 'react';
-
 import { resendConfirmationEmail } from '@/features/auth/server/actions';
+import { Button } from '@/shared/components/ui/Button';
 import { useCooldown } from '@/shared/hooks/useCooldown';
 
 /** 連続再送を抑止するクールダウン秒数（FR-005） */

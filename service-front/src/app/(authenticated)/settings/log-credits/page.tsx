@@ -1,8 +1,10 @@
 import Link from 'next/link';
+import { LOG_CREDIT_PACKS } from '@/features/credits';
 import { PurchasePackCard } from '@/features/credits/components/client/PurchasePackCard';
 import { CreditBalanceBadge } from '@/features/credits/components/server/CreditBalanceBadge';
 import { getPurchaseHistory } from '@/features/credits/server/queries';
 import type { PurchaseStatus } from '@/features/credits/types';
+import { Heading } from '@/shared/components/typography/Heading';
 import { generatePageMetadata } from '@/shared/config/metadata';
 import { formatJstDateTime } from '@/shared/lib/date';
 
@@ -34,7 +36,7 @@ export default async function LogCreditsPage({ searchParams }: LogCreditsPagePro
     return (
         <div className="mx-auto flex w-full max-w-xl flex-col gap-6 px-4 py-8">
             <div className="flex items-center justify-between">
-                <h1 className="font-semibold text-2xl">ログ枠の購入</h1>
+                <Heading level={1}>ログ枠の購入</Heading>
                 <CreditBalanceBadge />
             </div>
 
@@ -56,7 +58,11 @@ export default async function LogCreditsPage({ searchParams }: LogCreditsPagePro
                 </div>
             )}
 
-            <PurchasePackCard />
+            <div className="flex flex-col gap-4">
+                {LOG_CREDIT_PACKS.map((pack) => (
+                    <PurchasePackCard key={pack.id} pack={pack} />
+                ))}
+            </div>
 
             <section aria-labelledby="purchase-history-heading" className="flex flex-col gap-3">
                 <h2 id="purchase-history-heading" className="font-semibold text-lg">

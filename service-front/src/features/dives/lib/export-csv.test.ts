@@ -8,6 +8,8 @@ const buildDive = (overrides: Partial<Dive> = {}): Dive => ({
     diveNumber: 12,
     diveDate: '2025-07-01',
     entryTime: '10:00:00',
+    diveShopId: null,
+    shop: null,
     exitTime: '10:45:00',
     location: '大瀬崎',
     diveSiteId: null,

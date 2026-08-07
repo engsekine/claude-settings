@@ -91,7 +91,19 @@ const toDbRow = (input: DiveFormValues) => ({
     certification_dive: input.certificationDive,
     notes: input.notes,
     is_public: input.isPublic,
+    dive_shop_id: input.diveShopId,
 });
+
+/**
+ * 紐付けるショップが本人所有か検証する（033 / FR-008）。
+ * RLS により他人のショップは SELECT できないため、取得できなければ不正 id とみなす。
+ * DB 側の ensure_dive_shop_owned トリガーと合わせた二重ガード。
+ */
+const isOwnShop = async (supabase: Awaited<ReturnType<typeof createClient>>, diveShopId: string | null) => {
+    if (!diveShopId) return true;
+    const { data } = await supabase.from('dive_shops').select('id').eq('id', diveShopId).maybeSingle();
+    return data !== null;
+};
 
 /** フォームのバディ入力を、DB 同期用に正規化する（自己タグ除外・重複除去・空要素除外） */
 const normalizeBuddies = (
@@ -195,6 +207,10 @@ export const createDive = async (
     const siteError = await validateDiveSite(supabase, input);
     if (siteError) return actionFailure(siteError);
 
+    if (!(await isOwnShop(supabase, input.diveShopId))) {
+        return actionFailure('選択したショップが見つかりません');
+    }
+
     const { data, error } = await supabase
         .from('dives')
         .insert({ ...toDbRow(input), user_id: user.id })
@@ -290,6 +306,10 @@ export const updateDive = async (
 
     const siteError = await validateDiveSite(supabase, input);
     if (siteError) return actionFailure(siteError);
+
+    if (!(await isOwnShop(supabase, input.diveShopId))) {
+        return actionFailure('選択したショップが見つかりません');
+    }
 
     // owner 限定。公開ログでも他人は更新不可（RLS でも弾かれるが、0 件更新を誤成功にしない二重防御）
     const { data: updated, error } = await supabase

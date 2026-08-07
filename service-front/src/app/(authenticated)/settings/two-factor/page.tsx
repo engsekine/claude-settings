@@ -1,5 +1,6 @@
 import { getMfaStatus, TwoFactorSettings } from '@/features/mfa';
 import { Breadcrumbs } from '@/shared/components/layout/Breadcrumbs';
+import { Heading } from '@/shared/components/typography/Heading';
 import { generatePageMetadata } from '@/shared/config/metadata';
 
 export const metadata = generatePageMetadata(
@@ -18,7 +19,7 @@ export default async function TwoFactorSettingsPage() {
         <div className="flex flex-1 flex-col">
             <Breadcrumbs breadcrumbs={[{ name: '2 要素認証' }]} />
             <div className="mx-auto flex w-full max-w-xl flex-col gap-6 px-4 py-12">
-                <h1 className="font-semibold text-2xl">2 要素認証</h1>
+                <Heading level={1}>2 要素認証</Heading>
                 <p className="text-muted-foreground text-sm">
                     有効にすると、ログイン時にパスワード（または Google 認証）に加えて、登録した電話番号宛の SMS
                     確認コードが必要になります。

@@ -23,7 +23,22 @@ const buildSession = (overrides: Partial<Stripe.Checkout.Session> = {}): Stripe.
     }) as Stripe.Checkout.Session;
 
 describe('fulfillCheckoutSession', () => {
-    it('paid のセッションで complete_purchase を呼び、付与結果を返す', async () => {
+    it('paid のセッションで metadata.pack_id のパック内容で complete_purchase を呼ぶ', async () => {
+        const { client, rpc } = buildSupabaseMock({ data: true, error: null });
+
+        const result = await fulfillCheckoutSession(client as any, buildSession({ metadata: { pack_id: 'standard' } }));
+
+        expect(result).toEqual({ credited: true });
+        expect(rpc).toHaveBeenCalledWith('complete_purchase', {
+            p_session_id: 'cs_test_123',
+            p_payment_intent_id: 'pi_test_123',
+            p_user_id: 'user-1',
+            p_quantity: 30,
+            p_amount_jpy: 1200,
+        });
+    });
+
+    it('metadata の無い旧セッションは旧単一パック（10 枠 / ¥300）で付与する', async () => {
         const { client, rpc } = buildSupabaseMock({ data: true, error: null });
 
         const result = await fulfillCheckoutSession(client as any, buildSession());

@@ -8,6 +8,7 @@ const FOOTER_LINKS = [
     { href: '/', label: 'ホーム' },
     { href: '/dives', label: 'ダイビングログ' },
     { href: '/settings/certifications', label: '保有資格' },
+    { href: '/guide', label: '使い方' },
     { href: '/terms', label: '利用規約' },
     { href: '/privacy-policy', label: 'プライバシーポリシー' },
     { href: '/contact', label: 'お問い合わせ' },

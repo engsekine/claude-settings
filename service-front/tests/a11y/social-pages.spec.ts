@@ -20,7 +20,7 @@ const login = async (page: Page) => {
     await page.getByLabel('メールアドレス').fill(TEST_EMAIL);
     await page.getByLabel('パスワード').fill(TEST_PASSWORD);
     await page.getByRole('button', { name: 'ログイン', exact: true }).click();
-    await page.waitForURL(/\/dives/);
+    await page.waitForURL((url) => url.pathname === '/');
 };
 
 const expectNoViolations = async (page: Page) => {
@@ -92,6 +92,6 @@ test('タイムライン・プロフィール・フォロー一覧 - WCAG 2.1 AA
 
     // ユーザー検索（UserSearchBar + 検索結果の FollowList）。seed の admin がヒットする
     await page.goto('/users/search?q=admin');
-    await expect(page.getByRole('searchbox', { name: 'ニックネームで探す' })).toBeVisible();
+    await expect(page.getByRole('searchbox', { name: 'ユーザーIDで探す' })).toBeVisible();
     await expectNoViolations(page);
 });

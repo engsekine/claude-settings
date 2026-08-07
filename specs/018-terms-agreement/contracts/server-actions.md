@@ -20,7 +20,7 @@
 | 入力追加 | `CompleteProfileInput` に `agreedToTerms: boolean` を追加 |
 | ガード（FR-008） | `input.agreedToTerms !== true` → `actionFailure('利用規約に同意してください')` |
 | 記録 | `toUserDetailsInsert` を拡張し `terms_version = CURRENT_TERMS_VERSION` / `terms_agreed_at`（登録時刻）を INSERT に含める |
-| 既存挙動 | 本人 INSERT・PK 重複の冪等処理・`/dives` redirect は変更なし |
+| 既存挙動 | 本人 INSERT・PK 重複の冪等処理・TOP（`/`）redirect は変更なし |
 
 ## 定数
 

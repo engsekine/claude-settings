@@ -11,6 +11,8 @@ export interface BuddyRowInput {
     buddyName: string | null;
     /** 登録ユーザーの場合に解決済みの nickname（未解決・退会時は null） */
     nickname: string | null;
+    /** 登録ユーザーの場合に解決済みのユーザー ID（034。未解決・退会時は null） */
+    handle: string | null;
 }
 
 /** 登録ユーザー由来だが nickname を解決できなかった場合の表示名 */
@@ -28,12 +30,14 @@ export const mapDiveBuddy = (row: BuddyRowInput): DiveBuddy => {
             id: row.id,
             userId: row.buddyUserId,
             name: row.nickname ?? UNKNOWN_REGISTERED_NAME,
+            handle: row.handle,
             isRegistered: true,
         };
     }
     return {
         id: row.id,
         userId: null,
+        handle: null,
         name: row.buddyName ?? '',
         isRegistered: false,
     };
